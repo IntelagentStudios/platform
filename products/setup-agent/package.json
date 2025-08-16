@@ -12,9 +12,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@intelagent/core": "workspace:*",
-    "@intelagent/database": "workspace:*",
-    "@intelagent/auth": "workspace:*",
+    "@intelagent/core": "*",
+    "@intelagent/database": "*",
+    "@intelagent/auth": "*",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2",
     "uuid": "^9.0.0",

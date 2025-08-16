@@ -12,7 +12,9 @@
       "Bash(cp:*)",
       "Bash(true)",
       "Bash(mv:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

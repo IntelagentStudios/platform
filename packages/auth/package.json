@@ -11,8 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@intelagent/core": "workspace:*",
-    "@intelagent/database": "workspace:*",
+    "@intelagent/core": "*",
+    "@intelagent/database": "*",
     "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3"
   },
