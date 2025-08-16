@@ -1,0 +1,61 @@
+### API Usage Examples
+### Replace the host with your Railway deployment URL
+
+@host = https://your-app.railway.app
+@apiKey = YOUR_API_KEY_HERE
+
+### Health Check
+GET {{host}}/health
+
+### Full Enrichment
+POST {{host}}/api/enrich
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "domain": "example.com",
+  "type": "full"
+}
+
+### Email Finding Only
+POST {{host}}/api/enrich
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "domain": "example.com",
+  "type": "emails"
+}
+
+### Web Scraping Only
+POST {{host}}/api/enrich
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "domain": "example.com",
+  "type": "scrape"
+}
+
+### Company Data Only
+POST {{host}}/api/enrich
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "domain": "example.com",
+  "type": "data"
+}
+
+### Get Job Status
+GET {{host}}/api/jobs/{jobId}
+X-API-Key: {{apiKey}}
+
+### Validate Email
+POST {{host}}/api/validate-email
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "email": "test@example.com"
+}

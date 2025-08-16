@@ -1,0 +1,41 @@
+{
+  "name": "@intelagent/platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intelagent Platform - Unified AI Business Automation System",
+  "workspaces": [
+    "packages/*",
+    "products/*",
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "clean": "turbo run clean",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "setup": "npm install && npm run db:generate"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IntelagentStudios/platform.git"
+  },
+  "author": "Intelagent Studios",
+  "license": "MIT"
+}

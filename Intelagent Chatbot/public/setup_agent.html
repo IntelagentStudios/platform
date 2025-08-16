@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Intelagent Chatbot Setup</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .setup-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 32px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    #chat-log {
+      text-align: left;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    #chat-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      margin-top: 10px;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .setup-footer {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 24px;
+    }
+    .typing-indicator {
+      display: inline-block;
+      padding-left: 10px;
+    }
+    .typing-indicator span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin: 0 1px;
+      background: #999;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    #chat-log div {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    #chat-log div strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+    pre {
+      background: #eaeaea;
+      padding: 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-container" id="main-container">
+    <h1>Intelagent Chatbot Setup</h1>
+    <p>I'll help you connect your domain and generate your personalized chatbot key.</p>
+    <div id="chat-log"></div>
+    <input autofocus id="chat-input" placeholder="Type your message..." type="text"/>
+    <button id="send-button">Send</button>
+    <div class="setup-footer">powered by Intelagent Studios</div>
+  </div>
+  <script>
+    const sessionId = localStorage.getItem("setup_session_id") || "sess_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("setup_session_id", sessionId);
+
+    async function sendMessage(messageOverride) {
+      const input = document.getElementById("chat-input");
+      const chatLog = document.getElementById("chat-log");
+      const message = messageOverride || input.value.trim();
+      if (!message) return;
+
+      chatLog.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+      chatLog.innerHTML += `<div id="typing-indicator" class="typing-indicator"><span></span><span></span><span></span></div>`;
+      chatLog.scrollTop = chatLog.scrollHeight;
+      
+      input.value = "";
+
+      try {
+        const response = await fetch("/api/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_message: message,
+            store_id: "chatbot_setup",
+            session_id: sessionId
+          })
+        });
+
+        const data = await response.json();
+        console.log("Setup response:", data); // Debug log
+        
+        const agentReply = data?.agent_response || data?.chatbot_response || data?.agent_message || "⚠️ No response from agent.";
+        const formattedReply = agentReply
+          .replace(/</g, "&lt;").replace(/>/g, "&gt;")  // escape HTML
+          .replace(/```html\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')  // format code blocks
+          .replace(/\n/g, "<br>"); // line breaks
+
+        const loader = document.getElementById("typing-indicator");
+        if (loader) loader.remove();
+        chatLog.innerHTML += `<div><strong>Agent:</strong> ${formattedReply}</div>`;
+        chatLog.scrollTop = chatLog.scrollHeight;
+      } catch (err) {
+        const loader = document.getElementById("typing-indicator");
+        if (loader) loader.remove();
+        chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn't reach the setup server. Try again later.</div>`;
+        console.error("Setup error:", err);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("chat-input");
+      const button = document.getElementById("send-button");
+
+      button.addEventListener("click", () => sendMessage());
+      input.addEventListener("keypress", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      document.getElementById("chat-log").innerHTML = `<div><strong>Agent:</strong> Hi, I'm your setup agent.<br>Unless you have any questions, please provide your website address to start setting up your chatbot.</div>`;
+    });
+  </script>
+</body>
+</html>
