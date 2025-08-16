@@ -1,0 +1,26 @@
+{
+  "name": "@intelagent/auth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Authentication service for Intelagent Platform",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@intelagent/core": "workspace:*",
+    "@intelagent/database": "workspace:*",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/bcryptjs": "^2.4.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0"
+  }
+}

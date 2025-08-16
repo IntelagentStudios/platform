@@ -1,0 +1,26 @@
+{
+  "name": "@intelagent/chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered customer support chatbot with setup agent",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "build": "echo 'Build complete'",
+    "test": "echo 'Tests pending'"
+  },
+  "dependencies": {
+    "@intelagent/core": "workspace:*",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["chatbot", "ai", "customer-support"],
+  "author": "Intelagent Studios",
+  "license": "MIT"
+}

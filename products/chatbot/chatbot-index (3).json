@@ -1,0 +1,300 @@
+{
+  "name": "chatbot-index",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -272
+      ],
+      "id": "a784d9ed-d63c-4f9d-8d9b-1a1dbb4eb314",
+      "name": "Daily Index Update"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "licenses",
+          "mode": "list",
+          "cachedResultName": "licenses"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "site_key",
+              "condition": "IS NOT NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -272
+      ],
+      "id": "f6228aea-af57-4059-9d3e-0dec1d584a42",
+      "name": "Get Client Sites",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get list of pages to scrape for each site\nconst sites = $input.all();\nconst pagesToScrape = [];\n\nfor (const site of sites) {\n  const domain = site.json.domain;\n  const siteKey = site.json.site_key;\n  \n  // Define pages to scrape\n  const pages = [\n    { path: '/', type: 'homepage' },\n    { path: '/products', type: 'products' },\n    { path: '/services', type: 'services' },\n    { path: '/about', type: 'about' },\n    { path: '/contact', type: 'contact' },\n    { path: '/pricing', type: 'pricing' }\n  ];\n  \n  pages.forEach(page => {\n    pagesToScrape.push({\n      json: {\n        url: `https://${domain}${page.path}`,\n        domain: domain,\n        site_key: siteKey,\n        page_type: page.type,\n        path: page.path\n      }\n    });\n  });\n}\n\nreturn pagesToScrape;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -272
+      ],
+      "id": "f080d9bd-d1c3-4a93-9996-0c3af099da24",
+      "name": "Prepare URLs to Scrape"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        -272
+      ],
+      "id": "1052a171-3364-456a-84a0-9b69a9c7bf8a",
+      "name": "Scrape Page",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data || '';\nconst metadata = $input.item.json;\nconst chunkSize = 1000;\nconst chunks = [];\n\n// Clean HTML\nlet text = html\n  .replace(/<script[^>]*>.*?<\\/script>/gs, '')\n  .replace(/<style[^>]*>.*?<\\/style>/gs, '')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// Create chunks\nfor (let i = 0; i < text.length; i += chunkSize - 200) {\n  const chunk = text.slice(i, i + chunkSize).trim();\n  if (chunk.length > 100) {\n    chunks.push({\n      json: {\n        pageContent: chunk,  // Pinecone expects this field name\n        metadata: {\n          site_key: metadata.site_key,\n          domain: metadata.domain,\n          url: metadata.url\n        }\n      }\n    });\n  }\n}\n\nreturn chunks.length ? chunks : [{\n  json: {\n    pageContent: 'No content found',\n    metadata: { \n      site_key: metadata.site_key,\n      domain: metadata.domain,\n      url: metadata.url\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -272
+      ],
+      "id": "f932c21f-56de-47a6-a939-9486619909a5",
+      "name": "Chunk Content",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -48
+      ],
+      "id": "81a4541d-6326-4ac9-b367-97f3d71d7ff5",
+      "name": "Generate Embeddings",
+      "credentials": {
+        "openAiApi": {
+          "id": "acCxU5PCx6BzVw3U",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE licenses \nSET last_indexed = CURRENT_TIMESTAMP\nWHERE site_key = '{{ $('Get Client Sites').first().json.site_key }}';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -272
+      ],
+      "id": "7d9da1c5-ca51-4a1b-a3d9-b6a70da148d0",
+      "name": "Update Index Status",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "chatbot",
+          "mode": "list",
+          "cachedResultName": "chatbot"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $node[\"Get Client Sites\"].json.site_key }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        -272
+      ],
+      "id": "103eeb5d-273c-4181-86ef-5e9a50fb7ff9",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "VaudxhMDi6VpnVRE",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -48
+      ],
+      "id": "6f8c0a7d-7de6-465e-a5db-7ea8e22ed7ba",
+      "name": "Default Data Loader"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Index Update": {
+      "main": [
+        [
+          {
+            "node": "Get Client Sites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Client Sites": {
+      "main": [
+        [
+          {
+            "node": "Prepare URLs to Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare URLs to Scrape": {
+      "main": [
+        [
+          {
+            "node": "Scrape Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Page": {
+      "main": [
+        [
+          {
+            "node": "Chunk Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Content": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        []
+      ],
+      "main": [
+        [
+          {
+            "node": "Update Index Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "45d32b86-7c74-4954-ab53-431aac8ba0ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3927507ad5002dee943bc729aec9a3f201e34ca5accca465effd737947d6ca6b"
+  },
+  "id": "gMMqS1BkUtzaFhZO",
+  "tags": []
+}

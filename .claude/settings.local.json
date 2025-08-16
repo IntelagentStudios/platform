@@ -6,7 +6,13 @@
       "Bash(git add:*)",
       "Bash(rm:*)",
       "Bash(git init:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git rm:*)",
+      "Bash(git push:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(mv:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

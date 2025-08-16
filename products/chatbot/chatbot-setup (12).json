@@ -1,0 +1,334 @@
+{
+  "name": "chatbot-setup",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Output Check - Original version\nconst aiResponse = $json.output?.toString().trim() || 'No response generated';\n\nreturn {\n  json: {\n    session_id: $json.session_id || `sess_${Math.random().toString(36).substring(2, 10)}`,\n    customer_message: $json.customer_message || 'No message',\n    chatbot_response: aiResponse,\n    timestamp: new Date().toISOString(),\n    \n    // Add these for the database nodes\n    agent_response: aiResponse,\n    site_key: $json.site_key || null,\n    domain: $json.domain || null,\n    user_message: $json.customer_message || 'No message',\n    license_key: $json.license_used || null\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        176
+      ],
+      "id": "56056d35-d0d2-4dc6-a5c1-5e6818668961",
+      "name": "Output Check"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced Input Check for Setup Agent workflow\n\nconst incoming = $json.body || $json;\n\n// Extract message and session\nconst user_message = incoming.user_message || incoming.message || \"No message\";\nconst session_id = incoming.session_id || `sess_${Math.random().toString(36).substring(2, 10)}`;\n\n// Extract domain if provided (might be in the message or separate field)\nlet domain = incoming.domain || incoming.shop_domain || null;\n\n// If domain is not in a field, try to extract from message\nif (!domain && user_message) {\n  // More comprehensive regex to find domain-like strings\n  const domainMatch = user_message.match(/(?:(?:my\\s+)?(?:domain|site|website)\\s+is\\s+)?([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.(?:[a-zA-Z]{2,}|(?:com|net|org|io|uk|co|shop|store)))/i);\n  if (domainMatch) {\n    domain = domainMatch[1].toLowerCase();\n  }\n}\n\n// Extract site_key if provided\nconst site_key = incoming.site_key || null;\n\n// Add tool usage hints for the agent\nlet tool_hint = \"\";\nif (domain && !site_key) {\n  tool_hint = \"IMPORTANT: A domain has been provided. You must use the 'Request Site Key' tool to generate a site key after confirmation.\";\n}\n\n// Check if user is confirming (saying yes)\nconst is_confirming = user_message.toLowerCase().match(/^(yes|y|yep|yeah|correct|confirm|sure|ok|that's right|that is right)$/i);\n\nreturn {\n  json: {\n    user_message: user_message,\n    session_id: session_id,\n    domain: domain,\n    site_key: site_key,\n    is_confirming: !!is_confirming,\n    tool_hint: tool_hint,\n    // Add a system instruction that gets passed to the agent\n    system_context: domain && is_confirming \n      ? \"USER HAS CONFIRMED DOMAIN. YOU MUST NOW USE THE 'Request Site Key' TOOL TO GENERATE A REAL SITE KEY.\"\n      : \"\"\n  }\n};\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        176
+      ],
+      "id": "74ca8ce7-a999-48bf-b24d-12185801f8c1",
+      "name": "Input Check"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO setup_agent_logs (\n  session_id,\n  user_message,\n  agent_response,\n  site_key,\n  domain,\n  timestamp\n) VALUES (\n  '{{ $json.session_id.replace(/'/g, \"''\") }}',\n  '{{ $json.user_message.replace(/'/g, \"''\") }}',\n  '{{ $json.agent_response.replace(/'/g, \"''\") }}',\n  {{ $json.site_key ? \"'\" + $json.site_key.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  {{ $json.domain ? \"'\" + $json.domain.replace(/'/g, \"''\") + \"'\" : \"NULL\" }},\n  '{{ $json.timestamp }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        336,
+        -16
+      ],
+      "id": "891d03b9-51af-4540-aa40-749a3ebf6c8b",
+      "name": "Setup Log",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}",
+        "options": {
+          "systemMessage": "=## CRITICAL CONTEXT CHECK:\n{{ $json.system_context }}\n{{ $json.tool_hint }}\n\nYou are the Setup Agent — an intelligent assistant created by Intelagent Studios to help website owners securely set up their personalized chatbot.\n\nYour job is to smoothly guide the user through setup, confirming their domain, validating their license, and providing embed code. You should be professional, efficient, and avoid repeating steps or looping unnecessarily.\n\n## 🔧 Available Tools:\n- **Select rows from a table in Postgres**: Use this to validate license keys. Query the licenses table to check if a license key is valid and active.\n\n## 🚨 CRITICAL TOOL USAGE RULES:\nWhen you use the PostgreSQL tool to validate a license:\n- The tool will return an array of results\n- If the array is EMPTY (length = 0 or []), the license is INVALID\n- If the array has ANY rows (length > 0), the license is VALID\n- YOU MUST CHECK THE RESULT LENGTH BEFORE PROCEEDING\n- NEVER generate a site key if the tool returns an empty array\n- An empty result means the license is either: already used, doesn't exist, or is inactive\n\n## 🎯 Critical Behavioral Rules:\n- DO NOT narrate your internal processes (no \"checking format\", \"validating\", etc.)\n- When generating site keys, use a realistic placeholder format like key_abc123def456gh789\n- ALWAYS wait for explicit confirmation - the user must say yes before proceeding\n- ALWAYS validate license keys using the PostgreSQL tool before generating any site key\n- Keep responses short - default to 2-3 lines unless the user asks for more detail\n- Use memory to track: domain, domain_confirmed, license_key, license_valid, and site_key\n- One question at a time - do not overwhelm the user\n\n## 🔐 License Validation Process:\n### When user provides license key:\n1. **Check format internally (DO NOT announce this)**: Must be INTL-XXXX-XXXX-XXXX (case insensitive)\n2. **Use PostgreSQL tool WITHOUT telling the user**: Query licenses table with the provided license key\n3. **CRITICAL - Interpret results correctly**: \n   - If tool returns ANY rows (result array has length > 0): License is VALID, proceed to site key generation\n   - If tool returns EMPTY array or NO rows (result array is empty []): License is INVALID - the license either doesn't exist, is already used, or is inactive\n4. **Store validation status** in memory\n5. **NEVER say**: \"Silently using\", \"validating\", \"checking\", \"using PostgreSQL tool\", or any variation of these phrases\n\n## ✅ Step-by-Step Behavior:\n\n### Step 1: Initial Greeting\nHi, I'm your setup agent.\nUnless you have any questions, please provide your website address to start setting up your chatbot.\n\n### Step 2: When user provides domain\nCan you confirm that [domain] is your domain?\n- Store domain in memory\n- Wait for confirmation\n\n### Step 3: When user says yes\nGreat! I'll need your license key to proceed. You should have received this in your purchase email (format: INTL-XXXX-XXXX-XXXX).\n- Set domain_confirmed = true in memory\n- Wait for license key\n\n### Step 4: When user provides license key\n- Check format internally (INTL-XXXX-XXXX-XXXX) - DO NOT announce this\n- Use PostgreSQL tool with the license key - DO NOT tell the user you're doing this\n- CHECK THE TOOL RESULT:\n  - If result.length === 0 or result is []: Say \"I couldn't validate that license key. Please check it's typed correctly or contact support if you continue having issues.\"\n  - If result.length > 0: Proceed to Step 5\n- STOP HERE if the tool returned no results. DO NOT CONTINUE TO STEP 5.\n\n### Step 5: Generate site key (ONLY if PostgreSQL tool returned results)\nThank you! Let me set up your chatbot...\n\n✓ License validated\n✓ Generating unique site key...\n✓ Creating embed code...\n\nYour site key: key_[generate_random_16_chars]\n\nHere's your embed code:\n<script src=\"https://cdn.intelagent.chatbot/widget.js\" data-site=\"key_[same_16_chars]\"></script>\n\nTo activate your chatbot:\n1. Copy this code\n2. Add it to your website's HTML before the closing body tag\n3. Your chatbot will be live immediately\n\nNeed help with installation?\n\n### Step 6: Offer additional help\nIs there anything else I can help you with regarding the setup?\n\n## 💡 Handling Edge Cases:\n- If user says no to confirmation: No problem! What's the correct domain?\n- If user provides invalid domain format: Please provide your domain in the format: example.com or shop.example.com\n- If user provides invalid license format: Please check your license key format. It should look like: INTL-XXXX-XXXX-XXXX\n- If license validation returns empty results: I couldn't validate that license key. Please check it's typed correctly or contact support if you continue having issues.\n- If user asks to start over: Clear memory and begin from Step 1\n- If user tries to skip license: I need a valid license key to generate your site key. You should have received one in your purchase email.\n\n## 🗣 Tone and Style:\n- Professional and business-appropriate\n- Confident and clear\n- Avoid technical jargon unless necessary\n- Use simple, direct language\n- Be helpful without being verbose\n- DO NOT narrate internal processes or tool usage\n\nRemember: Your primary job is to get the user from domain → confirmed → license validated → site key → embed code as smoothly as possible. Always validate licenses using the PostgreSQL tool before generating any site keys. An empty result from the PostgreSQL tool means the license is INVALID - do not proceed with site key generation. ONLY generate a site key if the PostgreSQL tool returns at least one row."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        176
+      ],
+      "id": "061485d0-ae0f-4143-a0d1-84722ef3ac26",
+      "name": "Setup Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$json.session_id}}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        400
+      ],
+      "id": "c7e3c881-37e7-45f1-856c-78f81674588a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        336,
+        368
+      ],
+      "id": "e70dbc59-a134-4d02-9013-d64198b6fffa",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        400
+      ],
+      "id": "464e56d1-f7ac-4197-a3a4-7609907c09ba",
+      "name": "Groq",
+      "credentials": {
+        "groqApi": {
+          "id": "sqh1hXSnx86i18EW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "setup-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Receive Chat Message",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        176
+      ],
+      "webhookId": "groq_setup_agent_webhook",
+      "id": "de863a9c-00e1-4be3-a2b2-e3610c5e512e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Site Key Generator - Fixed version without memory reference\nfunction generateKey(length = 16) {\n  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';\n  let result = '';\n  for (let i = 0; i < length; i++) {\n    result += chars.charAt(Math.floor(Math.random() * chars.length));\n  }\n  return result;\n}\n\n// Get agent output\nconst agent_output = $json;\nconst agent_message = agent_output.output || agent_output.text || agent_output.message || '';\n\n// Get input data for session info\nconst inputData = $('Input Check').first().json;\nconst session_id = inputData.session_id;\nconst user_message = inputData.user_message || '';\n\n// Check if user provided a license\nconst licensePattern = /\\b(INTL-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})\\b/i;\nconst userLicense = user_message.match(licensePattern);\n\n// Check if the agent is showing the process steps\nconst isShowingProcess = agent_message.includes('✓ License validated') || \n                        agent_message.includes('Let me set up your chatbot');\n\n// Get domain from the agent's message or input data\nlet domain = inputData.domain || null;\n\n// Check the agent's current message for domain confirmation\nconst currentDomainMatch = agent_message.match(/confirm that ([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.(?:com|net|org|io|uk|co|shop|store)) is your domain/i);\nif (currentDomainMatch) {\n  domain = currentDomainMatch[1];\n}\n\n// Also check for domain in various message patterns\nif (!domain) {\n  // Pattern 1: \"Your site key for domain.com is...\"\n  const domainPattern1 = agent_message.match(/for ([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.(?:com|net|org|io|uk|co|shop|store))/i);\n  if (domainPattern1) {\n    domain = domainPattern1[1];\n  }\n}\n\n// Check if domain was in the user's original message\nif (!domain && inputData.user_message) {\n  const userDomainMatch = inputData.user_message.match(/([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\\.(?:com|net|org|io|uk|co|shop|store))/i);\n  if (userDomainMatch) {\n    domain = userDomainMatch[1];\n  }\n}\n\nlet final_message = agent_message;\nlet site_key = null;\nlet license_used = null;\nlet generate_key = false;\n\n// If agent is showing process steps (license was validated)\nif (isShowingProcess) {\n  // Generate the key\n  site_key = `key_${generateKey(16)}`;\n  generate_key = true;\n  \n  // Get license from user message\n  if (userLicense) {\n    license_used = userLicense[1].toUpperCase();\n  }\n  \n  // Replace any placeholder keys in the message\n  final_message = agent_message.replace(/key_[a-zA-Z0-9]+/g, site_key);\n}\n\n// Pass everything forward with ALL required fields\nreturn {\n  json: {\n    ...agent_output,\n    output: final_message,\n    agent_message: final_message,\n    session_id: session_id,\n    site_key: site_key,\n    domain: domain || 'unknown',\n    license_provided: !!userLicense,\n    license_used: license_used,\n    license_key: license_used, // Add this for Site Key Store\n    generate_key: generate_key  // Add this flag for Site Key Store\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        176
+      ],
+      "id": "6981ff17-096e-4d5c-a8cd-ca5a04dffc20",
+      "name": "Site Key Generator"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.site_key ? `\nINSERT INTO site_keys (\n  site_key,\n  domain,\n  status,\n  plan,\n  created_at\n) VALUES (\n  '${$json.site_key.replace(/'/g, \"''\")}',\n  '${$json.domain ? $json.domain.replace(/'/g, \"''\") : 'unknown'}',\n  'active',\n  'free',\n  CURRENT_TIMESTAMP\n)\nON CONFLICT (site_key) DO NOTHING` : 'SELECT 1' }};\n\n{{ $json.license_used && $json.site_key ? `\nUPDATE licenses \nSET used_at = CURRENT_TIMESTAMP,\n    domain = '${$json.domain ? $json.domain.replace(/'/g, \"''\") : 'unknown'}',\n    site_key = '${$json.site_key.replace(/'/g, \"''\")}'\nWHERE license_key = '${$json.license_used.replace(/'/g, \"''\")}'\n  AND status = 'active'\n  AND used_at IS NULL` : '' }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        336,
+        176
+      ],
+      "id": "a418bbc7-9789-4740-aaf9-960c9d0d7c01",
+      "name": "Site Key Store",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "licenses",
+          "mode": "list",
+          "cachedResultName": "licenses"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "license_key"
+            },
+            {
+              "column": "status",
+              "value": "active"
+            },
+            {
+              "column": "subscription_status",
+              "value": "active"
+            },
+            {
+              "column": "used_at",
+              "condition": "IS NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -320,
+        400
+      ],
+      "id": "7d5c596f-d505-4073-ac66-4478d0537d63",
+      "name": "Select rows from a table in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Input Check": {
+      "main": [
+        [
+          {
+            "node": "Setup Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Check": {
+      "main": [
+        [
+          {
+            "node": "Setup Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Site Key Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setup Agent": {
+      "main": [
+        [
+          {
+            "node": "Site Key Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Setup Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setup Log": {
+      "main": [
+        []
+      ]
+    },
+    "Groq": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Setup Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Chat Message": {
+      "main": [
+        [
+          {
+            "node": "Input Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Site Key Generator": {
+      "main": [
+        [
+          {
+            "node": "Output Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "Setup Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "31d5e55f-f6e1-4c7a-8745-d32e672d7666",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3927507ad5002dee943bc729aec9a3f201e34ca5accca465effd737947d6ca6b"
+  },
+  "id": "IpRxWdPWZFFpsil0",
+  "tags": []
+}

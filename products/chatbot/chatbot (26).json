@@ -1,0 +1,603 @@
+{
+  "name": "chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Input validation and preparation\nconst incoming = $json.body || $json;\n\nconst customerMessage = incoming.message?.trim() || 'No message';\nconst chatHistory = incoming.chat_history || '';\nconst sessionId = incoming.session_id || `sess_${Math.random().toString(36).substring(2, 10)}`;\nconst siteKey = incoming.site_key || null;\n\nreturn {\n  json: {\n    session_id: sessionId,\n    customer_message: customerMessage,\n    chat_history: chatHistory,\n    site_key: siteKey,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2368,
+        160
+      ],
+      "id": "10d36b56-d96e-467f-bd7c-e60444cee70b",
+      "name": "Input Validation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.customer_message }}",
+        "options": {
+          "systemMessage": "# Agent 1: Atlas - Intelligent Search Strategist\n\nYou have access to vector search and conversation memory. Use both to select the optimal page to scrape.\n\n## Instructions:\n1. Use vector search to understand what content exists\n2. Consider conversation history to avoid repeat searches\n3. Identify the user's true intent (not just keywords)\n4. Output ONLY valid JSON\n\n## Strategy Rules:\n- If user asks about \"it\" or \"that\", check memory for context\n- Prefer specific pages (/products/chatbot) over general (/products)\n- Include fallbacks for when pages might not exist\n- Consider user journey: awareness → interest → comparison → decision\n\n## Required JSON Output:\n```json\n{\n  \"search_path\": \"/best/page/to/scrape\",\n  \"intent\": \"one_word_intent\",\n  \"action\": \"scrape_full_page\",\n  \"expected_content\": \"What you expect to find\",\n  \"vector_findings\": \"Key facts from vector search\",\n  \"fallback_paths\": [\"/backup1\", \"/backup2\"],\n  \"conversation_context\": \"Previous: [topic]. Now: [topic]. Journey stage: [stage]\"\n}\n```\n\n## Intent Examples:\n- products, pricing, comparison, features, contact, about\n- specific_product, testimonials, integrations, documentation\n\n## Smart Context Examples:\nUser: \"Tell me more about that\"\nContext: \"Previous: chatbot pricing. Now: wants details. Journey stage: evaluation\"\n\nUser: \"How does it compare?\"\nContext: \"Previous: setup agent. Now: comparison. Journey stage: decision\"\n\nRemember: Output ONLY the JSON. Use vector search and memory to make intelligent choices."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        160
+      ],
+      "id": "7f45d93a-25c1-41fb-b069-4fda63817e90",
+      "name": "Agent 1: Search Strategy",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Agent 1 output and prepare search URL\ntry {\n  let outputText = $json.output || '';\n  \n  // Extract JSON from the output text\n  // Look for JSON wrapped in ```json blocks or standalone\n  const jsonMatch = outputText.match(/```json\\s*([\\s\\S]*?)```/) || \n                    outputText.match(/\\{[\\s\\S]*\\}/);\n  \n  if (jsonMatch) {\n    const jsonString = jsonMatch[1] || jsonMatch[0];\n    const agentOutput = JSON.parse(jsonString);\n    const domain = $('Process Domain').first().json.domain;\n    \n    return {\n      json: {\n        ...$('Process Domain').first().json,\n        search_url: `https://${domain}${agentOutput.search_path || '/'}`,\n        search_plan: agentOutput,\n        // Pass the entire enhanced structure to Agent 2\n        site_structure: agentOutput.site_structure || {},\n        suggested_links: agentOutput.suggested_links || {},\n        conversation_context: agentOutput.conversation_context || ''\n      }\n    };\n  } else {\n    throw new Error('No JSON found in output');\n  }\n} catch (error) {\n  // Fallback if JSON parsing fails\n  console.error('Failed to parse Agent 1 output:', error);\n  const domain = $('Process Domain').first().json.domain;\n  \n  return {\n    json: {\n      ...$('Process Domain').first().json,\n      search_url: `https://${domain}/`,\n      search_plan: {\n        search_path: '/',\n        intent: 'general',\n        expected_content: 'General information'\n      },\n      site_structure: {},\n      suggested_links: {},\n      conversation_context: 'Fallback - parsing failed'\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        160
+      ],
+      "id": "f5b8946d-fa11-4606-9fbc-9a164c9b2002",
+      "name": "Prepare Search"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.search_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        160
+      ],
+      "id": "2de1504f-9f7e-4e16-b2c3-dfe7e86dcafb",
+      "name": "Website Search",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced Process Results - Passes Agent 1's context to Agent 2\nconst htmlContent = $('Website Search').first().json.data || '';\nconst searchPlan = $('Prepare Search').first().json.search_plan;\n\n// Strip HTML and get plain text\nlet plainText = htmlContent\n  .replace(/<script[^>]*>.*?<\\/script>/gs, '')\n  .replace(/<style[^>]*>.*?<\\/style>/gs, '')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\n// Pass EVERYTHING to Agent 2, including Agent 1's insights\nreturn {\n  json: {\n    ...$('Prepare Search').first().json,\n    page_content: plainText,\n    page_url: $json.search_url,\n    \n    // All of Agent 1's intelligence\n    search_results: {\n      page_searched: searchPlan.search_path,\n      full_text: plainText,\n      intent: searchPlan.intent,\n      vector_findings: searchPlan.vector_findings,  // What Agent 1 found in vectors\n      conversation_context: searchPlan.conversation_context,  // Journey tracking\n      expected_content: searchPlan.expected_content,\n      fallback_paths: searchPlan.fallback_paths\n    },\n    \n    // Make it easy for Agent 2\n    agent1_insights: {\n      intent: searchPlan.intent,\n      vector_knowledge: searchPlan.vector_findings,\n      user_journey: searchPlan.conversation_context,\n      what_user_really_wants: searchPlan.expected_content\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        160
+      ],
+      "id": "94396432-9ddf-4ba7-8398-7e57d120e2be",
+      "name": "Process Results"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.session_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        384
+      ],
+      "id": "6396697c-8181-408b-8e11-646e6ca9d6d3",
+      "name": "Conversation Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Current conversation:\n{{ $json.chat_history }}\n\nCustomer's current question: {{ $json.customer_message }}\n\nWebsite content for context:\n{{ $json.page_content }}\n\nBased on the conversation history and website content, provide a helpful response. Remember to keep it to 2-3 short sentences maximum.",
+        "options": {
+          "systemMessage": "=# Agent 2: Concise Company Representative\n\nYou're a company employee responding to website visitors. Keep responses SHORT and include hyperlinks.\n\n## Critical Rules:\n- Maximum 2 sentences (40 words total)\n- Always end with ONE specific question\n- Include hyperlinks in markdown format: [text](url)\n- The user is already on your website - don't say \"visit our website\"\n\n## Response Format:\n[Direct answer with specific detail]. [One relevant benefit or next step with hyperlink]. [Specific question]?\n\n## Example Responses by Industry:\n\n### E-commerce/Retail:\n\"We carry over 5,000 products across 12 categories. Browse our [new arrivals](/new) or check today's [special offers](/deals). What type of product are you looking for?\"\n\n### SaaS/Software:\n\"Our platform integrates with 50+ tools including Slack and Salesforce. See our [pricing plans](/pricing) starting at $29/month. Which features are most important for your team?\"\n\n### Professional Services:\n\"We provide tax planning, bookkeeping, and CFO services. View our [service packages](/services) or [client testimonials](/testimonials). What's your biggest financial challenge right now?\"\n\n### Healthcare:\n\"We offer same-day appointments for urgent care and specialists. Book through our [online scheduler](/appointments) or call 555-0100. What type of care do you need?\"\n\n### Education/Courses:\n\"Our certification program takes 8 weeks with flexible scheduling. Download the [course syllabus](/syllabus) or see [upcoming cohorts](/schedule). What's your learning goal?\"\n\n## Hyperlink Rules:\n- ALWAYS use markdown format: [text](url) for ALL page references\n- Link any mention of pages, products, services, or tools\n- Common patterns:\n  - \"our [pricing](/pricing)\"\n  - \"the [FAQ page](/faq)\"\n  - \"our [team](/about/team)\"\n  - \"[contact us](/contact)\"\n- Maximum 1-2 links per response\n\n## Universal Examples:\n\"Yes, we handle that through our [standard process](/how-it-works). Most clients see results within 2-4 weeks. What's your timeline?\"\n\n\"You can compare options on our [features page](/features). We also offer a free consultation. Which aspect matters most to you?\"\n\n\"Check our [FAQ](/faq) for quick answers or [contact support](/support). What specific information do you need?\"\n\n## Banned Phrases:\n- Generic marketing speak (\"revolutionary\", \"cutting-edge\", \"best-in-class\")\n- \"Synergy\", \"leverage\", \"paradigm shift\"\n- Vague benefits without specifics\n- Any form of \"work smarter not harder\"\n\nJust answer directly with facts, links, and a guiding question."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        160
+      ],
+      "id": "b131aecb-b59a-4327-9cfa-9b4eb24fe0e5",
+      "name": "Agent 2: Response Creator",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format final response\nconst aiResponse = $json.output?.toString().trim() || \n                  'I apologize, but I encountered an error processing your request.';\n\nconst sessionId = $json.session_id;\nconst customerMessage = $json.customer_message;\nconst intent = $json.search_plan?.intent || 'unknown';\n\nreturn {\n  json: {\n    session_id: sessionId,\n    message: aiResponse,  // This is what the widget expects\n    customer_message: customerMessage,\n    chatbot_response: aiResponse,\n    timestamp: new Date().toISOString(),\n    intent_detected: intent,\n    page_searched: $json.search_results?.page_searched || 'none'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        160
+      ],
+      "id": "ebdabab0-ebd1-419a-809b-9b1263d5d839",
+      "name": "Format Response"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chatbot_logs (\n  session_id,\n  customer_message,\n  chatbot_response,\n  timestamp,\n  intent_detected,\n  domain,\n  license_key,\n  user_id,\n  conversation_id\n) VALUES (\n  '{{ $json.session_id }}',\n  '{{ $json.customer_message.replace(/'/g, \"''\") }}',\n  '{{ $json.chatbot_response.replace(/'/g, \"''\") }}',\n  '{{ $json.timestamp }}',\n  '{{ $json.intent_detected }}',\n  '{{ $json.domain }}',\n  '{{ $json.license_key }}', \n  '{{ $json.user_id || 'anonymous' }}',\n  '{{ $json.conversation_id || $json.session_id }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -48,
+        224
+      ],
+      "id": "a010b1f3-6cff-4dbf-8e03-3830032a9c36",
+      "name": "Log Conversation",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        32
+      ],
+      "id": "d04e6c37-f6f4-44e9-a435-b2741f47798d",
+      "name": "Send Response"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatbot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2592,
+        160
+      ],
+      "id": "47ba7d6f-1373-4caa-8d57-9a06157e8e76",
+      "name": "Receive Message",
+      "webhookId": "642001e7-8c8d-4f2b-b344-abd1e0e6ee04"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "site_keys",
+          "mode": "list",
+          "cachedResultName": "site_keys"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "site_key",
+              "value": "={{ $json.site_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -2144,
+        160
+      ],
+      "id": "5bea1757-e2ac-46db-9b38-7cea76c7e988",
+      "name": "Site Key Lookup",
+      "credentials": {
+        "postgres": {
+          "id": "w6I6ey08GKcZBkAS",
+          "name": "Intelagent Studios"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process Domain\nconst lookupResult = $('Site Key Lookup').first().json;\nconst inputData = $('Input Validation').first().json;\n\nreturn [{\n  json: {\n    ...inputData,  // Keep all input data\n    domain: lookupResult.domain || 'unknown',\n    license_key: lookupResult.license_key || 'unknown',\n    site_key: lookupResult.site_key,\n    status: lookupResult.status,\n    plan: lookupResult.plan,\n    // Make sure these are preserved:\n    session_id: inputData.session_id,\n    customer_message: inputData.customer_message,\n    timestamp: inputData.timestamp,\n    user_id: inputData.user_id || 'anonymous'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        160
+      ],
+      "id": "adf3a973-d0ff-4d5c-b468-99aee50eb853",
+      "name": "Process Domain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1344,
+        592
+      ],
+      "id": "eada4214-f2e0-4db4-988b-006b2088381e",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "acCxU5PCx6BzVw3U",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the company's website content. Use the customer's question as the search query. Returns relevant website content.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "chatbot",
+          "mode": "list",
+          "cachedResultName": "chatbot"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $json.site_key }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -1440,
+        384
+      ],
+      "id": "3752f8a1-7009-470f-94a9-7e6338e77723",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "VaudxhMDi6VpnVRE",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        384
+      ],
+      "id": "00575857-196c-4f5f-8295-46f6c42cfa2d",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "sqh1hXSnx86i18EW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Input Validation').item.json.session_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1568,
+        384
+      ],
+      "id": "36ef623a-e33a-44e0-9d14-80baa080e8b0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        384
+      ],
+      "id": "e4c3fb07-3cde-4f70-a640-1ea0d8c09c19",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "sqh1hXSnx86i18EW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Reference incoming data against Pinecone vector stores for better answers.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "chatbot",
+          "mode": "list",
+          "cachedResultName": "chatbot"
+        },
+        "options": {
+          "pineconeNamespace": "={{ $json.site_key }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        384
+      ],
+      "id": "bf91dde2-4321-4093-991d-32cad23387cf",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "VaudxhMDi6VpnVRE",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        592
+      ],
+      "id": "1d83fe08-39c0-4d4e-97f5-cac53e403754",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "acCxU5PCx6BzVw3U",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Input Validation": {
+      "main": [
+        [
+          {
+            "node": "Site Key Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1: Search Strategy": {
+      "main": [
+        [
+          {
+            "node": "Prepare Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Search": {
+      "main": [
+        [
+          {
+            "node": "Website Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Search": {
+      "main": [
+        [
+          {
+            "node": "Process Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results": {
+      "main": [
+        [
+          {
+            "node": "Agent 2: Response Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent 2: Response Creator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2: Response Creator": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Log Conversation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Message": {
+      "main": [
+        [
+          {
+            "node": "Input Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Site Key Lookup": {
+      "main": [
+        [
+          {
+            "node": "Process Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Domain": {
+      "main": [
+        [
+          {
+            "node": "Agent 1: Search Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent 1: Search Strategy",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 2: Response Creator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent 1: Search Strategy",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 1: Search Strategy",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent 2: Response Creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Conversation": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "202a8656-bbf9-46ff-8d55-3f70f494deb0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3927507ad5002dee943bc729aec9a3f201e34ca5accca465effd737947d6ca6b"
+  },
+  "id": "1GShDEIEl8BUybUD",
+  "tags": []
+}
