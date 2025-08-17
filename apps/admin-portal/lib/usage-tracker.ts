@@ -28,7 +28,7 @@ interface UsageUpdate {
 
 export class UsageTracker {
   private static instance: UsageTracker
-  private flushInterval: NodeJS.Timer | null = null
+  private flushInterval: NodeJS.Timeout | null = null
   private buffer: Map<string, Map<UsageMetric, number>> = new Map()
 
   private constructor() {
