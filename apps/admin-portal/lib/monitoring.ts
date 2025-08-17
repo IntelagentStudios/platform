@@ -158,24 +158,8 @@ export const auditLog = {
 
     logger.info({ audit: entry }, 'Audit log');
     
-    // Store in database for permanent record
-    if (global.prisma) {
-      try {
-        await (global as any).prisma.auditLog.create({
-          data: {
-            userId: event.userId,
-            action: event.action,
-            resource: event.resource,
-            resourceId: event.resourceId,
-            metadata: event.metadata || {},
-            ip: event.ip,
-            userAgent: event.userAgent,
-          },
-        });
-      } catch (error) {
-        logger.error({ error }, 'Failed to write audit log to database');
-      }
-    }
+    // Database storage disabled - auditLog model not yet implemented
+    // Will store in database when models are added
   },
 };
 
