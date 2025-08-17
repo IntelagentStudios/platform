@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const license = await prisma.licenses.findUnique({
-      where: { licenseKey: params.licenseKey },
+      where: { license_key: params.licenseKey },
       select: {
         licenseKey: true,
         email: true,

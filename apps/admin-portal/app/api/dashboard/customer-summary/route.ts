@@ -23,12 +23,12 @@ export async function GET() {
     
     if (auth.licenseKey) {
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
+        where: { license_key: auth.licenseKey },
         select: { site_key: true }
       })
       
       if (userLicense?.site_key) {
-        whereClause.siteKey = userLicense.site_key
+        whereClause.site_key = userLicense.site_key
       } else {
         // No siteKey found, return empty data
         return NextResponse.json({
@@ -45,7 +45,7 @@ export async function GET() {
       by: ['sessionId'],
       where: {
         ...whereClause,
-        sessionId: { not: null }
+        session_id: { not: null }
       },
       _count: true
     })

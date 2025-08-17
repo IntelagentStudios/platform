@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     let whereClause: any = {
-      sessionId: { not: null }
+      session_id: { not: null }
     }
     
     // Filter by site_key for non-master users
     if (!auth.isMaster) {
       // We already checked userSiteKey exists above
-      whereClause.siteKey = userSiteKey
+      whereClause.site_key = userSiteKey
     }
 
     // Filter by domain if specified

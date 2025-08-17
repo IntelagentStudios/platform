@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     let license = null
     if (data.site_key) {
       license = await prisma.licenses.findUnique({
-        where: { siteKey: data.site_key },
+        where: { site_key: data.site_key },
         select: {
           licenseKey: true,
           siteKey: true,
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       if (!recentActivity || recentActivity.id === log.id) {
         // This is either the first message or a new session
         await prisma.licenses.update({
-          where: { siteKey: data.site_key },
+          where: { site_key: data.site_key },
           data: {
             usedAt: new Date()
           }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       by: ['sessionId'],
       where: {
         sessionId: data.session_id,
-        ...(data.site_key ? { siteKey: data.site_key } : {})
+        ...(data.site_key ? { site_key: data.site_key } : {})
       },
       _count: { id: true },
       _min: { timestamp: true },

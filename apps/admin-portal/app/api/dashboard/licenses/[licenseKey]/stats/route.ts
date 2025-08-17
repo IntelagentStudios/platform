@@ -26,7 +26,7 @@ export async function GET(
 
     // Get the license's siteKey
     const license = await prisma.licenses.findUnique({
-      where: { licenseKey: params.licenseKey },
+      where: { license_key: params.licenseKey },
       select: { site_key: true }
     })
 
@@ -56,7 +56,7 @@ export async function GET(
         by: ['sessionId'],
         where: {
           siteKey: license.site_key,
-          sessionId: { not: null }
+          session_id: { not: null }
         },
         _count: {
           id: true
@@ -71,7 +71,7 @@ export async function GET(
 
       // Recent activity
       prisma.chatbot_logs.findFirst({
-        where: { siteKey: license.site_key },
+        where: { site_key: license.site_key },
         orderBy: { timestamp: 'desc' },
         select: { timestamp: true }
       })

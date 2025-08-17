@@ -15,7 +15,7 @@ export async function GET() {
 
     // Get all licenses with products
     const licenses = await prisma.licenses.findMany({
-      where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
+      where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
         licenseKey: true,
         products: true,
@@ -60,7 +60,7 @@ export async function GET() {
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null }
+            session_id: { not: null }
           },
           _count: true
         })
@@ -71,7 +71,7 @@ export async function GET() {
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: { gte: thirtyDaysAgo }
           },
           _count: true
@@ -81,7 +81,7 @@ export async function GET() {
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: {
               gte: sixtyDaysAgo,
               lt: thirtyDaysAgo

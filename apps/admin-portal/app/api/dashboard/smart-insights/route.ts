@@ -44,7 +44,7 @@ export async function GET() {
 
 async function generateInitialInsights(licenseKey: string) {
   const license = await prisma.licenses.findUnique({
-    where: { licenseKey },
+    where: { license_key: licenseKey },
     select: { site_key: true, products: true, plan: true }
   })
 
@@ -57,7 +57,7 @@ async function generateInitialInsights(licenseKey: string) {
   // Check conversation volume
   const conversations = await prisma.chatbot_logs.groupBy({
     by: ['sessionId'],
-    where: { siteKey: license.site_key },
+    where: { site_key: license.site_key },
     _count: true
   })
 

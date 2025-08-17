@@ -12,7 +12,7 @@ export async function GET() {
 
     // Get the user's license details
     const userLicense = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
       select: {
         licenseKey: true,
         siteKey: true,
@@ -28,7 +28,7 @@ export async function GET() {
     const unfiltered = await prisma.chatbot_logs.groupBy({
       by: ['sessionId', 'siteKey', 'domain'],
       where: {
-        sessionId: { not: null }
+        session_id: { not: null }
       },
       _count: true,
       take: 10,
@@ -45,7 +45,7 @@ export async function GET() {
         by: ['sessionId', 'siteKey', 'domain'],
         where: {
           siteKey: userLicense.siteKey,
-          sessionId: { not: null }
+          session_id: { not: null }
         },
         _count: true,
         take: 10,
@@ -60,7 +60,7 @@ export async function GET() {
     const nullSiteKeyRecords = await prisma.chatbot_logs.count({
       where: {
         siteKey: null,
-        sessionId: { not: null }
+        session_id: { not: null }
       }
     })
 

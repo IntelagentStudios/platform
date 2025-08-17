@@ -21,12 +21,12 @@ export async function GET(request: Request) {
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
+        where: { license_key: auth.licenseKey },
         select: { site_key: true }
       })
       
       if (userLicense?.site_key) {
-        whereClause.siteKey = userLicense.site_key
+        whereClause.site_key = userLicense.site_key
         userSiteKey = userLicense.site_key
       } else {
         // No siteKey found, return zeros
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
           by: ['sessionId'],
           where: {
             ...whereClause,
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: {
               gte: sixtyDaysAgo,
               lt: thirtyDaysAgo
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
           by: ['sessionId'],
           where: {
             ...whereClause,
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: {
               gte: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
               lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -140,7 +140,7 @@ export async function GET(request: Request) {
         by: ['sessionId'],
         where: {
           ...whereClause,
-          sessionId: { not: null }
+          session_id: { not: null }
         },
         _count: true,
       }).then(result => result.length),
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
         by: ['sessionId'],
         where: {
           ...whereClause,
-          sessionId: { not: null },
+          session_id: { not: null },
           timestamp: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
@@ -167,7 +167,7 @@ export async function GET(request: Request) {
       by: ['sessionId'],
       where: {
         ...whereClause,
-        sessionId: { not: null },
+        session_id: { not: null },
         timestamp: {
           gte: sixtyDaysAgo,
           lt: thirtyDaysAgo
@@ -189,7 +189,7 @@ export async function GET(request: Request) {
       by: ['sessionId'],
       where: {
         ...whereClause,
-        sessionId: { not: null },
+        session_id: { not: null },
         timestamp: {
           gte: todayStart
         }
@@ -253,7 +253,7 @@ export async function GET(request: Request) {
 
     // Calculate revenue based on actual subscriptions
     const subscriptions = await prisma.licenses.findMany({
-      where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
+      where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
         plan: true,
         subscriptionStatus: true

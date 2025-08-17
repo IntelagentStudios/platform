@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Get the user's license and siteKey
     const userLicense = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
       select: {
         licenseKey: true,
         siteKey: true,
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Build the where clause as the main endpoint does
     let whereClause: any = {
-      sessionId: { not: null }
+      session_id: { not: null }
     }
     
     // For non-master users
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
           sessions: []
         })
       }
-      whereClause.siteKey = userLicense.siteKey
+      whereClause.site_key = userLicense.siteKey
     }
 
     // Run the actual query
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
     // Also check what happens without any filtering
     const unfilteredCount = await prisma.chatbot_logs.count({
-      where: { sessionId: { not: null } }
+      where: { session_id: { not: null } }
     })
 
     // Check distinct siteKeys in results

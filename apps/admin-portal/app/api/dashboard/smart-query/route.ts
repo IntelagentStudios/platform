@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     // Get user's license for context
     const userLicense = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
       select: {
         siteKey: true,
         products: true,
@@ -159,7 +159,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
     const conversations = await prisma.chatbot_logs.groupBy({
       by: ['sessionId'],
-      where: siteKey ? { siteKey } : {},
+      where: siteKey ? { site_key: siteKey } : {},
       _count: true,
       take: 100,
       orderBy: {
