@@ -2,7 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function InvoicesList() {
+interface InvoicesListProps {
+  data?: any
+}
+
+export function InvoicesList({ data }: InvoicesListProps) {
   return (
     <Card>
       <CardHeader>
@@ -10,7 +14,7 @@ export function InvoicesList() {
       </CardHeader>
       <CardContent>
         <div className="text-center py-8 text-muted-foreground">
-          No invoices to display
+          {data?.length > 0 ? `${data.length} invoices` : 'No invoices to display'}
         </div>
       </CardContent>
     </Card>

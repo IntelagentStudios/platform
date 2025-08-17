@@ -2,7 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function RevenueChart() {
+interface RevenueChartProps {
+  data?: any
+}
+
+export function RevenueChart({ data }: RevenueChartProps) {
   return (
     <Card>
       <CardHeader>

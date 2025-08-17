@@ -2,7 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function CostBreakdown() {
+interface CostBreakdownProps {
+  data?: any
+}
+
+export function CostBreakdown({ data }: CostBreakdownProps) {
   return (
     <Card>
       <CardHeader>

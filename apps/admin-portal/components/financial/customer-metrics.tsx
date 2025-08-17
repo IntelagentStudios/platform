@@ -2,7 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function CustomerMetrics() {
+interface CustomerMetricsProps {
+  data?: any
+}
+
+export function CustomerMetrics({ data }: CustomerMetricsProps) {
   return (
     <Card>
       <CardHeader>
@@ -12,15 +16,15 @@ export function CustomerMetrics() {
         <div className="space-y-4">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Total Customers</span>
-            <span className="font-medium">0</span>
+            <span className="font-medium">{data?.total || 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Active Customers</span>
-            <span className="font-medium">0</span>
+            <span className="font-medium">{data?.active || 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Churn Rate</span>
-            <span className="font-medium">0%</span>
+            <span className="font-medium">{data?.churnRate || 0}%</span>
           </div>
         </div>
       </CardContent>
