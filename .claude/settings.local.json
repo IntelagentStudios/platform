@@ -18,7 +18,11 @@
       "Bash(npx prisma generate:*)",
       "Bash(taskkill:*)",
       "Bash(powershell:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(grep:*)",
+      "Bash(npx prisma db pull:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "ask": [],
