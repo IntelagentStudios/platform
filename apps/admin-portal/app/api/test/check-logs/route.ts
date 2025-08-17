@@ -17,7 +17,7 @@ export async function GET() {
         chatbotResponse: true,
         timestamp: true,
         userId: true,
-        conversationId: true,
+        conversation_id: true,
         role: true,
         content: true,
         createdAt: true,

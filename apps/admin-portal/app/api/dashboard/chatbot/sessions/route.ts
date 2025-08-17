@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
           role: true,
           content: true,
           timestamp: true,
-          conversationId: true,
+          conversation_id: true,
           site_key: true,
           licenses: {
             select: {
@@ -165,19 +165,19 @@ export async function GET(request: NextRequest) {
             domain: log.domain || log.licenses?.domain || 'Unknown',
             customerName: log.licenses?.customer_name,
             licenseKey: auth.isMaster ? log.licenses?.license_key : undefined,
-            conversationId: log.conversationId,
+            conversationId: log.conversation_id,
             messages: [],
             startTime: log.timestamp,
             lastActivity: log.timestamp,
-            userId: log.userId
+            userId: log.user_id
           })
         }
         
         const session = sessionMap.get(log.session_id)
         session.messages.push({
           id: log.id,
-          role: log.role || (log.customerMessage ? 'user' : 'assistant'),
-          content: log.content || log.customerMessage || log.chatbotResponse,
+          role: log.role || (log.customer_message ? 'user' : 'assistant'),
+          content: log.content || log.customer_message || log.chatbot_response,
           timestamp: log.timestamp
         })
         
@@ -212,7 +212,7 @@ export async function GET(request: NextRequest) {
       })
 
       const totalSessions = await prisma.chatbot_logs.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: whereClause,
         _count: true
       })
@@ -290,7 +290,7 @@ export async function GET(request: NextRequest) {
         sessions: formattedSessions,
         domains: activeDomains.map(d => ({
           domain: d.domain || 'Unknown',
-          sessionCount: d._count.sessionId,
+          sessionCount: d._count.session_id,
           messageCount: d._count.id
         }))
       })
