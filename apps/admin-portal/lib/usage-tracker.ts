@@ -96,7 +96,9 @@ export class UsageTracker {
       [UsageMetric.BANDWIDTH_BYTES]: 10737418240, // 10GB
       [UsageMetric.ACTIVE_USERS]: 100,
       [UsageMetric.CHATBOT_MESSAGES]: 5000,
-      [UsageMetric.ENRICHMENT_REQUESTS]: 1000
+      [UsageMetric.ENRICHMENT_REQUESTS]: 1000,
+      [UsageMetric.COMPUTE]: 3600, // 1 hour in seconds
+      [UsageMetric.BANDWIDTH]: 10737418240 // 10GB
     }
 
     const current = await this.getCurrentUsage(organizationId)
