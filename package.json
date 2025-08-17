@@ -21,8 +21,7 @@
     "db:push": "prisma db push",
     "setup": "npm install && npm run db:generate",
     "start": "node apps/admin-portal/server.js",
-    "start:worker": "node services/worker/index.js",
-    "postinstall": "turbo run db:generate"
+    "start:worker": "node services/worker/index.js"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
