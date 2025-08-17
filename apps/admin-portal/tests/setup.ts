@@ -1,5 +1,4 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
 
 // Mock environment variables using Object.defineProperty to avoid read-only errors
 Object.defineProperty(process.env, 'NODE_ENV', {
@@ -30,9 +29,12 @@ Object.defineProperty(process.env, 'DATABASE_URL', {
   enumerable: true
 });
 
-// Polyfills for Node.js environment
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as any;
+// Polyfills for Node.js environment - only add if not already present
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  (global as any).TextEncoder = TextEncoder;
+  (global as any).TextDecoder = TextDecoder;
+}
 
 // Mock fetch for tests
 global.fetch = jest.fn();
