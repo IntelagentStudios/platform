@@ -39,20 +39,20 @@ export async function POST(request: NextRequest) {
         ? prisma.licenses.findMany({ take: 10 })
         : prisma.licenses.findMany({ where: { license_key: auth.licenseKey } }),
       prisma.chatbot_logs.groupBy({
-        by: ['sessionId', 'domain'],
+        by: ['session_id', 'domain'],
         where: whereClause,
         _count: true,
         take: 10,
         orderBy: {
           _count: {
-            sessionId: 'desc',
+            session_id: 'desc',
           },
         },
       }),
       Promise.resolve({
         totalLicenses: auth.isMaster ? await prisma.licenses.count() : 1,
         totalConversations: await prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: whereClause,
           _count: true,
         }).then(r => r.length),

@@ -158,13 +158,13 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
   // Fetch data based on query content
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
     const conversations = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: siteKey ? { site_key: siteKey } : {},
       _count: true,
       take: 100,
       orderBy: {
         _count: {
-          sessionId: 'desc'
+          session_id: 'desc'
         }
       }
     })

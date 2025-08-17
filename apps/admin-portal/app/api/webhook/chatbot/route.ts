@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate session statistics for response
     const sessionStats = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         sessionId: data.session_id,
         ...(data.site_key ? { site_key: data.site_key } : {})

@@ -57,7 +57,7 @@ export async function GET() {
       if (chatbotData && chatbotData.siteKeys.length > 0) {
         // Get conversation counts
         const conversations = await prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
             session_id: { not: null }
@@ -68,7 +68,7 @@ export async function GET() {
 
         // Calculate growth
         const recentSessions = await prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
             session_id: { not: null },
@@ -78,7 +78,7 @@ export async function GET() {
         })
 
         const previousSessions = await prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
             session_id: { not: null },

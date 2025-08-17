@@ -42,7 +42,7 @@ export async function GET() {
 
     // Get total conversations (unique sessions)
     const conversations = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         ...whereClause,
         session_id: { not: null }

@@ -56,7 +56,7 @@ async function generateInitialInsights(licenseKey: string) {
   
   // Check conversation volume
   const conversations = await prisma.chatbot_logs.groupBy({
-    by: ['sessionId'],
+    by: ['session_id'],
     where: { site_key: license.site_key },
     _count: true
   })

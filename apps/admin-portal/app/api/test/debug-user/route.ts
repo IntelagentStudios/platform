@@ -26,7 +26,7 @@ export async function GET() {
 
     // Check what data would be returned without filtering
     const unfiltered = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId', 'siteKey', 'domain'],
+      by: ['session_id', 'site_key', 'domain'],
       where: {
         session_id: { not: null }
       },
@@ -34,7 +34,7 @@ export async function GET() {
       take: 10,
       orderBy: {
         _count: {
-          sessionId: 'desc'
+          session_id: 'desc'
         }
       }
     })
@@ -42,7 +42,7 @@ export async function GET() {
     // Check what data would be returned WITH siteKey filtering
     const filteredBySiteKey = userLicense?.siteKey ? 
       await prisma.chatbot_logs.groupBy({
-        by: ['sessionId', 'siteKey', 'domain'],
+        by: ['session_id', 'site_key', 'domain'],
         where: {
           siteKey: userLicense.siteKey,
           session_id: { not: null }
@@ -51,7 +51,7 @@ export async function GET() {
         take: 10,
         orderBy: {
           _count: {
-            sessionId: 'desc'
+            session_id: 'desc'
           }
         }
       }) : []
@@ -66,11 +66,11 @@ export async function GET() {
 
     // Get distinct siteKeys in the database
     const distinctSiteKeys = await prisma.chatbot_logs.groupBy({
-      by: ['siteKey'],
+      by: ['site_key'],
       _count: true,
       orderBy: {
         _count: {
-          siteKey: 'desc'
+          site_key: 'desc'
         }
       }
     })

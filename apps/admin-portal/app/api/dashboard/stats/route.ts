@@ -59,7 +59,7 @@ export async function GET(request: Request) {
           : Promise.resolve(0),
         
         prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
             session_id: { not: null },
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
         }).then(result => result.length),
 
         prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
             session_id: { not: null },
@@ -137,7 +137,7 @@ export async function GET(request: Request) {
       
       // Total conversations (unique sessions)
       prisma.chatbot_logs.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           ...whereClause,
           session_id: { not: null }
@@ -147,7 +147,7 @@ export async function GET(request: Request) {
       
       // Recent conversations (last 30 days)
       prisma.chatbot_logs.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           ...whereClause,
           session_id: { not: null },
@@ -164,7 +164,7 @@ export async function GET(request: Request) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
     const previousPeriodConversations = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         ...whereClause,
         session_id: { not: null },
@@ -186,7 +186,7 @@ export async function GET(request: Request) {
     todayStart.setHours(0, 0, 0, 0)
     
     const sessionsToday = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         ...whereClause,
         session_id: { not: null },

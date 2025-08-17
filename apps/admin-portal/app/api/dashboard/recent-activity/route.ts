@@ -29,7 +29,7 @@ export async function GET() {
 
     // Get recent chatbot activities
     const recentSessions = await prisma.chatbot_logs.groupBy({
-      by: ['sessionId', 'siteKey'],
+      by: ['session_id', 'site_key'],
       _max: {
         timestamp: true
       },

@@ -22,11 +22,11 @@ export async function GET() {
 
     // Get all unique siteKeys from chatbot logs
     const chatbotSiteKeys = await prisma.chatbot_logs.groupBy({
-      by: ['siteKey'],
+      by: ['site_key'],
       _count: true,
       orderBy: {
         _count: {
-          siteKey: 'desc'
+          site_key: 'desc'
         }
       }
     })
