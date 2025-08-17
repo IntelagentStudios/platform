@@ -52,10 +52,10 @@ export async function GET() {
 
     // Get unique users
     const uniqueUsers = await prisma.chatbot_logs.groupBy({
-      by: ['userId'],
+      by: ['user_id'],
       where: {
         ...whereClause,
-        userId: { not: null }
+        user_id: { not: null }
       },
       _count: true
     })
@@ -72,7 +72,7 @@ export async function GET() {
         where: {
           ...whereClause,
           role: 'assistant',
-          chatbotResponse: { not: null }
+          chatbot_response: { not: null }
         }
       })
     ])
