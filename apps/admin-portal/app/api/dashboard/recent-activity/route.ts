@@ -49,7 +49,7 @@ export async function GET() {
       if (license.createdAt) {
         activities.push({
           type: 'license_created',
-          description: `Licence created for ${license.customer_name || license.domain || 'Unknown'}`,`
+          description: `Licence created for ${license.customer_name || license.domain || 'Unknown'}`,
           timestamp: license.createdAt,
           status: 'info'
         })
