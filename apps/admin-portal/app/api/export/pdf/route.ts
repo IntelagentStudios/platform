@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
       // Find the user's siteKey from their licenseKey
       const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        select: { site_key: true }
       })
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
+      if (userLicense?.site_key) {
+        whereClause.siteKey = userLicense.site_key
       }
     }
 

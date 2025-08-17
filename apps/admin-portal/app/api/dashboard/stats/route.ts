@@ -22,12 +22,12 @@ export async function GET(request: Request) {
       // Get the user's siteKey from their licenseKey
       const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        select: { site_key: true }
       })
       
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
-        userSiteKey = userLicense.siteKey
+      if (userLicense?.site_key) {
+        whereClause.siteKey = userLicense.site_key
+        userSiteKey = userLicense.site_key
       } else {
         // No siteKey found, return zeros
         return NextResponse.json({
