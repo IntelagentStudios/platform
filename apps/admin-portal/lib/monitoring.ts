@@ -119,7 +119,8 @@ export class HealthChecker {
   static async checkAll() {
     const results: Record<string, { status: string; message?: string }> = {};
     
-    for (const [name, check] of this.checks) {
+    // Use Array.from for better compatibility
+    for (const [name, check] of Array.from(this.checks)) {
       try {
         const isHealthy = await check();
         results[name] = { status: isHealthy ? 'healthy' : 'unhealthy' };
