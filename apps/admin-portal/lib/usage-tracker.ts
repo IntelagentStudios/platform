@@ -3,13 +3,15 @@ import { Redis } from 'ioredis'
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
 
-enum UsageMetric {
+export enum UsageMetric {
   API_CALLS = 'API_CALLS',
   STORAGE_BYTES = 'STORAGE_BYTES',
   BANDWIDTH_BYTES = 'BANDWIDTH_BYTES',
   ACTIVE_USERS = 'ACTIVE_USERS',
   CHATBOT_MESSAGES = 'CHATBOT_MESSAGES',
-  ENRICHMENT_REQUESTS = 'ENRICHMENT_REQUESTS'
+  ENRICHMENT_REQUESTS = 'ENRICHMENT_REQUESTS',
+  COMPUTE = 'COMPUTE',
+  BANDWIDTH = 'BANDWIDTH'
 }
 
 enum UsageAlertType {
