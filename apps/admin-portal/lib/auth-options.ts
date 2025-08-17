@@ -28,10 +28,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         // For initial setup, create a default admin user if none exists
-        const userCount = await prisma.adminUser.count()
+        const userCount = await prisma.AdminUser.count()
         if (userCount === 0 && credentials.email === 'admin@intelagentstudios.com') {
           const hashedPassword = await bcrypt.hash(credentials.password, 10)
-          const user = await prisma.adminUser.create({
+          const user = await prisma.AdminUser.create({
             data: {
               email: 'admin@intelagentstudios.com',
               name: 'Admin',
@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const user = await prisma.adminUser.findUnique({
+        const user = await prisma.AdminUser.findUnique({
           where: { email: credentials.email }
         })
 

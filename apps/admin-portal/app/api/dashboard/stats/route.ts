@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       
       const [prevLicenses, prevConversations, prevSessions] = await Promise.all([
         auth.isMaster 
-          ? prisma.license.count({
+          ? prisma.licenses.count({
               where: {
                 createdAt: {
                   gte: sixtyDaysAgo,
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
             })
           : Promise.resolve(0),
         
-        prisma.chatbotLog.groupBy({
+        prisma.chatbot_logs.groupBy({
           by: ['sessionId'],
           where: {
             ...whereClause,
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
           _count: true,
         }).then(result => result.length),
 
-        prisma.chatbotLog.groupBy({
+        prisma.chatbot_logs.groupBy({
           by: ['sessionId'],
           where: {
             ...whereClause,
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
       ])
 
       // Calculate previous revenue
-      const prevSubscriptions = await prisma.license.findMany({
+      const prevSubscriptions = await prisma.licenses.findMany({
         where: {
           ...(auth.isMaster ? {} : { licenseKey: auth.licenseKey }),
           createdAt: {
@@ -125,18 +125,18 @@ export async function GET(request: Request) {
     const [totalLicenses, activeLicenses, totalConversations, recentConversations] = await Promise.all([
       // Total licenses (only for master admin)
       auth.isMaster 
-        ? prisma.license.count()
+        ? prisma.licenses.count()
         : Promise.resolve(1),
       
       // Active licenses (with status = 'active')
       auth.isMaster
-        ? prisma.license.count({
+        ? prisma.licenses.count({
             where: { status: 'active' }
           })
         : Promise.resolve(1),
       
       // Total conversations (unique sessions)
-      prisma.chatbotLog.groupBy({
+      prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: {
           ...whereClause,
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
       }).then(result => result.length),
       
       // Recent conversations (last 30 days)
-      prisma.chatbotLog.groupBy({
+      prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: {
           ...whereClause,
@@ -163,7 +163,7 @@ export async function GET(request: Request) {
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-    const previousPeriodConversations = await prisma.chatbotLog.groupBy({
+    const previousPeriodConversations = await prisma.chatbot_logs.groupBy({
       by: ['sessionId'],
       where: {
         ...whereClause,
@@ -185,7 +185,7 @@ export async function GET(request: Request) {
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
     
-    const sessionsToday = await prisma.chatbotLog.groupBy({
+    const sessionsToday = await prisma.chatbot_logs.groupBy({
       by: ['sessionId'],
       where: {
         ...whereClause,
@@ -198,7 +198,7 @@ export async function GET(request: Request) {
     }).then(result => result.length)
 
     // Calculate average response time from recent conversations
-    const recentLogs = await prisma.chatbotLog.findMany({
+    const recentLogs = await prisma.chatbot_logs.findMany({
       where: {
         ...whereClause,
         timestamp: {
@@ -252,7 +252,7 @@ export async function GET(request: Request) {
       : null
 
     // Calculate revenue based on actual subscriptions
-    const subscriptions = await prisma.license.findMany({
+    const subscriptions = await prisma.licenses.findMany({
       where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
       select: {
         plan: true,

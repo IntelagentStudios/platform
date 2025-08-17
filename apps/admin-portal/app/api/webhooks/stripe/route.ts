@@ -12,7 +12,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
-    await prisma.license.updateMany({
+    await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         subscriptionId: subscription.id,
@@ -29,7 +29,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
-    await prisma.license.updateMany({
+    await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         subscriptionStatus: subscription.status,
@@ -46,7 +46,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
-    await prisma.license.updateMany({
+    await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         subscriptionStatus: 'canceled',
@@ -61,7 +61,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
-    await prisma.license.updateMany({
+    await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         lastPaymentDate: new Date(),
@@ -95,7 +95,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
-    await prisma.license.updateMany({
+    await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         status: 'payment_failed',

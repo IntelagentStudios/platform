@@ -10,7 +10,7 @@ async function testConnection() {
     console.log('✅ Database connection successful:', result)
     
     console.log('\nFetching licenses...')
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       take: 5,
     })
     console.log(`✅ Found ${licenses.length} licenses`)
@@ -25,7 +25,7 @@ async function testConnection() {
     }
     
     console.log('\nFetching chatbot logs...')
-    const logs = await prisma.chatbotLog.groupBy({
+    const logs = await prisma.chatbot_logs.groupBy({
       by: ['sessionId'],
       _count: true,
       take: 5,

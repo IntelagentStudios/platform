@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 export async function GET() {
   try {
     // Get the 10 most recent chatbot logs with license info
-    const recentLogs = await prisma.chatbotLog.findMany({
+    const recentLogs = await prisma.chatbot_logs.findMany({
       orderBy: { timestamp: 'desc' },
       take: 10,
       select: {
@@ -72,7 +72,7 @@ export async function GET() {
     }))
 
     // Test JOIN functionality
-    const testJoin = await prisma.chatbotLog.findFirst({
+    const testJoin = await prisma.chatbot_logs.findFirst({
       where: {
         siteKey: { not: null }
       },

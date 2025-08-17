@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     // Get the user's license details
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         licenseKey: true,
@@ -25,7 +25,7 @@ export async function GET() {
     })
 
     // Check what data would be returned without filtering
-    const unfiltered = await prisma.chatbotLog.groupBy({
+    const unfiltered = await prisma.chatbot_logs.groupBy({
       by: ['sessionId', 'siteKey', 'domain'],
       where: {
         sessionId: { not: null }
@@ -41,7 +41,7 @@ export async function GET() {
 
     // Check what data would be returned WITH siteKey filtering
     const filteredBySiteKey = userLicense?.siteKey ? 
-      await prisma.chatbotLog.groupBy({
+      await prisma.chatbot_logs.groupBy({
         by: ['sessionId', 'siteKey', 'domain'],
         where: {
           siteKey: userLicense.siteKey,
@@ -57,7 +57,7 @@ export async function GET() {
       }) : []
 
     // Check for NULL siteKey records
-    const nullSiteKeyRecords = await prisma.chatbotLog.count({
+    const nullSiteKeyRecords = await prisma.chatbot_logs.count({
       where: {
         siteKey: null,
         sessionId: { not: null }
@@ -65,7 +65,7 @@ export async function GET() {
     })
 
     // Get distinct siteKeys in the database
-    const distinctSiteKeys = await prisma.chatbotLog.groupBy({
+    const distinctSiteKeys = await prisma.chatbot_logs.groupBy({
       by: ['siteKey'],
       _count: true,
       orderBy: {

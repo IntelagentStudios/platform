@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const { query, product, context } = await request.json()
 
     // Get user's license for context
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         siteKey: true,
@@ -157,7 +157,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
 
   // Fetch data based on query content
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
-    const conversations = await prisma.chatbotLog.groupBy({
+    const conversations = await prisma.chatbot_logs.groupBy({
       by: ['sessionId'],
       where: siteKey ? { siteKey } : {},
       _count: true,
@@ -174,7 +174,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
 
   if (queryLower.includes('metric') || queryLower.includes('performance')) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    const stats = await prisma.chatbotLog.aggregate({
+    const stats = await prisma.chatbot_logs.aggregate({
       where: {
         ...(siteKey ? { siteKey } : {}),
         timestamp: { gte: thirtyDaysAgo }
@@ -186,7 +186,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
 
   if (queryLower.includes('trend') || queryLower.includes('growth')) {
     // Fetch trend data
-    const trends = await prisma.chatbotLog.groupBy({
+    const trends = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
         ...(siteKey ? { siteKey } : {}),
