@@ -15,7 +15,8 @@ COPY products/*/package*.json ./products/
 COPY services/*/package*.json ./services/
 
 # Install ALL dependencies (we need them for Prisma and build)
-RUN npm ci
+# Use --ignore-scripts to prevent postinstall scripts from running before files are copied
+RUN npm ci --ignore-scripts
 
 # Copy all source code
 COPY . .

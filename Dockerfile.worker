@@ -13,7 +13,8 @@ COPY services/enrichment/package*.json ./services/enrichment/
 COPY packages/*/package*.json ./packages/
 
 # Install ALL dependencies
-RUN npm ci
+# Use --ignore-scripts to prevent postinstall scripts from running before files are copied
+RUN npm ci --ignore-scripts
 
 # Copy all source code
 COPY . .
