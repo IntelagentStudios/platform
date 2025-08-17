@@ -95,14 +95,16 @@ export class QueueManager {
     const queue = this.queues.get(queueName);
     if (!queue) return null;
 
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+    const [waiting, active, completed, failed, delayed] = await Promise.all([
       queue.getWaitingCount(),
       queue.getActiveCount(),
       queue.getCompletedCount(),
       queue.getFailedCount(),
       queue.getDelayedCount(),
-      queue.getPausedCount(),
     ]);
+
+    // Note: BullMQ doesn't have a separate paused count - paused jobs are included in waiting
+    const paused = 0;
 
     return {
       waiting,
@@ -111,7 +113,7 @@ export class QueueManager {
       failed,
       delayed,
       paused,
-      total: waiting + active + delayed + paused,
+      total: waiting + active + delayed,
     };
   }
 
