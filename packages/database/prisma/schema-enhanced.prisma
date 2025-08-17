@@ -1,0 +1,756 @@
+// Enhanced Prisma schema with Team Collaboration, Financial Management, and Enterprise Features
+// This schema supports team accounts, RBAC, usage tracking, and financial management
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema", "jsonProtocol", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "teams", "financial", "security", "analytics"]
+}
+
+// ==================== ORGANIZATIONS & TEAMS ====================
+
+model Organization {
+  id                  String    @id @default(cuid())
+  name                String    @db.VarChar(255)
+  slug                String    @unique @db.VarChar(100)
+  domain              String?   @unique @db.VarChar(255)
+  logo                String?   @db.Text
+  website             String?   @db.VarChar(255)
+  industry            String?   @db.VarChar(100)
+  size                String?   @db.VarChar(50) // 1-10, 11-50, 51-200, 201-500, 500+
+  
+  // Billing & Subscription
+  stripeCustomerId    String?   @unique @map("stripe_customer_id") @db.VarChar(255)
+  subscriptionId      String?   @unique @map("subscription_id") @db.VarChar(255)
+  subscriptionTier    String    @default("free") @map("subscription_tier") @db.VarChar(50)
+  subscriptionStatus  String    @default("active") @map("subscription_status") @db.VarChar(50)
+  billingEmail        String?   @map("billing_email") @db.VarChar(255)
+  
+  // Financial
+  mrr                 Decimal   @default(0) @db.Decimal(10, 2)
+  ltv                 Decimal   @default(0) @db.Decimal(10, 2)
+  totalSpent          Decimal   @default(0) @map("total_spent") @db.Decimal(10, 2)
+  creditBalance       Decimal   @default(0) @map("credit_balance") @db.Decimal(10, 2)
+  
+  // Settings
+  settings            Json      @default("{}")
+  features            String[]  @default([])
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+  
+  // Relations
+  teams               Team[]
+  users               User[]
+  licenses            License[]
+  invoices            Invoice[]
+  usageRecords        UsageRecord[]
+  auditLogs           AuditLog[]
+  apiKeys             ApiKey[]
+  webhooks            Webhook[]
+  
+  @@index([subscriptionStatus])
+  @@index([createdAt])
+  @@map("organizations")
+  @@schema("teams")
+}
+
+model Team {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  name                String    @db.VarChar(255)
+  slug                String    @db.VarChar(100)
+  description         String?   @db.Text
+  
+  // Team Settings
+  settings            Json      @default("{}")
+  permissions         String[]  @default([])
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members             TeamMember[]
+  projects            Project[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("teams")
+  @@schema("teams")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  organizationId      String?   @map("organization_id")
+  email               String    @unique @db.VarChar(255)
+  name                String?   @db.VarChar(255)
+  avatar              String?   @db.Text
+  phone               String?   @db.VarChar(50)
+  
+  // Authentication
+  passwordHash        String?   @map("password_hash") @db.Text
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt     DateTime? @map("email_verified_at")
+  
+  // Two-Factor Auth
+  twoFactorEnabled    Boolean   @default(false) @map("two_factor_enabled")
+  twoFactorSecret     String?   @map("two_factor_secret") @db.Text
+  recoveryEmail       String?   @map("recovery_email") @db.VarChar(255)
+  
+  // Status & Settings
+  status              String    @default("active") @db.VarChar(50)
+  role                String    @default("member") @db.VarChar(50) // owner, admin, manager, member, viewer
+  preferences         Json      @default("{}")
+  lastActiveAt        DateTime? @map("last_active_at")
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+  
+  // Relations
+  organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  teamMemberships     TeamMember[]
+  sessions            Session[]
+  activities          Activity[]
+  notifications       Notification[]
+  apiKeys             ApiKey[]
+  auditLogs           AuditLog[]
+  
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@map("users")
+  @@schema("teams")
+}
+
+model TeamMember {
+  id                  String    @id @default(cuid())
+  teamId              String    @map("team_id")
+  userId              String    @map("user_id")
+  role                String    @default("member") @db.VarChar(50)
+  permissions         String[]  @default([])
+  
+  // Timestamps
+  joinedAt            DateTime  @default(now()) @map("joined_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  team                Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+  @@map("team_members")
+  @@schema("teams")
+}
+
+// ==================== ENHANCED LICENSE SYSTEM ====================
+
+model License {
+  licenseKey         String    @id @map("license_key") @db.VarChar(20)
+  organizationId     String?   @map("organization_id")
+  email              String?   @db.VarChar(255)
+  createdAt          DateTime? @map("created_at")
+  usedAt             DateTime? @map("used_at")
+  domain             String?   @db.VarChar(255)
+  siteKey            String?   @unique @map("site_key") @db.VarChar(255)
+  status             String?   @db.VarChar(20)
+  
+  // Enhanced Fields
+  tier               String    @default("basic") @db.VarChar(50)
+  seats              Int       @default(1)
+  usedSeats          Int       @default(0) @map("used_seats")
+  
+  // Subscription
+  subscriptionId     String?   @map("subscription_id") @db.VarChar(255)
+  lastPaymentDate    DateTime? @map("last_payment_date")
+  nextBillingDate    DateTime? @map("next_billing_date")
+  subscriptionStatus String?   @map("subscription_status") @db.VarChar(50)
+  
+  // Customer Info
+  customerName       String?   @map("customer_name") @db.VarChar(255)
+  lastIndexed        DateTime? @map("last_indexed")
+  plan               String?   @db.VarChar(50)
+  products           String[]  @default([]) @db.Text
+  
+  // Usage Limits
+  apiCallsLimit      Int       @default(1000) @map("api_calls_limit")
+  storageLimit       BigInt    @default(1073741824) @map("storage_limit") // 1GB in bytes
+  bandwidthLimit     BigInt    @default(10737418240) @map("bandwidth_limit") // 10GB in bytes
+  
+  // Relations
+  organization       Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  chatbotLogs        ChatbotLog[]
+  usageRecords       UsageRecord[]
+  
+  @@index([organizationId])
+  @@index([status])
+  @@map("licenses")
+  @@schema("public")
+}
+
+// ==================== FINANCIAL MANAGEMENT ====================
+
+model Invoice {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  invoiceNumber       String    @unique @map("invoice_number") @db.VarChar(50)
+  
+  // Billing Details
+  amount              Decimal   @db.Decimal(10, 2)
+  tax                 Decimal   @default(0) @db.Decimal(10, 2)
+  total               Decimal   @db.Decimal(10, 2)
+  currency            String    @default("USD") @db.VarChar(3)
+  
+  // Status
+  status              String    @default("pending") @db.VarChar(50) // pending, paid, overdue, cancelled
+  paidAt              DateTime? @map("paid_at")
+  dueDate             DateTime  @map("due_date")
+  
+  // Payment
+  paymentMethod       String?   @map("payment_method") @db.VarChar(50)
+  stripeInvoiceId     String?   @unique @map("stripe_invoice_id") @db.VarChar(255)
+  stripePaymentIntent String?   @map("stripe_payment_intent") @db.VarChar(255)
+  
+  // Details
+  description         String?   @db.Text
+  lineItems           Json      @map("line_items")
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  transactions        Transaction[]
+  
+  @@index([organizationId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("invoices")
+  @@schema("financial")
+}
+
+model Transaction {
+  id                  String    @id @default(cuid())
+  invoiceId           String?   @map("invoice_id")
+  
+  // Transaction Details
+  type                String    @db.VarChar(50) // payment, refund, credit, debit
+  amount              Decimal   @db.Decimal(10, 2)
+  currency            String    @default("USD") @db.VarChar(3)
+  status              String    @default("pending") @db.VarChar(50)
+  
+  // Payment Details
+  paymentMethod       String?   @map("payment_method") @db.VarChar(50)
+  referenceId         String?   @map("reference_id") @db.VarChar(255)
+  
+  // Metadata
+  description         String?   @db.Text
+  metadata            Json?
+  
+  // Timestamps
+  processedAt         DateTime? @map("processed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  invoice             Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  
+  @@index([invoiceId])
+  @@index([type])
+  @@index([status])
+  @@map("transactions")
+  @@schema("financial")
+}
+
+model CostTracking {
+  id                  String    @id @default(cuid())
+  date                DateTime  @db.Date
+  
+  // Infrastructure Costs
+  computeCost         Decimal   @default(0) @map("compute_cost") @db.Decimal(10, 2)
+  storageCost         Decimal   @default(0) @map("storage_cost") @db.Decimal(10, 2)
+  bandwidthCost       Decimal   @default(0) @map("bandwidth_cost") @db.Decimal(10, 2)
+  databaseCost        Decimal   @default(0) @map("database_cost") @db.Decimal(10, 2)
+  
+  // Service Costs
+  emailCost           Decimal   @default(0) @map("email_cost") @db.Decimal(10, 2)
+  smsCost             Decimal   @default(0) @map("sms_cost") @db.Decimal(10, 2)
+  aiApiCost           Decimal   @default(0) @map("ai_api_cost") @db.Decimal(10, 2)
+  thirdPartyCost      Decimal   @default(0) @map("third_party_cost") @db.Decimal(10, 2)
+  
+  // Total
+  totalCost           Decimal   @map("total_cost") @db.Decimal(10, 2)
+  
+  // Metadata
+  breakdown           Json?
+  notes               String?   @db.Text
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  @@unique([date])
+  @@index([date])
+  @@map("cost_tracking")
+  @@schema("financial")
+}
+
+// ==================== USAGE & RESOURCE MANAGEMENT ====================
+
+model UsageRecord {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  licenseKey          String?   @map("license_key")
+  
+  // Usage Metrics
+  apiCalls            Int       @default(0) @map("api_calls")
+  storageUsed         BigInt    @default(0) @map("storage_used") // in bytes
+  bandwidthUsed       BigInt    @default(0) @map("bandwidth_used") // in bytes
+  computeTime         Int       @default(0) @map("compute_time") // in seconds
+  databaseQueries     Int       @default(0) @map("database_queries")
+  websocketMinutes    Int       @default(0) @map("websocket_minutes")
+  
+  // Product-Specific Usage
+  chatbotMessages     Int       @default(0) @map("chatbot_messages")
+  emailsSent          Int       @default(0) @map("emails_sent")
+  enrichmentRequests  Int       @default(0) @map("enrichment_requests")
+  setupAgentSessions  Int       @default(0) @map("setup_agent_sessions")
+  
+  // Period
+  periodStart         DateTime  @map("period_start")
+  periodEnd           DateTime  @map("period_end")
+  
+  // Cost Calculation
+  estimatedCost       Decimal   @default(0) @map("estimated_cost") @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  license             License?     @relation(fields: [licenseKey], references: [licenseKey], onDelete: SetNull)
+  
+  @@index([organizationId, periodStart])
+  @@index([licenseKey])
+  @@map("usage_records")
+  @@schema("analytics")
+}
+
+model UsageLimit {
+  id                  String    @id @default(cuid())
+  tier                String    @unique @db.VarChar(50)
+  
+  // Limits
+  apiCallsPerDay      Int       @map("api_calls_per_day")
+  apiCallsPerMinute   Int       @map("api_calls_per_minute")
+  storageGB           Int       @map("storage_gb")
+  bandwidthGB         Int       @map("bandwidth_gb")
+  computeHours        Int       @map("compute_hours")
+  teamMembers         Int       @map("team_members")
+  projects            Int
+  
+  // Features
+  features            String[]  @default([])
+  
+  // Overage Handling
+  allowOverage        Boolean   @default(false) @map("allow_overage")
+  overageRate         Decimal   @default(0) @map("overage_rate") @db.Decimal(10, 4)
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  @@map("usage_limits")
+  @@schema("analytics")
+}
+
+// ==================== SECURITY & COMPLIANCE ====================
+
+model Session {
+  id                  String    @id @default(cuid())
+  userId              String    @map("user_id")
+  token               String    @unique @db.Text
+  
+  // Session Details
+  ipAddress           String?   @map("ip_address") @db.VarChar(45)
+  userAgent           String?   @map("user_agent") @db.Text
+  location            String?   @db.VarChar(255)
+  deviceType          String?   @map("device_type") @db.VarChar(50)
+  
+  // Security
+  isActive            Boolean   @default(true) @map("is_active")
+  lastActivityAt      DateTime  @default(now()) @map("last_activity_at")
+  expiresAt           DateTime  @map("expires_at")
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+  @@schema("security")
+}
+
+model AuditLog {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  userId              String?   @map("user_id")
+  
+  // Audit Details
+  action              String    @db.VarChar(100)
+  resource            String    @db.VarChar(100)
+  resourceId          String?   @map("resource_id") @db.VarChar(255)
+  
+  // Changes
+  oldValue            Json?     @map("old_value")
+  newValue            Json?     @map("new_value")
+  
+  // Context
+  ipAddress           String?   @map("ip_address") @db.VarChar(45)
+  userAgent           String?   @map("user_agent") @db.Text
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@map("audit_logs")
+  @@schema("security")
+}
+
+model SecuritySetting {
+  id                  String    @id @default(cuid())
+  organizationId      String    @unique @map("organization_id")
+  
+  // Security Policies
+  requireTwoFactor    Boolean   @default(false) @map("require_two_factor")
+  ipWhitelist         String[]  @default([]) @map("ip_whitelist")
+  allowedDomains      String[]  @default([]) @map("allowed_domains")
+  sessionTimeout      Int       @default(1440) @map("session_timeout") // in minutes
+  passwordPolicy      Json      @default("{}") @map("password_policy")
+  
+  // Compliance
+  gdprEnabled         Boolean   @default(false) @map("gdpr_enabled")
+  ccpaEnabled         Boolean   @default(false) @map("ccpa_enabled")
+  hipaaEnabled        Boolean   @default(false) @map("hipaa_enabled")
+  soc2Compliant       Boolean   @default(false) @map("soc2_compliant")
+  dataRetentionDays   Int       @default(90) @map("data_retention_days")
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  @@map("security_settings")
+  @@schema("security")
+}
+
+// ==================== API & INTEGRATIONS ====================
+
+model ApiKey {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  userId              String?   @map("user_id")
+  
+  // Key Details
+  name                String    @db.VarChar(255)
+  key                 String    @unique @db.VarChar(255)
+  hashedKey           String    @map("hashed_key") @db.Text
+  
+  // Permissions
+  scopes              String[]  @default([])
+  rateLimit           Int       @default(1000) @map("rate_limit") // requests per hour
+  
+  // Status
+  isActive            Boolean   @default(true) @map("is_active")
+  expiresAt           DateTime? @map("expires_at")
+  lastUsedAt          DateTime? @map("last_used_at")
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  revokedAt           DateTime? @map("revoked_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([organizationId])
+  @@index([key])
+  @@map("api_keys")
+  @@schema("security")
+}
+
+model Webhook {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  
+  // Webhook Details
+  url                 String    @db.Text
+  events              String[]  @default([])
+  secret              String    @db.Text
+  
+  // Status
+  isActive            Boolean   @default(true) @map("is_active")
+  failureCount        Int       @default(0) @map("failure_count")
+  lastTriggeredAt     DateTime? @map("last_triggered_at")
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@index([organizationId])
+  @@map("webhooks")
+  @@schema("security")
+}
+
+// ==================== COLLABORATION & ACTIVITY ====================
+
+model Project {
+  id                  String    @id @default(cuid())
+  teamId              String    @map("team_id")
+  
+  // Project Details
+  name                String    @db.VarChar(255)
+  description         String?   @db.Text
+  status              String    @default("active") @db.VarChar(50)
+  
+  // Settings
+  settings            Json      @default("{}")
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  team                Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  activities          Activity[]
+  
+  @@index([teamId])
+  @@map("projects")
+  @@schema("teams")
+}
+
+model Activity {
+  id                  String    @id @default(cuid())
+  userId              String    @map("user_id")
+  projectId           String?   @map("project_id")
+  
+  // Activity Details
+  type                String    @db.VarChar(100)
+  action              String    @db.VarChar(255)
+  target              String?   @db.VarChar(255)
+  targetId            String?   @map("target_id") @db.VarChar(255)
+  
+  // Context
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project             Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("activities")
+  @@schema("teams")
+}
+
+model Notification {
+  id                  String    @id @default(cuid())
+  userId              String    @map("user_id")
+  
+  // Notification Details
+  type                String    @db.VarChar(100)
+  title               String    @db.VarChar(255)
+  message             String    @db.Text
+  
+  // Status
+  isRead              Boolean   @default(false) @map("is_read")
+  readAt              DateTime? @map("read_at")
+  
+  // Context
+  actionUrl           String?   @map("action_url") @db.Text
+  metadata            Json?
+  
+  // Timestamps
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+  @@schema("teams")
+}
+
+// ==================== AI INSIGHTS & ANALYTICS ====================
+
+model AiInsight {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  
+  // Insight Details
+  type                String    @db.VarChar(100) // revenue_trend, usage_anomaly, optimization, prediction
+  category            String    @db.VarChar(100)
+  title               String    @db.VarChar(255)
+  description         String    @db.Text
+  
+  // Analysis
+  confidence          Float     @default(0)
+  impact              String    @db.VarChar(50) // high, medium, low
+  recommendation      String?   @db.Text
+  
+  // Data
+  dataPoints          Json      @map("data_points")
+  metadata            Json?
+  
+  // Status
+  status              String    @default("active") @db.VarChar(50)
+  actionTaken         Boolean   @default(false) @map("action_taken")
+  actionTakenAt       DateTime? @map("action_taken_at")
+  
+  // Timestamps
+  generatedAt         DateTime  @default(now()) @map("generated_at")
+  expiresAt           DateTime? @map("expires_at")
+  
+  @@index([organizationId, type])
+  @@index([generatedAt])
+  @@map("ai_insights")
+  @@schema("analytics")
+}
+
+model PerformanceMetric {
+  id                  String    @id @default(cuid())
+  
+  // Metric Details
+  name                String    @db.VarChar(100)
+  value               Float
+  unit                String    @db.VarChar(50)
+  
+  // Context
+  resource            String    @db.VarChar(100)
+  resourceId          String?   @map("resource_id") @db.VarChar(255)
+  
+  // Time
+  timestamp           DateTime  @default(now())
+  
+  // Metadata
+  tags                String[]  @default([])
+  metadata            Json?
+  
+  @@index([name, timestamp])
+  @@index([resource])
+  @@map("performance_metrics")
+  @@schema("analytics")
+}
+
+// ==================== EXISTING MODELS (UPDATED) ====================
+
+model ChatbotLog {
+  id                Int       @id @default(autoincrement())
+  sessionId         String?   @map("session_id") @db.VarChar(255)
+  customerMessage   String?   @map("customer_message") @db.Text
+  chatbotResponse   String?   @map("chatbot_response") @db.Text
+  timestamp         DateTime? @db.Timestamp(6)
+  intentDetected    String?   @map("intent_detected") @db.VarChar(255)
+  conversationId    String?   @map("conversation_id") @db.VarChar(255)
+  siteKey           String?   @map("site_key") @db.VarChar(255)
+  domain            String?   @db.VarChar(255)
+  userId            String?   @map("user_id") @db.VarChar(255)
+  role              String?   @db.VarChar(50)
+  content           String?   @db.Text
+  createdAt         DateTime? @map("created_at") @db.Timestamp(6)
+  
+  // Enhanced Fields
+  responseTime      Int?      @map("response_time") // in milliseconds
+  satisfaction      Int?      // 1-5 rating
+  
+  license           License?  @relation(fields: [siteKey], references: [siteKey])
+  
+  @@index([sessionId])
+  @@index([conversationId])
+  @@map("chatbot_logs")
+  @@schema("public")
+}
+
+model SharedItem {
+  id          Int       @id @default(autoincrement())
+  sharedBy    String    @map("shared_by") @db.VarChar(20)
+  sharedWith  String    @map("shared_with") @db.VarChar(255)
+  itemType    String    @map("item_type") @db.VarChar(50)
+  itemConfig  Json      @map("item_config")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  @@map("shared_items")
+  @@schema("public")
+}
+
+model DomainLicense {
+  domain      String  @db.VarChar(255)
+  licenseKey  String  @map("license_key") @db.VarChar(20)
+  productType String  @map("product_type") @db.VarChar(50)
+  
+  @@id([domain, licenseKey])
+  @@map("domain_licenses")
+  @@schema("public")
+}
+
+model SmartDashboardInsight {
+  id            Int       @id @default(autoincrement())
+  licenseKey    String    @map("license_key") @db.VarChar(20)
+  insightType   String    @map("insight_type") @db.VarChar(50)
+  title         String    @db.VarChar(255)
+  content       String    @db.Text
+  severity      String?   @db.VarChar(20)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  expiresAt     DateTime? @map("expires_at")
+  metadata      Json?
+  
+  @@map("smart_dashboard_insights")
+  @@schema("public")
+}
+
+model SmartDashboardRequest {
+  id            Int       @id @default(autoincrement())
+  licenseKey    String    @map("license_key") @db.VarChar(20)
+  requestType   String    @map("request_type") @db.VarChar(50)
+  query         String    @db.Text
+  response      String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+  processedAt   DateTime? @map("processed_at")
+  
+  @@map("smart_dashboard_requests")
+  @@schema("public")
+}

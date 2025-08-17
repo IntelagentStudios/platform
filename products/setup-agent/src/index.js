@@ -187,7 +187,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.SETUP_AGENT_PORT || 3007;
 app.listen(PORT, () => {
   console.log(`Setup Agent running on port ${PORT}`);
   console.log(`Active products: ${Object.keys(productConfigs).join(', ')}`);

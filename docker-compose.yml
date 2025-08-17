@@ -1,0 +1,221 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: intelagent-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-intelagent}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secretpassword}
+      POSTGRES_DB: ${DB_NAME:-intelagent_platform}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - intelagent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-intelagent}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: intelagent-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispassword}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - intelagent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Admin Portal
+  admin-portal:
+    build:
+      context: ./apps/admin-portal
+      dockerfile: Dockerfile
+    container_name: intelagent-admin
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-intelagent}:${DB_PASSWORD:-secretpassword}@postgres:5432/${DB_NAME:-intelagent_platform}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redispassword}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+      NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Customer Portal
+  customer-portal:
+    build:
+      context: ./apps/customer-portal
+      dockerfile: Dockerfile
+    container_name: intelagent-customer
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-intelagent}:${DB_PASSWORD:-secretpassword}@postgres:5432/${DB_NAME:-intelagent_platform}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redispassword}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret}
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Chatbot Service
+  chatbot:
+    build:
+      context: ./products/chatbot
+      dockerfile: Dockerfile
+    container_name: intelagent-chatbot
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-intelagent}:${DB_PASSWORD:-secretpassword}@postgres:5432/${DB_NAME:-intelagent_platform}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redispassword}@redis:6379
+      PORT: 3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Sales Agent Service
+  sales-agent:
+    build:
+      context: ./products/sales-agent
+      dockerfile: Dockerfile
+    container_name: intelagent-sales
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-intelagent}:${DB_PASSWORD:-secretpassword}@postgres:5432/${DB_NAME:-intelagent_platform}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redispassword}@redis:6379
+      PORT: 3003
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Enrichment Service
+  enrichment:
+    build:
+      context: ./services/enrichment
+      dockerfile: Dockerfile
+    container_name: intelagent-enrichment
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-intelagent}:${DB_PASSWORD:-secretpassword}@postgres:5432/${DB_NAME:-intelagent_platform}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:-redispassword}@redis:6379
+      PORT: 3004
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: intelagent-nginx
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - admin-portal
+      - customer-portal
+      - chatbot
+      - sales-agent
+      - enrichment
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: intelagent-prometheus
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: intelagent-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: redis-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3005:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - intelagent-network
+    restart: unless-stopped
+
+networks:
+  intelagent-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

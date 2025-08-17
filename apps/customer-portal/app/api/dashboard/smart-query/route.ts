@@ -8,9 +8,9 @@ import { prisma } from '@/lib/db'
 // Groq Integration - Fast LLM for real-time responses
 import Groq from 'groq-sdk'
 
-const groq = new Groq({
+const groq = process.env.GROQ_API_KEY ? new Groq({
   apiKey: process.env.GROQ_API_KEY
-})
+}) : null
 
 // Alternative options (uncomment to use):
 // Option 1: OpenAI
@@ -69,27 +69,33 @@ export async function POST(request: Request) {
     let aiResponse = ''
     let suggestions: string[] = []
     
-    try {
-      // Use Groq for fast LLM responses
-      const completion = await groq.chat.completions.create({
-        model: "mixtral-8x7b-32768", // Fast and capable model
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: query }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-        stream: false
-      })
-      
-      aiResponse = completion.choices[0]?.message?.content || generateMockResponse(query, data)
-      
-      // Generate suggestions based on the response
-      suggestions = generateSmartSuggestions(query, aiResponse)
-      
-    } catch (error) {
-      console.error('Groq API error:', error)
-      // Fallback to mock response if Groq fails
+    if (groq) {
+      try {
+        // Use Groq for fast LLM responses
+        const completion = await groq.chat.completions.create({
+          model: "mixtral-8x7b-32768", // Fast and capable model
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: query }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+          stream: false
+        })
+        
+        aiResponse = completion.choices[0]?.message?.content || generateMockResponse(query, data)
+        
+        // Generate suggestions based on the response
+        suggestions = generateSmartSuggestions(query, aiResponse)
+        
+      } catch (error) {
+        console.error('Groq API error:', error)
+        // Fallback to mock response if Groq fails
+        aiResponse = generateMockResponse(query, data)
+        suggestions = generateMockSuggestions(query)
+      }
+    } else {
+      // No API key configured, use mock response
       aiResponse = generateMockResponse(query, data)
       suggestions = generateMockSuggestions(query)
     }

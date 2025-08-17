@@ -5,7 +5,7 @@ const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = '0.0.0.0'
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3002
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
@@ -25,7 +25,7 @@ app.prepare().then(() => {
     cors: {
       origin: process.env.NODE_ENV === 'production' 
         ? ['https://dashboard.intelagentstudios.com', 'https://*.up.railway.app']
-        : ['http://localhost:3001', 'http://localhost:3000'],
+        : ['http://localhost:3002', 'http://localhost:3000'],
       methods: ['GET', 'POST'],
     },
   })

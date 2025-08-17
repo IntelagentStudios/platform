@@ -15,7 +15,7 @@ const prisma = new PrismaClient();
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3008;
 
 // Initialize logger
 const logger = winston.createLogger({

@@ -16,19 +16,26 @@
     "@intelagent/core": "*",
     "@intelagent/enrichment": "*",
     "@prisma/client": "^5.0.0",
-    "express": "^4.18.2",
-    "bull": "^4.11.3",
-    "redis": "^4.6.5",
     "axios": "^1.4.0",
+    "bull": "^4.11.3",
+    "express": "^4.18.2",
+    "node-cron": "^4.2.1",
+    "redis": "^4.6.5",
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "prisma": "^5.0.0",
-    "nodemon": "^3.0.0",
     "@types/node": "^20.0.0",
-    "jest": "^29.0.0"
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0",
+    "prisma": "^5.0.0"
   },
-  "keywords": ["sales", "outreach", "lead-generation", "ai"],
+  "keywords": [
+    "sales",
+    "outreach",
+    "lead-generation",
+    "ai"
+  ],
   "author": "Intelagent Studios",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module"
 }

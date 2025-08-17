@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import { fileURLToPath } from 'url';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.CHATBOT_PORT || 3001;
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
