@@ -1,5 +1,6 @@
 import { prisma } from './db'
-import { AuditAction } from '@/types/security'
+
+type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'ACCESS' | 'LOGIN' | 'LOGOUT'
 
 interface CreateAuditLogParams {
   organizationId: string

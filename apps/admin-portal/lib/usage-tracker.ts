@@ -1,8 +1,22 @@
 import { prisma } from './db'
 import { Redis } from 'ioredis'
-import { UsageMetric, UsageAlertType } from '@/types/usage'
 
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+
+enum UsageMetric {
+  API_CALLS = 'API_CALLS',
+  STORAGE_BYTES = 'STORAGE_BYTES',
+  BANDWIDTH_BYTES = 'BANDWIDTH_BYTES',
+  ACTIVE_USERS = 'ACTIVE_USERS',
+  CHATBOT_MESSAGES = 'CHATBOT_MESSAGES',
+  ENRICHMENT_REQUESTS = 'ENRICHMENT_REQUESTS'
+}
+
+enum UsageAlertType {
+  LIMIT_EXCEEDED = 'LIMIT_EXCEEDED',
+  THRESHOLD_REACHED = 'THRESHOLD_REACHED',
+  UNUSUAL_ACTIVITY = 'UNUSUAL_ACTIVITY'
+}
 
 interface UsageUpdate {
   organizationId: string
