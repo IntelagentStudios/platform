@@ -1,8 +1,9 @@
 import { prisma } from './db'
-import OpenAI from 'openai'
+import Groq from 'groq-sdk'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
+// Using Groq instead of OpenAI (already installed)
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || ''
 })
 
 export class AIInsightsEngine {
@@ -244,19 +245,18 @@ export class AIInsightsEngine {
   async processNaturalQuery(query: string, organizationId: string) {
     try {
       // Analyze query intent
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+      const completion = await groq.chat.completions.create({
+        model: 'mixtral-8x7b-32768',
         messages: [
           {
             role: 'system',
-            content: 'You are a business analytics assistant. Analyze the query and extract the intent, metrics, and timeframe requested.'
+            content: 'You are a business analytics assistant. Analyze the query and extract the intent, metrics, and timeframe requested. Respond in JSON format.'
           },
           {
             role: 'user',
             content: query
           }
-        ],
-        response_format: { type: 'json_object' }
+        ]
       })
 
       const intent = JSON.parse(completion.choices[0].message.content || '{}')
@@ -265,8 +265,8 @@ export class AIInsightsEngine {
       const data = await this.fetchDataForIntent(intent, organizationId)
 
       // Generate response
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+      const response = await groq.chat.completions.create({
+        model: 'mixtral-8x7b-32768',
         messages: [
           {
             role: 'system',
