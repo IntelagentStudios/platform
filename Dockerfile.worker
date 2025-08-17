@@ -1,63 +1,28 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Use Node.js 20 Alpine for smaller image size
+FROM node:20-alpine
+
+# Install dependencies for node-gyp
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# Copy package files
+# Copy all package.json files first for better caching
 COPY package*.json ./
-COPY turbo.json ./
-
-# Copy workspace package files
+COPY services/worker/package*.json ./services/worker/
+COPY services/enrichment/package*.json ./services/enrichment/
 COPY packages/*/package*.json ./packages/
-COPY products/*/package*.json ./products/
-COPY apps/*/package*.json ./apps/
-COPY services/*/package*.json ./services/
 
-# Install all dependencies including dev dependencies for build
-RUN npm ci --include=dev
+# Install ALL dependencies
+RUN npm ci
 
-# Copy source code
+# Copy all source code
 COPY . .
-
-# Generate Prisma clients
-RUN npx turbo run db:generate
-
-# Build all applications
-RUN npx turbo run build
-
-# Production stage - Worker Service
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
-# Copy package files first (without workspace packages)
-COPY package.json ./
-COPY package-lock.json ./
-
-# Remove postinstall script temporarily for production install
-RUN npm pkg delete scripts.postinstall
-
-# Copy workspace package files
-COPY packages/*/package.json ./packages/
-COPY products/*/package.json ./products/
-COPY apps/*/package.json ./apps/
-COPY services/*/package.json ./services/
-
-# Install production dependencies only
-RUN npm ci --omit=dev --ignore-scripts
-
-# Copy built applications and necessary files
-COPY --from=builder /app/packages ./packages
-COPY --from=builder /app/products ./products
-COPY --from=builder /app/apps ./apps
-COPY --from=builder /app/services ./services
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
-# Copy Prisma schemas
-COPY packages/database/prisma ./packages/database/prisma
 
 # Set environment variables
 ENV NODE_ENV=production
 
+# Change to worker directory
+WORKDIR /app/services/worker
+
 # Start the worker service
-CMD ["node", "services/worker/index.js"]
+CMD ["node", "index.js"]
