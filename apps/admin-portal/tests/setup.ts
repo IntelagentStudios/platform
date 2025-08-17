@@ -1,11 +1,34 @@
 import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 
-// Mock environment variables
-process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
-process.env.REDIS_URL = 'redis://localhost:6379';
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
+// Mock environment variables using Object.defineProperty to avoid read-only errors
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true,
+  configurable: true,
+  enumerable: true
+});
+
+Object.defineProperty(process.env, 'JWT_SECRET', {
+  value: 'test-secret',
+  writable: true,
+  configurable: true,
+  enumerable: true
+});
+
+Object.defineProperty(process.env, 'REDIS_URL', {
+  value: 'redis://localhost:6379',
+  writable: true,
+  configurable: true,
+  enumerable: true
+});
+
+Object.defineProperty(process.env, 'DATABASE_URL', {
+  value: 'postgresql://test:test@localhost:5432/test',
+  writable: true,
+  configurable: true,
+  enumerable: true
+});
 
 // Polyfills for Node.js environment
 global.TextEncoder = TextEncoder;
