@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     })
 
     // Fetch relevant data based on the query
-    const data = await fetchRelevantData(query, userLicense?.siteKey, product)
+    const data = await fetchRelevantData(query, userLicense?.site_key, product)
 
     // Build context for LLM
     const systemPrompt = `You are an intelligent dashboard assistant. You help users understand their data and provide actionable insights.

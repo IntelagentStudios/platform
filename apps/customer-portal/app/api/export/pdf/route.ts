@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         select: { siteKey: true }
       })
       if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
+        whereClause.siteKey = userLicense?.site_key
       }
     }
 

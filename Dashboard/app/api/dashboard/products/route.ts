@@ -34,8 +34,8 @@ export async function GET() {
           }
           const data = productCounts.get(product)!
           data.count++
-          if (license.siteKey) {
-            data.siteKeys.push(license.siteKey)
+          if (license?.site_key) {
+            data.siteKeys.push(license?.site_key)
           }
         })
       }

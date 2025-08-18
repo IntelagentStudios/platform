@@ -147,7 +147,7 @@ export async function GET() {
       }
 
       // Build where clause for user's conversations
-      const userWhereClause = license.siteKey ? { siteKey: license.siteKey } : {}
+      const userWhereClause = license?.site_key ? { siteKey: license?.site_key } : {}
 
       // Get user's conversations
       const userConversations = await prisma.chatbot_logs.groupBy({

@@ -28,7 +28,7 @@ export async function GET() {
       })
       
       if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
+        whereClause.siteKey = userLicense?.site_key
       } else {
         // No siteKey found, return empty data
         return NextResponse.json({

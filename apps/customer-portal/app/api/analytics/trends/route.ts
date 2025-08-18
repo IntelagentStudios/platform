@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         select: { siteKey: true }
       })
       if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
+        whereClause.siteKey = userLicense?.site_key
       }
     } else if (productType) {
       // For master admin, filter by product type if specified
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         if (!licensesByDate.has(dateKey)) {
           licensesByDate.set(dateKey, new Set())
         }
-        licensesByDate.get(dateKey)!.add(log.license.licenseKey)
+        licensesByDate.get(dateKey)!.add(log.license?.license_key)
       }
     })
 

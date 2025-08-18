@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
           sessions: []
         })
       }
-      whereClause.siteKey = userLicense.siteKey
+      whereClause.siteKey = userLicense?.site_key
     }
 
     // Run the actual query

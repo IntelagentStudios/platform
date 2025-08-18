@@ -54,9 +54,9 @@ export async function GET(request: NextRequest) {
             type: 'license_created',
             timestamp: license.createdAt,
             title: 'New License Created',
-            description: `${license.customerName || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
+            description: `${license?.customer_name || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
             metadata: {
-              licenseKey: license.licenseKey,
+              licenseKey: license?.license_key,
               domain: license.domain,
               plan: license.plan,
               products: license.products
@@ -72,9 +72,9 @@ export async function GET(request: NextRequest) {
             type: 'license_activated',
             timestamp: license.usedAt,
             title: 'License Activated',
-            description: `${license.domain || license.customerName || 'Unknown'} activated their license`,
+            description: `${license.domain || license?.customer_name || 'Unknown'} activated their license`,
             metadata: {
-              licenseKey: license.licenseKey,
+              licenseKey: license?.license_key,
               domain: license.domain
             },
             icon: 'check',
@@ -87,9 +87,9 @@ export async function GET(request: NextRequest) {
             type: 'license_expired',
             timestamp: license.createdAt || now,
             title: 'License Expired',
-            description: `${license.customerName || license.domain || 'Unknown'} license expired`,
+            description: `${license?.customer_name || license.domain || 'Unknown'} license expired`,
             metadata: {
-              licenseKey: license.licenseKey,
+              licenseKey: license?.license_key,
               domain: license.domain
             },
             icon: 'alert',

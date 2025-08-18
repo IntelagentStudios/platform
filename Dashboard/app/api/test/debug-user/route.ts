@@ -44,7 +44,7 @@ export async function GET() {
       await prisma.chatbot_logs.groupBy({
         by: ['sessionId', 'siteKey', 'domain'],
         where: {
-          siteKey: userLicense.siteKey,
+          siteKey: userLicense?.site_key,
           sessionId: { not: null }
         },
         _count: true,
