@@ -141,7 +141,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function fetchRelevantData(query: string, siteKey: string | null | undefined, product: string | null) {
+async function fetchRelevantData(query: string, site_key: string | null | undefined, product: string | null) {
   const queryLower = query.toLowerCase()
   const data: any = {
     summary: {},
@@ -153,7 +153,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
     const conversations = await prisma.chatbot_logs.groupBy({
       by: ['session_id'],
-      where: siteKey ? { site_key: siteKey } : {},
+      where: site_key ? { site_key: site_key } : {},
       _count: true,
       take: 100,
       orderBy: {
@@ -170,7 +170,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const stats = await prisma.chatbot_logs.aggregate({
       where: {
-        ...(siteKey ? { site_key: siteKey } : {}),
+        ...(site_key ? { site_key: site_key } : {}),
         timestamp: { gte: thirtyDaysAgo }
       },
       _count: true
@@ -183,7 +183,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
     const trends = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
-        ...(siteKey ? { site_key: siteKey } : {}),
+        ...(site_key ? { site_key: site_key } : {}),
         timestamp: { 
           gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
         }
