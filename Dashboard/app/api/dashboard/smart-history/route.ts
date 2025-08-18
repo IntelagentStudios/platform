@@ -16,14 +16,14 @@ export async function GET() {
     // Fetch query history from database
     const requests = await prisma.smartDashboardRequest.findMany({
       where: {
-        licenseKey: auth.licenseKey,
-        requestType: 'query'
+        license_key: auth.licenseKey,
+        request_type: 'query'
       },
       select: {
         query: true,
-        createdAt: true
+        created_at: true
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 

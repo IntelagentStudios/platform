@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       generatedFor: auth.isMaster ? 'Master Admin' : auth.domain,
       stats,
       licenses: licenses.slice(0, 5).map(l => ({
-        licenseKey: l.licenseKey,
-        customerName: l.customerName || 'N/A',
+        license_key: l.license_key,
+        customerName: l.customer_name || 'N/A',
         products: l.products || ['chatbot'],
       })),
       topConversations: conversations.slice(0, 5).map(c => ({

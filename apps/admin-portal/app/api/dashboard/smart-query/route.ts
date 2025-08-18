@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const userLicense = await prisma.licenses.findUnique({
       where: { license_key: auth.licenseKey },
       select: {
-        siteKey: true,
+        site_key: true,
         products: true,
         plan: true,
         domain: true
@@ -103,11 +103,11 @@ export async function POST(request: Request) {
     // Save the request to database (without metadata field)
     const savedRequest = await prisma.smartDashboardRequest.create({
       data: {
-        licenseKey: auth.licenseKey,
-        requestType: 'query',
+        license_key: auth.licenseKey,
+        request_type: 'query',
         query: query,
         response: aiResponse,
-        processedAt: new Date()
+        processed_at: new Date()
       }
     })
 
@@ -117,8 +117,8 @@ export async function POST(request: Request) {
       await Promise.all(insights.map(insight =>
         prisma.smartDashboardInsight.create({
           data: {
-            licenseKey: auth.licenseKey,
-            insightType: insight.type,
+            license_key: auth.licenseKey,
+            insight_type: insight.type,
             title: insight.title,
             content: insight.content,
             severity: insight.severity,
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function fetchRelevantData(query: string, siteKey: string | null | undefined, product: string | null) {
+async function fetchRelevantData(query: string, site_key: string | null | undefined, product: string | null) {
   const queryLower = query.toLowerCase()
   const data: any = {
     summary: {},
@@ -176,7 +176,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const stats = await prisma.chatbot_logs.aggregate({
       where: {
-        ...(siteKey ? { siteKey } : {}),
+        ...(siteKey ? { site_key: siteKey } : {}),
         timestamp: { gte: thirtyDaysAgo }
       },
       _count: true
@@ -189,7 +189,7 @@ async function fetchRelevantData(query: string, siteKey: string | null | undefin
     const trends = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
-        ...(siteKey ? { siteKey } : {}),
+        ...(siteKey ? { site_key: siteKey } : {}),
         timestamp: { 
           gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
         }

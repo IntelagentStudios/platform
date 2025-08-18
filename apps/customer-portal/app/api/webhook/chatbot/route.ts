@@ -18,13 +18,13 @@ export async function POST(request: NextRequest) {
     let license = null
     if (data.site_key) {
       license = await prisma.license.findUnique({
-        where: { siteKey: data.site_key },
+        where: { site_key: data.site_key },
         select: {
-          licenseKey: true,
-          siteKey: true,
+          license_key: true,
+          site_key: true,
           status: true,
           domain: true,
-          customerName: true
+          customer_name: true
         }
       })
 
@@ -38,18 +38,18 @@ export async function POST(request: NextRequest) {
 
     // Prepare the chatbot log entry
     const chatbotLogData = {
-      sessionId: data.session_id,
-      siteKey: data.site_key || null,
+      session_id: data.session_id,
+      site_key: data.site_key || null,
       domain: data.domain || license?.domain || null,
-      userId: data.user_id || null,
-      conversationId: data.conversation_id || data.session_id,
+      user_id: data.user_id || null,
+      conversation_id: data.conversation_id || data.session_id,
       timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
       role: data.role || (data.customer_message ? 'user' : 'assistant'),
-      intentDetected: data.intent_detected || null,
+      intent_detected: data.intent_detected || null,
       
       // Handle message content based on role or explicit fields
-      customerMessage: data.role === 'user' ? data.content : data.customer_message || null,
-      chatbotResponse: data.role === 'assistant' ? data.content : data.chatbot_response || null,
+      customer_message: data.role === 'user' ? data.content : data.customer_message || null,
+      chatbot_response: data.role === 'assistant' ? data.content : data.chatbot_response || null,
       content: data.content || data.customer_message || data.chatbot_response || null
     }
 
@@ -63,8 +63,8 @@ export async function POST(request: NextRequest) {
       const lastHour = new Date(Date.now() - 60 * 60 * 1000)
       const recentActivity = await prisma.chatbotLog.findFirst({
         where: {
-          siteKey: data.site_key,
-          sessionId: data.session_id,
+          site_key: data.site_key,
+          session_id: data.session_id,
           timestamp: { gte: lastHour }
         },
         orderBy: { timestamp: 'desc' }
@@ -73,9 +73,9 @@ export async function POST(request: NextRequest) {
       if (!recentActivity || recentActivity.id === log.id) {
         // This is either the first message or a new session
         await prisma.license.update({
-          where: { siteKey: data.site_key },
+          where: { site_key: data.site_key },
           data: {
-            usedAt: new Date()
+            used_at: new Date()
           }
         })
       }
@@ -83,10 +83,10 @@ export async function POST(request: NextRequest) {
 
     // Calculate session statistics for response
     const sessionStats = await prisma.chatbotLog.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
-        sessionId: data.session_id,
-        ...(data.site_key ? { siteKey: data.site_key } : {})
+        session_id: data.session_id,
+        ...(data.site_key ? { site_key: data.site_key } : {})
       },
       _count: { id: true },
       _min: { timestamp: true },

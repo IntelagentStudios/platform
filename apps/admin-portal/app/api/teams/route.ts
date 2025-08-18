@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         id: 'org_' + auth.licenseKey.substring(0, 8),
         name: auth.domain || 'My Organization',
         plan: 'professional',
-        licenseKey: auth.licenseKey,
+        license_key: auth.licenseKey,
       },
       members: [
         {

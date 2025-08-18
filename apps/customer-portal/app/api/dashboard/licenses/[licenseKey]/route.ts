@@ -25,25 +25,25 @@ export async function GET(
     }
 
     const license = await prisma.license.findUnique({
-      where: { licenseKey: params.licenseKey },
+      where: { license_key: params.licenseKey },
       select: {
-        licenseKey: true,
+        license_key: true,
         email: true,
-        customerName: true,
+        customer_name: true,
         domain: true,
         status: true,
-        createdAt: true,
-        usedAt: true,
-        lastIndexed: true,
+        created_at: true,
+        used_at: true,
+        last_indexed: true,
         plan: true,
         products: true,
-        subscriptionStatus: true,
-        lastPaymentDate: true,
-        nextBillingDate: true,
-        subscriptionId: true,
+        subscription_status: true,
+        last_payment_date: true,
+        next_billing_date: true,
+        subscription_id: true,
         _count: {
           select: {
-            chatbotLogs: true
+            chatbot_logs: true
           }
         }
       }
@@ -60,20 +60,20 @@ export async function GET(
     let actualDomain = license.domain
 
     return NextResponse.json({
-      licenseKey: license.licenseKey,
+      licenseKey: license.license_key,
       email: license.email,
-      customerName: license.customerName,
+      customerName: license.customer_name,
       domain: actualDomain,
       status: license.status,
-      createdAt: license.createdAt,
-      usedAt: license.usedAt,
-      lastIndexed: license.lastIndexed,
+      createdAt: license.created_at,
+      usedAt: license.used_at,
+      lastIndexed: license.last_indexed,
       plan: license.plan,
       products: license.products,
-      subscriptionStatus: license.subscriptionStatus,
-      lastPaymentDate: license.lastPaymentDate,
-      nextBillingDate: license.nextBillingDate,
-      conversationCount: license._count.chatbotLogs
+      subscriptionStatus: license.subscription_status,
+      lastPaymentDate: license.last_payment_date,
+      nextBillingDate: license.next_billing_date,
+      conversationCount: license._count.chatbot_logs
     })
   } catch (error) {
     console.error('Licence API error:', error)

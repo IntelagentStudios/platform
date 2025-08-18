@@ -15,21 +15,21 @@ export async function GET() {
 
     // Get recent license activities
     const recentLicenses = await prisma.license.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 10,
       select: {
-        licenseKey: true,
+        license_key: true,
         status: true,
-        createdAt: true,
+        created_at: true,
         domain: true,
-        customerName: true,
-        usedAt: true,
+        customer_name: true,
+        used_at: true,
       }
     })
 
     // Get recent chatbot activities
     const recentSessions = await prisma.chatbotLog.groupBy({
-      by: ['sessionId', 'siteKey'],
+      by: ['session_id', 'site_key'],
       _max: {
         timestamp: true
       },
@@ -46,29 +46,29 @@ export async function GET() {
 
     // Add license activities
     recentLicenses.forEach(license => {
-      if (license.createdAt) {
+      if (license.created_at) {
         activities.push({
           type: 'license_created',
-          description: `Licence created for ${license.customerName || license.domain || 'Unknown'}`,
-          timestamp: license.createdAt,
+          description: `Licence created for ${license.customer_name || license.domain || 'Unknown'}`,
+          timestamp: license.created_at,
           status: 'info'
         })
       }
 
-      if (license.usedAt && license.createdAt && license.usedAt > license.createdAt) {
+      if (license.used_at && license.created_at && license.used_at > license.created_at) {
         activities.push({
           type: 'license_activated',
-          description: `Licence activated by ${license.customerName || license.domain || 'Unknown'}`,
-          timestamp: license.usedAt,
+          description: `Licence activated by ${license.customer_name || license.domain || 'Unknown'}`,
+          timestamp: license.used_at,
           status: 'success'
         })
       }
 
-      if (license.status === 'expired' && license.createdAt) {
+      if (license.status === 'expired' && license.created_at) {
         activities.push({
           type: 'license_expired',
-          description: `Licence expired for ${license.customerName || license.domain || 'Unknown'}`,
-          timestamp: license.createdAt,
+          description: `Licence expired for ${license.customer_name || license.domain || 'Unknown'}`,
+          timestamp: license.created_at,
           status: 'warning'
         })
       }
@@ -78,16 +78,16 @@ export async function GET() {
     for (const session of recentSessions) {
       if (session._max.timestamp) {
         let license = null
-        if (session.siteKey) {
+        if (session.site_key) {
           license = await prisma.license.findUnique({
-            where: { siteKey: session.siteKey },
-            select: { domain: true, customerName: true }
+            where: { site_key: session.site_key },
+            select: { domain: true, customer_name: true }
           })
         }
 
         activities.push({
           type: 'new_session',
-          description: `New conversation from ${license?.customerName || license?.domain || 'Unknown'}`,
+          description: `New conversation from ${license?.customer_name || license?.domain || 'Unknown'}`,
           timestamp: session._max.timestamp,
           status: 'activity'
         })

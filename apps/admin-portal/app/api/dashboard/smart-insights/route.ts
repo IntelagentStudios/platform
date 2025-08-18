@@ -16,13 +16,13 @@ export async function GET() {
     // Fetch existing insights from database
     const insights = await prisma.smartDashboardInsight.findMany({
       where: {
-        licenseKey: auth.licenseKey,
+        license_key: auth.licenseKey,
         OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
+          { expires_at: null },
+          { expires_at: { gt: new Date() } }
         ]
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 
@@ -42,7 +42,7 @@ export async function GET() {
   }
 }
 
-async function generateInitialInsights(licenseKey: string) {
+async function generateInitialInsights(license_key: string) {
   const license = await prisma.licenses.findUnique({
     where: { license_key: licenseKey },
     select: { site_key: true, products: true, plan: true }
@@ -68,14 +68,14 @@ async function generateInitialInsights(licenseKey: string) {
       title: 'Active Engagement',
       content: `You have ${conversations.length} total conversation sessions recorded.`,
       severity: 'low',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
   // Check for recent activity
   const recentActivity = await prisma.chatbot_logs.count({
     where: {
-      siteKey: license.site_key,
+      site_key: license.site_key,
       timestamp: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
       }
@@ -89,7 +89,7 @@ async function generateInitialInsights(licenseKey: string) {
       title: 'High Recent Activity',
       content: `${recentActivity} interactions in the last 24 hours shows strong engagement.`,
       severity: 'medium',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
@@ -101,7 +101,7 @@ async function generateInitialInsights(licenseKey: string) {
       title: 'Expand Your Product Suite',
       content: 'Consider adding Email Assistant or Voice Assistant to provide more value to your users.',
       severity: 'low',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
@@ -113,7 +113,7 @@ async function generateInitialInsights(licenseKey: string) {
       title: 'Unlock Premium Features',
       content: 'Upgrade to Premium for AI insights, combined analytics, and advanced reporting.',
       severity: 'medium',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 

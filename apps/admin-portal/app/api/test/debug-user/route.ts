@@ -14,13 +14,13 @@ export async function GET() {
     const userLicense = await prisma.licenses.findUnique({
       where: { license_key: auth.licenseKey },
       select: {
-        licenseKey: true,
-        siteKey: true,
+        license_key: true,
+        site_key: true,
         domain: true,
-        customerName: true,
+        customer_name: true,
         products: true,
         status: true,
-        createdAt: true
+        created_at: true
       }
     })
 
@@ -44,7 +44,7 @@ export async function GET() {
       await prisma.chatbot_logs.groupBy({
         by: ['session_id', 'site_key', 'domain'],
         where: {
-          siteKey: userLicense.siteKey,
+          site_key: userLicense.site_key,
           session_id: { not: null }
         },
         _count: true,
@@ -59,7 +59,7 @@ export async function GET() {
     // Check for NULL siteKey records
     const nullSiteKeyRecords = await prisma.chatbot_logs.count({
       where: {
-        siteKey: null,
+        site_key: null,
         session_id: { not: null }
       }
     })
@@ -77,33 +77,33 @@ export async function GET() {
 
     return NextResponse.json({
       auth: {
-        licenseKey: auth.licenseKey,
+        license_key: auth.licenseKey,
         domain: auth.domain,
         isMaster: auth.isMaster
       },
       userLicense: userLicense || 'No license found',
       analysis: {
-        userHasSiteKey: !!userLicense?.siteKey,
-        userSiteKey: userLicense?.siteKey || 'NULL',
+        userHasSiteKey: !!userLicense?.site_key,
+        userSiteKey: userLicense?.site_key || 'NULL',
         totalUnfilteredSessions: unfiltered.length,
         totalFilteredSessions: filteredBySiteKey.length,
         nullSiteKeyRecords,
         distinctSiteKeysCount: distinctSiteKeys.length
       },
       unfilteredSample: unfiltered.slice(0, 3).map(item => ({
-        sessionId: item.sessionId,
-        siteKey: item.siteKey || 'NULL',
+        sessionId: item.session_id,
+        site_key: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count
       })),
       filteredSample: filteredBySiteKey.slice(0, 3).map(item => ({
-        sessionId: item.sessionId,
-        siteKey: item.siteKey || 'NULL',
+        sessionId: item.session_id,
+        site_key: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count
       })),
       distinctSiteKeys: distinctSiteKeys.map(item => ({
-        siteKey: item.siteKey || 'NULL',
+        site_key: item.site_key || 'NULL',
         recordCount: item._count
       }))
     })

@@ -18,14 +18,14 @@ export async function GET() {
     if (auth.isMaster) {
       licenses = await prisma.license.findMany({
         orderBy: {
-          createdAt: 'desc',
+          created_at: 'desc',
         },
         take: 50,
       })
     } else {
       licenses = await prisma.license.findMany({
         where: {
-          licenseKey: auth.licenseKey,
+          license_key: auth.licenseKey,
         },
       })
     }

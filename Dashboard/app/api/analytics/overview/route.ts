@@ -33,7 +33,7 @@ export async function GET() {
       // Get licenses from last 30 days for growth calculation
       const recentLicenses = await prisma.license.count({
         where: {
-          createdAt: { gte: thirtyDaysAgo },
+          created_at: { gte: thirtyDaysAgo },
           OR: [
             { status: 'active' },
             { status: 'trial' }
@@ -43,13 +43,13 @@ export async function GET() {
 
       // Get total conversations
       const totalConversations = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         _count: true
       })
 
       // Get conversations from last 7 days
       const recentConversations = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           timestamp: { gte: sevenDaysAgo }
         },
@@ -59,7 +59,7 @@ export async function GET() {
       // Get conversations from previous 7 days for comparison
       const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
       const previousConversations = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           timestamp: {
             gte: fourteenDaysAgo,
@@ -131,14 +131,14 @@ export async function GET() {
     } else {
       // Individual user sees only their data
       const license = await prisma.license.findUnique({
-        where: { licenseKey: auth.licenseKey },
+        where: { license_key: auth.licenseKey },
         select: {
           status: true,
           plan: true,
           domain: true,
-          createdAt: true,
-          usedAt: true,
-          siteKey: true
+          created_at: true,
+          used_at: true,
+          site_key: true
         }
       })
 
@@ -147,18 +147,18 @@ export async function GET() {
       }
 
       // Build where clause for user's conversations
-      const userWhereClause = license.siteKey ? { siteKey: license.siteKey } : {}
+      const userWhereClause = license.site_key ? { site_key: license.site_key } : {}
 
       // Get user's conversations
       const userConversations = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: userWhereClause,
         _count: true
       })
 
       // Get recent conversations
       const recentUserConversations = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           ...userWhereClause,
           timestamp: { gte: sevenDaysAgo }
@@ -173,10 +173,10 @@ export async function GET() {
 
       // Get unique users (if tracked)
       const uniqueUsers = await prisma.chatbotLog.groupBy({
-        by: ['userId'],
+        by: ['user_id'],
         where: {
           ...userWhereClause,
-          userId: { not: null }
+          user_id: { not: null }
         }
       })
 
@@ -194,8 +194,8 @@ export async function GET() {
         totalMessages,
         uniqueUsers: uniqueUsers.length,
         avgMessagesPerConversation,
-        accountAge: license.createdAt 
-          ? Math.floor((now.getTime() - new Date(license.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+        accountAge: license.created_at 
+          ? Math.floor((now.getTime() - new Date(license.created_at).getTime()) / (1000 * 60 * 60 * 24))
           : 0
       })
     }

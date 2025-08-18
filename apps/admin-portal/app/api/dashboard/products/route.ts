@@ -17,9 +17,9 @@ export async function GET() {
     const licenses = await prisma.licenses.findMany({
       where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
-        licenseKey: true,
+        license_key: true,
         products: true,
-        siteKey: true
+        site_key: true
       }
     })
 
@@ -59,7 +59,7 @@ export async function GET() {
         const conversations = await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
+            site_key: { in: chatbotData.siteKeys },
             session_id: { not: null }
           },
           _count: true
@@ -70,7 +70,7 @@ export async function GET() {
         const recentSessions = await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
+            site_key: { in: chatbotData.siteKeys },
             session_id: { not: null },
             timestamp: { gte: thirtyDaysAgo }
           },
@@ -80,7 +80,7 @@ export async function GET() {
         const previousSessions = await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
+            site_key: { in: chatbotData.siteKeys },
             session_id: { not: null },
             timestamp: {
               gte: sixtyDaysAgo,

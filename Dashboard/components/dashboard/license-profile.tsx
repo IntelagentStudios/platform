@@ -32,17 +32,17 @@ interface LicenseProfileProps {
 
 interface ProfileData {
   license: {
-    licenseKey: string
+    licenseKey: string // This is the display name from API response
     email?: string
-    customerName?: string
+    customerName?: string // This is the display name from API response  
     domain?: string
     status?: string
-    createdAt?: string
-    usedAt?: string
-    lastIndexed?: string
+    createdAt?: string // This is the display name from API response
+    usedAt?: string // This is the display name from API response
+    lastIndexed?: string // This is the display name from API response
     plan?: string
     productType?: string
-    subscriptionStatus?: string
+    subscriptionStatus?: string // This is the display name from API response
   }
   stats: {
     totalConversations: number

@@ -16,11 +16,11 @@ export async function GET() {
     // Get all active licenses with their products
     const licenses = await prisma.licenses.findMany({
       where: auth.isMaster ? { status: 'active' } : { 
-        licenseKey: auth.licenseKey,
+        license_key: auth.licenseKey,
         status: 'active'
       },
       select: {
-        licenseKey: true,
+        license_key: true,
         products: true
       }
     })

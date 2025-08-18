@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
             title: 'New License Created',
             description: `${license.customer_name || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
             metadata: {
-              licenseKey: license.license_key,
+              license_key: license.license_key,
               domain: license.domain,
               plan: license.plan,
               products: license.products
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
             title: 'License Activated',
             description: `${license.domain || license.customer_name || 'Unknown'} activated their license`,
             metadata: {
-              licenseKey: license.license_key,
+              license_key: license.license_key,
               domain: license.domain
             },
             icon: 'check',
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
             title: 'License Expired',
             description: `${license.customer_name || license.domain || 'Unknown'} license expired`,
             metadata: {
-              licenseKey: license.license_key,
+              license_key: license.license_key,
               domain: license.domain
             },
             icon: 'alert',

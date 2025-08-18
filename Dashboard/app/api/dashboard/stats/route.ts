@@ -21,13 +21,13 @@ export async function GET(request: Request) {
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
       const userLicense = await prisma.license.findUnique({
-        where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        where: { license_key: auth.licenseKey },
+        select: { site_key: true }
       })
       
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense.siteKey
-        userSiteKey = userLicense.siteKey
+      if (userLicense?.site_key) {
+        whereClause.site_key = userLicense.site_key
+        userSiteKey = userLicense.site_key
       } else {
         // No siteKey found, return zeros
         return NextResponse.json({
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         auth.isMaster 
           ? prisma.license.count({
               where: {
-                createdAt: {
+                created_at: {
                   gte: sixtyDaysAgo,
                   lt: thirtyDaysAgo
                 }
@@ -59,10 +59,10 @@ export async function GET(request: Request) {
           : Promise.resolve(0),
         
         prisma.chatbotLog.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: {
               gte: sixtyDaysAgo,
               lt: thirtyDaysAgo
@@ -72,10 +72,10 @@ export async function GET(request: Request) {
         }).then(result => result.length),
 
         prisma.chatbotLog.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
-            sessionId: { not: null },
+            session_id: { not: null },
             timestamp: {
               gte: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
               lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -88,14 +88,14 @@ export async function GET(request: Request) {
       // Calculate previous revenue
       const prevSubscriptions = await prisma.license.findMany({
         where: {
-          ...(auth.isMaster ? {} : { licenseKey: auth.licenseKey }),
-          createdAt: {
+          ...(auth.isMaster ? {} : { license_key: auth.licenseKey }),
+          created_at: {
             lt: thirtyDaysAgo
           }
         },
         select: {
           plan: true,
-          subscriptionStatus: true
+          subscription_status: true
         }
       })
 
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       }
 
       const prevRevenue = prevSubscriptions.reduce((total, sub) => {
-        if (sub.subscriptionStatus === 'active' && sub.plan) {
+        if (sub.subscription_status === 'active' && sub.plan) {
           return total + (planPrices[sub.plan.toLowerCase()] || 25)
         }
         return total
@@ -137,20 +137,20 @@ export async function GET(request: Request) {
       
       // Total conversations (unique sessions)
       prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           ...whereClause,
-          sessionId: { not: null }
+          session_id: { not: null }
         },
         _count: true,
       }).then(result => result.length),
       
       // Recent conversations (last 30 days)
       prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
           ...whereClause,
-          sessionId: { not: null },
+          session_id: { not: null },
           timestamp: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
@@ -164,10 +164,10 @@ export async function GET(request: Request) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
     const previousPeriodConversations = await prisma.chatbotLog.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         ...whereClause,
-        sessionId: { not: null },
+        session_id: { not: null },
         timestamp: {
           gte: sixtyDaysAgo,
           lt: thirtyDaysAgo
@@ -186,10 +186,10 @@ export async function GET(request: Request) {
     todayStart.setHours(0, 0, 0, 0)
     
     const sessionsToday = await prisma.chatbotLog.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       where: {
         ...whereClause,
-        sessionId: { not: null },
+        session_id: { not: null },
         timestamp: {
           gte: todayStart
         }
@@ -207,9 +207,9 @@ export async function GET(request: Request) {
       },
       select: {
         timestamp: true,
-        sessionId: true,
-        customerMessage: true,
-        chatbotResponse: true
+        session_id: true,
+        customer_message: true,
+        chatbot_response: true
       },
       orderBy: {
         timestamp: 'asc'
@@ -222,17 +222,17 @@ export async function GET(request: Request) {
     const sessionMessages = new Map<string, any[]>()
     
     recentLogs.forEach(log => {
-      if (log.sessionId) {
-        if (!sessionMessages.has(log.sessionId)) {
-          sessionMessages.set(log.sessionId, [])
+      if (log.session_id) {
+        if (!sessionMessages.has(log.session_id)) {
+          sessionMessages.set(log.session_id, [])
         }
-        sessionMessages.get(log.sessionId)!.push(log)
+        sessionMessages.get(log.session_id)!.push(log)
       }
     })
 
     sessionMessages.forEach(messages => {
       for (let i = 0; i < messages.length - 1; i++) {
-        if (messages[i].customerMessage && messages[i + 1].chatbotResponse) {
+        if (messages[i].customer_message && messages[i + 1].chatbot_response) {
           const responseTime = (messages[i + 1].timestamp.getTime() - messages[i].timestamp.getTime()) / 1000
           if (responseTime > 0 && responseTime < 60) { // Reasonable response time (under 60 seconds)
             responseTimes.push(responseTime)
@@ -253,10 +253,10 @@ export async function GET(request: Request) {
 
     // Calculate revenue based on actual subscriptions
     const subscriptions = await prisma.license.findMany({
-      where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
+      where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
         plan: true,
-        subscriptionStatus: true
+        subscription_status: true
       }
     })
 
@@ -269,7 +269,7 @@ export async function GET(request: Request) {
     }
 
     const revenue = subscriptions.reduce((total, sub) => {
-      if (sub.subscriptionStatus === 'active' && sub.plan) {
+      if (sub.subscription_status === 'active' && sub.plan) {
         return total + (planPrices[sub.plan.toLowerCase()] || 25)
       }
       return total

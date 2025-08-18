@@ -23,14 +23,14 @@ export async function GET() {
     }
 
     const license = await prisma.license.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
     })
 
     return NextResponse.json({
       licenseKey: auth.licenseKey,
       domain: auth.domain,
       isMaster: false,
-      customerName: license?.customerName,
+      customerName: license?.customer_name,
       email: license?.email,
       products: license?.products,
     })

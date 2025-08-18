@@ -17,8 +17,8 @@ async function testConnection() {
     
     if (licenses.length > 0) {
       console.log('\nFirst license:', {
-        licenseKey: licenses[0].licenseKey,
-        customerName: licenses[0].customerName,
+        licenseKey: licenses[0].license_key,
+        customerName: licenses[0].customer_name,
         domain: licenses[0].domain,
         productType: licenses[0].productType,
       })
@@ -26,7 +26,7 @@ async function testConnection() {
     
     console.log('\nFetching chatbot logs...')
     const logs = await prisma.chatbotLog.groupBy({
-      by: ['sessionId'],
+      by: ['session_id'],
       _count: true,
       take: 5,
     })

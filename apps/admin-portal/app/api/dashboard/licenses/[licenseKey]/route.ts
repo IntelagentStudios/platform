@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { licenseKey: string } }
+  { params }: { params: { license_key: string } }
 ) {
   try {
     const auth = await getAuthFromCookies()
@@ -60,12 +60,12 @@ export async function GET(
     let actualDomain = license.domain
 
     return NextResponse.json({
-      licenseKey: license.license_key,
+      license_key: license.license_key,
       email: license.email,
       customerName: license.customer_name,
       domain: actualDomain,
       status: license.status,
-      createdAt: license.created_at,
+      created_at: license.created_at,
       usedAt: license.used_at,
       lastIndexed: license.last_indexed,
       plan: license.plan,

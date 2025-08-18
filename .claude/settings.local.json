@@ -23,7 +23,8 @@
       "Bash(grep:*)",
       "Bash(npx prisma db pull:*)",
       "Bash(touch:*)",
-      "Bash(timeout 30 npm run build)"
+      "Bash(timeout 30 npm run build)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": [],

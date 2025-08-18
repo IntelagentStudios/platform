@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         auth.isMaster 
           ? prisma.licenses.count({
               where: {
-                createdAt: {
+                created_at: {
                   gte: sixtyDaysAgo,
                   lt: thirtyDaysAgo
                 }
@@ -88,8 +88,8 @@ export async function GET(request: Request) {
       // Calculate previous revenue
       const prevSubscriptions = await prisma.licenses.findMany({
         where: {
-          ...(auth.isMaster ? {} : { licenseKey: auth.licenseKey }),
-          createdAt: {
+          ...(auth.isMaster ? {} : { license_key: auth.licenseKey }),
+          created_at: {
             lt: thirtyDaysAgo
           }
         },

@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
             sessionId: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
             customerName: log.licenses?.customer_name,
-            licenseKey: log.licenses?.license_key,
+            license_key: log.licenses?.license_key,
             messageCount: 0,
             startTime: log.timestamp,
             lastActivity: log.timestamp
@@ -164,7 +164,7 @@ export async function GET(request: NextRequest) {
             sessionId: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
             customerName: log.licenses?.customer_name,
-            licenseKey: auth.isMaster ? log.licenses?.license_key : undefined,
+            license_key: auth.isMaster ? log.licenses?.license_key : undefined,
             conversationId: log.conversation_id,
             messages: [],
             startTime: log.timestamp,
@@ -244,7 +244,7 @@ export async function GET(request: NextRequest) {
           sessionMap.set(log.session_id, {
             sessionId: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
-            licenseKey: auth.isMaster ? log.licenses?.license_key : undefined,
+            license_key: auth.isMaster ? log.licenses?.license_key : undefined,
             customerName: log.licenses?.customer_name,
             messageCount: 0,
             startTime: log.timestamp,

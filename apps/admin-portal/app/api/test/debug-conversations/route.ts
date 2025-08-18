@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     const userLicense = await prisma.licenses.findUnique({
       where: { license_key: auth.licenseKey },
       select: {
-        licenseKey: true,
-        siteKey: true,
+        license_key: true,
+        site_key: true,
         domain: true,
-        customerName: true,
+        customer_name: true,
         products: true
       }
     })
@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
     
     // For non-master users
     if (!auth.isMaster) {
-      if (!userLicense?.siteKey) {
+      if (!userLicense?.site_key) {
         return NextResponse.json({
           debug: {
             auth: {
-              licenseKey: auth.licenseKey,
+              license_key: auth.licenseKey,
               isMaster: auth.isMaster
             },
             userLicense: 'No siteKey found',
@@ -47,21 +47,21 @@ export async function GET(request: NextRequest) {
           sessions: []
         })
       }
-      whereClause.site_key = userLicense.siteKey
+      whereClause.site_key = userLicense.site_key
     }
 
     // Run the actual query
     const logs = await prisma.chatbot_logs.findMany({
       where: whereClause,
       select: {
-        sessionId: true,
+        session_id: true,
         domain: true,
-        siteKey: true,
+        site_key: true,
         timestamp: true,
         role: true,
         content: true,
-        customerMessage: true,
-        chatbotResponse: true
+        customer_message: true,
+        chatbot_response: true
       },
       orderBy: { timestamp: 'desc' },
       take: 50
@@ -70,16 +70,16 @@ export async function GET(request: NextRequest) {
     // Group by session to see what's being returned
     const sessionMap = new Map()
     logs.forEach(log => {
-      if (!sessionMap.has(log.sessionId)) {
-        sessionMap.set(log.sessionId, {
-          sessionId: log.sessionId,
+      if (!sessionMap.has(log.session_id)) {
+        sessionMap.set(log.session_id, {
+          sessionId: log.session_id,
           domain: log.domain || 'Unknown',
-          siteKey: log.siteKey || 'NULL',
+          site_key: log.site_key || 'NULL',
           messageCount: 0,
           firstMessage: log.timestamp
         })
       }
-      sessionMap.get(log.sessionId).messageCount++
+      sessionMap.get(log.session_id).messageCount++
     })
 
     // Get count of records that match vs don't match the user's siteKey
@@ -88,9 +88,9 @@ export async function GET(request: NextRequest) {
     let nullSiteKey = 0
     
     logs.forEach(log => {
-      if (!log.siteKey) {
+      if (!log.site_key) {
         nullSiteKey++
-      } else if (log.siteKey === userLicense?.siteKey) {
+      } else if (log.site_key === userLicense?.site_key) {
         matchingSiteKey++
       } else {
         differentSiteKey++
@@ -103,18 +103,18 @@ export async function GET(request: NextRequest) {
     })
 
     // Check distinct siteKeys in results
-    const distinctSiteKeys = new Set(logs.map(l => l.siteKey).filter(Boolean))
+    const distinctSiteKeys = new Set(logs.map(l => l.site_key).filter(Boolean))
 
     return NextResponse.json({
       debug: {
         auth: {
-          licenseKey: auth.licenseKey,
+          license_key: auth.licenseKey,
           isMaster: auth.isMaster,
           domain: auth.domain
         },
         userLicense: {
           hasLicense: !!userLicense,
-          siteKey: userLicense?.siteKey || 'NULL',
+          site_key: userLicense?.site_key || 'NULL',
           domain: userLicense?.domain,
           products: userLicense?.products
         },
@@ -131,10 +131,10 @@ export async function GET(request: NextRequest) {
       },
       sessions: Array.from(sessionMap.values()),
       sampleLogs: logs.slice(0, 5).map(log => ({
-        sessionId: log.sessionId,
-        siteKey: log.siteKey || 'NULL',
+        sessionId: log.session_id,
+        site_key: log.site_key || 'NULL',
         domain: log.domain || 'NULL',
-        hasContent: !!(log.content || log.customerMessage || log.chatbotResponse),
+        hasContent: !!(log.content || log.customer_message || log.chatbot_response),
         role: log.role
       }))
     })

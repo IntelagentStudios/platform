@@ -15,7 +15,7 @@ export async function GET() {
 
     if (auth.isMaster) {
       return NextResponse.json({
-        licenseKey: auth.licenseKey,
+        license_key: auth.licenseKey,
         domain: auth.domain,
         isMaster: true,
         customerName: 'Master Admin',
@@ -27,7 +27,7 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      licenseKey: auth.licenseKey,
+      license_key: auth.licenseKey,
       domain: auth.domain,
       isMaster: false,
       customerName: license?.customer_name,
