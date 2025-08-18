@@ -15,15 +15,15 @@ export async function GET() {
 
     // Get recent license activities
     const recentLicenses = await prisma.licenses.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 10,
       select: {
-        licenseKey: true,
+        license_key: true,
         status: true,
-        createdAt: true,
+        created_at: true,
         domain: true,
         customer_name: true,
-        usedAt: true,
+        used_at: true,
       }
     })
 
@@ -46,29 +46,29 @@ export async function GET() {
 
     // Add license activities
     recentLicenses.forEach(license => {
-      if (license.createdAt) {
+      if (license.created_at) {
         activities.push({
           type: 'license_created',
           description: `Licence created for ${license.customer_name || license.domain || 'Unknown'}`,
-          timestamp: license.createdAt,
+          timestamp: license.created_at,
           status: 'info'
         })
       }
 
-      if (license.usedAt && license.createdAt && license.usedAt > license.createdAt) {
+      if (license.used_at && license.created_at && license.used_at > license.created_at) {
         activities.push({
           type: 'license_activated',
           description: `Licence activated by ${license.customer_name || license.domain || 'Unknown'}`,
-          timestamp: license.usedAt,
+          timestamp: license.used_at,
           status: 'success'
         })
       }
 
-      if (license.status === 'expired' && license.createdAt) {
+      if (license.status === 'expired' && license.created_at) {
         activities.push({
           type: 'license_expired',
           description: `Licence expired for ${license.customer_name || license.domain || 'Unknown'}`,
-          timestamp: license.createdAt,
+          timestamp: license.created_at,
           status: 'warning'
         })
       }

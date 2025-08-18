@@ -46,16 +46,16 @@ export async function GET(
       // Total conversations
       prisma.chatbot_logs.count({
         where: { 
-          siteKey: license.site_key,
+          site_key: license.site_key,
           role: 'user'
         }
       }),
       
       // Unique sessions with stats
       prisma.chatbot_logs.groupBy({
-        by: ['sessionId'],
+        by: ['session_id'],
         where: {
-          siteKey: license.site_key,
+          site_key: license.site_key,
           session_id: { not: null }
         },
         _count: {
@@ -113,7 +113,7 @@ export async function GET(
     const hourlyActivity = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
-        siteKey: license.site_key,
+        site_key: license.site_key,
         timestamp: { not: null }
       },
       _count: true
