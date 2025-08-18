@@ -40,9 +40,9 @@ export async function POST(request: Request) {
 
     // Get user's license for context
     const userLicense = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
       select: {
-        siteKey: true,
+        site_key: true,
         products: true,
         plan: true,
         domain: true
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     })
 
     // Fetch relevant data based on the query
-    const data = await fetchRelevantData(query, userLicense?.siteKey, product)
+    const data = await fetchRelevantData(query, userLicense?.site_key, product)
 
     // Build context for LLM
     const systemPrompt = `You are an intelligent dashboard assistant. You help users understand their data and provide actionable insights.
@@ -103,11 +103,11 @@ export async function POST(request: Request) {
     // Save the request to database (without metadata field)
     const savedRequest = await prisma.smart_dashboard_requests.create({
       data: {
-        licenseKey: auth.licenseKey,
-        requestType: 'query',
+        license_key: auth.licenseKey,
+        request_type: 'query',
         query: query,
         response: aiResponse,
-        processedAt: new Date()
+        processed_at: new Date()
       }
     })
 
@@ -117,8 +117,8 @@ export async function POST(request: Request) {
       await Promise.all(insights.map(insight =>
         prisma.smart_dashboard_insights.create({
           data: {
-            licenseKey: auth.licenseKey,
-            insightType: insight.type,
+            license_key: auth.licenseKey,
+            insight_type: insight.type,
             title: insight.title,
             content: insight.content,
             severity: insight.severity,

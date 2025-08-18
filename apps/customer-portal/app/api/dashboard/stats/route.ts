@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         auth.isMaster 
           ? prisma.licenses.count({
               where: {
-                createdAt: {
+                created_at: {
                   gte: sixtyDaysAgo,
                   lt: thirtyDaysAgo
                 }
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
           : Promise.resolve(0),
         
         prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
             session_id: { not: null },
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
         }).then(result => result.length),
 
         prisma.chatbot_logs.groupBy({
-          by: ['sessionId'],
+          by: ['session_id'],
           where: {
             ...whereClause,
             session_id: { not: null },
