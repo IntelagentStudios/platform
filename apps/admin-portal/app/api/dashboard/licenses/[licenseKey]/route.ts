@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { license_key: string } }
+  { params }: { params: { licenseKey: string } }
 ) {
   try {
     const auth = await getAuthFromCookies()
