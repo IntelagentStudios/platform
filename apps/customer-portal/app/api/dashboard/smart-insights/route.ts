@@ -42,13 +42,13 @@ export async function GET() {
   }
 }
 
-async function generateInitialInsights(licenseKey: string) {
+async function generateInitialInsights(license_key: string) {
   const license = await prisma.licenses.findUnique({
-    where: { licenseKey },
-    select: { siteKey: true, products: true, plan: true }
+    where: { license_key: license_key },
+    select: { site_key: true, products: true, plan: true }
   })
 
-  if (!license?.siteKey) {
+  if (!license?.site_key) {
     return []
   }
 
@@ -56,26 +56,26 @@ async function generateInitialInsights(licenseKey: string) {
   
   // Check conversation volume
   const conversations = await prisma.chatbot_logs.groupBy({
-    by: ['sessionId'],
-    where: { siteKey: license.siteKey },
+    by: ['session_id'],
+    where: { site_key: license.site_key },
     _count: true
   })
 
   if (conversations.length > 0) {
     insights.push({
       id: 1,
-      insightType: 'trend',
+      insight_type: 'trend',
       title: 'Active Engagement',
       content: `You have ${conversations.length} total conversation sessions recorded.`,
       severity: 'low',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
   // Check for recent activity
   const recentActivity = await prisma.chatbot_logs.count({
     where: {
-      siteKey: license.siteKey,
+      site_key: license.site_key,
       timestamp: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
       }
@@ -85,11 +85,11 @@ async function generateInitialInsights(licenseKey: string) {
   if (recentActivity > 10) {
     insights.push({
       id: 2,
-      insightType: 'alert',
+      insight_type: 'alert',
       title: 'High Recent Activity',
       content: `${recentActivity} interactions in the last 24 hours shows strong engagement.`,
       severity: 'medium',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
@@ -97,11 +97,11 @@ async function generateInitialInsights(licenseKey: string) {
   if (license.products && license.products.length === 1) {
     insights.push({
       id: 3,
-      insightType: 'recommendation',
+      insight_type: 'recommendation',
       title: 'Expand Your Product Suite',
       content: 'Consider adding Email Assistant or Voice Assistant to provide more value to your users.',
       severity: 'low',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
@@ -109,11 +109,11 @@ async function generateInitialInsights(licenseKey: string) {
   if (license.plan !== 'premium' && license.plan !== 'enterprise') {
     insights.push({
       id: 4,
-      insightType: 'recommendation',
+      insight_type: 'recommendation',
       title: 'Unlock Premium Features',
       content: 'Upgrade to Premium for AI insights, combined analytics, and advanced reporting.',
       severity: 'medium',
-      createdAt: new Date().toISOString()
+      created_at: new Date().toISOString()
     })
   }
 
