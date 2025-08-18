@@ -199,10 +199,10 @@ export default function ChatbotSessionsTable({
             <div className="space-y-2">
               {data.sessions.map((session) => (
                 <div
-                  key={session.sessionId}
+                  key={session.session_id}
                   className="border rounded-lg p-4 hover:bg-accent/50 transition-colors cursor-pointer"
                   onClick={() => setExpandedSession(
-                    expandedSession === session.sessionId ? null : session.sessionId
+                    expandedSession === session.session_id ? null : session.session_id
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -235,17 +235,17 @@ export default function ChatbotSessionsTable({
                     </div>
                     <ChevronRight 
                       className={`h-5 w-5 text-muted-foreground transition-transform ${
-                        expandedSession === session.sessionId ? 'rotate-90' : ''
+                        expandedSession === session.session_id ? 'rotate-90' : ''
                       }`}
                     />
                   </div>
                   
-                  {expandedSession === session.sessionId && (
+                  {expandedSession === session.session_id && (
                     <div className="mt-4 pt-4 border-t">
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Session ID:</span>
-                          <span className="ml-2 font-mono">{session.sessionId}</span>
+                          <span className="ml-2 font-mono">{session.session_id}</span>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Started:</span>

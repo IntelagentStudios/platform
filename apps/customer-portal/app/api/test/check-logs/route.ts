@@ -10,22 +10,22 @@ export async function GET() {
       take: 10,
       select: {
         id: true,
-        sessionId: true,
+        session_id: true,
         domain: true,
-        siteKey: true,
-        customerMessage: true,
-        chatbotResponse: true,
+        site_key: true,
+        customer_message: true,
+        chatbot_response: true,
         timestamp: true,
-        userId: true,
-        conversationId: true,
+        user_id: true,
+        conversation_id: true,
         role: true,
         content: true,
-        createdAt: true,
+        created_at: true,
         license: {
           select: {
-            licenseKey: true,
+            license_key: true,
             domain: true,
-            customerName: true,
+            customer_name: true,
             products: true
           }
         }
@@ -36,9 +36,9 @@ export async function GET() {
     const nullChecks = {
       totalLogs: recentLogs.length,
       logsWithNullDomain: recentLogs.filter(log => !log.domain && !log.license?.domain).length,
-      logsWithNullSiteKey: recentLogs.filter(log => !log.siteKey).length,
-      logsWithNullSession: recentLogs.filter(log => !log.sessionId).length,
-      logsWithContent: recentLogs.filter(log => log.customerMessage || log.chatbotResponse || log.content).length,
+      logsWithNullSiteKey: recentLogs.filter(log => !log.site_key).length,
+      logsWithNullSession: recentLogs.filter(log => !log.session_id).length,
+      logsWithContent: recentLogs.filter(log => log.customer_message || log.chatbot_response || log.content).length,
       logsWithLicense: recentLogs.filter(log => log.license).length
     }
 
@@ -47,7 +47,7 @@ export async function GET() {
       recentLogs.map(log => log.domain || log.license?.domain).filter(Boolean)
     ))
     const uniqueSiteKeys = Array.from(new Set(
-      recentLogs.map(log => log.siteKey).filter(Boolean)
+      recentLogs.map(log => log.site_key).filter(Boolean)
     ))
     const allProducts = new Set<string>()
     recentLogs.forEach(log => {
@@ -59,22 +59,22 @@ export async function GET() {
     // Format logs for easier reading
     const formattedLogs = recentLogs.map(log => ({
       id: log.id,
-      sessionId: log.sessionId || 'NULL',
+      sessionId: log.session_id || 'NULL',
       domain: log.domain || log.license?.domain || 'NULL',
-      siteKey: log.siteKey || 'NULL',
-      licenseKey: log.license?.licenseKey || 'Not linked',
-      customerName: log.license?.customerName || 'Unknown',
+      siteKey: log.site_key || 'NULL',
+      licenseKey: log.license?.license_key || 'Not linked',
+      customerName: log.license?.customer_name || 'Unknown',
       products: log.license?.products || [],
-      message: log.customerMessage || log.chatbotResponse || log.content || 'No content',
-      role: log.role || (log.customerMessage ? 'user' : log.chatbotResponse ? 'assistant' : 'unknown'),
-      timestamp: log.timestamp?.toISOString() || log.createdAt?.toISOString() || 'No timestamp',
-      userId: log.userId || 'anonymous'
+      message: log.customer_message || log.chatbot_response || log.content || 'No content',
+      role: log.role || (log.customer_message ? 'user' : log.chatbot_response ? 'assistant' : 'unknown'),
+      timestamp: log.timestamp?.toISOString() || log.created_at?.toISOString() || 'No timestamp',
+      userId: log.user_id || 'anonymous'
     }))
 
     // Test JOIN functionality
     const testJoin = await prisma.chatbotLog.findFirst({
       where: {
-        siteKey: { not: null }
+        site_key: { not: null }
       },
       include: {
         license: true

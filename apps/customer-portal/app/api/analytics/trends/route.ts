@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       if (!sessionsByDate.has(dateKey)) {
         sessionsByDate.set(dateKey, new Set())
       }
-      sessionsByDate.get(dateKey)!.add(log.sessionId!)
+      sessionsByDate.get(dateKey)!.add(log.session_id!)
 
       // Track unique licenses per date
       if (log.license?.licenseKey) {

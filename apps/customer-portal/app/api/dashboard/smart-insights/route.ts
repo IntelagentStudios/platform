@@ -22,7 +22,7 @@ export async function GET() {
           { expiresAt: { gt: new Date() } }
         ]
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 

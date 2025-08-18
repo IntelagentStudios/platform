@@ -23,7 +23,7 @@ export async function GET() {
         query: true,
         createdAt: true
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 

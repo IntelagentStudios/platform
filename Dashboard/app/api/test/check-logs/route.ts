@@ -68,7 +68,7 @@ export async function GET() {
       message: log.customer_message || log.chatbot_response || log.content || 'No content',
       role: log.role || (log.customer_message ? 'user' : log.chatbot_response ? 'assistant' : 'unknown'),
       timestamp: log.timestamp?.toISOString() || log.created_at?.toISOString() || 'No timestamp',
-      userId: log.userId || 'anonymous'
+      userId: log.user_id || 'anonymous'
     }))
 
     // Test JOIN functionality

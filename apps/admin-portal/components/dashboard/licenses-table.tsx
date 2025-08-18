@@ -73,15 +73,15 @@ export default function LicensesTable() {
             <tbody>
               {licenses.map((license) => (
                 <tr 
-                  key={license.licenseKey} 
+                  key={license.license_key} 
                   className="border-b hover:bg-accent/50 cursor-pointer transition-colors"
-                  onClick={() => setSelectedLicense(license.licenseKey)}
+                  onClick={() => setSelectedLicense(license.license_key)}
                 >
-                  <td className="py-3 font-mono text-sm">{license.licenseKey}</td>
+                  <td className="py-3 font-mono text-sm">{license.license_key}</td>
                   <td className="py-3">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
-                      {license.customerName || 'N/A'}
+                      {license.customer_name || 'N/A'}
                     </div>
                   </td>
                   <td className="py-3">{license.domain || 'N/A'}</td>
@@ -96,7 +96,7 @@ export default function LicensesTable() {
                     </Badge>
                   </td>
                   <td className="py-3 text-sm text-muted-foreground">
-                    {license.createdAt ? new Date(license.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                    {license.created_at ? new Date(license.created_at).toLocaleDateString('en-GB') : 'N/A'}
                   </td>
                   <td className="py-3">
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />

@@ -88,14 +88,14 @@ export async function GET(request: Request) {
       // Calculate previous revenue
       const prevSubscriptions = await prisma.license.findMany({
         where: {
-          ...(auth.isMaster ? {} : { licenseKey: auth.licenseKey }),
-          createdAt: {
+          ...(auth.isMaster ? {} : { license_key: auth.licenseKey }),
+          created_at: {
             lt: thirtyDaysAgo
           }
         },
         select: {
           plan: true,
-          subscriptionStatus: true
+          subscription_status: true
         }
       })
 
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       }
 
       const prevRevenue = prevSubscriptions.reduce((total, sub) => {
-        if (sub.subscriptionStatus === 'active' && sub.plan) {
+        if (sub.subscription_status === 'active' && sub.plan) {
           return total + (planPrices[sub.plan.toLowerCase()] || 25)
         }
         return total
@@ -253,10 +253,10 @@ export async function GET(request: Request) {
 
     // Calculate revenue based on actual subscriptions
     const subscriptions = await prisma.license.findMany({
-      where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
+      where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
         plan: true,
-        subscriptionStatus: true
+        subscription_status: true
       }
     })
 
@@ -269,7 +269,7 @@ export async function GET(request: Request) {
     }
 
     const revenue = subscriptions.reduce((total, sub) => {
-      if (sub.subscriptionStatus === 'active' && sub.plan) {
+      if (sub.subscription_status === 'active' && sub.plan) {
         return total + (planPrices[sub.plan.toLowerCase()] || 25)
       }
       return total

@@ -70,16 +70,16 @@ export async function GET(request: NextRequest) {
     // Group by session to see what's being returned
     const sessionMap = new Map()
     logs.forEach(log => {
-      if (!sessionMap.has(log.sessionId)) {
-        sessionMap.set(log.sessionId, {
-          sessionId: log.sessionId,
+      if (!sessionMap.has(log.session_id)) {
+        sessionMap.set(log.session_id, {
+          sessionId: log.session_id,
           domain: log.domain || 'Unknown',
-          siteKey: log.siteKey || 'NULL',
+          siteKey: log.site_key || 'NULL',
           messageCount: 0,
           firstMessage: log.timestamp
         })
       }
-      sessionMap.get(log.sessionId).messageCount++
+      sessionMap.get(log.session_id).messageCount++
     })
 
     // Get count of records that match vs don't match the user's siteKey
@@ -88,9 +88,9 @@ export async function GET(request: NextRequest) {
     let nullSiteKey = 0
     
     logs.forEach(log => {
-      if (!log.siteKey) {
+      if (!log.site_key) {
         nullSiteKey++
-      } else if (log.siteKey === userLicense?.siteKey) {
+      } else if (log.site_key === userLicense?.siteKey) {
         matchingSiteKey++
       } else {
         differentSiteKey++
@@ -131,10 +131,10 @@ export async function GET(request: NextRequest) {
       },
       sessions: Array.from(sessionMap.values()),
       sampleLogs: logs.slice(0, 5).map(log => ({
-        sessionId: log.sessionId,
-        siteKey: log.siteKey || 'NULL',
+        sessionId: log.session_id,
+        siteKey: log.site_key || 'NULL',
         domain: log.domain || 'NULL',
-        hasContent: !!(log.content || log.customerMessage || log.chatbotResponse),
+        hasContent: !!(log.content || log.customer_message || log.chatbot_response),
         role: log.role
       }))
     })

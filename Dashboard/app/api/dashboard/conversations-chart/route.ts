@@ -53,12 +53,12 @@ export async function POST(request: Request) {
     const dailyData = new Map<string, Set<string>>()
 
     conversations.forEach(log => {
-      if (log.timestamp && log.sessionId) {
+      if (log.timestamp && log.session_id) {
         const date = new Date(log.timestamp).toISOString().split('T')[0]
         if (!dailyData.has(date)) {
           dailyData.set(date, new Set())
         }
-        dailyData.get(date)!.add(log.sessionId)
+        dailyData.get(date)!.add(log.session_id)
       }
     })
 

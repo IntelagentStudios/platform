@@ -95,7 +95,7 @@ export async function GET(request: Request) {
         },
         select: {
           plan: true,
-          subscriptionStatus: true
+          subscription_status: true
         }
       })
 
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       }
 
       const prevRevenue = prevSubscriptions.reduce((total, sub) => {
-        if (sub.subscriptionStatus === 'active' && sub.plan) {
+        if (sub.subscription_status === 'active' && sub.plan) {
           return total + (planPrices[sub.plan.toLowerCase()] || 25)
         }
         return total
@@ -222,11 +222,11 @@ export async function GET(request: Request) {
     const sessionMessages = new Map<string, any[]>()
     
     recentLogs.forEach(log => {
-      if (log.sessionId) {
-        if (!sessionMessages.has(log.sessionId)) {
-          sessionMessages.set(log.sessionId, [])
+      if (log.session_id) {
+        if (!sessionMessages.has(log.session_id)) {
+          sessionMessages.set(log.session_id, [])
         }
-        sessionMessages.get(log.sessionId)!.push(log)
+        sessionMessages.get(log.session_id)!.push(log)
       }
     })
 
@@ -256,7 +256,7 @@ export async function GET(request: Request) {
       where: auth.isMaster ? {} : { license_key: auth.licenseKey },
       select: {
         plan: true,
-        subscriptionStatus: true
+        subscription_status: true
       }
     })
 
@@ -269,7 +269,7 @@ export async function GET(request: Request) {
     }
 
     const revenue = subscriptions.reduce((total, sub) => {
-      if (sub.subscriptionStatus === 'active' && sub.plan) {
+      if (sub.subscription_status === 'active' && sub.plan) {
         return total + (planPrices[sub.plan.toLowerCase()] || 25)
       }
       return total

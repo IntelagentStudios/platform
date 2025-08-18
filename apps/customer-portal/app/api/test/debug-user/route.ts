@@ -12,46 +12,46 @@ export async function GET() {
 
     // Get the user's license details
     const userLicense = await prisma.license.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.licenseKey },
       select: {
-        licenseKey: true,
-        siteKey: true,
+        license_key: true,
+        site_key: true,
         domain: true,
-        customerName: true,
+        customer_name: true,
         products: true,
         status: true,
-        createdAt: true
+        created_at: true
       }
     })
 
     // Check what data would be returned without filtering
     const unfiltered = await prisma.chatbotLog.groupBy({
-      by: ['sessionId', 'siteKey', 'domain'],
+      by: ['session_id', 'site_key', 'domain'],
       where: {
-        sessionId: { not: null }
+        session_id: { not: null }
       },
       _count: true,
       take: 10,
       orderBy: {
         _count: {
-          sessionId: 'desc'
+          session_id: 'desc'
         }
       }
     })
 
     // Check what data would be returned WITH siteKey filtering
-    const filteredBySiteKey = userLicense?.siteKey ? 
+    const filteredBySiteKey = userLicense?.site_key ? 
       await prisma.chatbotLog.groupBy({
-        by: ['sessionId', 'siteKey', 'domain'],
+        by: ['session_id', 'site_key', 'domain'],
         where: {
-          siteKey: userLicense.siteKey,
-          sessionId: { not: null }
+          site_key: userLicense.site_key,
+          session_id: { not: null }
         },
         _count: true,
         take: 10,
         orderBy: {
           _count: {
-            sessionId: 'desc'
+            session_id: 'desc'
           }
         }
       }) : []
@@ -59,18 +59,18 @@ export async function GET() {
     // Check for NULL siteKey records
     const nullSiteKeyRecords = await prisma.chatbotLog.count({
       where: {
-        siteKey: null,
-        sessionId: { not: null }
+        site_key: null,
+        session_id: { not: null }
       }
     })
 
     // Get distinct siteKeys in the database
     const distinctSiteKeys = await prisma.chatbotLog.groupBy({
-      by: ['siteKey'],
+      by: ['site_key'],
       _count: true,
       orderBy: {
         _count: {
-          siteKey: 'desc'
+          site_key: 'desc'
         }
       }
     })
@@ -83,27 +83,27 @@ export async function GET() {
       },
       userLicense: userLicense || 'No license found',
       analysis: {
-        userHasSiteKey: !!userLicense?.siteKey,
-        userSiteKey: userLicense?.siteKey || 'NULL',
+        userHasSiteKey: !!userLicense?.site_key,
+        userSiteKey: userLicense?.site_key || 'NULL',
         totalUnfilteredSessions: unfiltered.length,
         totalFilteredSessions: filteredBySiteKey.length,
         nullSiteKeyRecords,
         distinctSiteKeysCount: distinctSiteKeys.length
       },
       unfilteredSample: unfiltered.slice(0, 3).map(item => ({
-        sessionId: item.sessionId,
-        siteKey: item.siteKey || 'NULL',
+        sessionId: item.session_id,
+        siteKey: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count
       })),
       filteredSample: filteredBySiteKey.slice(0, 3).map(item => ({
-        sessionId: item.sessionId,
-        siteKey: item.siteKey || 'NULL',
+        sessionId: item.session_id,
+        siteKey: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count
       })),
       distinctSiteKeys: distinctSiteKeys.map(item => ({
-        siteKey: item.siteKey || 'NULL',
+        siteKey: item.site_key || 'NULL',
         recordCount: item._count
       }))
     })

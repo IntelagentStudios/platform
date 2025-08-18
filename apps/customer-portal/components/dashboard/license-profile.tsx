@@ -128,7 +128,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
           </Button>
           <div>
             <h2 className="text-2xl font-bold">Licence Profile</h2>
-            <p className="text-sm text-muted-foreground">{license.licenseKey}</p>
+            <p className="text-sm text-muted-foreground">{license.license_key}</p>
           </div>
         </div>
         <Button variant="outline" size="sm">
@@ -149,7 +149,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
               <User className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Customer Name</p>
-                <p className="text-sm text-muted-foreground">{license.customerName || 'Not provided'}</p>
+                <p className="text-sm text-muted-foreground">{license.customer_name || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -178,7 +178,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
               <div>
                 <p className="text-sm font-medium">Created</p>
                 <p className="text-sm text-muted-foreground">
-                  {license.createdAt ? format(new Date(license.createdAt), 'dd MMM yyyy') : 'Unknown'}
+                  {license.created_at ? format(new Date(license.created_at), 'dd MMM yyyy') : 'Unknown'}
                 </p>
               </div>
             </div>
@@ -302,7 +302,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
                       <div className="flex items-center gap-3">
                         <MessageSquare className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-sm font-medium">Session {session.sessionId?.slice(-8) || 'Unknown'}</p>
+                          <p className="text-sm font-medium">Session {session.session_id?.slice(-8) || 'Unknown'}</p>
                           <p className="text-xs text-muted-foreground">
                             {session.messageCount || 0} messages • {session.domain || 'Unknown domain'}
                           </p>

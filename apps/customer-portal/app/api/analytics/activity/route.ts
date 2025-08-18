@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
           plan: true,
           products: true
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 20
       })
 
@@ -119,9 +119,9 @@ export async function GET(request: NextRequest) {
     for (const session of recentSessions) {
       // Get customer name for the session if we have a site key
       let license = null
-      if (session.siteKey) {
+      if (session.site_key) {
         license = await prisma.license.findUnique({
-          where: { siteKey: session.siteKey },
+          where: { siteKey: session.site_key },
           select: { customerName: true, domain: true }
         })
       }
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         title: 'New Conversation Started',
         description: `${session.domain || license?.domain || 'Unknown Domain'} - ${session._count.id} messages`,
         metadata: {
-          sessionId: session.sessionId,
+          sessionId: session.session_id,
           domain: session.domain || license?.domain,
           messageCount: session._count.id,
           duration: session._max.timestamp && session._min.timestamp
