@@ -161,9 +161,9 @@ export async function GET(req: NextRequest) {
       integrations,
       stats: {
         totalIntegrations: integrations.length,
-        connectedIntegrations: integrations.filter(i => i.status === 'connected').length,
-        activeApiKeys: apiKeys.filter(k => k.status === 'active').length,
-        activeWebhooks: webhooks.filter(w => w.status === 'active').length
+        connectedIntegrations: integrations.filter((i: any) => i.status === 'connected').length,
+        activeApiKeys: apiKeys.filter((k: any) => k.status === 'active').length,
+        activeWebhooks: webhooks.filter((w: any) => w.status === 'active').length
       }
     })
   } catch (error) {
