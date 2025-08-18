@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const view = searchParams.get('view') || 'all'
 
     // Get the user's license and siteKey
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { license_key: auth.licenseKey },
       select: {
         license_key: true,
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Run the actual query
-    const logs = await prisma.chatbotLog.findMany({
+    const logs = await prisma.chatbot_logs.findMany({
       where: whereClause,
       select: {
         session_id: true,
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Also check what happens without any filtering
-    const unfilteredCount = await prisma.chatbotLog.count({
+    const unfilteredCount = await prisma.chatbot_logs.count({
       where: { sessionId: { not: null } }
     })
 

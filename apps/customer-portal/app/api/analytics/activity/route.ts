@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Get recent license creations/updates (master admin only)
     if (auth.isMaster) {
-      const recentLicenses = await prisma.license.findMany({
+      const recentLicenses = await prisma.licenses.findMany({
         where: {
           OR: [
             { createdAt: { gte: thirtyDaysAgo } },
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Get recent conversation sessions
-    const recentSessions = await prisma.chatbotLog.groupBy({
+    const recentSessions = await prisma.chatbot_logs.groupBy({
       by: ['sessionId', 'domain', 'siteKey'],
       where: {
         ...whereClause,
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       // Get customer name for the session if we have a site key
       let license = null
       if (session.site_key) {
-        license = await prisma.license.findUnique({
+        license = await prisma.licenses.findUnique({
           where: { siteKey: session.site_key },
           select: { customerName: true, domain: true }
         })
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Get high-volume activity alerts
-    const highVolumeCheck = await prisma.chatbotLog.groupBy({
+    const highVolumeCheck = await prisma.chatbot_logs.groupBy({
       by: ['domain'],
       where: {
         ...whereClause,

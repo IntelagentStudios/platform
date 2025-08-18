@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Get recent license activities
-    const recentLicenses = await prisma.license.findMany({
+    const recentLicenses = await prisma.licenses.findMany({
       orderBy: { created_at: 'desc' },
       take: 10,
       select: {
@@ -28,7 +28,7 @@ export async function GET() {
     })
 
     // Get recent chatbot activities
-    const recentSessions = await prisma.chatbotLog.groupBy({
+    const recentSessions = await prisma.chatbot_logs.groupBy({
       by: ['sessionId', 'siteKey'],
       _max: {
         timestamp: true
@@ -79,7 +79,7 @@ export async function GET() {
       if (session._max.timestamp) {
         let license = null
         if (session.site_key) {
-          license = await prisma.license.findUnique({
+          license = await prisma.licenses.findUnique({
             where: { site_key: session.site_key },
             select: { domain: true, customerName: true }
           })

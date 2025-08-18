@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       : { licenseKey: auth.licenseKey }
 
     // Get licenses created (downloads) in the date range
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       where: {
         ...whereClause,
         createdAt: { gte: startDate }

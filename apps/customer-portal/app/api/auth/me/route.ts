@@ -22,7 +22,7 @@ export async function GET() {
       })
     }
 
-    const license = await prisma.license.findUnique({
+    const license = await prisma.licenses.findUnique({
       where: { license_key: auth.licenseKey },
     })
 

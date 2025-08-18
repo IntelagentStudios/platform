@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     // Get all unique siteKeys from licenses
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       select: {
         license_key: true,
         site_key: true,
@@ -21,7 +21,7 @@ export async function GET() {
     })
 
     // Get all unique siteKeys from chatbot logs
-    const chatbotSiteKeys = await prisma.chatbotLog.groupBy({
+    const chatbotSiteKeys = await prisma.chatbot_logs.groupBy({
       by: ['site_key'],
       _count: true,
       orderBy: {

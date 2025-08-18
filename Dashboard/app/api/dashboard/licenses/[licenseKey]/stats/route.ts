@@ -25,7 +25,7 @@ export async function GET(
     }
 
     // Get the license's siteKey
-    const license = await prisma.license.findUnique({
+    const license = await prisma.licenses.findUnique({
       where: { license_key: params.licenseKey },
       select: { site_key: true }
     })
@@ -44,7 +44,7 @@ export async function GET(
     // Get conversation and session stats using siteKey
     const [totalConversations, sessions, recentActivity] = await Promise.all([
       // Total conversations
-      prisma.chatbotLog.count({
+      prisma.chatbot_logs.count({
         where: { 
           site_key: license.site_key,
           role: 'user'
@@ -52,7 +52,7 @@ export async function GET(
       }),
       
       // Unique sessions with stats
-      prisma.chatbotLog.groupBy({
+      prisma.chatbot_logs.groupBy({
         by: ['session_id'],
         where: {
           site_key: license.site_key,
@@ -70,7 +70,7 @@ export async function GET(
       }),
 
       // Recent activity
-      prisma.chatbotLog.findFirst({
+      prisma.chatbot_logs.findFirst({
         where: { site_key: license.site_key },
         orderBy: { timestamp: 'desc' },
         select: { timestamp: true }
@@ -110,7 +110,7 @@ export async function GET(
       : 0
 
     // Get peak usage hour (simplified - you can enhance this)
-    const hourlyActivity = await prisma.chatbotLog.groupBy({
+    const hourlyActivity = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
         site_key: license.site_key,

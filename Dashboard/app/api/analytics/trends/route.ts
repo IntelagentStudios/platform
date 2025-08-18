@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (!auth.isMaster) {
       // For individual users, filter by their site_key
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       }
     } else if (productType) {
       // For master admin, filter by product type if specified
-      const licensesWithProduct = await prisma.license.findMany({
+      const licensesWithProduct = await prisma.licenses.findMany({
         where: { 
           products: { has: productType }
         },
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get conversation logs with license info
-    const logs = await prisma.chatbotLog.findMany({
+    const logs = await prisma.chatbot_logs.findMany({
       where: whereClause,
       select: {
         timestamp: true,

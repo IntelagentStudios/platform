@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Fetch existing insights from database
-    const insights = await prisma.smartDashboardInsight.findMany({
+    const insights = await prisma.smart_dashboard_insights.findMany({
       where: {
         licenseKey: auth.licenseKey,
         OR: [
@@ -43,7 +43,7 @@ export async function GET() {
 }
 
 async function generateInitialInsights(licenseKey: string) {
-  const license = await prisma.license.findUnique({
+  const license = await prisma.licenses.findUnique({
     where: { licenseKey },
     select: { siteKey: true, products: true, plan: true }
   })
@@ -55,7 +55,7 @@ async function generateInitialInsights(licenseKey: string) {
   const insights = []
   
   // Check conversation volume
-  const conversations = await prisma.chatbotLog.groupBy({
+  const conversations = await prisma.chatbot_logs.groupBy({
     by: ['sessionId'],
     where: { siteKey: license.siteKey },
     _count: true
@@ -73,7 +73,7 @@ async function generateInitialInsights(licenseKey: string) {
   }
 
   // Check for recent activity
-  const recentActivity = await prisma.chatbotLog.count({
+  const recentActivity = await prisma.chatbot_logs.count({
     where: {
       siteKey: license.siteKey,
       timestamp: {

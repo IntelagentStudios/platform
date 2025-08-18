@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     let userSiteKey: string | null = null
     let userProducts: string[] = []
     if (!auth.isMaster) {
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.licenseKey },
         select: { site_key: true, products: true }
       })
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       }
       // For combined view, check if user has premium
       if (product === 'combined') {
-        const userLicense = await prisma.license.findUnique({
+        const userLicense = await prisma.licenses.findUnique({
           where: { license_key: auth.licenseKey },
           select: { plan: true }
         })
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
 
     if (view === 'by-domain') {
       // Get sessions grouped by domain with license info
-      const domainSessions = await prisma.chatbotLog.findMany({
+      const domainSessions = await prisma.chatbot_logs.findMany({
         where: whereClause,
         select: {
           session_id: true,
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
       
     } else if (view === 'recent') {
       // Get recent conversations with full details
-      const recentLogs = await prisma.chatbotLog.findMany({
+      const recentLogs = await prisma.chatbot_logs.findMany({
         where: whereClause,
         orderBy: { timestamp: 'desc' },
         take: limit,
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
       
     } else {
       // Get all active sessions summary
-      const activeDomains = await prisma.chatbotLog.groupBy({
+      const activeDomains = await prisma.chatbot_logs.groupBy({
         by: ['domain'],
         where: {
           ...whereClause,
@@ -211,14 +211,14 @@ export async function GET(request: NextRequest) {
         }
       })
 
-      const totalSessions = await prisma.chatbotLog.groupBy({
+      const totalSessions = await prisma.chatbot_logs.groupBy({
         by: ['session_id'],
         where: whereClause,
         _count: true
       })
 
       // Get session details with license info
-      const sessionDetails = await prisma.chatbotLog.findMany({
+      const sessionDetails = await prisma.chatbot_logs.findMany({
         where: whereClause,
         select: {
           session_id: true,

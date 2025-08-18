@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Fetch existing insights from database
-    const insights = await prisma.smartDashboardInsight.findMany({
+    const insights = await prisma.smart_dashboard_insights.findMany({
       where: {
         license_key: auth.licenseKey,
         OR: [

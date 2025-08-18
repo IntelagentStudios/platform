@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Get all licenses with products
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
       select: {
         licenseKey: true,
@@ -56,7 +56,7 @@ export async function GET() {
       
       if (chatbotData && chatbotData.siteKeys.length > 0) {
         // Get conversation counts
-        const conversations = await prisma.chatbotLog.groupBy({
+        const conversations = await prisma.chatbot_logs.groupBy({
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
@@ -67,7 +67,7 @@ export async function GET() {
         chatbotConversations = conversations.length
 
         // Calculate growth
-        const recentSessions = await prisma.chatbotLog.groupBy({
+        const recentSessions = await prisma.chatbot_logs.groupBy({
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },
@@ -77,7 +77,7 @@ export async function GET() {
           _count: true
         })
 
-        const previousSessions = await prisma.chatbotLog.groupBy({
+        const previousSessions = await prisma.chatbot_logs.groupBy({
           by: ['sessionId'],
           where: {
             siteKey: { in: chatbotData.siteKeys },

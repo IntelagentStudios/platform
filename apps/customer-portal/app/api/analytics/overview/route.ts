@@ -21,7 +21,7 @@ export async function GET() {
       // Master admin sees everything
       
       // Get total active licenses
-      const totalLicenses = await prisma.license.count({
+      const totalLicenses = await prisma.licenses.count({
         where: {
           OR: [
             { status: 'active' },
@@ -31,7 +31,7 @@ export async function GET() {
       })
 
       // Get licenses from last 30 days for growth calculation
-      const recentLicenses = await prisma.license.count({
+      const recentLicenses = await prisma.licenses.count({
         where: {
           createdAt: { gte: thirtyDaysAgo },
           OR: [
@@ -42,13 +42,13 @@ export async function GET() {
       })
 
       // Get total conversations
-      const totalConversations = await prisma.chatbotLog.groupBy({
+      const totalConversations = await prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         _count: true
       })
 
       // Get conversations from last 7 days
-      const recentConversations = await prisma.chatbotLog.groupBy({
+      const recentConversations = await prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: {
           timestamp: { gte: sevenDaysAgo }
@@ -58,7 +58,7 @@ export async function GET() {
 
       // Get conversations from previous 7 days for comparison
       const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-      const previousConversations = await prisma.chatbotLog.groupBy({
+      const previousConversations = await prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: {
           timestamp: {
@@ -70,7 +70,7 @@ export async function GET() {
       })
 
       // Calculate revenue (assuming each active license is worth something)
-      const activeLicenses = await prisma.license.findMany({
+      const activeLicenses = await prisma.licenses.findMany({
         where: {
           OR: [
             { status: 'active' },
@@ -105,7 +105,7 @@ export async function GET() {
         : 100
 
       // Get active domains count
-      const activeDomains = await prisma.chatbotLog.groupBy({
+      const activeDomains = await prisma.chatbot_logs.groupBy({
         by: ['domain'],
         where: {
           timestamp: { gte: sevenDaysAgo },
@@ -130,7 +130,7 @@ export async function GET() {
 
     } else {
       // Individual user sees only their data
-      const license = await prisma.license.findUnique({
+      const license = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: {
           status: true,
@@ -150,14 +150,14 @@ export async function GET() {
       const userWhereClause = license.siteKey ? { siteKey: license.siteKey } : {}
 
       // Get user's conversations
-      const userConversations = await prisma.chatbotLog.groupBy({
+      const userConversations = await prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: userWhereClause,
         _count: true
       })
 
       // Get recent conversations
-      const recentUserConversations = await prisma.chatbotLog.groupBy({
+      const recentUserConversations = await prisma.chatbot_logs.groupBy({
         by: ['sessionId'],
         where: {
           ...userWhereClause,
@@ -167,12 +167,12 @@ export async function GET() {
       })
 
       // Get message count
-      const totalMessages = await prisma.chatbotLog.count({
+      const totalMessages = await prisma.chatbot_logs.count({
         where: userWhereClause
       })
 
       // Get unique users (if tracked)
-      const uniqueUsers = await prisma.chatbotLog.groupBy({
+      const uniqueUsers = await prisma.chatbot_logs.groupBy({
         by: ['userId'],
         where: {
           ...userWhereClause,
