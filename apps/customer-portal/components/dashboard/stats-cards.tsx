@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, MessageSquare, TrendingUp, DollarSign, TrendingDown, Activity, Clock } from 'lucide-react'
+import { Users, MessageSquare, TrendingUp, PoundSterling, TrendingDown, Activity, Clock } from 'lucide-react'
 import { useDashboardStore } from '@/lib/store'
 
 interface StatsCardsProps {
@@ -88,7 +88,7 @@ export default function StatsCards({ isMaster = false }: StatsCardsProps) {
     {
       title: 'Revenue',
       value: (stats.revenue || 0) > 1000 ? `£${((stats.revenue || 0) / 1000).toFixed(1)}k` : `£${stats.revenue || 0}`,
-      icon: DollarSign,
+      icon: PoundSterling,
       change: calculateChange(stats.revenue || 0, previousStats.revenue || 0),
       color: 'text-orange-500',
     },

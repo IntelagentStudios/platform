@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
-  DollarSign,
+  PoundSterling,
   CreditCard,
   Package,
   Users,
@@ -44,12 +44,12 @@ export default function BillingManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                <p className="text-2xl font-bold">$0</p>
+                <p className="text-2xl font-bold">£0</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   <TrendingUp className="h-3 w-3 inline text-primary" /> +0% from last month
                 </p>
               </div>
-              <DollarSign className="h-8 w-8 text-primary" />
+              <PoundSterling className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -72,7 +72,7 @@ export default function BillingManagementPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Average Revenue</p>
-                <p className="text-2xl font-bold">$0</p>
+                <p className="text-2xl font-bold">£0</p>
                 <p className="text-xs text-muted-foreground mt-1">Per customer</p>
               </div>
               <CreditCard className="h-8 w-8 text-accent" />
@@ -117,7 +117,7 @@ export default function BillingManagementPage() {
                   <div>
                     <p className="font-medium">{product.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      ${product.price}/{product.interval} • {product.subscribers} subscribers
+                      £{product.price}/{product.interval} • {product.subscribers} subscribers
                     </p>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function BillingManagementPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-secondary/10 rounded-lg">
-                <DollarSign className="h-5 w-5 text-secondary" />
+                <PoundSterling className="h-5 w-5 text-secondary" />
               </div>
               <div>
                 <p className="font-medium">Issue Refund</p>

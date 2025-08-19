@@ -10,23 +10,24 @@ import {
   Activity, 
   Server, 
   AlertTriangle,
-  Users,
+  User,
   BarChart3,
   Bug,
   Settings,
   Database,
   Zap,
-  Shield,
+  FileCheck,
   FileText,
   Globe,
-  DollarSign,
+  PoundSterling,
   CreditCard,
   TrendingUp,
   Brain,
   ChevronDown,
   ChevronRight,
   Menu,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 
 const navigation = [
@@ -41,16 +42,15 @@ const navigation = [
   {
     title: 'Business',
     items: [
-      { name: 'Finances', href: '/admin/billing', icon: DollarSign },
-      { name: 'Users', href: '/admin/users', icon: Users },
-      { name: 'Teams', href: '/admin/teams', icon: Users },
+      { name: 'Finances', href: '/admin/billing', icon: PoundSterling },
+      { name: 'Users', href: '/admin/users', icon: User },
       { name: 'Usage & Billing', href: '/admin/usage', icon: CreditCard },
     ]
   },
   {
     title: 'Compliance & Security',
     items: [
-      { name: 'Compliance', href: '/admin/compliance', icon: Shield },
+      { name: 'Compliance', href: '/admin/compliance', icon: FileCheck },
       { name: 'Security Center', href: '/admin/security', icon: Shield },
       { name: 'Audit Logs', href: '/admin/audit', icon: FileText },
     ]
