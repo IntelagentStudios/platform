@@ -25,7 +25,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ licenseKey, domain, rememberMe }),
+        body: JSON.stringify({ license_key: licenseKey, domain, rememberMe }),
       })
 
       const data = await response.json()
@@ -38,7 +38,7 @@ export default function LoginPage() {
         
         toast({
           title: 'Login successful',
-          description: data.isMaster ? 'Welcome, Master Admin' : `Welcome back, ${data.customerName || 'User'}`,
+          description: data.isMaster ? 'Welcome, Master Admin' : `Welcome back, ${data.customer_name || 'User'}`,
         })
         
         console.log('Redirecting to dashboard...')
