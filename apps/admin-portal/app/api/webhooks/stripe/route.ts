@@ -6,30 +6,32 @@ import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
+async function handleSubscriptionCreated(subscription: any) {
   // Update license with subscription info
   const customerId = subscription.customer as string
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
     // Debug: Log the price object to see available properties
-    console.log('Price object:', subscription.items.data[0]?.price)
+    console.log('Price object:', subscription.items?.data?.[0]?.price)
     
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         subscription_id: subscription.id,
         subscription_status: subscription.status,
-        next_billing_date: new Date((subscription as any).current_period_end * 1000),
-        plan: (subscription.items.data[0]?.price as any)?.nickname || 
-              (subscription.items.data[0]?.price as any)?.metadata?.plan || 
+        next_billing_date: subscription.current_period_end 
+          ? new Date(subscription.current_period_end * 1000)
+          : new Date(),
+        plan: subscription.items?.data?.[0]?.price?.nickname || 
+              subscription.items?.data?.[0]?.price?.metadata?.plan || 
               'pro',
       }
     })
   }
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: any) {
   const customerId = subscription.customer as string
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
@@ -38,15 +40,15 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       where: { email: customer.email },
       data: {
         subscription_status: subscription.status,
-        next_billing_date: (subscription as any).current_period_end 
-          ? new Date((subscription as any).current_period_end * 1000)
+        next_billing_date: subscription.current_period_end 
+          ? new Date(subscription.current_period_end * 1000)
           : null,
       }
     })
   }
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: any) {
   const customerId = subscription.customer as string
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
@@ -61,7 +63,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 }
 
-async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handlePaymentSucceeded(invoice: any) {
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
@@ -85,7 +87,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         created_at
       ) VALUES (
         ${customer.email},
-        ${(invoice as any).amount_paid / 100},
+        ${invoice.amount_paid / 100},
         ${invoice.currency},
         'succeeded',
         ${invoice.id},
@@ -95,7 +97,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   }
 }
 
-async function handlePaymentFailed(invoice: Stripe.Invoice) {
+async function handlePaymentFailed(invoice: any) {
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
@@ -134,23 +136,23 @@ export async function POST(req: NextRequest) {
     // Handle the event
     switch (event.type) {
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
+        await handleSubscriptionCreated(event.data.object)
         break
       
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
+        await handleSubscriptionUpdated(event.data.object)
         break
       
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+        await handleSubscriptionDeleted(event.data.object)
         break
       
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object as Stripe.Invoice)
+        await handlePaymentSucceeded(event.data.object)
         break
       
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object as Stripe.Invoice)
+        await handlePaymentFailed(event.data.object)
         break
       
       default:
