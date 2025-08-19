@@ -12,13 +12,18 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
   
   if (customer.email) {
+    // Debug: Log the price object to see available properties
+    console.log('Price object:', subscription.items.data[0]?.price)
+    
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
         subscription_id: subscription.id,
         subscription_status: subscription.status,
-        next_billing_date: new Date(subscription.current_period_end * 1000),
-        plan: subscription.items.data[0].price.nickname || 'pro',
+        next_billing_date: new Date(subscription.currentPeriodEnd * 1000),
+        plan: (subscription.items.data[0]?.price as any)?.nickname || 
+              (subscription.items.data[0]?.price as any)?.metadata?.plan || 
+              'pro',
       }
     })
   }
@@ -33,8 +38,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       where: { email: customer.email },
       data: {
         subscription_status: subscription.status,
-        next_billing_date: subscription.current_period_end 
-          ? new Date(subscription.current_period_end * 1000)
+        next_billing_date: subscription.currentPeriodEnd 
+          ? new Date(subscription.currentPeriodEnd * 1000)
           : null,
       }
     })
@@ -80,7 +85,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         created_at
       ) VALUES (
         ${customer.email},
-        ${invoice.amount_paid / 100},
+        ${invoice.amountPaid / 100},
         ${invoice.currency},
         'succeeded',
         ${invoice.id},
