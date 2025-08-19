@@ -3,6 +3,16 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if database is configured
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        users: { total: 0, active: 0, new: 0 },
+        requests: { total: 0, rpm: 0, errors: 0 },
+        database: { connections: 0, queries: 0, slow: 0 },
+        queues: { total: 0, processing: 0, failed: 0 },
+      });
+    }
+    
     // Get real stats from database
     const [totalUsers, todayStart, activeDate] = [
       await prisma.user.count(),

@@ -238,33 +238,46 @@ export class SystemMonitor {
     // Check actual service health
     const services: ServiceHealth[] = [];
     
-    // Check database health
-    try {
-      const { prisma } = await import('@/lib/db');
-      const startTime = Date.now();
-      await prisma.$queryRaw`SELECT 1`;
-      const responseTime = Date.now() - startTime;
-      
+    // Check database health only if DATABASE_URL is configured
+    if (process.env.DATABASE_URL) {
+      try {
+        const { prisma } = await import('@/lib/db');
+        const startTime = Date.now();
+        await prisma.$queryRaw`SELECT 1`;
+        const responseTime = Date.now() - startTime;
+        
+        services.push({
+          name: 'database',
+          status: 'healthy',
+          uptime: 0,
+          responseTime,
+          errorRate: 0,
+          requestsPerMinute: 0,
+          lastCheck: new Date().toISOString(),
+          message: 'PostgreSQL is operational'
+        });
+      } catch (error) {
+        services.push({
+          name: 'database',
+          status: 'unhealthy',
+          uptime: 0,
+          responseTime: 0,
+          errorRate: 100,
+          requestsPerMinute: 0,
+          lastCheck: new Date().toISOString(),
+          message: 'Database connection error - check DATABASE_URL configuration'
+        });
+      }
+    } else {
       services.push({
         name: 'database',
-        status: 'healthy',
+        status: 'unknown',
         uptime: 0,
-        responseTime,
+        responseTime: 0,
         errorRate: 0,
         requestsPerMinute: 0,
         lastCheck: new Date().toISOString(),
-        message: 'PostgreSQL is operational'
-      });
-    } catch (error) {
-      services.push({
-        name: 'database',
-        status: 'unhealthy',
-        uptime: 0,
-        responseTime: 0,
-        errorRate: 100,
-        requestsPerMinute: 0,
-        lastCheck: new Date().toISOString(),
-        message: error instanceof Error ? error.message : 'Database connection failed'
+        message: 'DATABASE_URL not configured'
       });
     }
     
