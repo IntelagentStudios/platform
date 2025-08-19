@@ -103,19 +103,27 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* Critical Alerts */}
+      {/* Critical Alerts - Actionable */}
       {criticalAlerts > 0 && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
-            <div>
-              <p className="font-medium text-destructive">
-                {criticalAlerts} Critical Alert{criticalAlerts > 1 ? 's' : ''}
-              </p>
-              <p className="text-sm text-destructive/80 mt-1">
-                Immediate attention required
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <div>
+                <p className="font-medium text-destructive">
+                  {criticalAlerts} Critical Alert{criticalAlerts > 1 ? 's' : ''}
+                </p>
+                <p className="text-sm text-destructive/80 mt-1">
+                  Database connection issue - DATABASE_URL not configured
+                </p>
+              </div>
             </div>
+            <button 
+              onClick={() => router.push('/admin/settings')}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors text-sm font-medium"
+            >
+              Fix Now
+            </button>
           </div>
         </div>
       )}
@@ -277,12 +285,24 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Service Status Grid */}
+      {/* Service Status Grid - Actionable */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Service Status</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Service Status</h3>
+          <button 
+            onClick={() => router.push('/admin/health')}
+            className="text-sm text-primary hover:underline"
+          >
+            View Details →
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {status?.services.map((service: any) => (
-            <div key={service.name} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div 
+              key={service.name} 
+              className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/10 transition-colors"
+              onClick={() => router.push('/admin/health')}
+            >
               <div className="flex items-center gap-3">
                 {service.status === 'healthy' ? (
                   <CheckCircle className="w-5 h-5 text-primary" />
@@ -312,6 +332,16 @@ export default function AdminDashboard() {
             </div>
           ))}
         </div>
+        {status?.services.some((s: any) => s.status !== 'healthy') && (
+          <div className="mt-4 pt-4 border-t">
+            <button 
+              onClick={() => router.push('/admin/health')}
+              className="w-full py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
+            >
+              Troubleshoot Issues
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* Recent Alerts */}

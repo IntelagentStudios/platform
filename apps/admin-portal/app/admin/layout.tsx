@@ -3,6 +3,7 @@
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -160,9 +161,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </div>
       </nav>
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-background">
         <div className="h-full">
-          {children}
+          <div className="border-b border-border bg-card">
+            <div className="px-6 py-3">
+              <Breadcrumb />
+            </div>
+          </div>
+          <div className="bg-background">
+            {children}
+          </div>
         </div>
       </main>
     </div>
