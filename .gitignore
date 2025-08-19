@@ -20,6 +20,9 @@ out/
 *.pem
 .vscode/
 .idea/
+STRIPE_KEYS_PRIVATE.txt
+*_PRIVATE.txt
+*_PRIVATE.*
 
 # Debug
 npm-debug.log*
