@@ -21,7 +21,7 @@ export async function GET() {
       // Master admin sees everything
       
       // Get total active licenses
-      const totalLicenses = await prisma.license.count({
+      const totalLicenses = await prisma.licenses.count({
         where: {
           OR: [
             { status: 'active' },
@@ -31,7 +31,7 @@ export async function GET() {
       })
 
       // Get licenses from last 30 days for growth calculation
-      const recentLicenses = await prisma.license.count({
+      const recentLicenses = await prisma.licenses.count({
         where: {
           createdAt: { gte: thirtyDaysAgo },
           OR: [
@@ -70,7 +70,7 @@ export async function GET() {
       })
 
       // Calculate revenue (assuming each active license is worth something)
-      const activeLicenses = await prisma.license.findMany({
+      const activeLicenses = await prisma.licenses.findMany({
         where: {
           OR: [
             { status: 'active' },
@@ -130,7 +130,7 @@ export async function GET() {
 
     } else {
       // Individual user sees only their data
-      const license = await prisma.license.findUnique({
+      const license = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: {
           status: true,

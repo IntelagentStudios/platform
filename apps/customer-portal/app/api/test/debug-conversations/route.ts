@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const view = searchParams.get('view') || 'all'
 
     // Get the user's license and siteKey
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         licenseKey: true,

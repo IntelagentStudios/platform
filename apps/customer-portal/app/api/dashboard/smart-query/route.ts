@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const { query, product, context } = await request.json()
 
     // Get user's license for context
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         siteKey: true,

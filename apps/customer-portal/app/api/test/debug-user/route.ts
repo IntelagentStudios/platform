@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     // Get the user's license details
-    const userLicense = await prisma.license.findUnique({
+    const userLicense = await prisma.licenses.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         licenseKey: true,

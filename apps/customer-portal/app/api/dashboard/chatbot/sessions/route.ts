@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     let userSiteKey: string | null = null
     let userProducts: string[] = []
     if (!auth.isMaster) {
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true, products: true }
       })
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       }
       // For combined view, check if user has premium
       if (product === 'combined') {
-        const userLicense = await prisma.license.findUnique({
+        const userLicense = await prisma.licenses.findUnique({
           where: { licenseKey: auth.licenseKey },
           select: { plan: true }
         })

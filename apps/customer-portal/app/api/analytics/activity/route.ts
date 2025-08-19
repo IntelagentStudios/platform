@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       // Get customer name for the session if we have a site key
       let license = null
       if (session.site_key) {
-        license = await prisma.license.findUnique({
+        license = await prisma.licenses.findUnique({
           where: { site_key: session.site_key },
           select: { customer_name: true, domain: true }
         })

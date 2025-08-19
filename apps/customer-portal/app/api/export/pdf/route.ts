@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     let whereClause: any = {}
     if (!auth.isMaster && auth.licenseKey) {
       // Find the user's siteKey from their licenseKey
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
 
     const [licenses, conversations, stats] = await Promise.all([
       auth.isMaster 
-        ? prisma.license.findMany({ take: 10 })
-        : prisma.license.findMany({ where: { licenseKey: auth.licenseKey } }),
+        ? prisma.licenses.findMany({ take: 10 })
+        : prisma.licenses.findMany({ where: { licenseKey: auth.licenseKey } }),
       prisma.chatbotLog.groupBy({
         by: ['sessionId', 'domain'],
         where: whereClause,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         },
       }),
       Promise.resolve({
-        totalLicenses: auth.isMaster ? await prisma.license.count() : 1,
+        totalLicenses: auth.isMaster ? await prisma.licenses.count() : 1,
         totalConversations: await prisma.chatbotLog.groupBy({
           by: ['session_id'],
           where: whereClause,

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // If site_key is provided, validate it
     let license = null
     if (data.siteKey) {
-      license = await prisma.license.findUnique({
+      license = await prisma.licenses.findUnique({
         where: { siteKey: data.siteKey },
         select: {
           licenseKey: true,
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
       if (!recentActivity || recentActivity.id === log.id) {
         // This is either the first message or a new session
-        await prisma.license.update({
+        await prisma.licenses.update({
           where: { siteKey: data.siteKey },
           data: {
             used_at: new Date()

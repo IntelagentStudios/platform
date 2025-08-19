@@ -11,7 +11,7 @@ export async function GET() {
     }
 
     // Get all unique siteKeys from licenses
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       select: {
         licenseKey: true,
         siteKey: true,

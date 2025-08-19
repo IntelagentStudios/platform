@@ -43,7 +43,7 @@ export async function GET() {
 }
 
 async function generateInitialInsights(licenseKey: string) {
-  const license = await prisma.license.findUnique({
+  const license = await prisma.licenses.findUnique({
     where: { licenseKey: licenseKey },
     select: { siteKey: true, products: true, plan: true }
   })

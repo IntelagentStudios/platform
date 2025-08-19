@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })

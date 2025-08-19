@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     // Get all active/trial licenses with products
-    const licenses = await prisma.license.findMany({
+    const licenses = await prisma.licenses.findMany({
       where: {
         OR: [
           { status: 'active' },
@@ -48,7 +48,7 @@ export async function GET() {
     })
 
     // Get plan distribution
-    const planDistribution = await prisma.license.groupBy({
+    const planDistribution = await prisma.licenses.groupBy({
       by: ['plan'],
       where: {
         OR: [
@@ -62,7 +62,7 @@ export async function GET() {
     })
 
     // Get status distribution
-    const statusDistribution = await prisma.license.groupBy({
+    const statusDistribution = await prisma.licenses.groupBy({
       by: ['status'],
       _count: {
         licenseKey: true
@@ -141,7 +141,7 @@ export async function GET() {
         }
 
         // Get site keys for these licenses
-        const licensesWithSiteKey = await prisma.license.findMany({
+        const licensesWithSiteKey = await prisma.licenses.findMany({
           where: { 
             licenseKey: { in: licensesWithProduct },
             siteKey: { not: null }

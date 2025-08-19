@@ -128,7 +128,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
           </Button>
           <div>
             <h2 className="text-2xl font-bold">Licence Profile</h2>
-            <p className="text-sm text-muted-foreground">{license.license_key}</p>
+            <p className="text-sm text-muted-foreground">{license.licenseKey}</p>
           </div>
         </div>
         <Button variant="outline" size="sm">

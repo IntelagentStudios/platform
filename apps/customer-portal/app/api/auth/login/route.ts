@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const isMaster = licenseKey === MASTER_LICENSE_KEY
 
     if (!isMaster) {
-      const license = await prisma.license.findUnique({
+      const license = await prisma.licenses.findUnique({
         where: { licenseKey: licenseKey },
       })
 

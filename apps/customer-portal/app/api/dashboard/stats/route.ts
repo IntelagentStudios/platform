@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
-      const userLicense = await prisma.license.findUnique({
+      const userLicense = await prisma.licenses.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       
       const [prevLicenses, prevConversations, prevSessions] = await Promise.all([
         auth.isMaster 
-          ? prisma.license.count({
+          ? prisma.licenses.count({
               where: {
                 createdAt: {
                   gte: sixtyDaysAgo,
@@ -86,7 +86,7 @@ export async function GET(request: Request) {
       ])
 
       // Calculate previous revenue
-      const prevSubscriptions = await prisma.license.findMany({
+      const prevSubscriptions = await prisma.licenses.findMany({
         where: {
           ...(auth.isMaster ? {} : { licenseKey: auth.licenseKey }),
           createdAt: {
@@ -125,12 +125,12 @@ export async function GET(request: Request) {
     const [totalLicenses, activeLicenses, totalConversations, recentConversations] = await Promise.all([
       // Total licenses (only for master admin)
       auth.isMaster 
-        ? prisma.license.count()
+        ? prisma.licenses.count()
         : Promise.resolve(1),
       
       // Active licenses (with status = 'active')
       auth.isMaster
-        ? prisma.license.count({
+        ? prisma.licenses.count({
             where: { status: 'active' }
           })
         : Promise.resolve(1),
@@ -252,7 +252,7 @@ export async function GET(request: Request) {
       : null
 
     // Calculate revenue based on actual subscriptions
-    const subscriptions = await prisma.license.findMany({
+    const subscriptions = await prisma.licenses.findMany({
       where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
       select: {
         plan: true,
