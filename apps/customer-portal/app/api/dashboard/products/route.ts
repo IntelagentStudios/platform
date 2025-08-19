@@ -15,11 +15,11 @@ export async function GET() {
 
     // Get all licenses with products
     const licenses = await prisma.licenses.findMany({
-      where: auth.isMaster ? {} : { licenseKey: auth.licenseKey },
+      where: auth.isMaster ? {} : { license_key: auth.license_key },
       select: {
-        licenseKey: true,
+        license_key: true,
         products: true,
-        siteKey: true
+        site_key: true
       }
     })
 
@@ -34,8 +34,8 @@ export async function GET() {
           }
           const data = productCounts.get(product)!
           data.count++
-          if (license?.siteKey) {
-            data.siteKeys.push(license?.siteKey)
+          if (license?.site_key) {
+            data.siteKeys.push(license?.site_key)
           }
         })
       }
@@ -56,32 +56,32 @@ export async function GET() {
       
       if (chatbotData && chatbotData.siteKeys.length > 0) {
         // Get conversation counts
-        const conversations = await prisma.chatbotLog.groupBy({
-          by: ['sessionId'],
+        const conversations = await prisma.chatbot_logs.groupBy({
+          by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null }
+            site_key: { in: chatbotData.siteKeys },
+            session_id: { not: null }
           },
           _count: true
         })
         chatbotConversations = conversations.length
 
         // Calculate growth
-        const recentSessions = await prisma.chatbotLog.groupBy({
-          by: ['sessionId'],
+        const recentSessions = await prisma.chatbot_logs.groupBy({
+          by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null },
+            site_key: { in: chatbotData.siteKeys },
+            session_id: { not: null },
             timestamp: { gte: thirtyDaysAgo }
           },
           _count: true
         })
 
-        const previousSessions = await prisma.chatbotLog.groupBy({
-          by: ['sessionId'],
+        const previousSessions = await prisma.chatbot_logs.groupBy({
+          by: ['session_id'],
           where: {
-            siteKey: { in: chatbotData.siteKeys },
-            sessionId: { not: null },
+            site_key: { in: chatbotData.siteKeys },
+            session_id: { not: null },
             timestamp: {
               gte: sixtyDaysAgo,
               lt: thirtyDaysAgo

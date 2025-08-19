@@ -24,17 +24,17 @@ export async function POST(request: Request) {
       },
     }
 
-    if (!auth.isMaster && auth.licenseKey) {
-      // Get the user's siteKey from their licenseKey
+    if (!auth.isMaster && auth.license_key) {
+      // Get the user's site_key from their license_key
       const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.licenseKey },
+        where: { license_key: auth.license_key },
         select: { site_key: true }
       })
       
       if (userLicense?.site_key) {
         whereClause.site_key = userLicense.site_key
       } else {
-        // No siteKey found, return empty data
+        // No site_key found, return empty data
         return NextResponse.json([])
       }
     }

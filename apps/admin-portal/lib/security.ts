@@ -46,18 +46,18 @@ export const csrf = {
     return crypto.randomBytes(32).toString('hex');
   },
 
-  async store(sessionId: string, token: string): Promise<void> {
-    await redis.setex(`csrf:${sessionId}`, 3600, token);
+  async store(session_id: string, token: string): Promise<void> {
+    await redis.setex(`csrf:${session_id}`, 3600, token);
   },
 
-  async verify(sessionId: string, token: string): Promise<boolean> {
-    const storedToken = await redis.get(`csrf:${sessionId}`);
+  async verify(session_id: string, token: string): Promise<boolean> {
+    const storedToken = await redis.get(`csrf:${session_id}`);
     return storedToken === token;
   },
 
-  async rotate(sessionId: string): Promise<string> {
+  async rotate(session_id: string): Promise<string> {
     const newToken = this.generate();
-    await this.store(sessionId, newToken);
+    await this.store(session_id, newToken);
     return newToken;
   },
 };
@@ -111,7 +111,7 @@ export class ApiKeyManager {
       userId,
       name,
       permissions: JSON.stringify(permissions),
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       lastUsed: null,
       requestCount: 0,
     });
@@ -174,7 +174,7 @@ export class ApiKeyManager {
           id: key.replace('apikey:', '').substring(0, 8),
           name: data.name,
           permissions: JSON.parse(data.permissions || '[]'),
-          createdAt: data.createdAt,
+          created_at: data.created_at,
           lastUsed: data.lastUsed,
           requestCount: parseInt(data.requestCount || '0'),
         });
@@ -188,20 +188,20 @@ export class ApiKeyManager {
 // Session security
 export class SessionManager {
   static async create(userId: string, metadata: Record<string, any> = {}): Promise<string> {
-    const sessionId = crypto.randomUUID();
+    const session_id = crypto.randomUUID();
     const sessionData = {
       userId,
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       lastActivity: new Date().toISOString(),
       metadata,
     };
 
-    await redis.setex(`session:${sessionId}`, 86400, JSON.stringify(sessionData)); // 24 hours
-    return sessionId;
+    await redis.setex(`session:${session_id}`, 86400, JSON.stringify(sessionData)); // 24 hours
+    return session_id;
   }
 
-  static async verify(sessionId: string): Promise<{ valid: boolean; userId?: string }> {
-    const data = await redis.get(`session:${sessionId}`);
+  static async verify(session_id: string): Promise<{ valid: boolean; userId?: string }> {
+    const data = await redis.get(`session:${session_id}`);
     
     if (!data) {
       return { valid: false };
@@ -211,13 +211,13 @@ export class SessionManager {
     
     // Update last activity
     session.lastActivity = new Date().toISOString();
-    await redis.setex(`session:${sessionId}`, 86400, JSON.stringify(session));
+    await redis.setex(`session:${session_id}`, 86400, JSON.stringify(session));
 
     return { valid: true, userId: session.userId };
   }
 
-  static async destroy(sessionId: string): Promise<void> {
-    await redis.del(`session:${sessionId}`);
+  static async destroy(session_id: string): Promise<void> {
+    await redis.del(`session:${session_id}`);
   }
 
   static async destroyAllUserSessions(userId: string): Promise<void> {

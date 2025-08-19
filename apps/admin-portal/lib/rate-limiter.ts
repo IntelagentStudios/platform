@@ -79,13 +79,13 @@ export const rateLimiters = {
 }
 
 export async function checkRateLimit(
-  licenseKey: string,
+  license_key: string,
   resource: keyof typeof rateLimiters,
   points = 1
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
   try {
     const limiter = rateLimiters[resource]
-    const result = await limiter.consume(licenseKey, points)
+    const result = await limiter.consume(license_key, points)
     
     return {
       allowed: true,
@@ -104,12 +104,12 @@ export async function checkRateLimit(
   }
 }
 
-export async function getRateLimitStatus(licenseKey: string) {
+export async function getRateLimitStatus(license_key: string) {
   const statuses = await Promise.all([
-    rateLimiters.apiMonthly.get(licenseKey),
-    rateLimiters.apiSecond.get(licenseKey),
-    rateLimiters.chatbot.get(licenseKey),
-    rateLimiters.enrichment.get(licenseKey),
+    rateLimiters.apiMonthly.get(license_key),
+    rateLimiters.apiSecond.get(license_key),
+    rateLimiters.chatbot.get(license_key),
+    rateLimiters.enrichment.get(license_key),
   ])
 
   return {
@@ -136,13 +136,13 @@ export async function getRateLimitStatus(licenseKey: string) {
   }
 }
 
-export async function resetRateLimit(licenseKey: string, resource: keyof typeof rateLimiters) {
-  await rateLimiters[resource].delete(licenseKey)
+export async function resetRateLimit(license_key: string, resource: keyof typeof rateLimiters) {
+  await rateLimiters[resource].delete(license_key)
 }
 
 // Middleware for rate limiting
 export async function rateLimitMiddleware(
-  licenseKey: string,
+  license_key: string,
   tier: 'BASIC' | 'PRO' | 'ENTERPRISE' = 'PRO'
 ) {
   // Check if enterprise (unlimited)
@@ -151,13 +151,13 @@ export async function rateLimitMiddleware(
   }
 
   // Check monthly API limit
-  const monthlyCheck = await checkRateLimit(licenseKey, 'apiMonthly')
+  const monthlyCheck = await checkRateLimit(license_key, 'apiMonthly')
   if (!monthlyCheck.allowed) {
     throw new Error(`Monthly API limit exceeded. Resets at ${monthlyCheck.resetAt.toISOString()}`)
   }
 
   // Check per-second rate limit
-  const secondCheck = await checkRateLimit(licenseKey, 'apiSecond')
+  const secondCheck = await checkRateLimit(license_key, 'apiSecond')
   if (!secondCheck.allowed) {
     throw new Error(`Rate limit exceeded. Try again in ${Math.ceil(secondCheck.resetAt.getTime() - Date.now())}ms`)
   }

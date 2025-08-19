@@ -12,7 +12,7 @@ export async function GET() {
 
     // Get the user's license details
     const userLicense = await prisma.licenses.findUnique({
-      where: { license_key: auth.licenseKey },
+      where: { license_key: auth.license_key },
       select: {
         license_key: true,
         site_key: true,
@@ -39,7 +39,7 @@ export async function GET() {
       }
     })
 
-    // Check what data would be returned WITH siteKey filtering
+    // Check what data would be returned WITH site_key filtering
     const filteredBySiteKey = userLicense?.site_key ? 
       await prisma.chatbot_logs.groupBy({
         by: ['session_id', 'site_key', 'domain'],
@@ -56,7 +56,7 @@ export async function GET() {
         }
       }) : []
 
-    // Check for NULL siteKey records
+    // Check for NULL site_key records
     const nullSiteKeyRecords = await prisma.chatbot_logs.count({
       where: {
         site_key: null,
@@ -77,7 +77,7 @@ export async function GET() {
 
     return NextResponse.json({
       auth: {
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
         domain: auth.domain,
         isMaster: auth.isMaster
       },
@@ -91,13 +91,13 @@ export async function GET() {
         distinctSiteKeysCount: distinctSiteKeys.length
       },
       unfilteredSample: unfiltered.slice(0, 3).map(item => ({
-        sessionId: item.session_id,
+        session_id: item.session_id,
         site_key: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count
       })),
       filteredSample: filteredBySiteKey.slice(0, 3).map(item => ({
-        sessionId: item.session_id,
+        session_id: item.session_id,
         site_key: item.site_key || 'NULL',
         domain: item.domain || 'NULL',
         count: item._count

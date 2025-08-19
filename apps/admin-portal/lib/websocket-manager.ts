@@ -47,14 +47,14 @@ export class WebSocketManager {
 
         // Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        const session = await SessionManager.verify(decoded.sessionId);
+        const session = await SessionManager.verify(decoded.session_id);
 
         if (!session.valid) {
           return next(new Error('Invalid session'));
         }
 
         socket.data.userId = session.userId;
-        socket.data.sessionId = decoded.sessionId;
+        socket.data.session_id = decoded.session_id;
         
         next();
       } catch (error) {

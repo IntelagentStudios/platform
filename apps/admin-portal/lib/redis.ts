@@ -72,17 +72,17 @@ export const rateLimiter = {
 };
 
 export const sessionStore = {
-  async get(sessionId: string) {
-    const session = await redis.get(`session:${sessionId}`);
+  async get(session_id: string) {
+    const session = await redis.get(`session:${session_id}`);
     return session ? JSON.parse(session) : null;
   },
 
-  async set(sessionId: string, data: any, ttl = 86400) {
-    await redis.setex(`session:${sessionId}`, ttl, JSON.stringify(data));
+  async set(session_id: string, data: any, ttl = 86400) {
+    await redis.setex(`session:${session_id}`, ttl, JSON.stringify(data));
   },
 
-  async destroy(sessionId: string) {
-    await redis.del(`session:${sessionId}`);
+  async destroy(session_id: string) {
+    await redis.del(`session:${session_id}`);
   },
 };
 

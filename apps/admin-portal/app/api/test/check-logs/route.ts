@@ -59,11 +59,11 @@ export async function GET() {
     // Format logs for easier reading
     const formattedLogs = recentLogs.map(log => ({
       id: log.id,
-      sessionId: log.session_id || 'NULL',
+      session_id: log.session_id || 'NULL',
       domain: log.domain || log.licenses?.domain || 'NULL',
       site_key: log.site_key || 'NULL',
       license_key: log.licenses?.license_key || 'Not linked',
-      customerName: log.licenses?.customer_name || 'Unknown',
+      customer_name: log.licenses?.customer_name || 'Unknown',
       products: log.licenses?.products || [],
       message: log.customer_message || log.chatbot_response || log.content || 'No content',
       role: log.role || (log.customer_message ? 'user' : log.chatbot_response ? 'assistant' : 'unknown'),

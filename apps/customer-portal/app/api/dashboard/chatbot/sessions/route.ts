@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
     let userProducts: string[] = []
     if (!auth.isMaster) {
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true, products: true }
+        where: { license_key: auth.license_key },
+        select: { site_key: true, products: true }
       })
-      userSiteKey = userLicense?.siteKey || null
+      userSiteKey = userLicense?.site_key || null
       userProducts = userLicense?.products || []
       
-      // If user has no siteKey, return empty results
+      // If user has no site_key, return empty results
       if (!userSiteKey) {
         return NextResponse.json({ sessions: [] })
       }
@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     let whereClause: any = {
-      sessionId: { not: null }
+      session_id: { not: null }
     }
     
     // Filter by site_key for non-master users
     if (!auth.isMaster) {
       // We already checked userSiteKey exists above
-      whereClause.siteKey = userSiteKey
+      whereClause.site_key = userSiteKey
     }
 
     // Filter by domain if specified
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       // For combined view, check if user has premium
       if (product === 'combined') {
         const userLicense = await prisma.licenses.findUnique({
-          where: { licenseKey: auth.licenseKey },
+          where: { license_key: auth.license_key },
           select: { plan: true }
         })
         const isPremium = userLicense?.plan === 'premium' || userLicense?.plan === 'enterprise'
@@ -77,41 +77,48 @@ export async function GET(request: NextRequest) {
     }
 
     if (view === 'by-domain') {
-      // Get sessions grouped by domain with license info
-      const domainSessions = await prisma.chatbotLog.findMany({
+      // Get sessions grouped by domain
+      const domainSessions = await prisma.chatbot_logs.findMany({
         where: whereClause,
         select: {
-          sessionId: true,
+          session_id: true,
           domain: true,
-          siteKey: true,
-          timestamp: true,
-          license: {
-            select: {
-              domain: true,
-              customerName: true,
-              licenseKey: true
-            }
-          }
+          site_key: true,
+          timestamp: true
         },
         orderBy: { timestamp: 'desc' },
         take: limit * 5 // Get more to group properly
       })
 
+      // Get license info for each unique site_key
+      const uniqueSiteKeys = [...new Set(domainSessions.map(s => s.site_key).filter(Boolean))] as string[]
+      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
+        where: { site_key: { in: uniqueSiteKeys } },
+        select: {
+          site_key: true,
+          domain: true,
+          customer_name: true,
+          license_key: true
+        }
+      }) : []
+      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+
       // Group by session
       const sessionMap = new Map()
       domainSessions.forEach(log => {
-        if (!sessionMap.has(log.sessionId)) {
-          sessionMap.set(log.sessionId, {
-            sessionId: log.sessionId,
-            domain: log.domain || log.license?.domain || 'Unknown',
-            customerName: log.license?.customerName,
-            licenseKey: log.license?.licenseKey,
+        if (!sessionMap.has(log.session_id)) {
+          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          sessionMap.set(log.session_id, {
+            session_id: log.session_id,
+            domain: log.domain || license?.domain || 'Unknown',
+            customer_name: license?.customer_name,
+            license_key: license?.license_key,
             messageCount: 0,
             startTime: log.timestamp,
             lastActivity: log.timestamp
           })
         }
-        const session = sessionMap.get(log.sessionId)
+        const session = sessionMap.get(log.session_id)
         session.messageCount++
         if (log.timestamp && session.startTime && log.timestamp < session.startTime) {
           session.startTime = log.timestamp
@@ -129,55 +136,62 @@ export async function GET(request: NextRequest) {
       
     } else if (view === 'recent') {
       // Get recent conversations with full details
-      const recentLogs = await prisma.chatbotLog.findMany({
+      const recentLogs = await prisma.chatbot_logs.findMany({
         where: whereClause,
         orderBy: { timestamp: 'desc' },
         take: limit,
         select: {
           id: true,
-          sessionId: true,
+          session_id: true,
           domain: true,
-          userId: true,
-          customerMessage: true,
-          chatbotResponse: true,
+          user_id: true,
+          customer_message: true,
+          chatbot_response: true,
           role: true,
           content: true,
           timestamp: true,
-          conversationId: true,
-          siteKey: true,
-          license: {
-            select: {
-              domain: true,
-              customerName: true,
-              licenseKey: true
-            }
-          }
+          conversation_id: true,
+          site_key: true
         }
       })
+
+      // Get license info for each unique site_key
+      const uniqueSiteKeys = [...new Set(recentLogs.map(s => s.site_key).filter(Boolean))] as string[]
+      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
+        where: { site_key: { in: uniqueSiteKeys } },
+        select: {
+          site_key: true,
+          domain: true,
+          customer_name: true,
+          license_key: true
+        }
+      }) : []
+      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
 
       // Group by session
       const sessionMap = new Map()
       
       recentLogs.forEach(log => {
-        if (!sessionMap.has(log.sessionId)) {
-          sessionMap.set(log.sessionId, {
-            sessionId: log.sessionId,
-            domain: log.domain || log.license?.domain || 'Unknown',
-            customerName: log.license?.customerName,
-            licenseKey: auth.isMaster ? log.license?.licenseKey : undefined,
-            conversationId: log.conversationId,
+        if (!sessionMap.has(log.session_id)) {
+          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          sessionMap.set(log.session_id, {
+            session_id: log.session_id,
+            domain: log.domain || license?.domain || 'Unknown',
+            customer_name: license?.customer_name,
+            license_key: auth.isMaster ? license?.license_key : undefined,
+            conversationId: log.conversation_id,
             messages: [],
             startTime: log.timestamp,
             lastActivity: log.timestamp,
-            userId: log.userId
+            userId: log.user_id
           })
         }
         
-        const session = sessionMap.get(log.sessionId)
+        const session = sessionMap.get(log.session_id)
         session.messages.push({
           id: log.id,
-          role: log.role || (log.customerMessage ? 'user' : 'assistant'),
-          content: log.content || log.customerMessage || log.chatbotResponse,
+          role: log.role || (log.customer_message ? 'user' : 'assistant'),
+          content: log.content || log.customer_message || log.chatbot_response,
           timestamp: log.timestamp
         })
         
@@ -197,7 +211,7 @@ export async function GET(request: NextRequest) {
       
     } else {
       // Get all active sessions summary
-      const activeDomains = await prisma.chatbotLog.groupBy({
+      const activeDomains = await prisma.chatbot_logs.groupBy({
         by: ['domain'],
         where: {
           ...whereClause,
@@ -206,52 +220,59 @@ export async function GET(request: NextRequest) {
           }
         },
         _count: {
-          sessionId: true,
+          session_id: true,
           id: true
         }
       })
 
-      const totalSessions = await prisma.chatbotLog.groupBy({
-        by: ['sessionId'],
+      const totalSessions = await prisma.chatbot_logs.groupBy({
+        by: ['session_id'],
         where: whereClause,
         _count: true
       })
 
-      // Get session details with license info
-      const sessionDetails = await prisma.chatbotLog.findMany({
+      // Get session details
+      const sessionDetails = await prisma.chatbot_logs.findMany({
         where: whereClause,
         select: {
-          sessionId: true,
+          session_id: true,
           domain: true,
-          siteKey: true,
-          timestamp: true,
-          license: {
-            select: {
-              licenseKey: true,
-              domain: true,
-              customerName: true
-            }
-          }
+          site_key: true,
+          timestamp: true
         },
         orderBy: { timestamp: 'desc' },
         take: limit * 5
       })
 
+      // Get license info for each unique site_key
+      const uniqueSiteKeys = [...new Set(sessionDetails.map(s => s.site_key).filter(Boolean))] as string[]
+      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
+        where: { site_key: { in: uniqueSiteKeys } },
+        select: {
+          site_key: true,
+          license_key: true,
+          domain: true,
+          customer_name: true
+        }
+      }) : []
+      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+
       // Group sessions
       const sessionMap = new Map()
       sessionDetails.forEach(log => {
-        if (!sessionMap.has(log.sessionId)) {
-          sessionMap.set(log.sessionId, {
-            sessionId: log.sessionId,
-            domain: log.domain || log.license?.domain || 'Unknown',
-            licenseKey: auth.isMaster ? log.license?.licenseKey : undefined,
-            customerName: log.license?.customerName,
+        if (!sessionMap.has(log.session_id)) {
+          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          sessionMap.set(log.session_id, {
+            session_id: log.session_id,
+            domain: log.domain || license?.domain || 'Unknown',
+            license_key: auth.isMaster ? license?.license_key : undefined,
+            customer_name: license?.customer_name,
             messageCount: 0,
             startTime: log.timestamp,
             lastActivity: log.timestamp
           })
         }
-        const session = sessionMap.get(log.sessionId)
+        const session = sessionMap.get(log.session_id)
         session.messageCount++
         if (log.timestamp && session.startTime && log.timestamp < session.startTime) {
           session.startTime = log.timestamp
@@ -290,7 +311,7 @@ export async function GET(request: NextRequest) {
         sessions: formattedSessions,
         domains: activeDomains.map(d => ({
           domain: d.domain || 'Unknown',
-          sessionCount: d._count.sessionId,
+          sessionCount: d._count.session_id,
           messageCount: d._count.id
         }))
       })

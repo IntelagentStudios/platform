@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { licenseKey: string } }
+  { params }: { params: { license_key: string } }
 ) {
   try {
     const auth = await getAuthFromCookies()
@@ -17,16 +17,16 @@ export async function GET(
     }
 
     // Only master admin can view other licenses' stats
-    if (!auth.isMaster && auth.licenseKey !== params.licenseKey) {
+    if (!auth.isMaster && auth.license_key !== params.license_key) {
       return NextResponse.json(
         { error: 'Unauthorised' },
         { status: 403 }
       )
     }
 
-    // Get the license's siteKey
+    // Get the license's site_key
     const license = await prisma.licenses.findUnique({
-      where: { license_key: params.licenseKey },
+      where: { license_key: params.license_key },
       select: { site_key: true }
     })
 
@@ -41,7 +41,7 @@ export async function GET(
       })
     }
 
-    // Get conversation and session stats using siteKey
+    // Get conversation and session stats using site_key
     const [totalConversations, sessions, recentActivity] = await Promise.all([
       // Total conversations
       prisma.chatbot_logs.count({

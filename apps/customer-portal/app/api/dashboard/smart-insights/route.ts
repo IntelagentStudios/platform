@@ -14,21 +14,21 @@ export async function GET() {
     }
 
     // Fetch existing insights from database
-    const insights = await prisma.smartDashboardInsight.findMany({
+    const insights = await prisma.smart_dashboard_insights.findMany({
       where: {
-        licenseKey: auth.licenseKey,
+        license_key: auth.license_key,
         OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
+          { expires_at: null },
+          { expires_at: { gt: new Date() } }
         ]
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 
     // If no insights exist, generate some based on current data
     if (insights.length === 0) {
-      const generatedInsights = await generateInitialInsights(auth.licenseKey)
+      const generatedInsights = await generateInitialInsights(auth.license_key)
       return NextResponse.json({ insights: generatedInsights })
     }
 
@@ -42,22 +42,22 @@ export async function GET() {
   }
 }
 
-async function generateInitialInsights(licenseKey: string) {
+async function generateInitialInsights(license_key: string) {
   const license = await prisma.licenses.findUnique({
-    where: { licenseKey: licenseKey },
-    select: { siteKey: true, products: true, plan: true }
+    where: { license_key: license_key },
+    select: { site_key: true, products: true, plan: true }
   })
 
-  if (!license?.siteKey) {
+  if (!license?.site_key) {
     return []
   }
 
   const insights = []
   
   // Check conversation volume
-  const conversations = await prisma.chatbotLog.groupBy({
-    by: ['sessionId'],
-    where: { siteKey: license.siteKey },
+  const conversations = await prisma.chatbot_logs.groupBy({
+    by: ['session_id'],
+    where: { site_key: license.site_key },
     _count: true
   })
 
@@ -73,9 +73,9 @@ async function generateInitialInsights(licenseKey: string) {
   }
 
   // Check for recent activity
-  const recentActivity = await prisma.chatbotLog.count({
+  const recentActivity = await prisma.chatbot_logs.count({
     where: {
-      siteKey: license.siteKey,
+      site_key: license.site_key,
       timestamp: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
       }

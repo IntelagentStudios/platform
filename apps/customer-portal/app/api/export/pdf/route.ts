@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
     const { type, dateRange } = await request.json()
 
     let whereClause: any = {}
-    if (!auth.isMaster && auth.licenseKey) {
-      // Find the user's siteKey from their licenseKey
+    if (!auth.isMaster && auth.license_key) {
+      // Find the user's site_key from their license_key
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        where: { license_key: auth.license_key },
+        select: { site_key: true }
       })
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense?.siteKey
+      if (userLicense?.site_key) {
+        whereClause.site_key = userLicense?.site_key
       }
     }
 
@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
     const [licenses, conversations, stats] = await Promise.all([
       auth.isMaster 
         ? prisma.licenses.findMany({ take: 10 })
-        : prisma.licenses.findMany({ where: { licenseKey: auth.licenseKey } }),
-      prisma.chatbotLog.groupBy({
-        by: ['sessionId', 'domain'],
+        : prisma.licenses.findMany({ where: { license_key: auth.license_key } }),
+      prisma.chatbot_logs.groupBy({
+        by: ['session_id', 'domain'],
         where: whereClause,
         _count: true,
         take: 10,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       }),
       Promise.resolve({
         totalLicenses: auth.isMaster ? await prisma.licenses.count() : 1,
-        totalConversations: await prisma.chatbotLog.groupBy({
+        totalConversations: await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: whereClause,
           _count: true,
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       generatedFor: auth.isMaster ? 'Master Admin' : auth.domain,
       stats,
       licenses: licenses.slice(0, 5).map(l => ({
-        licenseKey: l.license_key,
-        customerName: l.customer_name || 'N/A',
+        license_key: l.license_key,
+        customer_name: l.customer_name || 'N/A',
         products: l.products || ['chatbot'],
       })),
       topConversations: conversations.slice(0, 5).map(c => ({

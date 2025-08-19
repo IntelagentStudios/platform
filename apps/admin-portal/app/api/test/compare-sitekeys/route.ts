@@ -32,7 +32,7 @@ export async function GET() {
     })
 
     // Find the current user's license
-    const currentUserLicense = licenses.find(l => l.license_key === auth.licenseKey)
+    const currentUserLicense = licenses.find(l => l.license_key === auth.license_key)
 
     // Check for case sensitivity issues
     const siteKeyComparisons = []
@@ -65,11 +65,11 @@ export async function GET() {
     const licenseMapping = licenses.map(license => {
       const chatbotData = chatbotSiteKeys.find(c => c.site_key === license.site_key)
       return {
-        license_key: auth.isMaster ? license.license_key : (license.license_key === auth.licenseKey ? license.license_key : 'HIDDEN'),
+        license_key: auth.isMaster ? license.license_key : (license.license_key === auth.license_key ? license.license_key : 'HIDDEN'),
         domain: license.domain,
         site_key: license.site_key,
         chatbotLogCount: chatbotData?._count || 0,
-        isCurrentUser: license.license_key === auth.licenseKey
+        isCurrentUser: license.license_key === auth.license_key
       }
     })
 
@@ -81,7 +81,7 @@ export async function GET() {
 
     return NextResponse.json({
       currentUser: {
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
         isMaster: auth.isMaster,
         license: currentUserLicense || 'Not found',
         siteKeyComparisons

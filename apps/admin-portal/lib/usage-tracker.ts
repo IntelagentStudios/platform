@@ -22,7 +22,7 @@ enum UsageAlertType {
 
 interface UsageUpdate {
   organizationId: string
-  licenseKey?: string
+  license_key?: string
   metric: UsageMetric
   value: number
   timestamp?: Date

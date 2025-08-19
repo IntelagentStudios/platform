@@ -13,55 +13,55 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const view = searchParams.get('view') || 'all'
 
-    // Get the user's license and siteKey
+    // Get the user's license and site_key
     const userLicense = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.license_key },
       select: {
-        licenseKey: true,
-        siteKey: true,
+        license_key: true,
+        site_key: true,
         domain: true,
-        customerName: true,
+        customer_name: true,
         products: true
       }
     })
 
     // Build the where clause as the main endpoint does
     let whereClause: any = {
-      sessionId: { not: null }
+      session_id: { not: null }
     }
     
     // For non-master users
     if (!auth.isMaster) {
-      if (!userLicense?.siteKey) {
+      if (!userLicense?.site_key) {
         return NextResponse.json({
           debug: {
             auth: {
-              licenseKey: auth.licenseKey,
+              license_key: auth.license_key,
               isMaster: auth.isMaster
             },
-            userLicense: 'No siteKey found',
-            message: 'User has no siteKey, should see no data',
+            userLicense: 'No site_key found',
+            message: 'User has no site_key, should see no data',
             whereClause,
             resultCount: 0
           },
           sessions: []
         })
       }
-      whereClause.siteKey = userLicense?.siteKey
+      whereClause.site_key = userLicense?.site_key
     }
 
     // Run the actual query
-    const logs = await prisma.chatbotLog.findMany({
+    const logs = await prisma.chatbot_logs.findMany({
       where: whereClause,
       select: {
-        sessionId: true,
+        session_id: true,
         domain: true,
-        siteKey: true,
+        site_key: true,
         timestamp: true,
         role: true,
         content: true,
-        customerMessage: true,
-        chatbotResponse: true
+        customer_message: true,
+        chatbot_response: true
       },
       orderBy: { timestamp: 'desc' },
       take: 50
@@ -72,9 +72,9 @@ export async function GET(request: NextRequest) {
     logs.forEach(log => {
       if (!sessionMap.has(log.session_id)) {
         sessionMap.set(log.session_id, {
-          sessionId: log.session_id,
+          session_id: log.session_id,
           domain: log.domain || 'Unknown',
-          siteKey: log.siteKey || 'NULL',
+          site_key: log.site_key || 'NULL',
           messageCount: 0,
           firstMessage: log.timestamp
         })
@@ -82,15 +82,15 @@ export async function GET(request: NextRequest) {
       sessionMap.get(log.session_id).messageCount++
     })
 
-    // Get count of records that match vs don't match the user's siteKey
+    // Get count of records that match vs don't match the user's site_key
     let matchingSiteKey = 0
     let differentSiteKey = 0
     let nullSiteKey = 0
     
     logs.forEach(log => {
-      if (!log.siteKey) {
+      if (!log.site_key) {
         nullSiteKey++
-      } else if (log.siteKey === userLicense?.siteKey) {
+      } else if (log.site_key === userLicense?.site_key) {
         matchingSiteKey++
       } else {
         differentSiteKey++
@@ -98,23 +98,23 @@ export async function GET(request: NextRequest) {
     })
 
     // Also check what happens without any filtering
-    const unfilteredCount = await prisma.chatbotLog.count({
-      where: { sessionId: { not: null } }
+    const unfilteredCount = await prisma.chatbot_logs.count({
+      where: { session_id: { not: null } }
     })
 
     // Check distinct siteKeys in results
-    const distinctSiteKeys = new Set(logs.map(l => l.siteKey).filter(Boolean))
+    const distinctSiteKeys = new Set(logs.map(l => l.site_key).filter(Boolean))
 
     return NextResponse.json({
       debug: {
         auth: {
-          licenseKey: auth.licenseKey,
+          license_key: auth.license_key,
           isMaster: auth.isMaster,
           domain: auth.domain
         },
         userLicense: {
           hasLicense: !!userLicense,
-          siteKey: userLicense?.siteKey || 'NULL',
+          site_key: userLicense?.site_key || 'NULL',
           domain: userLicense?.domain,
           products: userLicense?.products
         },
@@ -131,8 +131,8 @@ export async function GET(request: NextRequest) {
       },
       sessions: Array.from(sessionMap.values()),
       sampleLogs: logs.slice(0, 5).map(log => ({
-        sessionId: log.session_id,
-        siteKey: log.siteKey || 'NULL',
+        session_id: log.session_id,
+        site_key: log.site_key || 'NULL',
         domain: log.domain || 'NULL',
         hasContent: !!(log.content || log.customer_message || log.chatbot_response),
         role: log.role

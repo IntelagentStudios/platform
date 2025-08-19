@@ -6,20 +6,20 @@ const MASTER_LICENSE_KEY = process.env.MASTER_LICENSE_KEY || 'INTL-MSTR-ADMN-PAS
 
 export async function POST(request: NextRequest) {
   try {
-    const { licenseKey, domain, rememberMe } = await request.json()
+    const { license_key, domain, rememberMe } = await request.json()
 
-    if (!licenseKey || !domain) {
+    if (!license_key || !domain) {
       return NextResponse.json(
         { error: 'License key and domain are required' },
         { status: 400 }
       )
     }
 
-    const isMaster = licenseKey === MASTER_LICENSE_KEY
+    const isMaster = license_key === MASTER_LICENSE_KEY
 
     if (!isMaster) {
       const license = await prisma.licenses.findUnique({
-        where: { license_key: licenseKey },
+        where: { license_key: license_key },
       })
 
       if (!license) {
@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const token = createAuthToken(licenseKey, domain)
+      const token = createAuthToken(license_key, domain)
       
       const response = NextResponse.json({
         success: true,
         isMaster: false,
-        customerName: license.customer_name,
+        customer_name: license.customer_name,
         email: license.email,
         products: license.products,
       })
@@ -56,12 +56,12 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    const token = createAuthToken(licenseKey, domain)
+    const token = createAuthToken(license_key, domain)
     
     const response = NextResponse.json({
       success: true,
       isMaster: true,
-      customerName: 'Master Admin',
+      customer_name: 'Master Admin',
     })
 
     response.cookies.set('auth-token', token, {

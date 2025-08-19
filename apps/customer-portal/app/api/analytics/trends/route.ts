@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
     if (!auth.isMaster) {
       // For individual users, filter by their site_key
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        where: { license_key: auth.license_key },
+        select: { site_key: true }
       })
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense?.siteKey
+      if (userLicense?.site_key) {
+        whereClause.site_key = userLicense?.site_key
       }
     } else if (productType) {
       // For master admin, filter by product type if specified
@@ -61,26 +61,21 @@ export async function POST(request: NextRequest) {
         where: { 
           products: { has: productType }
         },
-        select: { siteKey: true }
+        select: { site_key: true }
       })
-      const siteKeys = licensesWithProduct.map(l => l.siteKey).filter(Boolean)
+      const siteKeys = licensesWithProduct.map(l => l.site_key).filter(Boolean)
       if (siteKeys.length > 0) {
-        whereClause.siteKey = { in: siteKeys }
+        whereClause.site_key = { in: siteKeys }
       }
     }
 
-    // Get conversation logs with license info
-    const logs = await prisma.chatbotLog.findMany({
+    // Get conversation logs
+    const logs = await prisma.chatbot_logs.findMany({
       where: whereClause,
       select: {
         timestamp: true,
-        sessionId: true,
-        siteKey: true,
-        license: {
-          select: {
-            licenseKey: true
-          }
-        }
+        session_id: true,
+        site_key: true
       },
       orderBy: { timestamp: 'asc' }
     })
@@ -110,14 +105,14 @@ export async function POST(request: NextRequest) {
       if (!sessionsByDate.has(dateKey)) {
         sessionsByDate.set(dateKey, new Set())
       }
-      sessionsByDate.get(dateKey)!.add(log.sessionId!)
+      sessionsByDate.get(dateKey)!.add(log.session_id!)
 
-      // Track unique licenses per date
-      if (log.license?.licenseKey) {
+      // Track unique site keys per date (as proxy for licenses)
+      if (log.site_key) {
         if (!licensesByDate.has(dateKey)) {
           licensesByDate.set(dateKey, new Set())
         }
-        licensesByDate.get(dateKey)!.add(log.license?.licenseKey)
+        licensesByDate.get(dateKey)!.add(log.site_key)
       }
     })
 

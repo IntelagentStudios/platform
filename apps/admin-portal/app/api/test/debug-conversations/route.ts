@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const view = searchParams.get('view') || 'all'
 
-    // Get the user's license and siteKey
+    // Get the user's license and site_key
     const userLicense = await prisma.licenses.findUnique({
-      where: { license_key: auth.licenseKey },
+      where: { license_key: auth.license_key },
       select: {
         license_key: true,
         site_key: true,
@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           debug: {
             auth: {
-              license_key: auth.licenseKey,
+              license_key: auth.license_key,
               isMaster: auth.isMaster
             },
-            userLicense: 'No siteKey found',
-            message: 'User has no siteKey, should see no data',
+            userLicense: 'No site_key found',
+            message: 'User has no site_key, should see no data',
             whereClause,
             resultCount: 0
           },
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     logs.forEach(log => {
       if (!sessionMap.has(log.session_id)) {
         sessionMap.set(log.session_id, {
-          sessionId: log.session_id,
+          session_id: log.session_id,
           domain: log.domain || 'Unknown',
           site_key: log.site_key || 'NULL',
           messageCount: 0,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       sessionMap.get(log.session_id).messageCount++
     })
 
-    // Get count of records that match vs don't match the user's siteKey
+    // Get count of records that match vs don't match the user's site_key
     let matchingSiteKey = 0
     let differentSiteKey = 0
     let nullSiteKey = 0
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       debug: {
         auth: {
-          license_key: auth.licenseKey,
+          license_key: auth.license_key,
           isMaster: auth.isMaster,
           domain: auth.domain
         },
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       },
       sessions: Array.from(sessionMap.values()),
       sampleLogs: logs.slice(0, 5).map(log => ({
-        sessionId: log.session_id,
+        session_id: log.session_id,
         site_key: log.site_key || 'NULL',
         domain: log.domain || 'NULL',
         hasContent: !!(log.content || log.customer_message || log.chatbot_response),

@@ -5,17 +5,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS'
 const MASTER_LICENSE_KEY = process.env.MASTER_LICENSE_KEY || 'INTL-MSTR-ADMN-PASS'
 
 export interface AuthToken {
-  licenseKey: string
+  license_key: string
   domain: string
   isMaster: boolean
   exp: number
 }
 
-export function createAuthToken(licenseKey: string, domain: string): string {
-  const isMaster = licenseKey === MASTER_LICENSE_KEY
+export function createAuthToken(license_key: string, domain: string): string {
+  const isMaster = license_key === MASTER_LICENSE_KEY
   const token = jwt.sign(
     { 
-      licenseKey, 
+      license_key, 
       domain, 
       isMaster 
     },

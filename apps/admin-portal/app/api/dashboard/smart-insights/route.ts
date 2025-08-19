@@ -16,7 +16,7 @@ export async function GET() {
     // Fetch existing insights from database
     const insights = await prisma.smart_dashboard_insights.findMany({
       where: {
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
         OR: [
           { expires_at: null },
           { expires_at: { gt: new Date() } }
@@ -28,7 +28,7 @@ export async function GET() {
 
     // If no insights exist, generate some based on current data
     if (insights.length === 0) {
-      const generatedInsights = await generateInitialInsights(auth.licenseKey)
+      const generatedInsights = await generateInitialInsights(auth.license_key)
       return NextResponse.json({ insights: generatedInsights })
     }
 

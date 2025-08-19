@@ -131,7 +131,7 @@ export async function GET() {
     } else {
       // Individual user sees only their data
       const license = await prisma.licenses.findUnique({
-        where: { license_key: auth.licenseKey },
+        where: { license_key: auth.license_key },
         select: {
           status: true,
           plan: true,

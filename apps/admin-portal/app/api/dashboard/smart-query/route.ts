@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     // Get user's license for context
     const userLicense = await prisma.licenses.findUnique({
-      where: { license_key: auth.licenseKey },
+      where: { license_key: auth.license_key },
       select: {
         site_key: true,
         products: true,
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     // Save the request to database (without metadata field)
     const savedRequest = await prisma.smart_dashboard_requests.create({
       data: {
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
         request_type: 'query',
         query: query,
         response: aiResponse,
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
       await Promise.all(insights.map(insight =>
         prisma.smart_dashboard_insights.create({
           data: {
-            license_key: auth.licenseKey,
+            license_key: auth.license_key,
             insight_type: insight.type,
             title: insight.title,
             content: insight.content,

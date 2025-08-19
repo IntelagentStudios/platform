@@ -32,16 +32,16 @@ export async function POST(request: NextRequest) {
     // For master admin, show all data; for customers, filter by their license
     const whereClause = auth.isMaster 
       ? {} 
-      : { licenseKey: auth.licenseKey }
+      : { license_key: auth.license_key }
 
     // Get licenses created (downloads) in the date range
     const licenses = await prisma.licenses.findMany({
       where: {
         ...whereClause,
-        createdAt: { gte: startDate }
+        created_at: { gte: startDate }
       },
       select: {
-        createdAt: true,
+        created_at: true,
       }
     })
 
@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     const downloadsByDate = new Map<string, number>()
 
     licenses.forEach(license => {
-      if (license.createdAt) {
-        const dateKey = license.createdAt.toISOString().split('T')[0]
+      if (license.created_at) {
+        const dateKey = license.created_at.toISOString().split('T')[0]
         downloadsByDate.set(dateKey, (downloadsByDate.get(dateKey) || 0) + 1)
       }
     })

@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
     let userProducts: string[] = []
     if (!auth.isMaster) {
       const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.licenseKey },
+        where: { license_key: auth.license_key },
         select: { site_key: true, products: true }
       })
       userSiteKey = userLicense?.site_key || null
       userProducts = userLicense?.products || []
       
-      // If user has no siteKey, return empty results
+      // If user has no site_key, return empty results
       if (!userSiteKey) {
         return NextResponse.json({ sessions: [] })
       }
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       // For combined view, check if user has premium
       if (product === 'combined') {
         const userLicense = await prisma.licenses.findUnique({
-          where: { license_key: auth.licenseKey },
+          where: { license_key: auth.license_key },
           select: { plan: true }
         })
         const isPremium = userLicense?.plan === 'premium' || userLicense?.plan === 'enterprise'
@@ -102,9 +102,9 @@ export async function GET(request: NextRequest) {
       domainSessions.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
           sessionMap.set(log.session_id, {
-            sessionId: log.session_id,
+            session_id: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
-            customerName: log.licenses?.customer_name,
+            customer_name: log.licenses?.customer_name,
             license_key: log.licenses?.license_key,
             messageCount: 0,
             startTime: log.timestamp,
@@ -161,9 +161,9 @@ export async function GET(request: NextRequest) {
       recentLogs.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
           sessionMap.set(log.session_id, {
-            sessionId: log.session_id,
+            session_id: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
-            customerName: log.licenses?.customer_name,
+            customer_name: log.licenses?.customer_name,
             license_key: auth.isMaster ? log.licenses?.license_key : undefined,
             conversationId: log.conversation_id,
             messages: [],
@@ -242,10 +242,10 @@ export async function GET(request: NextRequest) {
       sessionDetails.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
           sessionMap.set(log.session_id, {
-            sessionId: log.session_id,
+            session_id: log.session_id,
             domain: log.domain || log.licenses?.domain || 'Unknown',
             license_key: auth.isMaster ? log.licenses?.license_key : undefined,
-            customerName: log.licenses?.customer_name,
+            customer_name: log.licenses?.customer_name,
             messageCount: 0,
             startTime: log.timestamp,
             lastActivity: log.timestamp

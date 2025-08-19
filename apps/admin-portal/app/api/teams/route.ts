@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get team members from cache or database
-    const cacheKey = `team:${auth.licenseKey}`
+    const cacheKey = `team:${auth.license_key}`
     const cached = await redis.get(cacheKey)
     
     if (cached) {
@@ -21,10 +21,10 @@ export async function GET(req: NextRequest) {
     // For now, return mock team data
     const teamData = {
       organization: {
-        id: 'org_' + auth.licenseKey.substring(0, 8),
+        id: 'org_' + auth.license_key.substring(0, 8),
         name: auth.domain || 'My Organization',
         plan: 'professional',
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
       },
       members: [
         {
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Invalidate cache
-    const cacheKey = `team:${auth.licenseKey}`
+    const cacheKey = `team:${auth.license_key}`
     await redis.del(cacheKey)
 
     // In production, send invitation email using Resend

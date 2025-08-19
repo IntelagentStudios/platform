@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Build where clause based on user role
-    const whereClause = auth.isMaster ? {} : { license_key: auth.licenseKey }
+    const whereClause = auth.isMaster ? {} : { license_key: auth.license_key }
 
     // Get recent activities from multiple sources
     const activities: any[] = []
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         title: 'New Conversation Started',
         description: `${session.domain || license?.domain || 'Unknown Domain'} - ${session._count.id} messages`,
         metadata: {
-          sessionId: session.session_id,
+          session_id: session.session_id,
           domain: session.domain || license?.domain,
           messageCount: session._count.id,
           duration: session._max.timestamp && session._min.timestamp

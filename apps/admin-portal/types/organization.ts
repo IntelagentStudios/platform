@@ -2,8 +2,8 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
   ownerId: string;
   settings?: OrganizationSettings;
   subscription?: Subscription;
@@ -25,8 +25,8 @@ export interface Team {
   name: string;
   organizationId: string;
   description?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
   memberCount?: number;
 }
 

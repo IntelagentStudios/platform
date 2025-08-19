@@ -16,7 +16,7 @@ export async function GET() {
     // Fetch query history from database
     const requests = await prisma.smart_dashboard_requests.findMany({
       where: {
-        license_key: auth.licenseKey,
+        license_key: auth.license_key,
         request_type: 'query'
       },
       select: {

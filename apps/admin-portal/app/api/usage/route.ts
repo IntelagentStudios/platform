@@ -12,15 +12,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Get rate limit status
-    const rateLimits = await getRateLimitStatus(auth.licenseKey)
+    const rateLimits = await getRateLimitStatus(auth.license_key)
 
     // Get storage usage from Redis cache
-    const storageKey = `usage:storage:${auth.licenseKey}`
+    const storageKey = `usage:storage:${auth.license_key}`
     const cachedStorage = await redis.get(storageKey)
     const storageUsed = cachedStorage ? parseInt(cachedStorage) : 524288000 // Default 500MB
 
     // Get team member count
-    const teamKey = `team:count:${auth.licenseKey}`
+    const teamKey = `team:count:${auth.license_key}`
     const cachedTeamCount = await redis.get(teamKey)
     const teamMembers = cachedTeamCount ? parseInt(cachedTeamCount) : 3
 

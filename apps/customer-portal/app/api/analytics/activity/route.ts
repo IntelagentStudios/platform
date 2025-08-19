@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Build where clause based on user role
-    const whereClause = auth.isMaster ? {} : { licenseKey: auth.licenseKey }
+    const whereClause = auth.isMaster ? {} : { license_key: auth.license_key }
 
     // Get recent activities from multiple sources
     const activities: any[] = []

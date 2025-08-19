@@ -149,7 +149,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
               <User className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Customer Name</p>
-                <p className="text-sm text-muted-foreground">{license.customer_name || 'Not provided'}</p>
+                <p className="text-sm text-muted-foreground">{license.customerName || 'Not provided'}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -178,7 +178,7 @@ export default function LicenseProfile({ licenseKey, onBack }: LicenseProfilePro
               <div>
                 <p className="text-sm font-medium">Created</p>
                 <p className="text-sm text-muted-foreground">
-                  {license.created_at ? format(new Date(license.created_at), 'dd MMM yyyy') : 'Unknown'}
+                  {license.createdAt ? format(new Date(license.createdAt), 'dd MMM yyyy') : 'Unknown'}
                 </p>
               </div>
             </div>

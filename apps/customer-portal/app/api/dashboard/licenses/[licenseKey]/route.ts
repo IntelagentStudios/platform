@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { licenseKey: string } }
+  { params }: { params: { license_key: string } }
 ) {
   try {
     const auth = await getAuthFromCookies()
@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Only master admin can view other licenses
-    if (!auth.isMaster && auth.licenseKey !== params.licenseKey) {
+    if (!auth.isMaster && auth.license_key !== params.license_key) {
       return NextResponse.json(
         { error: 'Unauthorised' },
         { status: 403 }
@@ -25,25 +25,25 @@ export async function GET(
     }
 
     const license = await prisma.licenses.findUnique({
-      where: { licenseKey: params.licenseKey },
+      where: { license_key: params.license_key },
       select: {
-        licenseKey: true,
+        license_key: true,
         email: true,
-        customerName: true,
+        customer_name: true,
         domain: true,
         status: true,
-        createdAt: true,
-        usedAt: true,
-        lastIndexed: true,
+        created_at: true,
+        used_at: true,
+        last_indexed: true,
         plan: true,
         products: true,
-        subscriptionStatus: true,
-        lastPaymentDate: true,
-        nextBillingDate: true,
-        subscriptionId: true,
+        subscription_status: true,
+        last_payment_date: true,
+        next_billing_date: true,
+        subscription_id: true,
         _count: {
           select: {
-            chatbotLogs: true
+            chatbot_logs: true
           }
         }
       }
@@ -60,20 +60,20 @@ export async function GET(
     let actualDomain = license.domain
 
     return NextResponse.json({
-      licenseKey: license.licenseKey,
+      license_key: license.license_key,
       email: license.email,
-      customerName: license.customerName,
+      customer_name: license.customer_name,
       domain: actualDomain,
       status: license.status,
-      createdAt: license.createdAt,
-      usedAt: license.usedAt,
-      lastIndexed: license.lastIndexed,
+      created_at: license.created_at,
+      used_at: license.used_at,
+      lastIndexed: license.last_indexed,
       plan: license.plan,
       products: license.products,
-      subscriptionStatus: license.subscriptionStatus,
-      lastPaymentDate: license.lastPaymentDate,
-      nextBillingDate: license.nextBillingDate,
-      conversationCount: license._count.chatbotLogs
+      subscription_status: license.subscription_status,
+      lastPaymentDate: license.last_payment_date,
+      nextBillingDate: license.next_billing_date,
+      conversationCount: license._count.chatbot_logs
     })
   } catch (error) {
     console.error('Licence API error:', error)

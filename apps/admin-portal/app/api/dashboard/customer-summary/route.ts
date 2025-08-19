@@ -16,21 +16,21 @@ export async function GET() {
     // Get data for the last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     
-    // Get the user's siteKey from their licenseKey
+    // Get the user's site_key from their license_key
     let whereClause: any = {
       timestamp: { gte: thirtyDaysAgo }
     }
     
-    if (auth.licenseKey) {
+    if (auth.license_key) {
       const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.licenseKey },
+        where: { license_key: auth.license_key },
         select: { site_key: true }
       })
       
       if (userLicense?.site_key) {
         whereClause.site_key = userLicense.site_key
       } else {
-        // No siteKey found, return empty data
+        // No site_key found, return empty data
         return NextResponse.json({
           totalConversations: 0,
           activeUsers: 0,

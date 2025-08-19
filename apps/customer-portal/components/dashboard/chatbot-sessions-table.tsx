@@ -17,13 +17,14 @@ import {
 import { formatDistanceToNow } from 'date-fns'
 
 interface Session {
-  sessionId: string
+  session_id: string
   domain: string
-  licenseKey?: string
+  license_key?: string
+  customer_name?: string
   messageCount: number
   startTime: Date | string
   lastActivity: Date | string
-  duration: number
+  duration?: number
 }
 
 interface DomainSummary {
@@ -211,9 +212,9 @@ export default function ChatbotSessionsTable({
                         <div className="flex items-center gap-2">
                           <Globe className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{session.domain}</span>
-                          {session.licenseKey && (
+                          {session.license_key && (
                             <Badge variant="outline" className="text-xs">
-                              {session.licenseKey}
+                              {session.license_key}
                             </Badge>
                           )}
                         </div>
@@ -224,7 +225,7 @@ export default function ChatbotSessionsTable({
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {formatDuration(session.duration)}
+                            {formatDuration(session.duration || 0)}
                           </span>
                           <span className="flex items-center gap-1">
                             <Activity className="h-3 w-3" />

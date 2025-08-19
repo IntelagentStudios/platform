@@ -15,22 +15,22 @@ export async function GET() {
 
     if (auth.isMaster) {
       return NextResponse.json({
-        licenseKey: auth.licenseKey,
+        license_key: auth.license_key,
         domain: auth.domain,
         isMaster: true,
-        customerName: 'Master Admin',
+        customer_name: 'Master Admin',
       })
     }
 
     const license = await prisma.licenses.findUnique({
-      where: { licenseKey: auth.licenseKey },
+      where: { license_key: auth.license_key },
     })
 
     return NextResponse.json({
-      licenseKey: auth.licenseKey,
+      license_key: auth.license_key,
       domain: auth.domain,
       isMaster: false,
-      customerName: license?.customerName,
+      customer_name: license?.customer_name,
       email: license?.email,
       products: license?.products,
     })

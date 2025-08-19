@@ -31,7 +31,7 @@ export async function createAuditLog(params: CreateAuditLogParams) {
     return {
       id: Math.random().toString(36).substr(2, 9),
       ...params,
-      createdAt: new Date()
+      created_at: new Date()
     }
   } catch (error) {
     console.error('Error creating audit log:', error)

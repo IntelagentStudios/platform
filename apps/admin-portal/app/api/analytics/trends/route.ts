@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     if (!auth.isMaster) {
       // For individual users, filter by their site_key
       const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.licenseKey },
+        where: { license_key: auth.license_key },
         select: { site_key: true }
       })
       if (userLicense?.site_key) {

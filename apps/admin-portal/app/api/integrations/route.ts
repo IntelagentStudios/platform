@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get API keys for this license
-    const apiKeysKey = `apikeys:${auth.licenseKey}`
+    const apiKeysKey = `apikeys:${auth.license_key}`
     const cachedKeys = await redis.get(apiKeysKey)
     
     const apiKeys = cachedKeys ? JSON.parse(cachedKeys) : [
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     ]
 
     // Get webhooks
-    const webhooksKey = `webhooks:${auth.licenseKey}`
+    const webhooksKey = `webhooks:${auth.license_key}`
     const cachedWebhooks = await redis.get(webhooksKey)
     
     const webhooks = cachedWebhooks ? JSON.parse(cachedWebhooks) : [
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Store in Redis (in production, store in database)
-      const apiKeysKey = `apikeys:${auth.licenseKey}`
+      const apiKeysKey = `apikeys:${auth.license_key}`
       const existing = await redis.get(apiKeysKey)
       const keys = existing ? JSON.parse(existing) : []
       keys.push(newKey)
@@ -221,7 +221,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Store in Redis (in production, store in database)
-      const webhooksKey = `webhooks:${auth.licenseKey}`
+      const webhooksKey = `webhooks:${auth.license_key}`
       const existing = await redis.get(webhooksKey)
       const webhooks = existing ? JSON.parse(existing) : []
       webhooks.push(newWebhook)

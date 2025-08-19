@@ -25,7 +25,7 @@ export async function GET() {
     } else {
       licenses = await prisma.licenses.findMany({
         where: {
-          license_key: auth.licenseKey,
+          license_key: auth.license_key,
         },
       })
     }

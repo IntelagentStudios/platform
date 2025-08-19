@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import io, { Socket } from 'socket.io-client'
 
-export function useWebSocket(licenseKey?: string) {
+export function useWebSocket(license_key?: string) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
@@ -15,8 +15,8 @@ export function useWebSocket(licenseKey?: string) {
       console.log('WebSocket connected')
       setIsConnected(true)
       
-      if (licenseKey) {
-        socketInstance.emit('join-room', licenseKey)
+      if (license_key) {
+        socketInstance.emit('join-room', license_key)
       }
     })
 
@@ -32,12 +32,12 @@ export function useWebSocket(licenseKey?: string) {
     setSocket(socketInstance)
 
     return () => {
-      if (licenseKey) {
-        socketInstance.emit('leave-room', licenseKey)
+      if (license_key) {
+        socketInstance.emit('leave-room', license_key)
       }
       socketInstance.disconnect()
     }
-  }, [licenseKey])
+  }, [license_key])
 
   return { socket, isConnected, lastUpdate }
 }

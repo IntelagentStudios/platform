@@ -12,14 +12,14 @@ export async function trackApiUsage(
   try {
     const response = await handler()
     
-    if (auth?.licenseKey) {
-      const organizationId = await getOrganizationId(auth.licenseKey)
+    if (auth?.license_key) {
+      const organizationId = await getOrganizationId(auth.license_key)
       
       if (organizationId) {
         // Track API call
         await usageTracker.track({
           organizationId,
-          licenseKey: auth.licenseKey,
+          license_key: auth.license_key,
           metric: UsageMetric.API_CALLS,
           value: 1
         })
@@ -28,7 +28,7 @@ export async function trackApiUsage(
         const computeTime = Date.now() - startTime
         await usageTracker.track({
           organizationId,
-          licenseKey: auth.licenseKey,
+          license_key: auth.license_key,
           metric: UsageMetric.COMPUTE,
           value: Math.ceil(computeTime / 1000)
         })
@@ -37,7 +37,7 @@ export async function trackApiUsage(
         const responseSize = estimateResponseSize(response)
         await usageTracker.track({
           organizationId,
-          licenseKey: auth.licenseKey,
+          license_key: auth.license_key,
           metric: UsageMetric.BANDWIDTH,
           value: responseSize
         })
@@ -46,12 +46,12 @@ export async function trackApiUsage(
     
     return response
   } catch (error) {
-    if (auth?.licenseKey) {
-      const organizationId = await getOrganizationId(auth.licenseKey)
+    if (auth?.license_key) {
+      const organizationId = await getOrganizationId(auth.license_key)
       if (organizationId) {
         await usageTracker.track({
           organizationId,
-          licenseKey: auth.licenseKey,
+          license_key: auth.license_key,
           metric: UsageMetric.API_CALLS,
           value: 1
         })
@@ -61,11 +61,11 @@ export async function trackApiUsage(
   }
 }
 
-async function getOrganizationId(licenseKey: string): Promise<string | null> {
+async function getOrganizationId(license_key: string): Promise<string | null> {
   // Simplified version - database models not yet implemented
   // In production, would look up the organization from the license
   // For now, use the license key as a pseudo-organization ID
-  return `org_${licenseKey.substring(0, 8)}`
+  return `org_${license_key.substring(0, 8)}`
 }
 
 function estimateResponseSize(response: NextResponse): number {

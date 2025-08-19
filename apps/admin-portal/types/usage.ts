@@ -9,7 +9,7 @@ export interface UsageMetrics {
     activeUsers: number;
     customMetrics?: Record<string, number>;
   };
-  createdAt: Date;
+  created_at: Date;
 }
 
 export interface UsageLimit {

@@ -16,21 +16,21 @@ export async function GET() {
     // Get data for the last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     
-    // Get the user's siteKey from their licenseKey
+    // Get the user's site_key from their license_key
     let whereClause: any = {
       timestamp: { gte: thirtyDaysAgo }
     }
     
-    if (auth.licenseKey) {
+    if (auth.license_key) {
       const userLicense = await prisma.licenses.findUnique({
-        where: { licenseKey: auth.licenseKey },
-        select: { siteKey: true }
+        where: { license_key: auth.license_key },
+        select: { site_key: true }
       })
       
-      if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense?.siteKey
+      if (userLicense?.site_key) {
+        whereClause.site_key = userLicense?.site_key
       } else {
-        // No siteKey found, return empty data
+        // No site_key found, return empty data
         return NextResponse.json({
           totalConversations: 0,
           activeUsers: 0,
@@ -41,38 +41,38 @@ export async function GET() {
     }
 
     // Get total conversations (unique sessions)
-    const conversations = await prisma.chatbotLog.groupBy({
-      by: ['sessionId'],
+    const conversations = await prisma.chatbot_logs.groupBy({
+      by: ['session_id'],
       where: {
         ...whereClause,
-        sessionId: { not: null }
+        session_id: { not: null }
       },
       _count: true
     })
 
     // Get unique users
-    const uniqueUsers = await prisma.chatbotLog.groupBy({
-      by: ['userId'],
+    const uniqueUsers = await prisma.chatbot_logs.groupBy({
+      by: ['user_id'],
       where: {
         ...whereClause,
-        userId: { not: null }
+        user_id: { not: null }
       },
       _count: true
     })
 
     // Calculate response rate (messages with responses / total messages)
     const [totalMessages, messagesWithResponses] = await Promise.all([
-      prisma.chatbotLog.count({
+      prisma.chatbot_logs.count({
         where: {
           ...whereClause,
           role: 'user'
         }
       }),
-      prisma.chatbotLog.count({
+      prisma.chatbot_logs.count({
         where: {
           ...whereClause,
           role: 'assistant',
-          chatbotResponse: { not: null }
+          chatbot_response: { not: null }
         }
       })
     ])
