@@ -40,7 +40,7 @@ export async function GET() {
     })
 
     // Check what data would be returned WITH siteKey filtering
-    const filteredBySiteKey = userLicense?.siteKey ? 
+    const filteredBySiteKey = userLicense?.site_key ? 
       await prisma.chatbot_logs.groupBy({
         by: ['session_id', 'site_key', 'domain'],
         where: {
