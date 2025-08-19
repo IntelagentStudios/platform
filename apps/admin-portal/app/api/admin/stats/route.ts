@@ -3,56 +3,52 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get real stats from database if possible
-    let userStats = { total: 0, active: 0, new: 0 };
-    
-    try {
-      // Get user counts from database
-      const totalUsers = await prisma.user.count();
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const newUsers = await prisma.user.count({
-        where: {
-          createdAt: {
-            gte: today
-          }
-        }
-      });
-      
-      // Active users would be those who were active recently
-      const activeDate = new Date();
-      activeDate.setDate(activeDate.getDate() - 30);
-      const activeUsers = await prisma.user.count({
-        where: {
-          lastActiveAt: {
-            gte: activeDate
-          }
-        }
-      });
-      
-      userStats = { total: totalUsers, active: activeUsers, new: newUsers };
-    } catch (error) {
-      // Use mock data if database is not available
-      console.log('Using mock user stats');
-      userStats = { total: 245, active: 89, new: 5 };
-    }
+    // Get real stats from database
+    const [totalUsers, todayStart, activeDate] = [
+      await prisma.user.count(),
+      new Date(new Date().setHours(0, 0, 0, 0)),
+      new Date(new Date().setDate(new Date().getDate() - 30))
+    ];
 
-    // Mock stats for other metrics (would come from Redis/monitoring in production)
+    const [newUsers, activeUsers, totalSessions, totalLicenses] = await Promise.all([
+      prisma.user.count({
+        where: { createdAt: { gte: todayStart } }
+      }),
+      prisma.user.count({
+        where: { lastActiveAt: { gte: activeDate } }
+      }),
+      prisma.session.count(),
+      prisma.license.count()
+    ]);
+
+    // Get database connection stats (simplified)
+    const dbStats = await prisma.$queryRaw`
+      SELECT 
+        count(*) as connection_count,
+        pg_database_size(current_database()) as db_size
+      FROM pg_stat_activity
+      WHERE datname = current_database()
+    ` as any[];
+
     const stats = {
-      users: userStats,
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        new: newUsers,
+      },
       requests: {
-        total: 12543,
-        rpm: 125,
-        errors: 3,
+        total: totalSessions, // Using sessions as a proxy for requests
+        rpm: Math.floor(totalSessions / 1440), // Rough estimate
+        errors: 0, // Would need error tracking
       },
       database: {
-        connections: 10,
-        queries: 5432,
-        slow: 2,
+        connections: parseInt(dbStats[0]?.connection_count || '0'),
+        queries: totalSessions * 10, // Rough estimate
+        slow: 0, // Would need query performance monitoring
       },
       queues: {
-        total: 45,
-        processing: 5,
+        total: 0, // No queue system implemented yet
+        processing: 0,
         failed: 0,
       },
     };
@@ -61,28 +57,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Failed to get stats:', error);
     
-    // Return mock data even on error
+    // Return empty stats on error instead of mock data
     return NextResponse.json({
-      users: {
-        total: 245,
-        active: 89,
-        new: 5,
-      },
-      requests: {
-        total: 12543,
-        rpm: 125,
-        errors: 3,
-      },
-      database: {
-        connections: 10,
-        queries: 5432,
-        slow: 2,
-      },
-      queues: {
-        total: 45,
-        processing: 5,
-        failed: 0,
-      },
+      users: { total: 0, active: 0, new: 0 },
+      requests: { total: 0, rpm: 0, errors: 0 },
+      database: { connections: 0, queries: 0, slow: 0 },
+      queues: { total: 0, processing: 0, failed: 0 },
     });
   }
 }

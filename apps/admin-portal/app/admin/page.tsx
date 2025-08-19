@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { 
   Activity, 
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,26 +120,32 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Key Metrics Grid */}
+      {/* Key Metrics Grid - Clickable Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4">
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/services')}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Services</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-muted-foreground">Services</p>
+              <p className="text-2xl font-bold">
                 {healthyServices}/{totalServices}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Healthy</p>
+              <p className="text-xs text-muted-foreground mt-1">Healthy</p>
             </div>
-            <Server className="w-8 h-8 text-blue-500" />
+            <Server className="w-8 h-8 text-primary" />
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/users')}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Active Users</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-muted-foreground">Active Users</p>
+              <p className="text-2xl font-bold">
                 {stats?.users.active || 0}
               </p>
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
@@ -148,14 +156,17 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/analytics')}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Requests/min</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-muted-foreground">Requests/min</p>
+              <p className="text-2xl font-bold">
                 {stats?.requests.rpm || 0}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {stats?.requests.errors || 0} errors
               </p>
             </div>
@@ -163,14 +174,17 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/queues')}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Queue Jobs</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-sm text-muted-foreground">Queue Jobs</p>
+              <p className="text-2xl font-bold">
                 {stats?.queues.processing || 0}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {stats?.queues.failed || 0} failed
               </p>
             </div>
