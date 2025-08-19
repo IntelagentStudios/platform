@@ -100,12 +100,12 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Get recent conversation sessions
-    const recentSessions = await prisma.chatbotLog.groupBy({
-      by: ['sessionId', 'domain', 'siteKey'],
+    const recentSessions = await prisma.chatbot_logs.groupBy({
+      by: ['session_id', 'domain', 'site_key'],
       where: {
         ...whereClause,
         timestamp: { gte: thirtyDaysAgo },
-        sessionId: { not: null }
+        session_id: { not: null }
       },
       _min: { timestamp: true },
       _max: { timestamp: true },
@@ -119,10 +119,10 @@ export async function GET(request: NextRequest) {
     for (const session of recentSessions) {
       // Get customer name for the session if we have a site key
       let license = null
-      if (session.siteKey) {
+      if (session.site_key) {
         license = await prisma.license.findUnique({
-          where: { siteKey: session.siteKey },
-          select: { customerName: true, domain: true }
+          where: { site_key: session.site_key },
+          select: { customer_name: true, domain: true }
         })
       }
 
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         title: 'New Conversation Started',
         description: `${session.domain || license?.domain || 'Unknown Domain'} - ${session._count.id} messages`,
         metadata: {
-          sessionId: session.sessionId,
+          session_id: session.session_id,
           domain: session.domain || license?.domain,
           messageCount: session._count.id,
           duration: session._max.timestamp && session._min.timestamp
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Get high-volume activity alerts
-    const highVolumeCheck = await prisma.chatbotLog.groupBy({
+    const highVolumeCheck = await prisma.chatbot_logs.groupBy({
       by: ['domain'],
       where: {
         ...whereClause,
