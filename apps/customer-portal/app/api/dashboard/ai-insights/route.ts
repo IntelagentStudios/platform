@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const { product } = await request.json()
 
     // Get user's license to check premium status
-    const userLicense = await prisma.licenses.findUnique({
+    const userLicense = await prisma.license.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         plan: true,

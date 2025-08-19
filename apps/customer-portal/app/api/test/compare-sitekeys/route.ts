@@ -11,22 +11,22 @@ export async function GET() {
     }
 
     // Get all unique siteKeys from licenses
-    const licenses = await prisma.licenses.findMany({
+    const licenses = await prisma.license.findMany({
       select: {
-        license_key: true,
-        site_key: true,
+        licenseKey: true,
+        siteKey: true,
         domain: true,
-        customer_name: true
+        customerName: true
       }
     })
 
     // Get all unique siteKeys from chatbot logs
-    const chatbotSiteKeys = await prisma.chatbot_logs.groupBy({
-      by: ['site_key'],
+    const chatbotSiteKeys = await prisma.chatbotLog.groupBy({
+      by: ['siteKey'],
       _count: true,
       orderBy: {
         _count: {
-          site_key: 'desc'
+          siteKey: 'desc'
         }
       }
     })
@@ -36,20 +36,20 @@ export async function GET() {
 
     // Check for case sensitivity issues
     const siteKeyComparisons = []
-    if (currentUserLicense?.site_key) {
-      const userSiteKey = currentUserLicense.site_key
+    if (currentUserLicense?.siteKey) {
+      const userSiteKey = currentUserLicense.siteKey
       
       // Check exact matches
-      const exactMatches = chatbotSiteKeys.filter(c => c.site_key === userSiteKey)
+      const exactMatches = chatbotSiteKeys.filter(c => c.siteKey === userSiteKey)
       
       // Check case-insensitive matches
       const caseInsensitiveMatches = chatbotSiteKeys.filter(c => 
-        c.site_key?.toLowerCase() === userSiteKey.toLowerCase()
+        c.siteKey?.toLowerCase() === userSiteKey.toLowerCase()
       )
       
       // Check partial matches
       const partialMatches = chatbotSiteKeys.filter(c => 
-        c.site_key?.includes(userSiteKey) || userSiteKey.includes(c.site_key || '')
+        c.siteKey?.includes(userSiteKey) || userSiteKey.includes(c.siteKey || '')
       )
 
       siteKeyComparisons.push({
@@ -63,20 +63,20 @@ export async function GET() {
 
     // Map licenses to their chatbot log counts
     const licenseMapping = licenses.map(license => {
-      const chatbotData = chatbotSiteKeys.find(c => c.site_key === license.site_key)
+      const chatbotData = chatbotSiteKeys.find(c => c.siteKey === license.siteKey)
       return {
         licenseKey: auth.isMaster ? license.license_key : (license.license_key === auth.licenseKey ? license.license_key : 'HIDDEN'),
         domain: license.domain,
-        siteKey: license.site_key,
+        siteKey: license.siteKey,
         chatbotLogCount: chatbotData?._count || 0,
         isCurrentUser: license.license_key === auth.licenseKey
       }
     })
 
     // Find orphaned siteKeys (in chatbot logs but not in licenses)
-    const licenseSiteKeys = new Set(licenses.map(l => l.site_key).filter(Boolean))
+    const licenseSiteKeys = new Set(licenses.map(l => l.siteKey).filter(Boolean))
     const orphanedSiteKeys = chatbotSiteKeys.filter(c => 
-      c.site_key && !licenseSiteKeys.has(c.site_key)
+      c.siteKey && !licenseSiteKeys.has(c.siteKey)
     )
 
     return NextResponse.json({
@@ -88,19 +88,19 @@ export async function GET() {
       },
       summary: {
         totalLicenses: licenses.length,
-        licensesWithSiteKey: licenses.filter(l => l.site_key).length,
+        licensesWithSiteKey: licenses.filter(l => l.siteKey).length,
         uniqueChatbotSiteKeys: chatbotSiteKeys.length,
-        nullSiteKeyRecords: chatbotSiteKeys.find(c => !c.site_key)?._count || 0,
+        nullSiteKeyRecords: chatbotSiteKeys.find(c => !c.siteKey)?._count || 0,
         orphanedSiteKeys: orphanedSiteKeys.length
       },
       licenseMapping: auth.isMaster ? licenseMapping : licenseMapping.filter(l => l.isCurrentUser),
       chatbotSiteKeys: auth.isMaster ? 
         chatbotSiteKeys.slice(0, 10).map(c => ({
-          siteKey: c.site_key || 'NULL',
+          siteKey: c.siteKey || 'NULL',
           recordCount: c._count
         })) : 
-        chatbotSiteKeys.filter(c => c.site_key === currentUserLicense?.site_key).map(c => ({
-          siteKey: c.site_key || 'NULL',
+        chatbotSiteKeys.filter(c => c.siteKey === currentUserLicense?.siteKey).map(c => ({
+          siteKey: c.siteKey || 'NULL',
           recordCount: c._count
         })),
       orphanedSiteKeys: auth.isMaster ? orphanedSiteKeys.slice(0, 5) : []

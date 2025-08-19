@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Fetch existing insights from database
-    const insights = await prisma.smart_dashboard_insights.findMany({
+    const insights = await prisma.smartDashboardInsight.findMany({
       where: {
         licenseKey: auth.licenseKey,
         OR: [
@@ -22,7 +22,7 @@ export async function GET() {
           { expiresAt: { gt: new Date() } }
         ]
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 20
     })
 
@@ -42,22 +42,22 @@ export async function GET() {
   }
 }
 
-async function generateInitialInsights(license_key: string) {
-  const license = await prisma.licenses.findUnique({
-    where: { license_key: license_key },
-    select: { site_key: true, products: true, plan: true }
+async function generateInitialInsights(licenseKey: string) {
+  const license = await prisma.license.findUnique({
+    where: { licenseKey: licenseKey },
+    select: { siteKey: true, products: true, plan: true }
   })
 
-  if (!license?.site_key) {
+  if (!license?.siteKey) {
     return []
   }
 
   const insights = []
   
   // Check conversation volume
-  const conversations = await prisma.chatbot_logs.groupBy({
-    by: ['session_id'],
-    where: { site_key: license.site_key },
+  const conversations = await prisma.chatbotLog.groupBy({
+    by: ['sessionId'],
+    where: { siteKey: license.siteKey },
     _count: true
   })
 
@@ -73,9 +73,9 @@ async function generateInitialInsights(license_key: string) {
   }
 
   // Check for recent activity
-  const recentActivity = await prisma.chatbot_logs.count({
+  const recentActivity = await prisma.chatbotLog.count({
     where: {
-      site_key: license.site_key,
+      siteKey: license.siteKey,
       timestamp: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
       }

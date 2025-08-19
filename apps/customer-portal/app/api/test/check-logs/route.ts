@@ -5,14 +5,14 @@ import { prisma } from '@/lib/db'
 export async function GET() {
   try {
     // Get the 10 most recent chatbot logs with license info
-    const recentLogs = await prisma.chatbot_logs.findMany({
+    const recentLogs = await prisma.chatbotLog.findMany({
       orderBy: { timestamp: 'desc' },
       take: 10,
       select: {
         id: true,
-        session_id: true,
+        sessionId: true,
         domain: true,
-        site_key: true,
+        siteKey: true,
         customer_message: true,
         chatbot_response: true,
         timestamp: true,
@@ -23,9 +23,9 @@ export async function GET() {
         created_at: true,
         license: {
           select: {
-            license_key: true,
+            licenseKey: true,
             domain: true,
-            customer_name: true,
+            customerName: true,
             products: true
           }
         }
@@ -36,7 +36,7 @@ export async function GET() {
     const nullChecks = {
       totalLogs: recentLogs.length,
       logsWithNullDomain: recentLogs.filter(log => !log.domain && !log.license?.domain).length,
-      logsWithNullSiteKey: recentLogs.filter(log => !log.site_key).length,
+      logsWithNullSiteKey: recentLogs.filter(log => !log.siteKey).length,
       logsWithNullSession: recentLogs.filter(log => !log.session_id).length,
       logsWithContent: recentLogs.filter(log => log.customer_message || log.chatbot_response || log.content).length,
       logsWithLicense: recentLogs.filter(log => log.license).length
@@ -47,7 +47,7 @@ export async function GET() {
       recentLogs.map(log => log.domain || log.license?.domain).filter(Boolean)
     ))
     const uniqueSiteKeys = Array.from(new Set(
-      recentLogs.map(log => log.site_key).filter(Boolean)
+      recentLogs.map(log => log.siteKey).filter(Boolean)
     ))
     const allProducts = new Set<string>()
     recentLogs.forEach(log => {
@@ -61,7 +61,7 @@ export async function GET() {
       id: log.id,
       sessionId: log.session_id || 'NULL',
       domain: log.domain || log.license?.domain || 'NULL',
-      siteKey: log.site_key || 'NULL',
+      siteKey: log.siteKey || 'NULL',
       licenseKey: log.license?.license_key || 'Not linked',
       customerName: log.license?.customer_name || 'Unknown',
       products: log.license?.products || [],
@@ -72,9 +72,9 @@ export async function GET() {
     }))
 
     // Test JOIN functionality
-    const testJoin = await prisma.chatbot_logs.findFirst({
+    const testJoin = await prisma.chatbotLog.findFirst({
       where: {
-        site_key: { not: null }
+        siteKey: { not: null }
       },
       include: {
         license: true

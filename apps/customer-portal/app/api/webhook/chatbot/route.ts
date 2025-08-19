@@ -16,30 +16,30 @@ export async function POST(request: NextRequest) {
 
     // If site_key is provided, validate it
     let license = null
-    if (data.site_key) {
-      license = await prisma.licenses.findUnique({
-        where: { site_key: data.site_key },
+    if (data.siteKey) {
+      license = await prisma.license.findUnique({
+        where: { siteKey: data.siteKey },
         select: {
-          license_key: true,
-          site_key: true,
+          licenseKey: true,
+          siteKey: true,
           status: true,
           domain: true,
-          customer_name: true
+          customerName: true
         }
       })
 
       // Log warning if license not found but don't reject the webhook
       if (!license) {
-        console.warn(`Invalid site_key received: ${data.site_key}`)
+        console.warn(`Invalid site_key received: ${data.siteKey}`)
       } else if (license.status !== 'active' && license.status !== 'trial') {
-        console.warn(`Inactive license used: ${data.site_key} (status: ${license.status})`)
+        console.warn(`Inactive license used: ${data.siteKey} (status: ${license.status})`)
       }
     }
 
     // Prepare the chatbot log entry
     const chatbotLogData = {
-      session_id: data.session_id,
-      site_key: data.site_key || null,
+      sessionId: data.session_id,
+      siteKey: data.siteKey || null,
       domain: data.domain || license?.domain || null,
       user_id: data.user_id || null,
       conversation_id: data.conversation_id || data.session_id,
@@ -54,17 +54,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the chatbot log
-    const log = await prisma.chatbot_logs.create({
+    const log = await prisma.chatbotLog.create({
       data: chatbotLogData
     })
 
     // Update license last activity if we have a valid site_key
-    if (data.site_key && license) {
+    if (data.siteKey && license) {
       const lastHour = new Date(Date.now() - 60 * 60 * 1000)
-      const recentActivity = await prisma.chatbot_logs.findFirst({
+      const recentActivity = await prisma.chatbotLog.findFirst({
         where: {
-          site_key: data.site_key,
-          session_id: data.session_id,
+          siteKey: data.siteKey,
+          sessionId: data.session_id,
           timestamp: { gte: lastHour }
         },
         orderBy: { timestamp: 'desc' }
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
 
       if (!recentActivity || recentActivity.id === log.id) {
         // This is either the first message or a new session
-        await prisma.licenses.update({
-          where: { site_key: data.site_key },
+        await prisma.license.update({
+          where: { siteKey: data.siteKey },
           data: {
             used_at: new Date()
           }
@@ -82,11 +82,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate session statistics for response
-    const sessionStats = await prisma.chatbot_logs.groupBy({
-      by: ['session_id'],
+    const sessionStats = await prisma.chatbotLog.groupBy({
+      by: ['sessionId'],
       where: {
-        session_id: data.session_id,
-        ...(data.site_key ? { site_key: data.site_key } : {})
+        sessionId: data.session_id,
+        ...(data.siteKey ? { siteKey: data.siteKey } : {})
       },
       _count: { id: true },
       _min: { timestamp: true },
@@ -136,9 +136,9 @@ export async function GET() {
     endpoint: '/api/webhook/chatbot',
     accepts: 'POST',
     fields: {
-      required: ['session_id'],
+      required: ['sessionId'],
       optional: [
-        'site_key',
+        'siteKey',
         'domain',
         'user_id', 
         'customer_message',

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const view = searchParams.get('view') || 'all'
 
     // Get the user's license and siteKey
-    const userLicense = await prisma.licenses.findUnique({
+    const userLicense = await prisma.license.findUnique({
       where: { licenseKey: auth.licenseKey },
       select: {
         licenseKey: true,
@@ -47,11 +47,11 @@ export async function GET(request: NextRequest) {
           sessions: []
         })
       }
-      whereClause.siteKey = userLicense?.site_key
+      whereClause.siteKey = userLicense?.siteKey
     }
 
     // Run the actual query
-    const logs = await prisma.chatbot_logs.findMany({
+    const logs = await prisma.chatbotLog.findMany({
       where: whereClause,
       select: {
         sessionId: true,
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
         sessionMap.set(log.session_id, {
           sessionId: log.session_id,
           domain: log.domain || 'Unknown',
-          siteKey: log.site_key || 'NULL',
+          siteKey: log.siteKey || 'NULL',
           messageCount: 0,
           firstMessage: log.timestamp
         })
@@ -88,9 +88,9 @@ export async function GET(request: NextRequest) {
     let nullSiteKey = 0
     
     logs.forEach(log => {
-      if (!log.site_key) {
+      if (!log.siteKey) {
         nullSiteKey++
-      } else if (log.site_key === userLicense?.siteKey) {
+      } else if (log.siteKey === userLicense?.siteKey) {
         matchingSiteKey++
       } else {
         differentSiteKey++
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Also check what happens without any filtering
-    const unfilteredCount = await prisma.chatbot_logs.count({
+    const unfilteredCount = await prisma.chatbotLog.count({
       where: { sessionId: { not: null } }
     })
 
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
       sessions: Array.from(sessionMap.values()),
       sampleLogs: logs.slice(0, 5).map(log => ({
         sessionId: log.session_id,
-        siteKey: log.site_key || 'NULL',
+        siteKey: log.siteKey || 'NULL',
         domain: log.domain || 'NULL',
         hasContent: !!(log.content || log.customer_message || log.chatbot_response),
         role: log.role

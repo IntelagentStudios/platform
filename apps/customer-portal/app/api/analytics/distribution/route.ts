@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     // Get all active/trial licenses with products
-    const licenses = await prisma.licenses.findMany({
+    const licenses = await prisma.license.findMany({
       where: {
         OR: [
           { status: 'active' },
@@ -30,7 +30,7 @@ export async function GET() {
         ]
       },
       select: {
-        license_key: true,
+        licenseKey: true,
         products: true,
         plan: true,
         status: true
@@ -48,7 +48,7 @@ export async function GET() {
     })
 
     // Get plan distribution
-    const planDistribution = await prisma.licenses.groupBy({
+    const planDistribution = await prisma.license.groupBy({
       by: ['plan'],
       where: {
         OR: [
@@ -57,15 +57,15 @@ export async function GET() {
         ]
       },
       _count: {
-        license_key: true
+        licenseKey: true
       }
     })
 
     // Get status distribution
-    const statusDistribution = await prisma.licenses.groupBy({
+    const statusDistribution = await prisma.license.groupBy({
       by: ['status'],
       _count: {
-        license_key: true
+        licenseKey: true
       }
     })
 
@@ -102,7 +102,7 @@ export async function GET() {
     // Format plan distribution
     const plans = planDistribution.map(item => {
       const planName = item.plan || 'Basic'
-      const count = item._count.license_key
+      const count = item._count.licenseKey
 
       return {
         name: planName.charAt(0).toUpperCase() + planName.slice(1),
@@ -114,7 +114,7 @@ export async function GET() {
     // Format status distribution
     const statuses = statusDistribution.map(item => {
       const status = item.status || 'unknown'
-      const count = item._count.license_key
+      const count = item._count.licenseKey
 
       return {
         name: status.charAt(0).toUpperCase() + status.slice(1),
@@ -129,7 +129,7 @@ export async function GET() {
         // Find licenses that have this product
         const licensesWithProduct = licenses
           .filter(l => l.products && l.products.includes(product))
-          .map(l => l.license_key)
+          .map(l => l.licenseKey)
 
         if (licensesWithProduct.length === 0) {
           return {
@@ -141,29 +141,29 @@ export async function GET() {
         }
 
         // Get site keys for these licenses
-        const licensesWithSiteKey = await prisma.licenses.findMany({
+        const licensesWithSiteKey = await prisma.license.findMany({
           where: { 
-            license_key: { in: licensesWithProduct },
-            site_key: { not: null }
+            licenseKey: { in: licensesWithProduct },
+            siteKey: { not: null }
           },
-          select: { site_key: true }
+          select: { siteKey: true }
         })
 
-        const siteKeys = licensesWithSiteKey.map(l => l.site_key).filter(Boolean) as string[]
+        const siteKeys = licensesWithSiteKey.map(l => l.siteKey).filter(Boolean) as string[]
 
         // Get conversation count for these site keys
-        const conversations = siteKeys.length > 0 ? await prisma.chatbot_logs.groupBy({
-          by: ['session_id'],
+        const conversations = siteKeys.length > 0 ? await prisma.chatbotLog.groupBy({
+          by: ['sessionId'],
           where: {
-            site_key: { in: siteKeys }
+            siteKey: { in: siteKeys }
           }
         }) : []
 
         // Get active domains
-        const domains = siteKeys.length > 0 ? await prisma.chatbot_logs.groupBy({
+        const domains = siteKeys.length > 0 ? await prisma.chatbotLog.groupBy({
           by: ['domain'],
           where: {
-            site_key: { in: siteKeys },
+            siteKey: { in: siteKeys },
             domain: { not: null },
             timestamp: {
               gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days

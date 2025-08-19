@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     const { query, product, context } = await request.json()
 
     // Get user's license for context
-    const userLicense = await prisma.licenses.findUnique({
-      where: { license_key: auth.licenseKey },
+    const userLicense = await prisma.license.findUnique({
+      where: { licenseKey: auth.licenseKey },
       select: {
-        site_key: true,
+        siteKey: true,
         products: true,
         plan: true,
         domain: true
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     })
 
     // Fetch relevant data based on the query
-    const data = await fetchRelevantData(query, userLicense?.site_key, product)
+    const data = await fetchRelevantData(query, userLicense?.siteKey, product)
 
     // Build context for LLM
     const systemPrompt = `You are an intelligent dashboard assistant. You help users understand their data and provide actionable insights.
@@ -101,13 +101,13 @@ export async function POST(request: Request) {
     }
 
     // Save the request to database (without metadata field)
-    const savedRequest = await prisma.smart_dashboard_requests.create({
+    const savedRequest = await prisma.smartDashboardRequest.create({
       data: {
-        license_key: auth.licenseKey,
-        request_type: 'query',
+        licenseKey: auth.licenseKey,
+        requestType: 'query',
         query: query,
         response: aiResponse,
-        processed_at: new Date()
+        processedAt: new Date()
       }
     })
 
@@ -115,10 +115,10 @@ export async function POST(request: Request) {
     const insights = await generateInsights(query, data, userLicense)
     if (insights.length > 0) {
       await Promise.all(insights.map(insight =>
-        prisma.smart_dashboard_insights.create({
+        prisma.smartDashboardInsight.create({
           data: {
-            license_key: auth.licenseKey,
-            insight_type: insight.type,
+            licenseKey: auth.licenseKey,
+            insightType: insight.type,
             title: insight.title,
             content: insight.content,
             severity: insight.severity,
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function fetchRelevantData(query: string, site_key: string | null | undefined, product: string | null) {
+async function fetchRelevantData(query: string, siteKey: string | null | undefined, product: string | null) {
   const queryLower = query.toLowerCase()
   const data: any = {
     summary: {},
@@ -157,14 +157,14 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
 
   // Fetch data based on query content
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
-    const conversations = await prisma.chatbot_logs.groupBy({
-      by: ['session_id'],
-      where: site_key ? { site_key: site_key } : {},
+    const conversations = await prisma.chatbotLog.groupBy({
+      by: ['sessionId'],
+      where: siteKey ? { siteKey: siteKey } : {},
       _count: true,
       take: 100,
       orderBy: {
         _count: {
-          session_id: 'desc'
+          sessionId: 'desc'
         }
       }
     })
@@ -174,9 +174,9 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
 
   if (queryLower.includes('metric') || queryLower.includes('performance')) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    const stats = await prisma.chatbot_logs.aggregate({
+    const stats = await prisma.chatbotLog.aggregate({
       where: {
-        ...(site_key ? { site_key: site_key } : {}),
+        ...(siteKey ? { siteKey: siteKey } : {}),
         timestamp: { gte: thirtyDaysAgo }
       },
       _count: true
@@ -186,10 +186,10 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
 
   if (queryLower.includes('trend') || queryLower.includes('growth')) {
     // Fetch trend data
-    const trends = await prisma.chatbot_logs.groupBy({
+    const trends = await prisma.chatbotLog.groupBy({
       by: ['timestamp'],
       where: {
-        ...(site_key ? { site_key: site_key } : {}),
+        ...(siteKey ? { siteKey: siteKey } : {}),
         timestamp: { 
           gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
         }

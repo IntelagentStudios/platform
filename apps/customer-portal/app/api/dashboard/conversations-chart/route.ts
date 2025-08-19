@@ -26,20 +26,20 @@ export async function POST(request: Request) {
 
     if (!auth.isMaster && auth.licenseKey) {
       // Get the user's siteKey from their licenseKey
-      const userLicense = await prisma.licenses.findUnique({
+      const userLicense = await prisma.license.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
       
       if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense?.site_key
+        whereClause.siteKey = userLicense?.siteKey
       } else {
         // No siteKey found, return empty data
         return NextResponse.json([])
       }
     }
 
-    const conversations = await prisma.chatbot_logs.findMany({
+    const conversations = await prisma.chatbotLog.findMany({
       where: whereClause,
       select: {
         timestamp: true,
@@ -53,12 +53,12 @@ export async function POST(request: Request) {
     const dailyData = new Map<string, Set<string>>()
 
     conversations.forEach(log => {
-      if (log.timestamp && log.session_id) {
+      if (log.timestamp && log.sessionId) {
         const date = new Date(log.timestamp).toISOString().split('T')[0]
         if (!dailyData.has(date)) {
           dailyData.set(date, new Set())
         }
-        dailyData.get(date)!.add(log.session_id)
+        dailyData.get(date)!.add(log.sessionId)
       }
     })
 

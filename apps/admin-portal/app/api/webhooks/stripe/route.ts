@@ -18,7 +18,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
         subscription_id: subscription.id,
         subscription_status: subscription.status,
         next_billing_date: new Date(subscription.currentPeriodEnd * 1000),
-        plan: subscription.items.data[0].price.lookupKey || 'pro',
+        plan: (subscription.items.data[0].price as any).nickname || 'pro',
       }
     })
   }

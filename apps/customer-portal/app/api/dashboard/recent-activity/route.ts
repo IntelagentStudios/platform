@@ -14,8 +14,8 @@ export async function GET() {
     }
 
     // Get recent license activities
-    const recentLicenses = await prisma.licenses.findMany({
-      orderBy: { created_at: 'desc' },
+    const recentLicenses = await prisma.license.findMany({
+      orderBy: { createdAt: 'desc' },
       take: 10,
       select: {
         licenseKey: true,
@@ -28,7 +28,7 @@ export async function GET() {
     })
 
     // Get recent chatbot activities
-    const recentSessions = await prisma.chatbot_logs.groupBy({
+    const recentSessions = await prisma.chatbotLog.groupBy({
       by: ['sessionId', 'siteKey'],
       _max: {
         timestamp: true
@@ -49,7 +49,7 @@ export async function GET() {
       if (license.createdAt) {
         activities.push({
           type: 'license_created',
-          description: `Licence created for ${license?.customer_name || license.domain || 'Unknown'}`,
+          description: `Licence created for ${license?.customerName || license.domain || 'Unknown'}`,
           timestamp: license.createdAt,
           status: 'info'
         })
@@ -58,7 +58,7 @@ export async function GET() {
       if (license.usedAt && license.createdAt && license.usedAt > license.createdAt) {
         activities.push({
           type: 'license_activated',
-          description: `Licence activated by ${license?.customer_name || license.domain || 'Unknown'}`,
+          description: `Licence activated by ${license?.customerName || license.domain || 'Unknown'}`,
           timestamp: license.usedAt,
           status: 'success'
         })
@@ -67,7 +67,7 @@ export async function GET() {
       if (license.status === 'expired' && license.createdAt) {
         activities.push({
           type: 'license_expired',
-          description: `Licence expired for ${license?.customer_name || license.domain || 'Unknown'}`,
+          description: `Licence expired for ${license?.customerName || license.domain || 'Unknown'}`,
           timestamp: license.createdAt,
           status: 'warning'
         })
@@ -78,9 +78,9 @@ export async function GET() {
     for (const session of recentSessions) {
       if (session._max.timestamp) {
         let license = null
-        if (session.site_key) {
-          license = await prisma.licenses.findUnique({
-            where: { site_key: session.site_key },
+        if (session.siteKey) {
+          license = await prisma.license.findUnique({
+            where: { siteKey: session.siteKey },
             select: { domain: true, customerName: true }
           })
         }

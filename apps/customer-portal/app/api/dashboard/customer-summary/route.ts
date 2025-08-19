@@ -22,13 +22,13 @@ export async function GET() {
     }
     
     if (auth.licenseKey) {
-      const userLicense = await prisma.licenses.findUnique({
+      const userLicense = await prisma.license.findUnique({
         where: { licenseKey: auth.licenseKey },
         select: { siteKey: true }
       })
       
       if (userLicense?.siteKey) {
-        whereClause.siteKey = userLicense?.site_key
+        whereClause.siteKey = userLicense?.siteKey
       } else {
         // No siteKey found, return empty data
         return NextResponse.json({
@@ -41,7 +41,7 @@ export async function GET() {
     }
 
     // Get total conversations (unique sessions)
-    const conversations = await prisma.chatbot_logs.groupBy({
+    const conversations = await prisma.chatbotLog.groupBy({
       by: ['sessionId'],
       where: {
         ...whereClause,
@@ -51,7 +51,7 @@ export async function GET() {
     })
 
     // Get unique users
-    const uniqueUsers = await prisma.chatbot_logs.groupBy({
+    const uniqueUsers = await prisma.chatbotLog.groupBy({
       by: ['userId'],
       where: {
         ...whereClause,
@@ -62,13 +62,13 @@ export async function GET() {
 
     // Calculate response rate (messages with responses / total messages)
     const [totalMessages, messagesWithResponses] = await Promise.all([
-      prisma.chatbot_logs.count({
+      prisma.chatbotLog.count({
         where: {
           ...whereClause,
           role: 'user'
         }
       }),
-      prisma.chatbot_logs.count({
+      prisma.chatbotLog.count({
         where: {
           ...whereClause,
           role: 'assistant',

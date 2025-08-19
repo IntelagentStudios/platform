@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Build where clause based on user role
-    const whereClause = auth.isMaster ? {} : { license_key: auth.licenseKey }
+    const whereClause = auth.isMaster ? {} : { licenseKey: auth.licenseKey }
 
     // Get recent activities from multiple sources
     const activities: any[] = []
@@ -27,36 +27,36 @@ export async function GET(request: NextRequest) {
 
     // 1. Get recent license creations/updates (master admin only)
     if (auth.isMaster) {
-      const recentLicenses = await prisma.licenses.findMany({
+      const recentLicenses = await prisma.license.findMany({
         where: {
           OR: [
-            { created_at: { gte: thirtyDaysAgo } },
-            { used_at: { gte: thirtyDaysAgo } }
+            { createdAt: { gte: thirtyDaysAgo } },
+            { usedAt: { gte: thirtyDaysAgo } }
           ]
         },
         select: {
-          license_key: true,
-          customer_name: true,
+          licenseKey: true,
+          customerName: true,
           domain: true,
           status: true,
-          created_at: true,
-          used_at: true,
+          createdAt: true,
+          usedAt: true,
           plan: true,
           products: true
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: 20
       })
 
       recentLicenses.forEach(license => {
-        if (license.created_at && license.created_at >= thirtyDaysAgo) {
+        if (license.createdAt && license.createdAt >= thirtyDaysAgo) {
           activities.push({
             type: 'license_created',
-            timestamp: license.created_at,
+            timestamp: license.createdAt,
             title: 'New License Created',
-            description: `${license?.customer_name || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
+            description: `${license?.customerName || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
             metadata: {
-              license_key: license?.license_key,
+              licenseKey: license?.licenseKey,
               domain: license.domain,
               plan: license.plan,
               products: license.products
@@ -66,15 +66,15 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        if (license.used_at && license.used_at >= thirtyDaysAgo && 
-            (!license.created_at || license.used_at > license.created_at)) {
+        if (license.usedAt && license.usedAt >= thirtyDaysAgo && 
+            (!license.createdAt || license.usedAt > license.createdAt)) {
           activities.push({
             type: 'license_activated',
-            timestamp: license.used_at,
+            timestamp: license.usedAt,
             title: 'License Activated',
-            description: `${license.domain || license?.customer_name || 'Unknown'} activated their license`,
+            description: `${license.domain || license?.customerName || 'Unknown'} activated their license`,
             metadata: {
-              license_key: license?.license_key,
+              licenseKey: license?.licenseKey,
               domain: license.domain
             },
             icon: 'check',
@@ -85,11 +85,11 @@ export async function GET(request: NextRequest) {
         if (license.status === 'expired') {
           activities.push({
             type: 'license_expired',
-            timestamp: license.created_at || now,
+            timestamp: license.createdAt || now,
             title: 'License Expired',
-            description: `${license?.customer_name || license.domain || 'Unknown'} license expired`,
+            description: `${license?.customerName || license.domain || 'Unknown'} license expired`,
             metadata: {
-              license_key: license?.license_key,
+              licenseKey: license?.licenseKey,
               domain: license.domain
             },
             icon: 'alert',
@@ -100,12 +100,12 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Get recent conversation sessions
-    const recentSessions = await prisma.chatbot_logs.groupBy({
-      by: ['session_id', 'domain', 'site_key'],
+    const recentSessions = await prisma.chatbotLog.groupBy({
+      by: ['sessionId', 'domain', 'siteKey'],
       where: {
         ...whereClause,
         timestamp: { gte: thirtyDaysAgo },
-        session_id: { not: null }
+        sessionId: { not: null }
       },
       _min: { timestamp: true },
       _max: { timestamp: true },
@@ -119,10 +119,10 @@ export async function GET(request: NextRequest) {
     for (const session of recentSessions) {
       // Get customer name for the session if we have a site key
       let license = null
-      if (session.site_key) {
-        license = await prisma.licenses.findUnique({
-          where: { site_key: session.site_key },
-          select: { customer_name: true, domain: true }
+      if (session.siteKey) {
+        license = await prisma.license.findUnique({
+          where: { siteKey: session.siteKey },
+          select: { customerName: true, domain: true }
         })
       }
 
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         title: 'New Conversation Started',
         description: `${session.domain || license?.domain || 'Unknown Domain'} - ${session._count.id} messages`,
         metadata: {
-          session_id: session.session_id,
+          sessionId: session.sessionId,
           domain: session.domain || license?.domain,
           messageCount: session._count.id,
           duration: session._max.timestamp && session._min.timestamp
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Get high-volume activity alerts
-    const highVolumeCheck = await prisma.chatbot_logs.groupBy({
+    const highVolumeCheck = await prisma.chatbotLog.groupBy({
       by: ['domain'],
       where: {
         ...whereClause,
