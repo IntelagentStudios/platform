@@ -15,9 +15,9 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
-        subscriptionId: subscription.id,
-        subscriptionStatus: subscription.status,
-        nextBillingDate: new Date(subscription.current_period_end * 1000),
+        subscription_id: subscription.id,
+        subscription_status: subscription.status,
+        next_billing_date: new Date(subscription.current_period_end * 1000),
         plan: subscription.items.data[0].price.lookup_key || 'pro',
       }
     })
@@ -32,8 +32,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
-        subscriptionStatus: subscription.status,
-        nextBillingDate: subscription.current_period_end 
+        subscription_status: subscription.status,
+        next_billing_date: subscription.current_period_end 
           ? new Date(subscription.current_period_end * 1000)
           : null,
       }
@@ -49,7 +49,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
-        subscriptionStatus: 'canceled',
+        subscription_status: 'canceled',
         status: 'inactive',
       }
     })
@@ -64,7 +64,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     await prisma.licenses.updateMany({
       where: { email: customer.email },
       data: {
-        lastPaymentDate: new Date(),
+        last_payment_date: new Date(),
         status: 'active',
       }
     })
