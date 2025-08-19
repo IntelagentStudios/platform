@@ -21,7 +21,7 @@ export async function GET() {
         role: true,
         content: true,
         created_at: true,
-        license: {
+        licenses: {
           select: {
             license_key: true,
             domain: true,
@@ -35,24 +35,24 @@ export async function GET() {
     // Check for NULL values in critical fields
     const nullChecks = {
       totalLogs: recentLogs.length,
-      logsWithNullDomain: recentLogs.filter(log => !log.domain && !log.license?.domain).length,
+      logsWithNullDomain: recentLogs.filter(log => !log.domain && !log.licenses?.domain).length,
       logsWithNullSiteKey: recentLogs.filter(log => !log.site_key).length,
       logsWithNullSession: recentLogs.filter(log => !log.session_id).length,
       logsWithContent: recentLogs.filter(log => log.customer_message || log.chatbot_response || log.content).length,
-      logsWithLicense: recentLogs.filter(log => log.license).length
+      logsWithLicense: recentLogs.filter(log => log.licenses).length
     }
 
     // Get unique domains, site_keys and products
     const uniqueDomains = Array.from(new Set(
-      recentLogs.map(log => log.domain || log.license?.domain).filter(Boolean)
+      recentLogs.map(log => log.domain || log.licenses?.domain).filter(Boolean)
     ))
     const uniqueSiteKeys = Array.from(new Set(
       recentLogs.map(log => log.site_key).filter(Boolean)
     ))
     const allProducts = new Set<string>()
     recentLogs.forEach(log => {
-      if (log.license?.products) {
-        log.license.products.forEach(p => allProducts.add(p))
+      if (log.licenses?.products) {
+        log.licenses.products.forEach(p => allProducts.add(p))
       }
     })
 
@@ -60,11 +60,11 @@ export async function GET() {
     const formattedLogs = recentLogs.map(log => ({
       id: log.id,
       sessionId: log.session_id || 'NULL',
-      domain: log.domain || log.license?.domain || 'NULL',
+      domain: log.domain || log.licenses?.domain || 'NULL',
       site_key: log.site_key || 'NULL',
-      license_key: log.license?.license_key || 'Not linked',
-      customerName: log.license?.customer_name || 'Unknown',
-      products: log.license?.products || [],
+      license_key: log.licenses?.license_key || 'Not linked',
+      customerName: log.licenses?.customer_name || 'Unknown',
+      products: log.licenses?.products || [],
       message: log.customer_message || log.chatbot_response || log.content || 'No content',
       role: log.role || (log.customer_message ? 'user' : log.chatbot_response ? 'assistant' : 'unknown'),
       timestamp: log.timestamp?.toISOString() || log.created_at?.toISOString() || 'No timestamp',
@@ -77,7 +77,7 @@ export async function GET() {
         site_key: { not: null }
       },
       include: {
-        license: true
+        licenses: true
       }
     })
 
@@ -90,16 +90,16 @@ export async function GET() {
         mostRecentLog: formattedLogs[0] ? {
           timestamp: formattedLogs[0].timestamp,
           domain: formattedLogs[0].domain,
-          site_key: formattedLogs[0].siteKey,
+          site_key: formattedLogs[0].site_key,
           hasContent: formattedLogs[0].message !== 'No content',
-          isLinkedToLicense: formattedLogs[0].licenseKey !== 'Not linked'
+          isLinkedToLicense: formattedLogs[0].license_key !== 'Not linked'
         } : null
       },
       joinTest: {
         success: !!testJoin,
-        hasLicense: !!testJoin?.license,
-        licenseDomain: testJoin?.license?.domain,
-        licenseProducts: testJoin?.license?.products
+        hasLicense: !!testJoin?.licenses,
+        licenseDomain: testJoin?.licenses?.domain,
+        licenseProducts: testJoin?.licenses?.products
       },
       recentLogs: formattedLogs
     }, { 
