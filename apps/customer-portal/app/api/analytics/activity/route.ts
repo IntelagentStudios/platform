@@ -27,24 +27,24 @@ export async function GET(request: NextRequest) {
 
     // 1. Get recent license creations/updates (master admin only)
     if (auth.isMaster) {
-      const recentLicenses = await prisma.license.findMany({
+      const recentLicenses = await prisma.licenses.findMany({
         where: {
           OR: [
-            { createdAt: { gte: thirtyDaysAgo } },
-            { usedAt: { gte: thirtyDaysAgo } }
+            { created_at: { gte: thirtyDaysAgo } },
+            { used_at: { gte: thirtyDaysAgo } }
           ]
         },
         select: {
-          licenseKey: true,
-          customerName: true,
+          license_key: true,
+          customer_name: true,
           domain: true,
           status: true,
-          createdAt: true,
-          usedAt: true,
+          created_at: true,
+          used_at: true,
           plan: true,
           products: true
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 20
       })
 

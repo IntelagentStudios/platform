@@ -25,7 +25,8 @@
       "Bash(touch:*)",
       "Bash(timeout 30 npm run build)",
       "Bash(sed:*)",
-      "Bash({} ;)"
+      "Bash({} ;)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": [],
