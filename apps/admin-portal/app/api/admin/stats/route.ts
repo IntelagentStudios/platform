@@ -10,15 +10,14 @@ export async function GET(request: NextRequest) {
       new Date(new Date().setDate(new Date().getDate() - 30))
     ];
 
-    const [newUsers, activeUsers, totalSessions, totalLicenses] = await Promise.all([
+    const [newUsers, activeUsers, totalLicenses] = await Promise.all([
       prisma.user.count({
         where: { createdAt: { gte: todayStart } }
       }),
       prisma.user.count({
         where: { lastActiveAt: { gte: activeDate } }
       }),
-      prisma.session.count(),
-      prisma.license.count()
+      prisma.licenses.count()
     ]);
 
     // Get database connection stats (simplified)
@@ -37,13 +36,13 @@ export async function GET(request: NextRequest) {
         new: newUsers,
       },
       requests: {
-        total: totalSessions, // Using sessions as a proxy for requests
-        rpm: Math.floor(totalSessions / 1440), // Rough estimate
+        total: 0, // Would need request tracking
+        rpm: 0, // Would need real-time monitoring
         errors: 0, // Would need error tracking
       },
       database: {
         connections: parseInt(dbStats[0]?.connection_count || '0'),
-        queries: totalSessions * 10, // Rough estimate
+        queries: 0, // Would need query tracking
         slow: 0, // Would need query performance monitoring
       },
       queues: {
