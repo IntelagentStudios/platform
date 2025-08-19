@@ -89,26 +89,26 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-background">
       <nav className={cn(
-        "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300",
+        "bg-card border-r border-border transition-all duration-300",
         sidebarOpen ? "w-64" : "w-16"
       )}>
-        <div className="h-full overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="h-full overflow-y-auto bg-card">
+          <div className="p-4 border-b border-border flex items-center justify-between">
             {sidebarOpen && (
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-bold text-foreground">
                   Admin Portal
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Enterprise Control
                 </p>
               </div>
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="p-1.5 rounded-lg hover:bg-accent/10 transition-colors"
             >
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -120,7 +120,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {sidebarOpen && (
                   <button
                     onClick={() => toggleSection(section.title)}
-                    className="flex items-center justify-between w-full px-2 py-1 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200"
+                    className="flex items-center justify-between w-full px-2 py-1 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
                   >
                     {section.title}
                     {expandedSections.includes(section.title) ? 
@@ -143,8 +143,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                           className={cn(
                             "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                             isActive 
-                              ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+                              ? "bg-primary/20 text-primary"
+                              : "text-muted-foreground hover:bg-accent/10 hover:text-foreground",
                             !sidebarOpen && "justify-center"
                           )}
                         >
