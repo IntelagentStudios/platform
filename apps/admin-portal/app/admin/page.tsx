@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -85,18 +85,18 @@ export default function AdminDashboard() {
     <div className="p-6 space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold">
             System Overview
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-muted-foreground mt-1">
             Real-time monitoring and control center
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
             status?.healthy 
-              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+              ? 'bg-primary/20 text-primary' 
+              : 'bg-destructive/20 text-destructive'
           }`}>
             {systemHealth}
           </span>
@@ -105,14 +105,14 @@ export default function AdminDashboard() {
 
       {/* Critical Alerts */}
       {criticalAlerts > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <AlertTriangle className="w-5 h-5 text-destructive" />
             <div>
-              <p className="font-medium text-red-900 dark:text-red-200">
+              <p className="font-medium text-destructive">
                 {criticalAlerts} Critical Alert{criticalAlerts > 1 ? 's' : ''}
               </p>
-              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+              <p className="text-sm text-destructive/80 mt-1">
                 Immediate attention required
               </p>
             </div>
@@ -148,11 +148,11 @@ export default function AdminDashboard() {
               <p className="text-2xl font-bold">
                 {stats?.users.active || 0}
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 +{stats?.users.new || 0} new today
               </p>
             </div>
-            <Users className="w-8 h-8 text-green-500" />
+            <Users className="w-8 h-8 text-primary" />
           </div>
         </Card>
 
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                 {stats?.requests.errors || 0} errors
               </p>
             </div>
-            <Activity className="w-8 h-8 text-purple-500" />
+            <Activity className="w-8 h-8 text-accent" />
           </div>
         </Card>
 
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
                 {stats?.queues.failed || 0} failed
               </p>
             </div>
-            <Zap className="w-8 h-8 text-yellow-500" />
+            <Zap className="w-8 h-8 text-secondary" />
           </div>
         </Card>
       </div>
@@ -206,14 +206,14 @@ export default function AdminDashboard() {
                 <span>Usage</span>
                 <span>{status?.metrics?.cpu?.usage || 0}%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
-                  className="bg-blue-500 h-2 rounded-full"
+                  className="bg-primary h-2 rounded-full"
                   style={{ width: `${status?.metrics?.cpu?.usage || 0}%` }}
                 />
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               {status?.metrics?.cpu?.cores || 0} cores available
             </div>
           </div>
@@ -230,18 +230,18 @@ export default function AdminDashboard() {
                 <span>Usage</span>
                 <span>{status?.metrics?.memory?.percentage || 0}%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className={`h-2 rounded-full ${
                     (status?.metrics?.memory?.percentage || 0) > 80 
-                      ? 'bg-red-500' 
-                      : 'bg-green-500'
+                      ? 'bg-destructive' 
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${status?.metrics?.memory?.percentage || 0}%` }}
                 />
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               {Math.round((status?.metrics?.memory?.used || 0) / 1024 / 1024 / 1024)}GB / 
               {Math.round((status?.metrics?.memory?.total || 0) / 1024 / 1024 / 1024)}GB
             </div>
@@ -259,18 +259,18 @@ export default function AdminDashboard() {
                 <span>Usage</span>
                 <span>{status?.metrics?.disk?.percentage || 0}%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div 
                   className={`h-2 rounded-full ${
                     (status?.metrics?.disk?.percentage || 0) > 90 
-                      ? 'bg-red-500' 
-                      : 'bg-blue-500'
+                      ? 'bg-destructive' 
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${status?.metrics?.disk?.percentage || 0}%` }}
                 />
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               {Math.round((status?.metrics?.disk?.free || 0) / 1024 / 1024 / 1024)}GB free
             </div>
           </div>
@@ -285,27 +285,27 @@ export default function AdminDashboard() {
             <div key={service.name} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex items-center gap-3">
                 {service.status === 'healthy' ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <CheckCircle className="w-5 h-5 text-primary" />
                 ) : service.status === 'degraded' ? (
-                  <Clock className="w-5 h-5 text-yellow-500" />
+                  <Clock className="w-5 h-5 text-secondary" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
                 )}
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium">
                     {service.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     {service.responseTime}ms
                   </p>
                 </div>
               </div>
               <span className={`px-2 py-1 text-xs rounded-full ${
                 service.status === 'healthy' 
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  ? 'bg-primary/20 text-primary'
                   : service.status === 'degraded'
-                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  ? 'bg-secondary/20 text-secondary'
+                  : 'bg-destructive/20 text-destructive'
               }`}>
                 {service.status}
               </span>
@@ -322,20 +322,20 @@ export default function AdminDashboard() {
             {status.alerts.slice(0, 5).map((alert: any, index: number) => (
               <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <AlertTriangle className={`w-5 h-5 mt-0.5 ${
-                  alert.type === 'critical' ? 'text-red-500' : 'text-yellow-500'
+                  alert.type === 'critical' ? 'text-destructive' : 'text-secondary'
                 }`} />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium">
                     {alert.message}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {new Date(alert.timestamp).toLocaleString()}
                   </p>
                 </div>
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   alert.type === 'critical'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    ? 'bg-destructive/20 text-destructive'
+                    : 'bg-secondary/20 text-secondary'
                 }`}>
                   {alert.type}
                 </span>

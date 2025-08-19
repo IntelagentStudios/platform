@@ -4,50 +4,50 @@
 
 @layer base {
   :root {
-    /* Light mode - exact RGB values */
-    --background: 0 0% 89%; /* RGB 229-227-220 converted to neutral */
-    --foreground: 0 0% 20%; /* RGB 48-54-54 converted to neutral */
-    --card: 0 0% 95%;
-    --card-foreground: 0 0% 20%;
-    --popover: 0 0% 95%;
-    --popover-foreground: 0 0% 20%;
-    --primary: 0 0% 73%; /* RGB 169-189-203 as neutral gray */
-    --primary-foreground: 0 0% 20%;
-    --secondary: 0 0% 35%; /* RGB 73-90-88 as neutral */
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 85%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 0 0% 35%; /* RGB 73-90-88 as neutral */
-    --accent-foreground: 0 0% 95%;
+    /* Light mode - EXACT RGB values provided */
+    --background: 47 17% 88%; /* RGB(229, 227, 220) - Light beige */
+    --foreground: 180 6% 20%; /* RGB(48, 54, 54) - Very dark gray */
+    --card: 47 17% 88%; /* Same as background */
+    --card-foreground: 180 6% 20%; /* Same as foreground */
+    --popover: 47 17% 88%;
+    --popover-foreground: 180 6% 20%;
+    --primary: 205 26% 73%; /* RGB(169, 189, 203) - Light blue-gray */
+    --primary-foreground: 47 17% 88%; /* Light beige on primary */
+    --secondary: 174 10% 32%; /* RGB(73, 90, 88) - Dark teal */
+    --secondary-foreground: 47 17% 88%;
+    --muted: 205 26% 73%; /* Light blue-gray for muted */
+    --muted-foreground: 180 6% 20%;
+    --accent: 174 10% 32%; /* Dark teal for accents */
+    --accent-foreground: 47 17% 88%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 80%;
-    --input: 0 0% 85%;
-    --ring: 0 0% 73%;
+    --border: 205 26% 73%; /* Light blue-gray borders */
+    --input: 47 17% 88%; /* Light beige inputs */
+    --ring: 205 26% 73%;
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Dark mode - exact RGB values */
-    --background: 0 0% 20%; /* RGB 48-54-54 as neutral */
-    --foreground: 0 0% 89%; /* RGB 229-227-220 as neutral */
-    --card: 0 0% 25%;
-    --card-foreground: 0 0% 89%;
-    --popover: 0 0% 25%;
-    --popover-foreground: 0 0% 89%;
-    --primary: 0 0% 73%; /* RGB 169-189-203 as neutral gray */
-    --primary-foreground: 0 0% 20%;
-    --secondary: 0 0% 35%; /* RGB 73-90-88 as neutral */
-    --secondary-foreground: 0 0% 89%;
-    --muted: 0 0% 35%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 73%; /* Neutral accent */
-    --accent-foreground: 0 0% 20%;
+    /* Dark mode - EXACT RGB values provided */
+    --background: 180 6% 20%; /* RGB(48, 54, 54) - Very dark gray */
+    --foreground: 47 17% 88%; /* RGB(229, 227, 220) - Light beige */
+    --card: 174 10% 32%; /* RGB(73, 90, 88) - Dark teal for cards */
+    --card-foreground: 47 17% 88%;
+    --popover: 174 10% 32%;
+    --popover-foreground: 47 17% 88%;
+    --primary: 205 26% 73%; /* RGB(169, 189, 203) - Light blue-gray */
+    --primary-foreground: 180 6% 20%;
+    --secondary: 174 10% 32%; /* RGB(73, 90, 88) - Dark teal */
+    --secondary-foreground: 47 17% 88%;
+    --muted: 174 10% 32%;
+    --muted-foreground: 205 26% 73%;
+    --accent: 205 26% 73%; /* Light blue-gray accent */
+    --accent-foreground: 180 6% 20%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 30%;
-    --input: 0 0% 30%;
-    --ring: 0 0% 73%;
+    --border: 174 10% 32%; /* Dark teal borders */
+    --input: 174 10% 32%;
+    --ring: 205 26% 73%;
   }
 }
 
