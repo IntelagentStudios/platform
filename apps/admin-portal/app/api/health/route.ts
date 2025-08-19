@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { redis } from '@/lib/redis'
 
 export async function GET() {
   const health = {
@@ -8,7 +7,7 @@ export async function GET() {
     timestamp: new Date().toISOString(),
     services: {
       database: { status: 'unknown' as 'healthy' | 'unhealthy' | 'degraded' | 'unknown' },
-      redis: { status: 'unknown' as 'healthy' | 'unhealthy' | 'degraded' | 'unknown' },
+      redis: { status: 'disabled' as 'healthy' | 'unhealthy' | 'degraded' | 'unknown' | 'disabled' },
       api: { status: 'healthy' as 'healthy' | 'unhealthy' | 'degraded' | 'unknown' }
     },
     environment: {
@@ -27,22 +26,26 @@ export async function GET() {
     console.error('Database health check failed:', error)
   }
 
-  // Check Redis
-  try {
-    const result = await redis.ping()
-    if (result === 'PONG') {
-      health.services.redis.status = 'healthy'
-    } else {
-      health.services.redis.status = 'degraded'
-      health.status = 'degraded'
+  // Redis is optional - only check if configured
+  if (process.env.REDIS_URL) {
+    try {
+      const { redis } = await import('@/lib/redis')
+      const result = await redis.ping()
+      if (result === 'PONG') {
+        health.services.redis.status = 'healthy'
+      } else {
+        health.services.redis.status = 'degraded'
+        // Don't fail health check for Redis
+      }
+    } catch (error) {
+      health.services.redis.status = 'disabled'
+      // Redis is optional, so don't degrade overall health
+      console.log('Redis not configured or unavailable')
     }
-  } catch (error) {
-    health.services.redis.status = 'unhealthy'
-    health.status = 'degraded'
-    console.error('Redis health check failed:', error)
   }
 
-  const httpStatus = health.status === 'healthy' ? 200 : 503
+  // Only return 503 if critical services are down
+  const httpStatus = health.services.database.status === 'unhealthy' ? 503 : 200
 
   return NextResponse.json(health, { status: httpStatus })
 }

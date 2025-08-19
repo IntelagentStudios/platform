@@ -7,7 +7,14 @@ export function useWebSocket(license_key?: string) {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
-    const socketInstance = io(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001', {
+    // Only connect WebSocket if URL is configured
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
+    if (!wsUrl || wsUrl === 'ws://localhost:3001') {
+      // Skip WebSocket connection in production if not configured
+      return
+    }
+    
+    const socketInstance = io(wsUrl, {
       transports: ['websocket'],
     })
 
