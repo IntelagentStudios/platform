@@ -20,7 +20,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       data: {
         subscription_id: subscription.id,
         subscription_status: subscription.status,
-        next_billing_date: new Date(subscription.currentPeriodEnd * 1000),
+        next_billing_date: new Date((subscription as any).current_period_end * 1000),
         plan: (subscription.items.data[0]?.price as any)?.nickname || 
               (subscription.items.data[0]?.price as any)?.metadata?.plan || 
               'pro',
@@ -38,8 +38,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       where: { email: customer.email },
       data: {
         subscription_status: subscription.status,
-        next_billing_date: subscription.currentPeriodEnd 
-          ? new Date(subscription.currentPeriodEnd * 1000)
+        next_billing_date: (subscription as any).current_period_end 
+          ? new Date((subscription as any).current_period_end * 1000)
           : null,
       }
     })
@@ -85,7 +85,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         created_at
       ) VALUES (
         ${customer.email},
-        ${invoice.amountPaid / 100},
+        ${(invoice as any).amount_paid / 100},
         ${invoice.currency},
         'succeeded',
         ${invoice.id},
