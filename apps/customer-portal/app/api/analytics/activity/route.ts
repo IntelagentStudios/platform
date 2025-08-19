@@ -49,14 +49,14 @@ export async function GET(request: NextRequest) {
       })
 
       recentLicenses.forEach(license => {
-        if (license.createdAt && license.createdAt >= thirtyDaysAgo) {
+        if (license.created_at && license.created_at >= thirtyDaysAgo) {
           activities.push({
             type: 'license_created',
-            timestamp: license.createdAt,
+            timestamp: license.created_at,
             title: 'New License Created',
-            description: `${license?.customerName || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
+            description: `${license?.customer_name || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
             metadata: {
-              licenseKey: license?.licenseKey,
+              license_key: license?.license_key,
               domain: license.domain,
               plan: license.plan,
               products: license.products
@@ -66,15 +66,15 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        if (license.usedAt && license.usedAt >= thirtyDaysAgo && 
-            (!license.createdAt || license.usedAt > license.createdAt)) {
+        if (license.used_at && license.used_at >= thirtyDaysAgo && 
+            (!license.created_at || license.used_at > license.created_at)) {
           activities.push({
             type: 'license_activated',
-            timestamp: license.usedAt,
+            timestamp: license.used_at,
             title: 'License Activated',
-            description: `${license.domain || license?.customerName || 'Unknown'} activated their license`,
+            description: `${license.domain || license?.customer_name || 'Unknown'} activated their license`,
             metadata: {
-              licenseKey: license?.licenseKey,
+              license_key: license?.license_key,
               domain: license.domain
             },
             icon: 'check',
@@ -85,11 +85,11 @@ export async function GET(request: NextRequest) {
         if (license.status === 'expired') {
           activities.push({
             type: 'license_expired',
-            timestamp: license.createdAt || now,
+            timestamp: license.created_at || now,
             title: 'License Expired',
-            description: `${license?.customerName || license.domain || 'Unknown'} license expired`,
+            description: `${license?.customer_name || license.domain || 'Unknown'} license expired`,
             metadata: {
-              licenseKey: license?.licenseKey,
+              license_key: license?.license_key,
               domain: license.domain
             },
             icon: 'alert',
