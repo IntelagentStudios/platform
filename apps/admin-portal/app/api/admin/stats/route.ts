@@ -13,18 +13,18 @@ export async function GET(request: NextRequest) {
       today.setHours(0, 0, 0, 0);
       const newUsers = await prisma.user.count({
         where: {
-          created_at: {
+          createdAt: {
             gte: today
           }
         }
       });
       
-      // Active users would be those who logged in recently
+      // Active users would be those who were active recently
       const activeDate = new Date();
       activeDate.setDate(activeDate.getDate() - 30);
       const activeUsers = await prisma.user.count({
         where: {
-          last_login_at: {
+          lastActiveAt: {
             gte: activeDate
           }
         }
