@@ -280,23 +280,23 @@ export class SystemMonitor {
       message: 'API is operational'
     });
     
-    // Return empty array if no real services to check
+    // Return services array if no external services to check
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
     if (!baseUrl || baseUrl.includes('localhost')) {
       return services;
     }
     
-    const services = [
+    // Check external services if configured
+    const externalServices = [
       { name: 'admin-portal', url: `${baseUrl}/api/health` },
       { name: 'customer-portal', url: `${baseUrl}/api/health` },
-      { name: 'database', url: `${baseUrl}/api/health/db` },
     ];
 
     const healthChecks = await Promise.all(
-      services.map(service => this.checkServiceHealth(service))
+      externalServices.map(service => this.checkServiceHealth(service))
     );
 
-    return healthChecks;
+    return [...services, ...healthChecks];
   }
 
   static async getServiceLogs(serviceName: string, lines: number = 100): Promise<string[]> {
