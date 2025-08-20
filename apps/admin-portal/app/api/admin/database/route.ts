@@ -138,22 +138,52 @@ export async function POST(request: NextRequest) {
 
     if (action === 'connect') {
       try {
+        console.log('Attempting to connect with URL:', url?.substring(0, 50) + '...');
+        
         // Clean up any existing connection first
         await cleanupConnection();
 
-        // Create new connection with the provided URL and connection pool limits
+        // Parse and clean the connection URL
+        let connectionUrl = url;
+        
+        // Remove any existing connection parameters we're about to add
+        if (connectionUrl.includes('connection_limit=') || connectionUrl.includes('pool_timeout=')) {
+          const urlParts = connectionUrl.split('?');
+          if (urlParts.length > 1) {
+            const params = urlParts[1].split('&').filter(p => 
+              !p.startsWith('connection_limit=') && !p.startsWith('pool_timeout=')
+            );
+            connectionUrl = urlParts[0] + (params.length > 0 ? '?' + params.join('&') : '');
+          }
+        }
+        
+        // Add connection pool parameters
+        const separator = connectionUrl.includes('?') ? '&' : '?';
+        connectionUrl = connectionUrl + separator + 'connection_limit=2&pool_timeout=2';
+        
+        console.log('Final connection URL params:', connectionUrl.split('?')[1]);
+
+        // Create new connection
         const testConnection = new PrismaClient({
           datasources: {
             db: {
-              url: url + (url.includes('?') ? '&' : '?') + 'connection_limit=2&pool_timeout=2'
+              url: connectionUrl
             }
           },
-          log: ['error', 'warn']
+          log: ['error', 'warn', 'info']
         });
 
-        // Test the connection
-        await testConnection.$connect();
-        await testConnection.$queryRaw`SELECT 1`;
+        // Test the connection with timeout
+        const connectPromise = testConnection.$connect();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout after 5 seconds')), 5000)
+        );
+        
+        await Promise.race([connectPromise, timeoutPromise]);
+        
+        // Test with a simple query
+        const testResult = await testConnection.$queryRaw`SELECT 1 as test`;
+        console.log('Connection test successful:', testResult);
 
         // If successful, store the connection
         globalForPrisma.prismaAdmin = testConnection;
@@ -164,6 +194,7 @@ export async function POST(request: NextRequest) {
           message: 'Database connected successfully'
         });
       } catch (connectError: any) {
+        console.error('Connection error details:', connectError);
         // Clean up on failure
         await cleanupConnection();
         throw connectError;

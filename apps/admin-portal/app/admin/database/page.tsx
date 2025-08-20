@@ -85,12 +85,14 @@ export default function DatabaseManagementPage() {
   const [queryResult, setQueryResult] = useState<any>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
   const [executing, setExecuting] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
   
-  // Railway database URLs provided
+  // Railway database URLs provided - ensure they use postgresql:// protocol for Prisma
   const predefinedUrls = [
-    { label: 'Railway Internal', value: 'postgres://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@postgres.railway.internal:5432/railway' },
-    { label: 'Railway Proxy', value: 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway' },
-    { label: 'Railway with Schema', value: 'postgres://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@postgres.railway.internal:5432/railway?schema=public' },
+    { label: 'Railway Proxy (External)', value: 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway' },
+    { label: 'Railway Internal', value: 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@postgres.railway.internal:5432/railway' },
+    { label: 'Railway with Schema', value: 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@postgres.railway.internal:5432/railway?schema=public' },
   ];
 
   useEffect(() => {
@@ -158,6 +160,34 @@ export default function DatabaseManagementPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const testConnection = async () => {
+    if (!connectionUrl) return;
+    
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const response = await fetch('/api/admin/database/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: connectionUrl })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setTestResult('✓ Connection successful!');
+      } else {
+        setTestResult(`✗ ${result.error}`);
+        if (result.details) {
+          console.error('Connection error details:', result.details);
+        }
+      }
+    } catch (error) {
+      setTestResult('✗ Failed to test connection');
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -371,6 +401,40 @@ export default function DatabaseManagementPage() {
                 </ul>
               </AlertDescription>
             </Alert>
+            
+            {/* Connection string preview */}
+            {connectionUrl && (
+              <div className="space-y-2">
+                <Label>Connection String Preview</Label>
+                <div className="p-2 bg-muted rounded text-xs font-mono break-all">
+                  {connectionUrl.replace(/:([^:@]+)@/, ':****@')}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={testConnection}
+                  disabled={testing}
+                  className="w-full"
+                >
+                  {testing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Test Connection
+                    </>
+                  )}
+                </Button>
+                {testResult && (
+                  <div className={`text-sm p-2 rounded ${testResult.startsWith('✓') ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
+                    {testResult}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfigDialogOpen(false)}>
