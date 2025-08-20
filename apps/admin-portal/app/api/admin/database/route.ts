@@ -61,13 +61,14 @@ export async function GET(request: NextRequest) {
       if (savedUrl) {
         console.log('Restoring connection from saved config...');
         try {
+          // Use the URL as-is, just like the test that works
           globalForPrisma.prismaAdmin = new PrismaClient({
             datasources: {
               db: {
-                url: savedUrl + (savedUrl.includes('?') ? '&' : '?') + 'connection_limit=2&pool_timeout=2'
+                url: savedUrl
               }
             },
-            log: ['error', 'warn']
+            log: ['error', 'warn', 'info']
           });
           await globalForPrisma.prismaAdmin.$connect();
           globalForPrisma.prismaUrl = savedUrl;
@@ -87,32 +88,46 @@ export async function GET(request: NextRequest) {
         // Test the connection
         await globalForPrisma.prismaAdmin.$queryRaw`SELECT 1`;
         
-        // Get database stats
-        const [tableCount, dbSize, connections] = await Promise.all([
-          globalForPrisma.prismaAdmin.$queryRaw`
-            SELECT COUNT(*) as count 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public'
-          `,
-          globalForPrisma.prismaAdmin.$queryRaw`
-            SELECT pg_database_size(current_database()) as size
-          `,
-          globalForPrisma.prismaAdmin.$queryRaw`
-            SELECT count(*) as count 
-            FROM pg_stat_activity 
-            WHERE state = 'active'
-          `
-        ]);
+        // Get database stats with error handling for each query
+        let tableCount, dbSize, connections;
+        try {
+          [tableCount, dbSize, connections] = await Promise.all([
+            globalForPrisma.prismaAdmin.$queryRaw`
+              SELECT COUNT(*) as count 
+              FROM information_schema.tables 
+              WHERE table_schema = 'public'
+            `,
+            globalForPrisma.prismaAdmin.$queryRaw`
+              SELECT pg_database_size(current_database()) as size
+            `,
+            globalForPrisma.prismaAdmin.$queryRaw`
+              SELECT count(*) as count 
+              FROM pg_stat_activity 
+              WHERE state = 'active'
+            `
+          ]);
+        } catch (statsError) {
+          console.log('Some stats queries failed, using defaults:', statsError);
+          tableCount = [{ count: 0 }];
+          dbSize = [{ size: 0 }];
+          connections = [{ count: 1 }];
+        }
 
         // Get table information
-        const tables = await globalForPrisma.prismaAdmin.$queryRaw`
-          SELECT 
-            tablename as name,
-            pg_total_relation_size(schemaname||'.'||tablename) as size
-          FROM pg_tables 
-          WHERE schemaname = 'public'
-          ORDER BY tablename
-        ` as any[];
+        let tables = [];
+        try {
+          tables = await globalForPrisma.prismaAdmin.$queryRaw`
+            SELECT 
+              tablename as name,
+              pg_total_relation_size(schemaname||'.'||tablename) as size
+            FROM pg_tables 
+            WHERE schemaname = 'public'
+            ORDER BY tablename
+          ` as any[];
+        } catch (tablesError) {
+          console.log('Failed to get tables, using empty array:', tablesError);
+          tables = [];
+        }
 
         return NextResponse.json({
           connected: true,
@@ -199,31 +214,14 @@ export async function POST(request: NextRequest) {
         // Clean up any existing connection first
         await cleanupConnection();
 
-        // Parse and clean the connection URL
-        let connectionUrl = url;
-        
-        // Remove any existing connection parameters we're about to add
-        if (connectionUrl.includes('connection_limit=') || connectionUrl.includes('pool_timeout=')) {
-          const urlParts = connectionUrl.split('?');
-          if (urlParts.length > 1) {
-            const params = urlParts[1].split('&').filter((p: string) => 
-              !p.startsWith('connection_limit=') && !p.startsWith('pool_timeout=')
-            );
-            connectionUrl = urlParts[0] + (params.length > 0 ? '?' + params.join('&') : '');
-          }
-        }
-        
-        // Add connection pool parameters
-        const separator = connectionUrl.includes('?') ? '&' : '?';
-        connectionUrl = connectionUrl + separator + 'connection_limit=2&pool_timeout=2';
-        
-        console.log('Final connection URL params:', connectionUrl.split('?')[1]);
+        // Use the URL exactly as provided (this works in the test)
+        console.log('Using connection URL as-is');
 
-        // Create new connection
+        // Create new connection with the same settings as the test
         const testConnection = new PrismaClient({
           datasources: {
             db: {
-              url: connectionUrl
+              url: url
             }
           },
           log: ['error', 'warn', 'info']
@@ -237,8 +235,8 @@ export async function POST(request: NextRequest) {
         
         await Promise.race([connectPromise, timeoutPromise]);
         
-        // Test with a simple query
-        const testResult = await testConnection.$queryRaw`SELECT 1 as test`;
+        // Test with a simple query (same as test endpoint)
+        const testResult = await testConnection.$queryRaw`SELECT version()`;
         console.log('Connection test successful:', testResult);
 
         // If successful, store the connection
