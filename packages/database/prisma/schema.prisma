@@ -174,6 +174,78 @@ model ai_insights {
   @@schema("public")
 }
 
+model organizations {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  name          String    @db.VarChar(255)
+  license_key   String    @db.VarChar(20)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now())
+  settings      Json?
+  teams         teams[]
+  team_members  team_members[]
+
+  @@index([license_key])
+  @@schema("public")
+}
+
+model teams {
+  id             String         @id @default(uuid()) @db.VarChar(36)
+  organization_id String        @db.VarChar(36)
+  name           String         @db.VarChar(255)
+  description    String?        @db.Text
+  permissions    String[]
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @default(now())
+  organization   organizations  @relation(fields: [organization_id], references: [id])
+  team_members   team_members[]
+
+  @@index([organization_id])
+  @@schema("public")
+}
+
+model team_members {
+  id              String        @id @default(uuid()) @db.VarChar(36)
+  organization_id String        @db.VarChar(36)
+  team_id         String?       @db.VarChar(36)
+  user_id         String        @db.VarChar(36)
+  email           String        @db.VarChar(255)
+  name            String        @db.VarChar(255)
+  role            String        @db.VarChar(50) // owner, admin, member, viewer
+  permissions     String[]
+  invited_by      String?       @db.VarChar(36)
+  invited_at      DateTime?
+  joined_at       DateTime?
+  last_active     DateTime?
+  status          String        @default("pending") @db.VarChar(20)
+  organization    organizations @relation(fields: [organization_id], references: [id])
+  team            teams?        @relation(fields: [team_id], references: [id])
+
+  @@unique([organization_id, email])
+  @@index([user_id])
+  @@index([email])
+  @@schema("public")
+}
+
+model audit_logs {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  organization_id String?   @db.VarChar(36)
+  license_key     String    @db.VarChar(20)
+  user_id         String?   @db.VarChar(36)
+  action          String    @db.VarChar(100)
+  resource_type   String    @db.VarChar(50)
+  resource_id     String?   @db.VarChar(100)
+  changes         Json?
+  ip_address      String?   @db.VarChar(45)
+  user_agent      String?   @db.Text
+  created_at      DateTime  @default(now())
+
+  @@index([organization_id])
+  @@index([license_key])
+  @@index([user_id])
+  @@index([created_at])
+  @@schema("public")
+}
+
 model SmartDashboardInsight {
   id          Int       @id @default(autoincrement())
   licenseKey  String    @map("license_key") @db.VarChar(20)

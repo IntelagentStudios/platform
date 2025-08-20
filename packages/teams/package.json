@@ -1,0 +1,16 @@
+{
+  "name": "@intelagent/teams",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Team collaboration and multi-user management for Intelagent Platform",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@intelagent/database": "workspace:*",
+    "@intelagent/security": "workspace:*",
+    "@intelagent/notifications": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

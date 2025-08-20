@@ -1,0 +1,532 @@
+openapi: 3.0.0
+info:
+  title: Intelagent Platform API
+  description: Unified business automation platform API
+  version: 1.0.0
+  contact:
+    email: api-support@intelagent.ai
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.intelagent.ai/v1
+    description: Production server
+  - url: https://staging-api.intelagent.ai/v1
+    description: Staging server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+  - SessionAuth: []
+
+paths:
+  /licenses/validate:
+    post:
+      summary: Validate a license key
+      tags:
+        - License Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - license_key
+                - product_id
+              properties:
+                license_key:
+                  type: string
+                  example: "lic_abc123"
+                product_id:
+                  type: string
+                  example: "chatbot"
+      responses:
+        '200':
+          description: License validation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseValidation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /products/chatbot/message:
+    post:
+      summary: Send a message to the chatbot
+      tags:
+        - Chatbot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - session_id
+                - message
+              properties:
+                session_id:
+                  type: string
+                message:
+                  type: string
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Chatbot response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatbotResponse'
+
+  /products/sales-agent/campaigns:
+    post:
+      summary: Create a new sales campaign
+      tags:
+        - Sales Agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignRequest'
+      responses:
+        '201':
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+
+  /products/enrichment/enrich:
+    post:
+      summary: Enrich contact information
+      tags:
+        - Data Enrichment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                domain:
+                  type: string
+                fields:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Enriched data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrichedContact'
+
+  /analytics/cross-product:
+    get:
+      summary: Get cross-product analytics
+      tags:
+        - Analytics
+      parameters:
+        - name: range
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 30d, 90d]
+          description: Time range for analytics
+        - name: products
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of products
+      responses:
+        '200':
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+
+  /analytics/ai-insights:
+    post:
+      summary: Generate AI-powered insights
+      tags:
+        - AI Intelligence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [pattern, anomaly, recommendation, prediction, summary]
+                products:
+                  type: array
+                  items:
+                    type: string
+                timeRange:
+                  type: object
+                  properties:
+                    start:
+                      type: string
+                      format: date
+                    end:
+                      type: string
+                      format: date
+      responses:
+        '200':
+          description: Generated insights
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  insights:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Insight'
+
+  /organizations:
+    post:
+      summary: Create a new organization
+      tags:
+        - Team Collaboration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - owner_email
+                - owner_name
+              properties:
+                name:
+                  type: string
+                owner_email:
+                  type: string
+                  format: email
+                owner_name:
+                  type: string
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+
+  /organizations/{org_id}/members:
+    post:
+      summary: Invite a team member
+      tags:
+        - Team Collaboration
+      parameters:
+        - name: org_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+                - role
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, member, viewer]
+                team_id:
+                  type: string
+      responses:
+        '201':
+          description: Member invited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamMember'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: license_key
+
+  schemas:
+    LicenseValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        status:
+          type: string
+        plan:
+          type: string
+        products:
+          type: array
+          items:
+            type: string
+        usage:
+          type: object
+          properties:
+            messages:
+              type: integer
+            limit:
+              type: integer
+
+    ChatbotResponse:
+      type: object
+      properties:
+        response:
+          type: string
+        intent:
+          type: string
+        confidence:
+          type: number
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    CampaignRequest:
+      type: object
+      required:
+        - name
+        - template
+        - leads
+      properties:
+        name:
+          type: string
+        template:
+          type: string
+        leads:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              company:
+                type: string
+        schedule:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+            send_time:
+              type: string
+            timezone:
+              type: string
+
+    Campaign:
+      type: object
+      properties:
+        campaign_id:
+          type: string
+        status:
+          type: string
+        total_leads:
+          type: integer
+        estimated_completion:
+          type: string
+          format: date
+
+    EnrichedContact:
+      type: object
+      properties:
+        person:
+          type: object
+          properties:
+            email:
+              type: string
+            name:
+              type: string
+            phone:
+              type: string
+            linkedin:
+              type: string
+            job_title:
+              type: string
+        company:
+          type: object
+          properties:
+            name:
+              type: string
+            domain:
+              type: string
+            industry:
+              type: string
+            size:
+              type: string
+            revenue:
+              type: string
+        confidence:
+          type: number
+
+    Analytics:
+      type: object
+      properties:
+        timeRange:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        metrics:
+          type: object
+        timeSeries:
+          type: array
+          items:
+            type: object
+        correlations:
+          type: array
+          items:
+            type: object
+
+    Insight:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        impact:
+          type: string
+          enum: [low, medium, high, critical]
+        confidence:
+          type: number
+        recommendations:
+          type: array
+          items:
+            type: string
+        data:
+          type: object
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        license_key:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        settings:
+          type: object
+
+    TeamMember:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimitExceeded:
+      description: Too many requests
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: string
+            format: date-time
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
