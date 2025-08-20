@@ -1,164 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-// Hardcoded Railway database URL with connection pool settings
-const RAILWAY_DATABASE_URL = 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway?connection_limit=5&pool_timeout=10';
+// Hardcoded Railway database URL - using simpler connection without extra params
+const RAILWAY_DATABASE_URL = 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway';
 
 // Use a global singleton to prevent multiple connections
 const globalForPrisma = globalThis as unknown as {
   prismaAdmin: PrismaClient | undefined;
-  isConnecting: boolean;
+  lastConnectTime: number;
 };
 
-// Initialize connection if not exists with proper pooling
-async function getDbConnection() {
-  // If already connecting, wait a bit
-  if (globalForPrisma.isConnecting) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+// Create a new connection each time but reuse if recent
+function getDbConnection() {
+  const now = Date.now();
+  
+  // If we have a connection that's less than 20 seconds old, reuse it
+  if (globalForPrisma.prismaAdmin && globalForPrisma.lastConnectTime && 
+      (now - globalForPrisma.lastConnectTime) < 20000) {
     return globalForPrisma.prismaAdmin;
   }
-
-  if (!globalForPrisma.prismaAdmin) {
-    globalForPrisma.isConnecting = true;
-    try {
-      globalForPrisma.prismaAdmin = new PrismaClient({
-        datasources: {
-          db: {
-            url: RAILWAY_DATABASE_URL
-          }
-        },
-        log: ['error'],
-      });
-      
-      // Ensure connection is established
-      await globalForPrisma.prismaAdmin.$connect();
-      console.log('Database connection established');
-    } catch (error) {
-      console.error('Failed to establish database connection:', error);
-      globalForPrisma.prismaAdmin = undefined;
-    } finally {
-      globalForPrisma.isConnecting = false;
-    }
+  
+  // Close old connection if exists
+  if (globalForPrisma.prismaAdmin) {
+    globalForPrisma.prismaAdmin.$disconnect().catch(() => {});
   }
   
+  // Create new connection
+  globalForPrisma.prismaAdmin = new PrismaClient({
+    datasources: {
+      db: {
+        url: RAILWAY_DATABASE_URL
+      }
+    },
+    log: ['error'],
+  });
+  
+  globalForPrisma.lastConnectTime = now;
   return globalForPrisma.prismaAdmin;
 }
 
-// Helper to ensure connection is alive
-async function ensureConnection(db: PrismaClient | undefined) {
-  if (!db) return false;
-  
-  try {
-    await db.$queryRaw`SELECT 1`;
-    return true;
-  } catch (error) {
-    console.log('Connection test failed, will retry');
-    return false;
-  }
-}
-
 export async function GET(request: NextRequest) {
-  console.log('Database GET request received');
+  console.log('Database GET request received at', new Date().toISOString());
   
   try {
-    // Get or create connection
-    let db = await getDbConnection();
-    
-    if (!db) {
-      return NextResponse.json({
-        connected: false,
-        type: 'PostgreSQL',
-        version: 'Unknown',
-        uptime: 0,
-        connections: { active: 0, idle: 0, max: 100 },
-        size: { total: 0, tables: 0, indexes: 0 },
-        performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
-        tables: [],
-        error: 'Failed to establish database connection'
-      });
-    }
-    
-    // Check if connection is alive
-    const isAlive = await ensureConnection(db);
-    if (!isAlive) {
-      // Try to reconnect once
-      console.log('Connection lost, attempting to reconnect...');
-      globalForPrisma.prismaAdmin = undefined;
-      db = await getDbConnection();
-      
-      if (!db || !(await ensureConnection(db))) {
-        return NextResponse.json({
-          connected: false,
-          type: 'PostgreSQL',
-          version: 'Unknown',
-          uptime: 0,
-          connections: { active: 0, idle: 0, max: 100 },
-          size: { total: 0, tables: 0, indexes: 0 },
-          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
-          tables: [],
-          error: 'Database connection lost'
-        });
-      }
-    }
+    // Get connection (will create new if needed)
+    const db = getDbConnection();
     
     try {
-      // Get database stats with error handling for each query
-      let tableCount, dbSize, connections, version;
+      // Simple connection test
+      const testResult = await db.$queryRaw`SELECT 1 as test`;
+      console.log('Connection test passed');
+      
+      // Get basic stats - keep queries minimal to reduce connection time
+      let version, tableCount, dbSize;
+      
       try {
-        [tableCount, dbSize, connections, version] = await Promise.all([
-          db.$queryRaw`
-            SELECT COUNT(*) as count 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public'
-          `,
-          db.$queryRaw`
-            SELECT pg_database_size(current_database()) as size
-          `,
-          db.$queryRaw`
-            SELECT count(*) as count 
-            FROM pg_stat_activity 
-            WHERE state = 'active'
-          `,
-          db.$queryRaw`SELECT version() as version`
-        ]);
+        // Get version
+        const versionResult = await db.$queryRaw`SELECT version() as version` as any[];
+        version = versionResult[0]?.version || 'PostgreSQL';
+        
+        // Get table count
+        const countResult = await db.$queryRaw`
+          SELECT COUNT(*) as count 
+          FROM information_schema.tables 
+          WHERE table_schema = 'public'
+        ` as any[];
+        tableCount = Number(countResult[0]?.count || 0);
+        
+        // Get database size
+        const sizeResult = await db.$queryRaw`
+          SELECT pg_database_size(current_database()) as size
+        ` as any[];
+        dbSize = Number(sizeResult[0]?.size || 0);
       } catch (statsError) {
-        console.log('Some stats queries failed, using defaults:', statsError);
-        tableCount = [{ count: 0 }];
-        dbSize = [{ size: 0 }];
-        connections = [{ count: 1 }];
-        version = [{ version: 'PostgreSQL' }];
+        console.log('Stats query failed:', statsError);
+        version = 'PostgreSQL';
+        tableCount = 0;
+        dbSize = 0;
       }
 
-      // Get table information
+      // Get table list (simplified query)
       let tables = [];
       try {
         tables = await db.$queryRaw`
           SELECT 
             tablename as name,
-            pg_total_relation_size(schemaname||'.'||tablename) as size
+            0 as rows,
+            0 as size
           FROM pg_tables 
           WHERE schemaname = 'public'
           ORDER BY tablename
-          LIMIT 20
+          LIMIT 10
         ` as any[];
       } catch (tablesError) {
         console.log('Failed to get tables:', tablesError);
         tables = [];
       }
 
-      // Get row counts for each table (but don't fail if one errors)
-      for (const table of tables) {
-        try {
-          const countResult = await db.$queryRawUnsafe(`SELECT COUNT(*) as count FROM "${table.name}"`) as any[];
-          table.rows = Number(countResult[0]?.count || 0);
-        } catch (e) {
-          console.log(`Failed to get count for table ${table.name}`);
-          table.rows = 0;
-        }
-      }
-
-      const versionString = (version as any)[0]?.version || 'PostgreSQL';
-      const versionMatch = versionString.match(/PostgreSQL ([\d.]+)/); 
+      const versionMatch = version.match(/PostgreSQL ([\d.]+)/); 
       
       return NextResponse.json({
         connected: true,
@@ -166,13 +105,13 @@ export async function GET(request: NextRequest) {
         version: versionMatch ? versionMatch[1] : '14.x',
         uptime: Date.now(),
         connections: {
-          active: Number((connections as any)[0]?.count || 0),
+          active: 1,
           idle: 0,
           max: 100
         },
         size: {
-          total: Number((dbSize as any)[0]?.size || 0),
-          tables: tables.reduce((sum, t) => sum + Number(t.size || 0), 0),
+          total: dbSize,
+          tables: tableCount,
           indexes: 0
         },
         performance: {
@@ -180,17 +119,15 @@ export async function GET(request: NextRequest) {
           slowQueries: 0,
           avgResponseTime: 0
         },
-        tables: tables.map(t => ({
-          name: t.name,
-          rows: t.rows || 0,
-          size: Number(t.size || 0),
-          lastModified: new Date()
-        }))
+        tables: tables
       });
     } catch (error: any) {
-      console.error('Database query error:', error.message);
+      console.error('Database query error at', new Date().toISOString(), ':', error.message);
       
-      // Don't disconnect on query errors, just report them
+      // Clear the connection on error
+      globalForPrisma.prismaAdmin = undefined;
+      globalForPrisma.lastConnectTime = 0;
+      
       return NextResponse.json({
         connected: false,
         type: 'PostgreSQL',
@@ -225,14 +162,7 @@ export async function POST(request: NextRequest) {
     const { action, query } = body;
 
     if (action === 'execute') {
-      const db = await getDbConnection();
-      
-      if (!db) {
-        return NextResponse.json({
-          success: false,
-          error: 'Database connection not available'
-        });
-      }
+      const db = getDbConnection();
       
       try {
         // Execute the SQL query
@@ -244,6 +174,7 @@ export async function POST(request: NextRequest) {
           rowCount: Array.isArray(result) ? result.length : 0
         });
       } catch (error: any) {
+        console.error('Query execution error:', error);
         return NextResponse.json({
           success: false,
           error: error.message || 'Query execution failed'
@@ -274,17 +205,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// Cleanup on process exit
-if (typeof process !== 'undefined') {
-  process.on('beforeExit', async () => {
-    if (globalForPrisma.prismaAdmin) {
-      try {
-        await globalForPrisma.prismaAdmin.$disconnect();
-      } catch (e) {
-        console.error('Error disconnecting on exit:', e);
-      }
-    }
-  });
 }

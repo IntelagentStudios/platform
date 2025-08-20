@@ -68,35 +68,16 @@ export default function DatabaseManagementPage() {
   const [connectionStatus, setConnectionStatus] = useState<any>(null);
 
   useEffect(() => {
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        console.error('Database stats fetch timed out');
-        setLoading(false);
-        setStats({
-          connected: false,
-          type: 'PostgreSQL',
-          version: 'Unknown',
-          uptime: 0,
-          connections: { active: 0, idle: 0, max: 100 },
-          size: { total: 0, tables: 0, indexes: 0 },
-          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
-          tables: []
-        });
-      }
-    }, 15000); // 15 second timeout
-
+    // Initial fetch
     fetchDatabaseStats();
     
-    // Refresh stats every 30 seconds instead of constantly
+    // Refresh stats every 15 seconds to keep connection alive
     const intervalId = setInterval(() => {
-      if (!loading) {
-        fetchDatabaseStats();
-      }
-    }, 30000);
+      console.log('Auto-refreshing database stats...');
+      fetchDatabaseStats();
+    }, 15000); // 15 seconds - within the 20 second connection reuse window
 
     return () => {
-      clearTimeout(timeoutId);
       clearInterval(intervalId);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -237,20 +218,30 @@ export default function DatabaseManagementPage() {
       </div>
 
       {/* Connection Status */}
-      {!stats?.connected && (
+      {!stats?.connected && !loading && (
         <Alert className="border-yellow-200 dark:border-yellow-900">
           <AlertTriangle className="h-4 w-4 text-yellow-500" />
           <AlertDescription>
-            <div>
-              <strong>Connecting to Railway Database...</strong>
-              <p className="text-sm mt-1">
-                Attempting to connect to the configured Railway PostgreSQL database.
-              </p>
-              {stats?.error && (
-                <p className="text-sm mt-2 text-red-500">
-                  Error: {stats.error}
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Database Connection Lost</strong>
+                <p className="text-sm mt-1">
+                  The connection to Railway PostgreSQL was interrupted. Auto-reconnecting...
                 </p>
-              )}
+                {stats?.error && (
+                  <p className="text-sm mt-2 text-red-500">
+                    Last error: {stats.error}
+                  </p>
+                )}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={fetchDatabaseStats}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry Now
+              </Button>
             </div>
           </AlertDescription>
         </Alert>
