@@ -105,22 +105,22 @@ export default function AdminDashboard() {
 
       {/* Critical Alerts - Actionable */}
       {criticalAlerts > 0 && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <AlertTriangle className="w-5 h-5 text-red-500" />
               <div>
-                <p className="font-medium text-destructive">
+                <p className="font-medium text-red-600 dark:text-red-400">
                   {criticalAlerts} Critical Alert{criticalAlerts > 1 ? 's' : ''}
                 </p>
-                <p className="text-sm text-destructive/80 mt-1">
+                <p className="text-sm text-red-500 dark:text-red-400/80 mt-1">
                   Database connection issue - DATABASE_URL not configured
                 </p>
               </div>
             </div>
             <button 
-              onClick={() => router.push('/admin/settings')}
-              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors text-sm font-medium"
+              onClick={() => router.push('/admin/system')}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium"
             >
               Fix Now
             </button>
@@ -201,9 +201,12 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* System Resources */}
+      {/* System Resources - Clickable */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="p-6">
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/system')}
+        >
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Cpu className="w-5 h-5" />
             CPU Usage
@@ -227,7 +230,10 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/system')}
+        >
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <MemoryStick className="w-5 h-5" />
             Memory
@@ -242,7 +248,7 @@ export default function AdminDashboard() {
                 <div 
                   className={`h-2 rounded-full ${
                     (status?.metrics?.memory?.percentage || 0) > 80 
-                      ? 'bg-destructive' 
+                      ? 'bg-red-400' 
                       : 'bg-primary'
                   }`}
                   style={{ width: `${status?.metrics?.memory?.percentage || 0}%` }}
@@ -256,7 +262,10 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card 
+          className="p-6 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/system')}
+        >
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <HardDrive className="w-5 h-5" />
             Disk Space
@@ -271,7 +280,7 @@ export default function AdminDashboard() {
                 <div 
                   className={`h-2 rounded-full ${
                     (status?.metrics?.disk?.percentage || 0) > 90 
-                      ? 'bg-destructive' 
+                      ? 'bg-red-400' 
                       : 'bg-primary'
                   }`}
                   style={{ width: `${status?.metrics?.disk?.percentage || 0}%` }}
@@ -289,19 +298,24 @@ export default function AdminDashboard() {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Service Status</h3>
-          <button 
-            onClick={() => router.push('/admin/health')}
-            className="text-sm text-primary hover:underline"
-          >
-            View Details →
-          </button>
+          <span className="text-sm text-muted-foreground">
+            Click any service for details
+          </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {status?.services.map((service: any) => (
             <div 
               key={service.name} 
               className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/10 transition-colors"
-              onClick={() => router.push('/admin/health')}
+              onClick={() => {
+                if (service.name.toLowerCase().includes('database')) {
+                  router.push('/admin/database');
+                } else if (service.name.toLowerCase().includes('api')) {
+                  router.push('/admin/api');
+                } else {
+                  router.push('/admin/health');
+                }
+              }}
             >
               <div className="flex items-center gap-3">
                 {service.status === 'healthy' ? (
@@ -309,7 +323,7 @@ export default function AdminDashboard() {
                 ) : service.status === 'degraded' ? (
                   <Clock className="w-5 h-5 text-secondary" />
                 ) : (
-                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
                 )}
                 <div>
                   <p className="font-medium">
@@ -325,7 +339,7 @@ export default function AdminDashboard() {
                   ? 'bg-primary/20 text-primary'
                   : service.status === 'degraded'
                   ? 'bg-secondary/20 text-secondary'
-                  : 'bg-destructive/20 text-destructive'
+                  : 'bg-red-100 dark:bg-red-950/30 text-red-500'
               }`}>
                 {service.status}
               </span>
@@ -335,7 +349,7 @@ export default function AdminDashboard() {
         {status?.services.some((s: any) => s.status !== 'healthy') && (
           <div className="mt-4 pt-4 border-t">
             <button 
-              onClick={() => router.push('/admin/health')}
+              onClick={() => router.push('/admin/system')}
               className="w-full py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
             >
               Troubleshoot Issues
@@ -352,7 +366,7 @@ export default function AdminDashboard() {
             {status.alerts.slice(0, 5).map((alert: any, index: number) => (
               <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <AlertTriangle className={`w-5 h-5 mt-0.5 ${
-                  alert.type === 'critical' ? 'text-destructive' : 'text-secondary'
+                  alert.type === 'critical' ? 'text-red-400' : 'text-secondary'
                 }`} />
                 <div className="flex-1">
                   <p className="text-sm font-medium">
