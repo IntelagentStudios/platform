@@ -27,7 +27,8 @@ import {
   ChevronRight,
   Menu,
   X,
-  Shield
+  Shield,
+  Package
 } from 'lucide-react';
 
 const navigation = [
@@ -42,6 +43,7 @@ const navigation = [
   {
     title: 'Business',
     items: [
+      { name: 'Products', href: '/admin/products', icon: Package },
       { name: 'Finances', href: '/admin/billing', icon: PoundSterling },
       { name: 'Users', href: '/admin/users', icon: User },
       { name: 'Usage & Billing', href: '/admin/usage', icon: CreditCard },

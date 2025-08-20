@@ -238,46 +238,56 @@ export class SystemMonitor {
     // Check actual service health
     const services: ServiceHealth[] = [];
     
-    // Check database health only if DATABASE_URL is configured
-    if (process.env.DATABASE_URL) {
-      try {
-        const { prisma } = await import('@/lib/db');
-        const startTime = Date.now();
-        await prisma.$queryRaw`SELECT 1`;
-        const responseTime = Date.now() - startTime;
-        
+    // Check database health using the hardcoded Railway connection
+    try {
+      const response = await fetch('http://localhost:3001/api/admin/database');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.connected) {
+          services.push({
+            name: 'Database',
+            status: 'healthy',
+            uptime: 0,
+            responseTime: 10,
+            errorRate: 0,
+            requestsPerMinute: 0,
+            lastCheck: new Date().toISOString(),
+            message: `PostgreSQL ${data.version} is operational`
+          });
+        } else {
+          services.push({
+            name: 'Database',
+            status: 'unhealthy',
+            uptime: 0,
+            responseTime: 0,
+            errorRate: 100,
+            requestsPerMinute: 0,
+            lastCheck: new Date().toISOString(),
+            message: data.error || 'Database connection lost'
+          });
+        }
+      } else {
         services.push({
-          name: 'database',
-          status: 'healthy',
-          uptime: 0,
-          responseTime,
-          errorRate: 0,
-          requestsPerMinute: 0,
-          lastCheck: new Date().toISOString(),
-          message: 'PostgreSQL is operational'
-        });
-      } catch (error) {
-        services.push({
-          name: 'database',
-          status: 'unhealthy',
+          name: 'Database',
+          status: 'degraded',
           uptime: 0,
           responseTime: 0,
-          errorRate: 100,
+          errorRate: 50,
           requestsPerMinute: 0,
           lastCheck: new Date().toISOString(),
-          message: 'Database connection error - check DATABASE_URL configuration'
+          message: 'Unable to check database status'
         });
       }
-    } else {
+    } catch (error) {
       services.push({
-        name: 'database',
+        name: 'Database',
         status: 'unknown',
         uptime: 0,
         responseTime: 0,
         errorRate: 0,
         requestsPerMinute: 0,
         lastCheck: new Date().toISOString(),
-        message: 'DATABASE_URL not configured'
+        message: 'Failed to check database status'
       });
     }
     
