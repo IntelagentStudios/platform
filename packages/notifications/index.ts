@@ -1,5 +1,5 @@
 import { prisma } from '@intelagent/database';
-import { Redis } from 'ioredis';
+import { RedisManager, pubsub } from '@intelagent/redis';
 import nodemailer from 'nodemailer';
 import { WebClient } from '@slack/web-api';
 import twilio from 'twilio';
@@ -47,7 +47,7 @@ interface NotificationPreferences {
 }
 
 class NotificationService {
-  private redis: Redis | null = null;
+  private redis: any = null;
   private emailTransporter: nodemailer.Transporter | null = null;
   private slackClient: WebClient | null = null;
   private twilioClient: any = null;
@@ -60,12 +60,14 @@ class NotificationService {
   }
 
   private initServices() {
-    // Initialize Redis for pub/sub
-    if (process.env.REDIS_URL) {
-      this.redis = new Redis(process.env.REDIS_URL);
-      this.redis.on('error', (err) => {
-        console.warn('Redis notification error:', err.message);
-      });
+    // Use centralized Redis client for pub/sub
+    try {
+      this.redis = RedisManager.getClient('pubsub');
+      if (this.redis) {
+        console.log('Notification service using Redis');
+      }
+    } catch (error) {
+      console.warn('Failed to initialize Redis for notifications:', error);
     }
 
     // Initialize email transport

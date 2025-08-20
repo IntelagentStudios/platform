@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
 import { NextRequest, NextResponse } from 'next/server';
+import { RedisManager, cache } from '@intelagent/redis';
 
 interface RateLimitConfig {
   windowMs: number;  // Time window in milliseconds
@@ -17,7 +17,7 @@ interface RateLimitResult {
 }
 
 class RateLimiter {
-  private redis: Redis | null = null;
+  private redis: any = null;
   private useMemoryFallback: boolean = false;
   private memoryStore: Map<string, { count: number; resetTime: number }> = new Map();
 
@@ -27,29 +27,15 @@ class RateLimiter {
 
   private initRedis() {
     try {
-      if (process.env.REDIS_URL) {
-        this.redis = new Redis(process.env.REDIS_URL, {
-          maxRetriesPerRequest: 3,
-          retryStrategy(times) {
-            const delay = Math.min(times * 50, 2000);
-            return delay;
-          },
-          enableReadyCheck: false,
-          lazyConnect: true
-        });
-
-        this.redis.on('error', (err) => {
-          console.warn('Redis rate limiter error, falling back to memory:', err.message);
-          this.useMemoryFallback = true;
-        });
-
-        this.redis.on('connect', () => {
-          console.log('Redis rate limiter connected');
-          this.useMemoryFallback = false;
-        });
+      // Use centralized Redis client
+      this.redis = RedisManager.getClient('rate-limit');
+      
+      if (this.redis) {
+        this.useMemoryFallback = false;
+        console.log('Rate limiter using Redis');
       } else {
         this.useMemoryFallback = true;
-        console.log('No Redis URL provided, using memory-based rate limiting');
+        console.log('Rate limiter using memory fallback');
       }
     } catch (error) {
       console.warn('Failed to initialize Redis for rate limiting:', error);

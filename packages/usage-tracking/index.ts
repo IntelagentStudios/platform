@@ -1,5 +1,5 @@
 import { prisma } from '@intelagent/database';
-import { Redis } from 'ioredis';
+import { RedisManager, cache } from '@intelagent/redis';
 
 interface UsageEvent {
   licenseKey: string;
@@ -23,7 +23,7 @@ interface BillingPeriod {
 }
 
 class UsageTracker {
-  private redis: Redis | null = null;
+  private redis: any = null;
   private flushInterval: NodeJS.Timer | null = null;
   private buffer: UsageEvent[] = [];
   private bufferSize: number = 100;
@@ -36,16 +36,11 @@ class UsageTracker {
 
   private initRedis() {
     try {
-      if (process.env.REDIS_URL) {
-        this.redis = new Redis(process.env.REDIS_URL, {
-          maxRetriesPerRequest: 3,
-          enableReadyCheck: false,
-          lazyConnect: true
-        });
-
-        this.redis.on('error', (err) => {
-          console.warn('Redis usage tracker error:', err.message);
-        });
+      // Use centralized Redis client
+      this.redis = RedisManager.getClient('cache');
+      
+      if (this.redis) {
+        console.log('Usage tracker using Redis');
       }
     } catch (error) {
       console.warn('Failed to initialize Redis for usage tracking:', error);

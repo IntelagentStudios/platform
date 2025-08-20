@@ -14,7 +14,10 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
