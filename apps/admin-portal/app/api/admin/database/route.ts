@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         ]);
 
         // Get table information
-        const tables = await dbConnection.$queryRaw`
+        const tables = await globalForPrisma.prismaAdmin.$queryRaw`
           SELECT 
             tablename as name,
             pg_total_relation_size(schemaname||'.'||tablename) as size
