@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { 
   Users,
@@ -445,9 +446,15 @@ export default function UserManagementPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center relative overflow-hidden">
                         {user.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full" />
+                          <Image 
+                            src={user.avatar} 
+                            alt={user.name} 
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
                         ) : (
                           <User className="w-5 h-5 text-gray-500" />
                         )}
@@ -585,9 +592,15 @@ export default function UserManagementPage() {
             <div className="space-y-6">
               {/* User Info */}
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center relative overflow-hidden">
                   {selectedUser.avatar ? (
-                    <img src={selectedUser.avatar} alt={selectedUser.name} className="w-20 h-20 rounded-full" />
+                    <Image 
+                      src={selectedUser.avatar} 
+                      alt={selectedUser.name} 
+                      width={80}
+                      height={80}
+                      className="rounded-full"
+                    />
                   ) : (
                     <User className="w-10 h-10 text-gray-500" />
                   )}
