@@ -26,6 +26,7 @@ model licenses {
   plan                 String?      @db.VarChar(50)
   products             String[]     @default([])
   chatbot_logs         chatbot_logs[]
+  api_keys             api_keys[]
   @@schema("public")
 }
 
@@ -66,6 +67,110 @@ model domain_licenses {
   product_type String @db.VarChar(50)
 
   @@id([domain, license_key])
+  @@schema("public")
+}
+
+model api_keys {
+  id           Int       @id @default(autoincrement())
+  key          String    @unique @db.VarChar(64)
+  license_key  String    @db.VarChar(20)
+  name         String?   @db.VarChar(255)
+  status       String    @default("active") @db.VarChar(20)
+  created_at   DateTime  @default(now())
+  expires_at   DateTime?
+  last_used_at DateTime?
+  scopes       String[]  @default([])
+  rate_limit   Int?      @default(60)
+  license      licenses  @relation(fields: [license_key], references: [license_key])
+
+  @@index([license_key])
+  @@schema("public")
+}
+
+model usage_events {
+  id          Int      @id @default(autoincrement())
+  license_key String   @db.VarChar(20)
+  product_id  String   @db.VarChar(50)
+  event_type  String   @db.VarChar(50)
+  quantity    Int      @default(1)
+  metadata    Json?
+  created_at  DateTime @default(now())
+
+  @@index([license_key, product_id, event_type])
+  @@index([created_at])
+  @@schema("public")
+}
+
+model usage_metrics {
+  id            Int      @id @default(autoincrement())
+  license_key   String   @db.VarChar(20)
+  product_id    String   @db.VarChar(50)
+  period_start  DateTime
+  period_end    DateTime
+  messages      Int?     @default(0)
+  sessions      Int?     @default(0)
+  training_docs Int?     @default(0)
+  emails        Int?     @default(0)
+  leads         Int?     @default(0)
+  campaigns     Int?     @default(0)
+  lookups       Int?     @default(0)
+  api_calls     Int?     @default(0)
+  updated_at    DateTime @default(now())
+
+  @@unique([license_key, product_id, period_start])
+  @@index([license_key])
+  @@schema("public")
+}
+
+model notifications {
+  id            String    @id @db.VarChar(50)
+  license_key   String    @db.VarChar(20)
+  type          String    @db.VarChar(20)
+  channel       String?   @db.VarChar(20)
+  priority      String    @db.VarChar(20)
+  subject       String    @db.VarChar(255)
+  message       String    @db.Text
+  metadata      Json?
+  scheduled_for DateTime?
+  status        String    @db.VarChar(20)
+  sent_at       DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime?
+
+  @@index([license_key])
+  @@index([status])
+  @@index([created_at])
+  @@schema("public")
+}
+
+model notification_preferences {
+  id          Int      @id @default(autoincrement())
+  license_key String   @unique @db.VarChar(20)
+  preferences Json
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  @@schema("public")
+}
+
+model ai_insights {
+  id              Int      @id @default(autoincrement())
+  license_key     String   @db.VarChar(20)
+  insight_id      String   @unique @db.VarChar(50)
+  type            String   @db.VarChar(50)
+  title           String   @db.VarChar(255)
+  description     String   @db.Text
+  impact          String   @db.VarChar(20)
+  confidence      Float
+  recommendations String[]
+  data            Json
+  sources         String[]
+  created_at      DateTime @default(now())
+  expires_at      DateTime?
+
+  @@index([license_key])
+  @@index([type])
+  @@index([created_at])
   @@schema("public")
 }
 
