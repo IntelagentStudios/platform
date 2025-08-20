@@ -195,7 +195,7 @@ export default function ChatbotProductPage() {
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Add this code to your website's HTML, just before the closing &lt;/body&gt; tag
+                    Add this code to your website&apos;s HTML, just before the closing &lt;/body&gt; tag
                   </p>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function ChatbotProductPage() {
                 <AlertDescription>
                   <code className="text-xs bg-muted px-2 py-1 rounded">{apiKey}</code>
                   <p className="mt-2 text-sm">
-                    Keep this key secure. It's unique to your account and allows the chatbot to work on your website.
+                    Keep this key secure. It&apos;s unique to your account and allows the chatbot to work on your website.
                   </p>
                 </AlertDescription>
               </Alert>

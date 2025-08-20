@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelagent Chatbot Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status.active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .status.inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        code {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .test-area {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+        .api-test {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        #response {
+            margin-top: 10px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Intelagent Chatbot Test Page</h1>
+        <p class="subtitle">Test your chatbot integration and OpenAI connection</p>
+        
+        <div class="section">
+            <h2>Integration Status</h2>
+            <p>Widget Script: <span class="status active">Ready</span></p>
+            <p>API Endpoint: <code>http://localhost:3003/api/chat</code></p>
+            <p>OpenAI API: <span class="status active">Configured</span></p>
+        </div>
+
+        <div class="section">
+            <h2>Test Embed Code</h2>
+            <p>The chatbot widget will be embedded on this page. Look for the chat bubble in the bottom-right corner.</p>
+            <div class="test-area">
+                <p>Chat widget should appear here ↘️</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Direct API Test</h2>
+            <p>Test the chat API directly without the widget:</p>
+            <div class="api-test">
+                <input type="text" id="testMessage" placeholder="Type a test message..." style="width: 70%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                <button onclick="testAPI()">Send Test</button>
+                <div id="response"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>Start your admin portal: <code>npm run dev</code></li>
+                <li>Open this file in your browser</li>
+                <li>Look for the chat bubble in the bottom-right corner</li>
+                <li>Click the bubble to open the chat</li>
+                <li>Try sending a message!</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Intelagent Chatbot Embed Code -->
+    <script>
+    // Update widget.js location for local testing
+    (function() {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'http://localhost:3003/widget.js?id=ik_test_key_12345';
+        document.head.appendChild(script);
+    })();
+
+    // Direct API test function
+    async function testAPI() {
+        const message = document.getElementById('testMessage').value;
+        const responseDiv = document.getElementById('response');
+        
+        if (!message) {
+            responseDiv.textContent = 'Please enter a message';
+            return;
+        }
+        
+        responseDiv.textContent = 'Sending...';
+        
+        try {
+            const response = await fetch('http://localhost:3003/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    apiKey: 'ik_test_key_12345',
+                    sessionId: 'test_session_' + Date.now()
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                responseDiv.textContent = 'Success! Response:\n' + JSON.stringify(data, null, 2);
+            } else {
+                responseDiv.textContent = 'Error: ' + JSON.stringify(data, null, 2);
+            }
+        } catch (error) {
+            responseDiv.textContent = 'Network error: ' + error.message;
+        }
+    }
+    </script>
+</body>
+</html>

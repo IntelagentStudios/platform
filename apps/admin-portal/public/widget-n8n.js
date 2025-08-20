@@ -1,78 +1,113 @@
-// Intelagent Chatbot Widget
+// Intelagent Chatbot Widget with n8n Integration
 (function() {
   'use strict';
   
   // Configuration
   const WIDGET_URL = window.location.hostname === 'localhost' ? 'http://localhost:3003' : 'https://chat.intelagent.ai';
+  const N8N_WEBHOOK_URL = 'https://your-n8n-instance.com/webhook/chatbot'; // Update with your n8n webhook URL
   const API_ENDPOINT = window.location.hostname === 'localhost' ? 'http://localhost:3003/api/chat' : 'https://api.intelagent.ai/chat';
   
-  // Get the API key from the script tag
-  const currentScript = document.currentScript || document.querySelector('script[src*="widget.js"]');
-  const apiKey = new URLSearchParams(currentScript.src.split('?')[1]).get('id');
+  // Get the site key from the script tag
+  const currentScript = document.currentScript || document.querySelector('script[src*="widget"]');
+  const siteKey = currentScript.getAttribute('data-site') || new URLSearchParams(currentScript.src.split('?')[1]).get('id');
+  const useN8n = currentScript.getAttribute('data-n8n') === 'true';
   
-  if (!apiKey) {
-    console.error('Intelagent Chatbot: No API key provided');
+  if (!siteKey) {
+    console.error('Intelagent Chatbot: No site key provided');
     return;
   }
   
   let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  let chatHistory = [];
   
-  // Create the chat widget
+  // Create the chat widget with beautiful glassmorphism styling
   function createChatWidget() {
-    // Create container
+    // Create container with glassmorphism effects
     const container = document.createElement('div');
     container.id = 'intelagent-chatbot-container';
     container.style.cssText = `
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 110px;
+      right: 28px;
       width: 380px;
       height: 600px;
       max-width: 90vw;
       max-height: 80vh;
-      z-index: 99999;
+      z-index: 999999;
       display: none;
       flex-direction: column;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 10px 40px rgba(0,0,0,0.1);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
       overflow: hidden;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
     
-    // Create header
+    // Create header with glassmorphism
     const header = document.createElement('div');
     header.style.cssText = `
-      padding: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background-color: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 20px 24px;
+      font-size: 20px;
+      color: #1a1a1a;
+      font-weight: 600;
       display: flex;
       justify-content: space-between;
       align-items: center;
     `;
     header.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
-        <span style="font-weight: 600;">Intelagent Support</span>
+        <span>Intelagent Support</span>
+        ${useN8n ? '<span style="font-size: 12px; opacity: 0.6;">(AI Enhanced)</span>' : ''}
       </div>
-      <button id="intelagent-close" style="background: none; border: none; color: white; cursor: pointer; font-size: 24px; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">×</button>
+      <button id="intelagent-close" style="
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        font-size: 24px;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      ">×</button>
     `;
     
-    // Create messages container
+    // Create messages container with custom scrollbar
     const messagesContainer = document.createElement('div');
     messagesContainer.id = 'intelagent-messages';
     messagesContainer.style.cssText = `
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
-      background: #f7fafc;
+      padding: 24px;
+      background: rgba(249, 250, 251, 0.5);
     `;
     
     // Add welcome message
     messagesContainer.innerHTML = `
       <div style="margin-bottom: 16px;">
-        <div style="display: inline-block; max-width: 80%; padding: 12px 16px; background: white; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-          <p style="margin: 0; color: #2d3748; font-size: 14px;">Hello! 👋 I'm your Intelagent assistant. How can I help you today?</p>
+        <div style="
+          display: inline-block;
+          max-width: 80%;
+          padding: 14px 18px;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(8px);
+          border-radius: 18px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        ">
+          <p style="margin: 0; color: #2d3748; font-size: 14px; line-height: 1.5;">
+            Hello! 👋 I'm your Intelagent assistant. How can I help you today?
+          </p>
         </div>
       </div>
     `;
@@ -80,11 +115,12 @@
     // Create input container
     const inputContainer = document.createElement('div');
     inputContainer.style.cssText = `
-      padding: 16px;
-      background: white;
-      border-top: 1px solid #e2e8f0;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(226, 232, 240, 0.5);
       display: flex;
-      gap: 8px;
+      gap: 12px;
     `;
     
     const input = document.createElement('input');
@@ -93,18 +129,21 @@
     input.placeholder = 'Type your message...';
     input.style.cssText = `
       flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #cbd5e0;
-      border-radius: 8px;
+      padding: 12px 16px;
+      background: rgba(249, 250, 251, 0.8);
+      border: 1px solid rgba(203, 213, 224, 0.5);
+      border-radius: 12px;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     `;
     input.addEventListener('focus', () => {
-      input.style.borderColor = '#667eea';
+      input.style.borderColor = 'rgba(102, 126, 234, 0.5)';
+      input.style.background = 'rgba(255, 255, 255, 0.9)';
     });
     input.addEventListener('blur', () => {
-      input.style.borderColor = '#cbd5e0';
+      input.style.borderColor = 'rgba(203, 213, 224, 0.5)';
+      input.style.background = 'rgba(249, 250, 251, 0.8)';
     });
     
     const sendButton = document.createElement('button');
@@ -115,58 +154,65 @@
       </svg>
     `;
     sendButton.style.cssText = `
-      padding: 10px 14px;
+      padding: 12px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     `;
     sendButton.addEventListener('mouseenter', () => {
       sendButton.style.transform = 'scale(1.05)';
+      sendButton.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
     });
     sendButton.addEventListener('mouseleave', () => {
       sendButton.style.transform = 'scale(1)';
+      sendButton.style.boxShadow = '0 2px 8px rgba(102, 126, 234, 0.3)';
     });
     
     inputContainer.appendChild(input);
     inputContainer.appendChild(sendButton);
     
-    // Create chat button
+    // Create chat button with glassmorphism
     const chatButton = document.createElement('button');
     chatButton.id = 'intelagent-chat-button';
     chatButton.style.cssText = `
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
+      bottom: 28px;
+      right: 28px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border: none;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       cursor: pointer;
-      z-index: 99998;
+      z-index: 999998;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-      transition: transform 0.2s;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
     chatButton.innerHTML = `
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
       </svg>
     `;
     
     chatButton.addEventListener('mouseenter', () => {
-      chatButton.style.transform = 'scale(1.1)';
+      chatButton.style.transform = 'scale(1.08)';
+      chatButton.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.15)';
     });
     chatButton.addEventListener('mouseleave', () => {
       chatButton.style.transform = 'scale(1)';
+      chatButton.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
     });
     
     // Add components to container
@@ -177,11 +223,25 @@
     // Add styles for animations
     const style = document.createElement('style');
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+      
       @keyframes pulse {
         0% { opacity: 1; }
         50% { opacity: 0.5; }
         100% { opacity: 1; }
       }
+      
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
       #intelagent-messages::-webkit-scrollbar {
         width: 6px;
       }
@@ -189,11 +249,15 @@
         background: transparent;
       }
       #intelagent-messages::-webkit-scrollbar-thumb {
-        background: #cbd5e0;
+        background: rgba(203, 213, 224, 0.5);
         border-radius: 3px;
       }
       #intelagent-messages::-webkit-scrollbar-thumb:hover {
-        background: #a0aec0;
+        background: rgba(160, 174, 192, 0.5);
+      }
+      
+      .intelagent-message-appear {
+        animation: slideIn 0.3s ease-out;
       }
     `;
     document.head.appendChild(style);
@@ -223,36 +287,61 @@
       addMessage(message, 'user');
       input.value = '';
       
+      // Update chat history
+      chatHistory.push({ role: 'user', content: message });
+      
       // Show typing indicator
       const typingId = showTypingIndicator();
       
       try {
-        // Send to API
-        const response = await fetch(API_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: message,
-            apiKey: apiKey,
-            sessionId: sessionId,
-            context: 'Website: ' + window.location.hostname
-          })
-        });
+        let response, data;
         
-        const data = await response.json();
+        if (useN8n) {
+          // Use n8n webhook for double agent system
+          response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: message,
+              site_key: siteKey,
+              session_id: sessionId,
+              chat_history: chatHistory.map(h => `${h.role}: ${h.content}`).join('\n')
+            })
+          });
+          
+          data = await response.json();
+        } else {
+          // Use direct OpenAI API
+          response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: message,
+              apiKey: siteKey,
+              sessionId: sessionId,
+              context: 'Website: ' + window.location.hostname
+            })
+          });
+          
+          data = await response.json();
+        }
         
         // Remove typing indicator
         removeTypingIndicator(typingId);
         
-        if (response.ok && data.response) {
+        if (response.ok && (data.response || data.output)) {
+          const botResponse = data.response || data.output || data.message;
           // Add bot response
-          addMessage(data.response, 'bot');
+          addMessage(botResponse, 'bot');
+          chatHistory.push({ role: 'assistant', content: botResponse });
           
           // Update session ID if provided
-          if (data.sessionId) {
-            sessionId = data.sessionId;
+          if (data.sessionId || data.session_id) {
+            sessionId = data.sessionId || data.session_id;
           }
         } else {
           addMessage('Sorry, I encountered an error. Please try again later.', 'bot');
@@ -267,25 +356,43 @@
     function addMessage(text, sender) {
       const messagesEl = document.getElementById('intelagent-messages');
       const messageDiv = document.createElement('div');
+      messageDiv.className = 'intelagent-message-appear';
       messageDiv.style.cssText = `margin-bottom: 16px; display: flex; ${sender === 'user' ? 'justify-content: flex-end;' : ''}`;
       
       const bubble = document.createElement('div');
       bubble.style.cssText = `
         display: inline-block;
         max-width: 80%;
-        padding: 12px 16px;
-        background: ${sender === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'white'};
+        padding: 14px 18px;
+        background: ${sender === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255, 255, 255, 0.9)'};
+        backdrop-filter: blur(8px);
         color: ${sender === 'user' ? 'white' : '#2d3748'};
-        border-radius: 12px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border-radius: 18px;
+        box-shadow: 0 2px 8px ${sender === 'user' ? 'rgba(102, 126, 234, 0.3)' : 'rgba(0,0,0,0.06)'};
         font-size: 14px;
         line-height: 1.5;
+        word-wrap: break-word;
       `;
-      bubble.textContent = text;
+      
+      // Parse text for links and formatting
+      if (sender === 'bot') {
+        bubble.innerHTML = formatBotMessage(text);
+      } else {
+        bubble.textContent = text;
+      }
       
       messageDiv.appendChild(bubble);
       messagesEl.appendChild(messageDiv);
       messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    
+    function formatBotMessage(text) {
+      // Convert markdown-style links and basic formatting
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #667eea; text-decoration: underline;">$1</a>')
+        .replace(/\n/g, '<br>');
     }
     
     function showTypingIndicator() {
@@ -293,9 +400,17 @@
       const typingDiv = document.createElement('div');
       const typingId = 'typing_' + Date.now();
       typingDiv.id = typingId;
+      typingDiv.className = 'intelagent-message-appear';
       typingDiv.style.cssText = 'margin-bottom: 16px;';
       typingDiv.innerHTML = `
-        <div style="display: inline-block; padding: 12px 16px; background: white; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+        <div style="
+          display: inline-block;
+          padding: 14px 18px;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(8px);
+          border-radius: 18px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        ">
           <div style="display: flex; gap: 4px; align-items: center;">
             <div style="width: 8px; height: 8px; background: #718096; border-radius: 50%; animation: pulse 1.4s infinite;"></div>
             <div style="width: 8px; height: 8px; background: #718096; border-radius: 50%; animation: pulse 1.4s infinite; animation-delay: 0.2s;"></div>
