@@ -84,16 +84,29 @@ export default function DatabaseManagementPage() {
           tables: []
         });
       }
-    }, 10000); // 10 second timeout
+    }, 15000); // 15 second timeout
 
     fetchDatabaseStats();
+    
+    // Refresh stats every 30 seconds instead of constantly
+    const intervalId = setInterval(() => {
+      if (!loading) {
+        fetchDatabaseStats();
+      }
+    }, 30000);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDatabaseStats = async () => {
     try {
-      setLoading(true);
+      // Don't set loading if we're refreshing in the background
+      if (!stats) {
+        setLoading(true);
+      }
       console.log('Fetching database stats...');
       
       // Also fetch connection status for debugging
@@ -104,7 +117,10 @@ export default function DatabaseManagementPage() {
         setConnectionStatus(statusData);
       }
       
-      const response = await fetch('/api/admin/database');
+      const response = await fetch('/api/admin/database', {
+        // Add cache control to prevent stale data
+        cache: 'no-store'
+      });
       console.log('Response status:', response.status);
       
       if (response.ok) {
@@ -123,10 +139,11 @@ export default function DatabaseManagementPage() {
           connections: { active: 0, idle: 0, max: 100 },
           size: { total: 0, tables: 0, indexes: 0 },
           performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
-          tables: []
+          tables: [],
+          error: 'Failed to fetch database stats'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch database stats:', error);
       // Set default disconnected state on error
       setStats({
@@ -137,7 +154,8 @@ export default function DatabaseManagementPage() {
         connections: { active: 0, idle: 0, max: 100 },
         size: { total: 0, tables: 0, indexes: 0 },
         performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
-        tables: []
+        tables: [],
+        error: error.message || 'Connection error'
       });
     } finally {
       setLoading(false);

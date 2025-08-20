@@ -1,41 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-// Hardcoded Railway database URL
-const RAILWAY_DATABASE_URL = 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway';
+// Hardcoded Railway database URL with connection pool settings
+const RAILWAY_DATABASE_URL = 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway?connection_limit=5&pool_timeout=10';
 
 // Use a global singleton to prevent multiple connections
 const globalForPrisma = globalThis as unknown as {
   prismaAdmin: PrismaClient | undefined;
+  isConnecting: boolean;
 };
 
-// Initialize connection if not exists
-function getDbConnection() {
-  if (!globalForPrisma.prismaAdmin) {
-    globalForPrisma.prismaAdmin = new PrismaClient({
-      datasources: {
-        db: {
-          url: RAILWAY_DATABASE_URL
-        }
-      },
-      log: ['error', 'warn']
-    });
+// Initialize connection if not exists with proper pooling
+async function getDbConnection() {
+  // If already connecting, wait a bit
+  if (globalForPrisma.isConnecting) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return globalForPrisma.prismaAdmin;
   }
+
+  if (!globalForPrisma.prismaAdmin) {
+    globalForPrisma.isConnecting = true;
+    try {
+      globalForPrisma.prismaAdmin = new PrismaClient({
+        datasources: {
+          db: {
+            url: RAILWAY_DATABASE_URL
+          }
+        },
+        log: ['error'],
+      });
+      
+      // Ensure connection is established
+      await globalForPrisma.prismaAdmin.$connect();
+      console.log('Database connection established');
+    } catch (error) {
+      console.error('Failed to establish database connection:', error);
+      globalForPrisma.prismaAdmin = undefined;
+    } finally {
+      globalForPrisma.isConnecting = false;
+    }
+  }
+  
   return globalForPrisma.prismaAdmin;
+}
+
+// Helper to ensure connection is alive
+async function ensureConnection(db: PrismaClient | undefined) {
+  if (!db) return false;
+  
+  try {
+    await db.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    console.log('Connection test failed, will retry');
+    return false;
+  }
 }
 
 export async function GET(request: NextRequest) {
   console.log('Database GET request received');
+  
   try {
-    // Always use the hardcoded connection
-    const db = getDbConnection();
+    // Get or create connection
+    let db = await getDbConnection();
+    
+    if (!db) {
+      return NextResponse.json({
+        connected: false,
+        type: 'PostgreSQL',
+        version: 'Unknown',
+        uptime: 0,
+        connections: { active: 0, idle: 0, max: 100 },
+        size: { total: 0, tables: 0, indexes: 0 },
+        performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+        tables: [],
+        error: 'Failed to establish database connection'
+      });
+    }
+    
+    // Check if connection is alive
+    const isAlive = await ensureConnection(db);
+    if (!isAlive) {
+      // Try to reconnect once
+      console.log('Connection lost, attempting to reconnect...');
+      globalForPrisma.prismaAdmin = undefined;
+      db = await getDbConnection();
+      
+      if (!db || !(await ensureConnection(db))) {
+        return NextResponse.json({
+          connected: false,
+          type: 'PostgreSQL',
+          version: 'Unknown',
+          uptime: 0,
+          connections: { active: 0, idle: 0, max: 100 },
+          size: { total: 0, tables: 0, indexes: 0 },
+          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+          tables: [],
+          error: 'Database connection lost'
+        });
+      }
+    }
     
     try {
-      // Test the connection
-      await db.$connect();
-      const testResult = await db.$queryRaw`SELECT 1 as test`;
-      console.log('Connection test passed:', testResult);
-      
       // Get database stats with error handling for each query
       let tableCount, dbSize, connections, version;
       try {
@@ -76,16 +142,17 @@ export async function GET(request: NextRequest) {
           LIMIT 20
         ` as any[];
       } catch (tablesError) {
-        console.log('Failed to get tables, using empty array:', tablesError);
+        console.log('Failed to get tables:', tablesError);
         tables = [];
       }
 
-      // Get row counts for each table
+      // Get row counts for each table (but don't fail if one errors)
       for (const table of tables) {
         try {
           const countResult = await db.$queryRawUnsafe(`SELECT COUNT(*) as count FROM "${table.name}"`) as any[];
           table.rows = Number(countResult[0]?.count || 0);
         } catch (e) {
+          console.log(`Failed to get count for table ${table.name}`);
           table.rows = 0;
         }
       }
@@ -123,14 +190,7 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       console.error('Database query error:', error.message);
       
-      // Try to reconnect
-      if (globalForPrisma.prismaAdmin) {
-        try {
-          await globalForPrisma.prismaAdmin.$disconnect();
-        } catch (e) {}
-        globalForPrisma.prismaAdmin = undefined;
-      }
-      
+      // Don't disconnect on query errors, just report them
       return NextResponse.json({
         connected: false,
         type: 'PostgreSQL',
@@ -164,10 +224,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, query } = body;
 
-    // Always use hardcoded connection
-    const db = getDbConnection();
-
     if (action === 'execute') {
+      const db = await getDbConnection();
+      
+      if (!db) {
+        return NextResponse.json({
+          success: false,
+          error: 'Database connection not available'
+        });
+      }
+      
       try {
         // Execute the SQL query
         const result = await db.$queryRawUnsafe(query);
@@ -208,4 +274,17 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Cleanup on process exit
+if (typeof process !== 'undefined') {
+  process.on('beforeExit', async () => {
+    if (globalForPrisma.prismaAdmin) {
+      try {
+        await globalForPrisma.prismaAdmin.$disconnect();
+      } catch (e) {
+        console.error('Error disconnecting on exit:', e);
+      }
+    }
+  });
 }
