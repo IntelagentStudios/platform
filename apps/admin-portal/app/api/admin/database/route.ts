@@ -1,30 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { cookies } from 'next/headers';
 
-// Store connection in memory (in production, use a proper session store)
-let dbConnection: PrismaClient | null = null;
-let connectionConfig: string | null = null;
+// Use a global singleton to prevent multiple connections
+const globalForPrisma = globalThis as unknown as {
+  prismaAdmin: PrismaClient | undefined;
+  prismaUrl: string | undefined;
+};
+
+// Clean up any existing connection
+async function cleanupConnection() {
+  if (globalForPrisma.prismaAdmin) {
+    try {
+      await globalForPrisma.prismaAdmin.$disconnect();
+    } catch (error) {
+      console.error('Error disconnecting:', error);
+    } finally {
+      globalForPrisma.prismaAdmin = undefined;
+      globalForPrisma.prismaUrl = undefined;
+    }
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
     // Check if we have an existing connection
-    if (dbConnection) {
+    if (globalForPrisma.prismaAdmin) {
       try {
         // Test the connection
-        await dbConnection.$queryRaw`SELECT 1`;
+        await globalForPrisma.prismaAdmin.$queryRaw`SELECT 1`;
         
         // Get database stats
         const [tableCount, dbSize, connections] = await Promise.all([
-          dbConnection.$queryRaw`
+          globalForPrisma.prismaAdmin.$queryRaw`
             SELECT COUNT(*) as count 
             FROM information_schema.tables 
             WHERE table_schema = 'public'
           `,
-          dbConnection.$queryRaw`
+          globalForPrisma.prismaAdmin.$queryRaw`
             SELECT pg_database_size(current_database()) as size
           `,
-          dbConnection.$queryRaw`
+          globalForPrisma.prismaAdmin.$queryRaw`
             SELECT count(*) as count 
             FROM pg_stat_activity 
             WHERE state = 'active'
@@ -70,29 +85,33 @@ export async function GET(request: NextRequest) {
         });
       } catch (error) {
         console.error('Database query error:', error);
-        dbConnection = null;
-        connectionConfig = null;
+        await cleanupConnection();
       }
     }
 
-    // Check environment variable as fallback
+    // Try to use environment variable if no connection
     const envUrl = process.env.DATABASE_URL;
-    if (envUrl && !dbConnection) {
+    if (envUrl && !globalForPrisma.prismaAdmin) {
       try {
-        dbConnection = new PrismaClient({
+        // Clean up any existing connection first
+        await cleanupConnection();
+        
+        globalForPrisma.prismaAdmin = new PrismaClient({
           datasources: {
             db: {
-              url: envUrl
+              url: envUrl + (envUrl.includes('?') ? '&' : '?') + 'connection_limit=5&pool_timeout=10'
             }
-          }
+          },
+          log: ['error', 'warn']
         });
-        await dbConnection.$connect();
-        connectionConfig = envUrl;
+        await globalForPrisma.prismaAdmin.$connect();
+        globalForPrisma.prismaUrl = envUrl;
         
         // Retry the request with the new connection
         return GET(request);
       } catch (error) {
         console.error('Failed to connect with env DATABASE_URL:', error);
+        await cleanupConnection();
       }
     }
 
@@ -120,53 +139,53 @@ export async function POST(request: NextRequest) {
     const { url, action } = await request.json();
 
     if (action === 'connect') {
-      // Disconnect existing connection if any
-      if (dbConnection) {
-        await dbConnection.$disconnect();
-        dbConnection = null;
+      try {
+        // Clean up any existing connection first
+        await cleanupConnection();
+
+        // Create new connection with the provided URL and connection pool limits
+        const testConnection = new PrismaClient({
+          datasources: {
+            db: {
+              url: url + (url.includes('?') ? '&' : '?') + 'connection_limit=5&pool_timeout=10'
+            }
+          },
+          log: ['error', 'warn']
+        });
+
+        // Test the connection
+        await testConnection.$connect();
+        await testConnection.$queryRaw`SELECT 1`;
+
+        // If successful, store the connection
+        globalForPrisma.prismaAdmin = testConnection;
+        globalForPrisma.prismaUrl = url;
+
+        return NextResponse.json({
+          success: true,
+          message: 'Database connected successfully'
+        });
+      } catch (connectError: any) {
+        // Clean up on failure
+        await cleanupConnection();
+        throw connectError;
       }
-
-      // Try to connect with the provided URL
-      const testConnection = new PrismaClient({
-        datasources: {
-          db: {
-            url: url
-          }
-        }
-      });
-
-      // Test the connection
-      await testConnection.$connect();
-      await testConnection.$queryRaw`SELECT 1`;
-
-      // If successful, store the connection
-      dbConnection = testConnection;
-      connectionConfig = url;
-
-      return NextResponse.json({
-        success: true,
-        message: 'Database connected successfully'
-      });
     }
 
     if (action === 'disconnect') {
-      if (dbConnection) {
-        await dbConnection.$disconnect();
-        dbConnection = null;
-        connectionConfig = null;
-      }
+      await cleanupConnection();
       return NextResponse.json({
         success: true,
         message: 'Database disconnected'
       });
     }
 
-    if (action === 'execute' && dbConnection) {
+    if (action === 'execute' && globalForPrisma.prismaAdmin) {
       const { query } = await request.json();
       
       try {
         // Execute the SQL query
-        const result = await dbConnection.$queryRawUnsafe(query);
+        const result = await globalForPrisma.prismaAdmin.$queryRawUnsafe(query);
         
         return NextResponse.json({
           success: true,
@@ -187,12 +206,32 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     console.error('Database connection error:', error);
+    // Clean up on any error
+    await cleanupConnection();
+    
+    // Check for specific error types
+    let errorMessage = error.message || 'Failed to connect to database';
+    if (errorMessage.includes('too many clients')) {
+      errorMessage = 'Too many connections. Please wait a moment and try again.';
+    } else if (errorMessage.includes('ECONNREFUSED')) {
+      errorMessage = 'Cannot connect to database. Please check if the database is running.';
+    } else if (errorMessage.includes('authentication failed')) {
+      errorMessage = 'Invalid database credentials. Please check your connection string.';
+    }
+    
     return NextResponse.json(
       { 
         success: false,
-        error: error.message || 'Failed to connect to database' 
+        error: errorMessage
       },
       { status: 500 }
     );
   }
+}
+
+// Clean up on process termination
+if (typeof process !== 'undefined') {
+  process.on('beforeExit', async () => {
+    await cleanupConnection();
+  });
 }
