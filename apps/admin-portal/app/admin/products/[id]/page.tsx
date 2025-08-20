@@ -539,13 +539,15 @@ export default function ProductDetailPage() {
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64"
-                    icon={<Search className="w-4 h-4" />}
-                  />
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-64 pl-9"
+                    />
+                  </div>
                   {product.type === 'chatbot' && (
                     <Select value={selectedDomain} onValueChange={setSelectedDomain}>
                       <SelectTrigger className="w-48">
@@ -695,13 +697,15 @@ export default function ProductDetailPage() {
                     Track individual user interactions with {product.name}
                   </CardDescription>
                 </div>
-                <Input
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64"
-                  icon={<Search className="w-4 h-4" />}
-                />
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64 pl-9"
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
