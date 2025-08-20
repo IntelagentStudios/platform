@@ -1,29 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { readFile } from 'fs/promises';
-import path from 'path';
+
+// Hardcoded Railway database URL
+const RAILWAY_DATABASE_URL = 'postgresql://railway:iX9nnJ6tyKYg2luc4nRqQLlw3c~*SN0s@centerbeam.proxy.rlwy.net:34807/railway';
 
 // Use the same global singleton
 const globalForPrisma = globalThis as unknown as {
   prismaAdmin: PrismaClient | undefined;
-  prismaUrl: string | undefined;
 };
-
-const CONFIG_FILE = path.join(process.cwd(), '.database-config.json');
-
-async function loadConnectionUrl(): Promise<string | null> {
-  try {
-    const data = await readFile(CONFIG_FILE, 'utf-8');
-    const config = JSON.parse(data);
-    return config.url;
-  } catch (error) {
-    return null;
-  }
-}
 
 export async function GET(request: NextRequest) {
   try {
-    const savedUrl = await loadConnectionUrl();
     const hasGlobalConnection = !!globalForPrisma.prismaAdmin;
     let connectionWorking = false;
     let error = null;
@@ -38,11 +25,10 @@ export async function GET(request: NextRequest) {
     }
     
     return NextResponse.json({
-      savedUrl: savedUrl ? 'Yes (hidden for security)' : 'No',
+      hardcodedUrl: 'Railway External Proxy',
       globalConnection: hasGlobalConnection,
       connectionWorking,
-      error,
-      globalUrl: globalForPrisma.prismaUrl ? 'Yes (hidden for security)' : 'No'
+      error
     });
   } catch (error: any) {
     return NextResponse.json({
