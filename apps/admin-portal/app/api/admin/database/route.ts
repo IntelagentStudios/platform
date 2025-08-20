@@ -59,18 +59,31 @@ export async function GET(request: NextRequest) {
     if (!globalForPrisma.prismaAdmin) {
       const savedUrl = await loadConnectionUrl();
       if (savedUrl) {
-        console.log('Restoring connection from saved config...');
+        console.log('Found saved connection URL, attempting to restore...');
         try {
-          // Use the URL as-is, just like the test that works
-          globalForPrisma.prismaAdmin = new PrismaClient({
+          // Create a new client just like the test endpoint
+          const newClient = new PrismaClient({
             datasources: {
               db: {
                 url: savedUrl
               }
             },
-            log: ['error', 'warn', 'info']
+            log: ['error', 'warn']
           });
-          await globalForPrisma.prismaAdmin.$connect();
+          
+          // Test connection with timeout
+          const connectPromise = newClient.$connect();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 5000)
+          );
+          
+          await Promise.race([connectPromise, timeoutPromise]);
+          
+          // Verify connection with a simple query
+          await newClient.$queryRaw`SELECT 1`;
+          
+          // Store the working connection
+          globalForPrisma.prismaAdmin = newClient;
           globalForPrisma.prismaUrl = savedUrl;
           console.log('Connection restored successfully');
         } catch (error) {
@@ -78,15 +91,18 @@ export async function GET(request: NextRequest) {
           await cleanupConnection();
           await clearConnectionUrl();
         }
+      } else {
+        console.log('No saved connection URL found');
       }
     }
     
     // Check if we have an existing connection
     if (globalForPrisma.prismaAdmin) {
-      console.log('Testing existing database connection...');
+      console.log('Checking existing database connection...');
       try {
-        // Test the connection
-        await globalForPrisma.prismaAdmin.$queryRaw`SELECT 1`;
+        // Test the connection with a simple query
+        const testResult = await globalForPrisma.prismaAdmin.$queryRaw`SELECT 1 as test`;
+        console.log('Connection test passed:', testResult);
         
         // Get database stats with error handling for each query
         let tableCount, dbSize, connections;
@@ -156,10 +172,12 @@ export async function GET(request: NextRequest) {
             lastModified: new Date()
           }))
         });
-      } catch (error) {
-        console.error('Database query error:', error);
+      } catch (error: any) {
+        console.error('Database connection lost:', error.message);
+        // Clean up the broken connection
         await cleanupConnection();
-        // Don't try to reconnect automatically, just return disconnected state
+        await clearConnectionUrl();
+        
         return NextResponse.json({
           connected: false,
           type: 'PostgreSQL',
@@ -214,37 +232,37 @@ export async function POST(request: NextRequest) {
         // Clean up any existing connection first
         await cleanupConnection();
 
-        // Use the URL exactly as provided (this works in the test)
-        console.log('Using connection URL as-is');
-
-        // Create new connection with the same settings as the test
-        const testConnection = new PrismaClient({
+        // Create new connection exactly like the test endpoint
+        console.log('Creating new database connection...');
+        const newClient = new PrismaClient({
           datasources: {
             db: {
               url: url
             }
           },
-          log: ['error', 'warn', 'info']
+          log: ['error', 'warn']
         });
 
         // Test the connection with timeout
-        const connectPromise = testConnection.$connect();
+        console.log('Testing connection...');
+        const connectPromise = newClient.$connect();
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Connection timeout after 5 seconds')), 5000)
         );
         
         await Promise.race([connectPromise, timeoutPromise]);
         
-        // Test with a simple query (same as test endpoint)
-        const testResult = await testConnection.$queryRaw`SELECT version()`;
-        console.log('Connection test successful:', testResult);
+        // Verify with a simple query
+        const testResult = await newClient.$queryRaw`SELECT version() as version`;
+        console.log('Connection verified, database version:', testResult);
 
-        // If successful, store the connection
-        globalForPrisma.prismaAdmin = testConnection;
+        // Store the working connection
+        globalForPrisma.prismaAdmin = newClient;
         globalForPrisma.prismaUrl = url;
         
         // Save the connection URL for persistence
         await saveConnectionUrl(url);
+        console.log('Connection URL saved for persistence');
 
         return NextResponse.json({
           success: true,

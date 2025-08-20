@@ -87,6 +87,7 @@ export default function DatabaseManagementPage() {
   const [executing, setExecuting] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<any>(null);
   
   // Railway database URLs provided - ensure they use postgresql:// protocol for Prisma
   const predefinedUrls = [
@@ -123,6 +124,15 @@ export default function DatabaseManagementPage() {
     try {
       setLoading(true);
       console.log('Fetching database stats...');
+      
+      // Also fetch connection status for debugging
+      const statusResponse = await fetch('/api/admin/database/status');
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json();
+        console.log('Connection status:', statusData);
+        setConnectionStatus(statusData);
+      }
+      
       const response = await fetch('/api/admin/database');
       console.log('Response status:', response.status);
       
@@ -219,8 +229,8 @@ export default function DatabaseManagementPage() {
       const result = await response.json();
       if (result.success) {
         setConfigDialogOpen(false);
-        // Refresh the page to reload with the new connection
-        window.location.reload();
+        // Refresh stats instead of full page reload
+        await fetchDatabaseStats();
       } else {
         alert('Connection failed: ' + (result.error || 'Unknown error'));
       }
@@ -320,34 +330,52 @@ export default function DatabaseManagementPage() {
 
       {/* Connection Alert */}
       {!stats?.connected && (
-        <Alert className="border-red-200 dark:border-red-900">
-          <AlertTriangle className="h-4 w-4 text-red-500" />
-          <AlertDescription className="flex items-center justify-between">
-            <div>
-              <strong>Database Not Connected</strong>
-              <p className="text-sm mt-1">
-                Click the button to configure your Railway PostgreSQL database connection.
-              </p>
-            </div>
-            <Button 
-              onClick={() => setConfigDialogOpen(true)}
-              disabled={connecting}
-              className="ml-4"
-            >
-              {connecting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <Database className="w-4 h-4 mr-2" />
-                  Configure Connection
-                </>
-              )}
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <>
+          <Alert className="border-red-200 dark:border-red-900">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="flex items-center justify-between">
+              <div>
+                <strong>Database Not Connected</strong>
+                <p className="text-sm mt-1">
+                  Click the button to configure your Railway PostgreSQL database connection.
+                </p>
+              </div>
+              <Button 
+                onClick={() => setConfigDialogOpen(true)}
+                disabled={connecting}
+                className="ml-4"
+              >
+                {connecting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Database className="w-4 h-4 mr-2" />
+                    Configure Connection
+                  </>
+                )}
+              </Button>
+            </AlertDescription>
+          </Alert>
+          
+          {/* Debug info */}
+          {connectionStatus && (
+            <Alert className="border-gray-200 dark:border-gray-700">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Connection Debug Info</AlertTitle>
+              <AlertDescription>
+                <div className="text-xs font-mono space-y-1 mt-2">
+                  <div>Saved URL: {connectionStatus.savedUrl}</div>
+                  <div>Global Connection: {connectionStatus.globalConnection ? 'Yes' : 'No'}</div>
+                  <div>Connection Working: {connectionStatus.connectionWorking ? 'Yes' : 'No'}</div>
+                  {connectionStatus.error && <div className="text-red-500">Error: {connectionStatus.error}</div>}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+        </>
       )}
 
       {/* Connection Configuration Dialog */}
