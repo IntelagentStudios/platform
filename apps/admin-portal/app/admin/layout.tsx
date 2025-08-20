@@ -28,7 +28,9 @@ import {
   Menu,
   X,
   Shield,
-  Package
+  Package,
+  Key,
+  DollarSign
 } from 'lucide-react';
 
 const navigation = [
@@ -43,6 +45,8 @@ const navigation = [
   {
     title: 'Business',
     items: [
+      { name: 'Licenses', href: '/admin/licenses', icon: Key },
+      { name: 'Revenue', href: '/admin/revenue', icon: DollarSign },
       { name: 'Products', href: '/admin/products', icon: Package },
       { name: 'Finances', href: '/admin/billing', icon: PoundSterling },
       { name: 'Users', href: '/admin/users', icon: User },
