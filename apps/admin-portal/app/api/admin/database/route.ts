@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
         if (connectionUrl.includes('connection_limit=') || connectionUrl.includes('pool_timeout=')) {
           const urlParts = connectionUrl.split('?');
           if (urlParts.length > 1) {
-            const params = urlParts[1].split('&').filter(p => 
+            const params = urlParts[1].split('&').filter((p: string) => 
               !p.startsWith('connection_limit=') && !p.startsWith('pool_timeout=')
             );
             connectionUrl = urlParts[0] + (params.length > 0 ? '?' + params.join('&') : '');
