@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getChatConfig, getSiteConfig } from './config';
 
-// Initialize OpenAI
-const openai = new OpenAI({
+// Initialize OpenAI only if API key is available
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 // Store conversation history (in production, use a database)
 const conversations = new Map<string, any[]>();
@@ -65,6 +65,11 @@ export async function POST(request: NextRequest) {
     history.push({ role: 'user', content: message });
     
     try {
+      // Check if OpenAI is available
+      if (!openai) {
+        throw new Error('OpenAI API key not configured. Please use n8n mode or configure OPENAI_API_KEY.');
+      }
+      
       // Create chat completion with OpenAI
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
