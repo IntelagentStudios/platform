@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         site_key: license.site_key // For chatbot integration
       },
       usage: await getUsageForProduct(license_key, product_id),
-      features: getFeaturesByPlan(license.plan, product_id),
+      features: getFeaturesByPlan(license.plan || 'starter', product_id),
       webhooks: await getWebhooks(license_key, product_id)
     };
 

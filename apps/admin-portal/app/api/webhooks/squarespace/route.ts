@@ -148,7 +148,6 @@ async function handleOrderComplete(data: any) {
       products: products.map(p => p.product_id),
       status: 'active',
       created_at: new Date(),
-      squarespace_order_id: order.id,
       subscription_id: order.subscriptionId || null
     }
   });
