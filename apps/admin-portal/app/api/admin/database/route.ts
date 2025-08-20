@@ -22,9 +22,11 @@ async function cleanupConnection() {
 }
 
 export async function GET(request: NextRequest) {
+  console.log('Database GET request received');
   try {
     // Check if we have an existing connection
     if (globalForPrisma.prismaAdmin) {
+      console.log('Testing existing database connection...');
       try {
         // Test the connection
         await globalForPrisma.prismaAdmin.$queryRaw`SELECT 1`;
@@ -86,34 +88,23 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error('Database query error:', error);
         await cleanupConnection();
+        // Don't try to reconnect automatically, just return disconnected state
+        return NextResponse.json({
+          connected: false,
+          type: 'PostgreSQL',
+          version: 'Unknown',
+          uptime: 0,
+          connections: { active: 0, idle: 0, max: 100 },
+          size: { total: 0, tables: 0, indexes: 0 },
+          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+          tables: []
+        });
       }
     }
 
-    // Try to use environment variable if no connection
-    const envUrl = process.env.DATABASE_URL;
-    if (envUrl && !globalForPrisma.prismaAdmin) {
-      try {
-        // Clean up any existing connection first
-        await cleanupConnection();
-        
-        globalForPrisma.prismaAdmin = new PrismaClient({
-          datasources: {
-            db: {
-              url: envUrl + (envUrl.includes('?') ? '&' : '?') + 'connection_limit=5&pool_timeout=10'
-            }
-          },
-          log: ['error', 'warn']
-        });
-        await globalForPrisma.prismaAdmin.$connect();
-        globalForPrisma.prismaUrl = envUrl;
-        
-        // Retry the request with the new connection
-        return GET(request);
-      } catch (error) {
-        console.error('Failed to connect with env DATABASE_URL:', error);
-        await cleanupConnection();
-      }
-    }
+    // Don't automatically try to connect with env variable
+    // Let the user explicitly connect through the UI
+    console.log('No active database connection');
 
     return NextResponse.json({
       connected: false,
@@ -127,10 +118,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Database API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch database stats' },
-      { status: 500 }
-    );
+    // Return a valid response even on error
+    return NextResponse.json({
+      connected: false,
+      type: 'PostgreSQL',
+      version: 'Unknown',
+      uptime: 0,
+      connections: { active: 0, idle: 0, max: 100 },
+      size: { total: 0, tables: 0, indexes: 0 },
+      performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+      tables: []
+    });
   }
 }
 
@@ -147,7 +145,7 @@ export async function POST(request: NextRequest) {
         const testConnection = new PrismaClient({
           datasources: {
             db: {
-              url: url + (url.includes('?') ? '&' : '?') + 'connection_limit=5&pool_timeout=10'
+              url: url + (url.includes('?') ? '&' : '?') + 'connection_limit=2&pool_timeout=2'
             }
           },
           log: ['error', 'warn']

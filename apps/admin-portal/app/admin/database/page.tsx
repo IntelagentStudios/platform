@@ -94,19 +94,68 @@ export default function DatabaseManagementPage() {
   ];
 
   useEffect(() => {
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.error('Database stats fetch timed out');
+        setLoading(false);
+        setStats({
+          connected: false,
+          type: 'PostgreSQL',
+          version: 'Unknown',
+          uptime: 0,
+          connections: { active: 0, idle: 0, max: 100 },
+          size: { total: 0, tables: 0, indexes: 0 },
+          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+          tables: []
+        });
+      }
+    }, 10000); // 10 second timeout
+
     fetchDatabaseStats();
-  }, []);
+
+    return () => clearTimeout(timeoutId);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDatabaseStats = async () => {
     try {
       setLoading(true);
+      console.log('Fetching database stats...');
       const response = await fetch('/api/admin/database');
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Database stats:', data);
         setStats(data);
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch database stats:', response.status, errorText);
+        // Set default disconnected state
+        setStats({
+          connected: false,
+          type: 'PostgreSQL',
+          version: 'Unknown',
+          uptime: 0,
+          connections: { active: 0, idle: 0, max: 100 },
+          size: { total: 0, tables: 0, indexes: 0 },
+          performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+          tables: []
+        });
       }
     } catch (error) {
       console.error('Failed to fetch database stats:', error);
+      // Set default disconnected state on error
+      setStats({
+        connected: false,
+        type: 'PostgreSQL',
+        version: 'Unknown',
+        uptime: 0,
+        connections: { active: 0, idle: 0, max: 100 },
+        size: { total: 0, tables: 0, indexes: 0 },
+        performance: { queries: 0, slowQueries: 0, avgResponseTime: 0 },
+        tables: []
+      });
     } finally {
       setLoading(false);
     }
@@ -120,6 +169,17 @@ export default function DatabaseManagementPage() {
 
     setConnecting(true);
     try {
+      // First disconnect any existing connection
+      await fetch('/api/admin/database', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect' })
+      });
+      
+      // Wait a bit for cleanup
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Then connect with new URL
       const response = await fetch('/api/admin/database', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,8 +258,9 @@ export default function DatabaseManagementPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full">
         <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground mt-4">Loading database information...</p>
       </div>
     );
   }
