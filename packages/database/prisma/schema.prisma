@@ -109,3 +109,54 @@ model SmartDashboardRequest {
   @@map("smart_dashboard_requests")
   @@schema("public")
 }
+
+model ChatbotDeployment {
+  id              Int       @id @default(autoincrement())
+  domain          String    @unique @db.VarChar(255)
+  siteKey         String    @unique @map("site_key") @db.VarChar(255)
+  licenseKey      String    @map("license_key") @db.VarChar(20)
+  status          String    @default("active") @db.VarChar(20)
+  plan            String    @default("free") @db.VarChar(50)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  lastActive      DateTime? @map("last_active")
+  monthlyMessages Int       @default(0) @map("monthly_messages")
+  totalMessages   Int       @default(0) @map("total_messages")
+  totalSessions   Int       @default(0) @map("total_sessions")
+  indexed         Boolean   @default(false)
+  indexedAt       DateTime? @map("indexed_at")
+  metadata        Json?
+  
+  @@map("chatbot_deployments")
+  @@schema("public")
+}
+
+model ChatbotSession {
+  id            Int       @id @default(autoincrement())
+  sessionId     String    @unique @map("session_id") @db.VarChar(255)
+  siteKey       String    @map("site_key") @db.VarChar(255)
+  domain        String    @db.VarChar(255)
+  startedAt     DateTime  @default(now()) @map("started_at")
+  endedAt       DateTime? @map("ended_at")
+  messageCount  Int       @default(0) @map("message_count")
+  userIp        String?   @map("user_ip") @db.VarChar(50)
+  userAgent     String?   @map("user_agent") @db.Text
+  metadata      Json?
+  
+  @@map("chatbot_sessions")
+  @@schema("public")
+}
+
+model UsageMetrics {
+  id            Int      @id @default(autoincrement())
+  siteKey       String   @map("site_key") @db.VarChar(255)
+  date          DateTime @db.Date
+  messages      Int      @default(0)
+  sessions      Int      @default(0)
+  uniqueUsers   Int      @default(0) @map("unique_users")
+  avgResponseTime Float? @map("avg_response_time")
+  errorRate     Float?   @map("error_rate")
+  
+  @@unique([siteKey, date])
+  @@map("usage_metrics")
+  @@schema("public")
+}

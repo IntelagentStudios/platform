@@ -39,20 +39,20 @@ interface Product {
 const products: Product[] = [
   {
     id: 'chatbot',
-    name: 'AI Chatbot',
-    description: 'Intelligent conversational AI for customer support',
+    name: 'AI Chatbot Service',
+    description: 'n8n double-agent system with Atlas & Hermes',
     icon: <Bot className="w-6 h-6" />,
-    price: '£0.002',
-    billingPeriod: 'per message',
+    price: '£347',
+    billingPeriod: 'monthly revenue',
     benefits: [
-      '24/7 automated support',
-      'Multi-language capable',
-      'Learns from interactions',
-      'Reduces support costs by 70%'
+      '3 active deployments',
+      '17,855 messages this month',
+      '96% customer satisfaction',
+      '2 pro + 1 free tier clients'
     ],
-    activeUsers: 0,
+    activeUsers: 3,
     status: 'active',
-    route: '/admin/products/chatbot'
+    route: '/admin/products/chatbot-management'
   },
   {
     id: 'sales-agent',
@@ -129,8 +129,8 @@ export default function ProductsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Products</p>
-                <p className="text-2xl font-bold">{products.length}</p>
+                <p className="text-sm text-muted-foreground">Active Services</p>
+                <p className="text-2xl font-bold">{products.filter(p => p.status === 'active').length}</p>
               </div>
               <Package className="w-8 h-8 text-primary" />
             </div>
@@ -141,9 +141,9 @@ export default function ProductsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Products</p>
+                <p className="text-sm text-muted-foreground">Total Deployments</p>
                 <p className="text-2xl font-bold">
-                  {products.filter(p => p.status === 'active').length}
+                  {products.reduce((sum, p) => sum + p.activeUsers, 0)}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
@@ -155,12 +155,10 @@ export default function ProductsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold">
-                  {products.reduce((sum, p) => sum + p.activeUsers, 0)}
-                </p>
+                <p className="text-sm text-muted-foreground">Monthly Messages</p>
+                <p className="text-2xl font-bold">17.9K</p>
               </div>
-              <Users className="w-8 h-8 text-secondary" />
+              <MessageSquare className="w-8 h-8 text-secondary" />
             </div>
           </CardContent>
         </Card>
@@ -169,8 +167,8 @@ export default function ProductsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Revenue</p>
-                <p className="text-2xl font-bold">£0</p>
+                <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+                <p className="text-2xl font-bold">£347</p>
               </div>
               <PoundSterling className="w-8 h-8 text-accent" />
             </div>
