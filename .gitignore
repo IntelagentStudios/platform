@@ -48,6 +48,7 @@ next-env.d.ts
 *.db
 *.sqlite
 *.sqlite3
+.database-config.json
 
 # Logs
 logs

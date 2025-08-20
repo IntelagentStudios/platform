@@ -218,8 +218,9 @@ export default function DatabaseManagementPage() {
       
       const result = await response.json();
       if (result.success) {
-        await fetchDatabaseStats();
         setConfigDialogOpen(false);
+        // Refresh the page to reload with the new connection
+        window.location.reload();
       } else {
         alert('Connection failed: ' + (result.error || 'Unknown error'));
       }

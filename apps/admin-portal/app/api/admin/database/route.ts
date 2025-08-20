@@ -1,11 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { writeFile, readFile } from 'fs/promises';
+import path from 'path';
 
 // Use a global singleton to prevent multiple connections
 const globalForPrisma = globalThis as unknown as {
   prismaAdmin: PrismaClient | undefined;
   prismaUrl: string | undefined;
 };
+
+// Store connection config in a local file (in production, use a proper database or session)
+const CONFIG_FILE = path.join(process.cwd(), '.database-config.json');
+
+async function saveConnectionUrl(url: string) {
+  try {
+    await writeFile(CONFIG_FILE, JSON.stringify({ url }), 'utf-8');
+  } catch (error) {
+    console.error('Failed to save connection URL:', error);
+  }
+}
+
+async function loadConnectionUrl(): Promise<string | null> {
+  try {
+    const data = await readFile(CONFIG_FILE, 'utf-8');
+    const config = JSON.parse(data);
+    return config.url;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function clearConnectionUrl() {
+  try {
+    await writeFile(CONFIG_FILE, JSON.stringify({ url: null }), 'utf-8');
+  } catch (error) {
+    console.error('Failed to clear connection URL:', error);
+  }
+}
 
 // Clean up any existing connection
 async function cleanupConnection() {
@@ -24,6 +55,31 @@ async function cleanupConnection() {
 export async function GET(request: NextRequest) {
   console.log('Database GET request received');
   try {
+    // Try to restore connection from saved config if not connected
+    if (!globalForPrisma.prismaAdmin) {
+      const savedUrl = await loadConnectionUrl();
+      if (savedUrl) {
+        console.log('Restoring connection from saved config...');
+        try {
+          globalForPrisma.prismaAdmin = new PrismaClient({
+            datasources: {
+              db: {
+                url: savedUrl + (savedUrl.includes('?') ? '&' : '?') + 'connection_limit=2&pool_timeout=2'
+              }
+            },
+            log: ['error', 'warn']
+          });
+          await globalForPrisma.prismaAdmin.$connect();
+          globalForPrisma.prismaUrl = savedUrl;
+          console.log('Connection restored successfully');
+        } catch (error) {
+          console.error('Failed to restore connection:', error);
+          await cleanupConnection();
+          await clearConnectionUrl();
+        }
+      }
+    }
+    
     // Check if we have an existing connection
     if (globalForPrisma.prismaAdmin) {
       console.log('Testing existing database connection...');
@@ -188,6 +244,9 @@ export async function POST(request: NextRequest) {
         // If successful, store the connection
         globalForPrisma.prismaAdmin = testConnection;
         globalForPrisma.prismaUrl = url;
+        
+        // Save the connection URL for persistence
+        await saveConnectionUrl(url);
 
         return NextResponse.json({
           success: true,
@@ -203,6 +262,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'disconnect') {
       await cleanupConnection();
+      await clearConnectionUrl();
       return NextResponse.json({
         success: true,
         message: 'Database disconnected'
