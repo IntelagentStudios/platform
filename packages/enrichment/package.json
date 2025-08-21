@@ -1,0 +1,15 @@
+{
+  "name": "@intelagent/enrichment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Data enrichment module for Intelagent Platform products",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@intelagent/database": "workspace:*",
+    "@intelagent/redis": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

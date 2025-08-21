@@ -9,7 +9,7 @@ import { sendWelcomeNotification } from '@intelagent/notifications';
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().optional()
+  licenseKey: z.string().regex(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, 'Invalid license key format')
 });
 
 export async function POST(request: NextRequest) {
@@ -18,11 +18,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = registerSchema.parse(body);
     
-    const { email, password, name } = validatedData;
+    const { email, password, licenseKey } = validatedData;
     
     // Check if email already has an account
     const existingUser = await prisma.users.findUnique({
-      where: { email }
+      where: { email: email.toLowerCase() }
     });
     
     if (existingUser) {
@@ -32,19 +32,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Check if email has a license
-    const license = await prisma.licenses.findFirst({
-      where: { 
-        email: email.toLowerCase(),
-        status: { in: ['active', 'pending'] }
-      }
+    // Check if license key exists and is valid
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: licenseKey }
     });
     
     if (!license) {
       return NextResponse.json(
         { 
-          error: 'No purchase found for this email',
-          message: 'Please check that you\'re using the same email address from your Squarespace purchase.' 
+          error: 'Invalid license key',
+          message: 'Please check the license key from your welcome email and try again.' 
         },
         { status: 404 }
       );
@@ -52,14 +49,25 @@ export async function POST(request: NextRequest) {
     
     // Check if license is already linked to another user
     const licenseInUse = await prisma.users.findUnique({
-      where: { license_key: license.license_key }
+      where: { license_key: licenseKey }
     });
     
     if (licenseInUse) {
       return NextResponse.json(
         { 
-          error: 'This license is already linked to another account',
-          message: 'Please contact support if you believe this is an error.' 
+          error: 'This license is already registered',
+          message: 'This license key has already been used to create an account. Please log in instead.' 
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Verify the license status
+    if (license.status === 'expired' || license.status === 'cancelled') {
+      return NextResponse.json(
+        { 
+          error: 'License is not active',
+          message: 'This license is no longer active. Please contact support for assistance.' 
         },
         { status: 400 }
       );
@@ -73,19 +81,20 @@ export async function POST(request: NextRequest) {
       data: {
         email: email.toLowerCase(),
         password_hash: passwordHash,
-        license_key: license.license_key,
-        name: name || license.customer_name,
+        license_key: licenseKey,
+        name: license.customer_name || email.split('@')[0],
         email_verified: true, // Auto-verify since they have a valid license
         email_verified_at: new Date()
       }
     });
     
-    // Update license status
+    // Update license status and link email
     await prisma.licenses.update({
-      where: { license_key: license.license_key },
+      where: { license_key: licenseKey },
       data: { 
         status: 'active',
-        used_at: new Date()
+        used_at: new Date(),
+        email: email.toLowerCase() // Link the email to the license
       }
     });
     

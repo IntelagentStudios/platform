@@ -3,6 +3,7 @@ import { RedisManager, pubsub } from '@intelagent/redis';
 import nodemailer from 'nodemailer';
 import { WebClient } from '@slack/web-api';
 import twilio from 'twilio';
+import * as emailTemplates from '@intelagent/email-templates';
 
 interface Notification {
   id?: string;
@@ -360,6 +361,12 @@ class NotificationService {
   }
 
   private formatEmailContent(notification: Notification): string {
+    // Check if this is already an HTML template
+    if (notification.metadata?.isHtml) {
+      return notification.message;
+    }
+    
+    // Otherwise use the default formatting
     return `
       <!DOCTYPE html>
       <html>
@@ -471,15 +478,109 @@ export async function sendSystemAlert(licenseKey: string, alertType: string, det
 }
 
 export async function sendWelcomeNotification(licenseKey: string, customerName: string) {
+  // Get license details for the email
+  const license = await prisma.licenses.findUnique({
+    where: { license_key: licenseKey },
+    select: { products: true, email: true }
+  });
+  
+  const emailData = emailTemplates.welcomeEmail({
+    name: customerName,
+    licenseKey,
+    products: license?.products || [],
+    dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://portal.intelagent.ai'}/dashboard`
+  });
+  
   await notificationService.send({
     licenseKey,
     type: 'email',
     priority: 'normal',
-    subject: 'Welcome to Intelagent Platform!',
-    message: `Hi ${customerName}, welcome to Intelagent! Your account is now active and ready to use. Get started by setting up your first product.`,
+    subject: emailData.subject,
+    message: emailData.html,
     metadata: {
-      actionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`,
-      actionText: 'Get Started'
+      template: 'welcome',
+      isHtml: true
+    }
+  });
+}
+
+// New function to send setup complete notification
+export async function sendSetupCompleteNotification(licenseKey: string, product: string, domain: string, siteKey: string) {
+  const user = await prisma.users.findUnique({
+    where: { license_key: licenseKey },
+    select: { name: true, email: true }
+  });
+  
+  const emailData = emailTemplates.setupCompleteEmail({
+    name: user?.name || 'there',
+    product,
+    domain,
+    siteKey
+  });
+  
+  await notificationService.send({
+    licenseKey,
+    type: 'email',
+    priority: 'normal',
+    subject: emailData.subject,
+    message: emailData.html,
+    metadata: {
+      template: 'setupComplete',
+      isHtml: true
+    }
+  });
+}
+
+// New function to send purchase confirmation
+export async function sendPurchaseConfirmation(email: string, licenseKey: string, products: string[], plan: string) {
+  const emailData = emailTemplates.purchaseConfirmationEmail({
+    email,
+    licenseKey,
+    products,
+    plan
+  });
+  
+  // Since user doesn't exist yet, send directly via email service
+  const transporter = notificationService['emailTransporter'];
+  if (transporter) {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'noreply@intelagent.ai',
+      to: email,
+      subject: emailData.subject,
+      html: emailData.html,
+      text: emailData.text
+    });
+  }
+}
+
+// New function to send usage alerts
+export async function sendUsageAlert(licenseKey: string, product: string, usage: number, limit: number) {
+  const percentage = Math.round((usage / limit) * 100);
+  
+  const user = await prisma.users.findUnique({
+    where: { license_key: licenseKey },
+    select: { name: true }
+  });
+  
+  const emailData = emailTemplates.usageAlertEmail({
+    name: user?.name || 'there',
+    product,
+    usage,
+    limit,
+    percentage
+  });
+  
+  await notificationService.send({
+    licenseKey,
+    type: 'email',
+    priority: percentage >= 90 ? 'high' : 'normal',
+    subject: emailData.subject,
+    message: emailData.html,
+    metadata: {
+      template: 'usageAlert',
+      isHtml: true,
+      product,
+      percentage
     }
   });
 }

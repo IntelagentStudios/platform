@@ -34,7 +34,9 @@ import {
   Zap,
   Shield,
   Clock,
-  CheckCircle
+  CheckCircle,
+  TrendingUp,
+  Info
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';

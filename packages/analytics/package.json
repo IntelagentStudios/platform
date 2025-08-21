@@ -1,0 +1,15 @@
+{
+  "name": "@intelagent/analytics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Analytics and usage tracking for Intelagent Platform",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "dependencies": {
+    "@intelagent/database": "workspace:*",
+    "@intelagent/redis": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}
