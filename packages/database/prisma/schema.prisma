@@ -27,6 +27,7 @@ model licenses {
   products             String[]     @default([])
   chatbot_logs         chatbot_logs[]
   api_keys             api_keys[]
+  user                 users?
   @@schema("public")
 }
 
@@ -774,5 +775,70 @@ model workflows_tags {
 
   @@id([workflowId, tagId], map: "pk_workflows_tags")
   @@index([workflowId], map: "idx_workflows_tags_workflow_id")
+  @@schema("public")
+}
+
+model users {
+  id                  String           @id @default(uuid()) @db.VarChar(36)
+  email               String           @unique @db.VarChar(255)
+  password_hash       String           @db.VarChar(255)
+  license_key         String           @unique @db.VarChar(20)
+  name                String?          @db.VarChar(255)
+  avatar_url          String?          @db.VarChar(500)
+  email_verified      Boolean          @default(false)
+  email_verified_at   DateTime?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  last_login_at       DateTime?
+  is_active           Boolean          @default(true)
+  onboarding_completed Boolean         @default(false)
+  preferences         Json?
+  license             licenses         @relation(fields: [license_key], references: [license_key])
+  product_setups      product_setups[]
+  sessions            user_sessions[]
+  
+  @@index([email])
+  @@index([license_key])
+  @@schema("public")
+}
+
+model product_setups {
+  id                String    @id @default(uuid()) @db.VarChar(36)
+  user_id           String    @db.VarChar(36)
+  product           String    @db.VarChar(50) // chatbot, sales-agent, enrichment
+  domain            String?   @db.VarChar(255)
+  site_key          String?   @unique @db.VarChar(255)
+  setup_completed   Boolean   @default(false)
+  setup_started_at  DateTime?
+  setup_completed_at DateTime?
+  setup_data        Json?     // Stores product-specific configuration
+  webhook_url       String?   @db.VarChar(500)
+  api_endpoint      String?   @db.VarChar(500)
+  is_active         Boolean   @default(true)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  user              users     @relation(fields: [user_id], references: [id])
+  
+  @@unique([user_id, product])
+  @@index([user_id])
+  @@index([product])
+  @@index([site_key])
+  @@schema("public")
+}
+
+model user_sessions {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  user_id       String    @db.VarChar(36)
+  token         String    @unique @db.VarChar(500)
+  ip_address    String?   @db.VarChar(45)
+  user_agent    String?   @db.Text
+  expires_at    DateTime
+  created_at    DateTime  @default(now())
+  last_activity DateTime  @default(now())
+  user          users     @relation(fields: [user_id], references: [id])
+  
+  @@index([user_id])
+  @@index([token])
+  @@index([expires_at])
   @@schema("public")
 }
