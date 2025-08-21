@@ -1,5 +1,5 @@
 {
-  "name": "@intelagent/enrichment",
+  "name": "@intelagent/enrichment-module",
   "version": "1.0.0",
   "private": true,
   "description": "Data enrichment module for Intelagent Platform products",
