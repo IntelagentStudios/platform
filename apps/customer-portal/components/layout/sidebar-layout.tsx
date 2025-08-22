@@ -49,8 +49,16 @@ export default function SidebarLayout({
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/validate-license');
+      // Check if this is admin or customer
+      const isAdmin = pathname.startsWith('/admin');
+      
+      if (isAdmin) {
+        await fetch('/api/admin/auth/logout', { method: 'POST' });
+        router.push('/admin/login');
+      } else {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        router.push('/validate-license');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
