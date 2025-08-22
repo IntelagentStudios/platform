@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthFromCookies } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+// Route to fetch recent activity data
 export async function GET(request: NextRequest) {
   try {
     const auth = await getAuthFromCookies()
