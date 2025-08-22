@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import stripeService from '@intelagent/billing';
-import { getAdminDb } from '@intelagent/database';
+import { prisma } from '@intelagent/database';
 
 // Stripe webhook handler
 export async function POST(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    const db = await getAdminDb();
+    const db = prisma;
 
     // Handle different event types
     switch (event.type) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             where: { license_key: subscription.metadata.license_key },
             data: { 
               status,
-              stripe_subscription_id: subscription.id
+              subscription_id: subscription.id
             }
           });
         }
@@ -73,8 +73,7 @@ export async function POST(request: NextRequest) {
             where: { license_key: subscription.metadata.license_key },
             data: {
               status: 'cancelled',
-              cancelled_at: new Date(),
-              stripe_subscription_id: null
+              subscription_id: null
             }
           });
         }
@@ -86,19 +85,20 @@ export async function POST(request: NextRequest) {
         
         // Record payment in billing history
         if (invoice.subscription && invoice.metadata?.license_key) {
-          await db.billing_history.create({
-            data: {
-              license_key: invoice.metadata.license_key,
-              invoice_number: invoice.number || `INV-${Date.now()}`,
-              amount_pence: invoice.amount_paid,
-              currency: 'GBP',
-              status: 'paid',
-              stripe_invoice_id: invoice.id,
-              stripe_payment_intent_id: invoice.payment_intent,
-              billed_at: new Date(invoice.created * 1000),
-              paid_at: new Date()
-            }
-          });
+          // TODO: Add billing_history table
+          // await db.billing_history.create({
+          //   data: {
+          //     license_key: invoice.metadata.license_key,
+          //     invoice_number: invoice.number || `INV-${Date.now()}`,
+          //     amount_pence: invoice.amount_paid,
+          //     currency: 'GBP',
+          //     status: 'paid',
+          //     stripe_invoice_id: invoice.id,
+          //     stripe_payment_intent_id: invoice.payment_intent,
+          //     billed_at: new Date(invoice.created * 1000),
+          //     paid_at: new Date()
+          //   }
+          // });
         }
         break;
       }
@@ -108,17 +108,18 @@ export async function POST(request: NextRequest) {
         
         if (invoice.subscription && invoice.metadata?.license_key) {
           // Record failed payment
-          await db.billing_history.create({
-            data: {
+          // TODO: Add billing_history table
+          // await db.billing_history.create({
+          //   data: {
               license_key: invoice.metadata.license_key,
               invoice_number: invoice.number || `INV-${Date.now()}`,
               amount_pence: invoice.amount_due,
               currency: 'GBP',
               status: 'failed',
               stripe_invoice_id: invoice.id,
-              billed_at: new Date(invoice.created * 1000)
-            }
-          });
+          //     billed_at: new Date(invoice.created * 1000)
+          //   }
+          // });
 
           // Suspend license after multiple failures
           const failedCount = await db.billing_history.count({
@@ -173,9 +174,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Disable body parsing for webhooks
-export const config = {
-  api: {
-    bodyParser: false
-  }
-};
+// Route segment config for App Router
+// This replaces the deprecated export const config
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
