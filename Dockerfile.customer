@@ -8,10 +8,8 @@ WORKDIR /app
 
 # Copy all package.json files first for better caching
 COPY package*.json ./
-COPY apps/admin-portal/package*.json ./apps/admin-portal/
 COPY apps/customer-portal/package*.json ./apps/customer-portal/
 COPY packages/*/package*.json ./packages/
-COPY products/*/package*.json ./products/
 COPY services/*/package*.json ./services/
 
 # Install ALL dependencies (we need them for Prisma and build)
@@ -24,7 +22,7 @@ COPY . .
 # Generate Prisma Client
 RUN cd packages/database && npx prisma generate
 
-# Build the customer portal (main user dashboard)
+# Build the customer portal
 RUN cd apps/customer-portal && npm run build
 
 # Set environment variables
