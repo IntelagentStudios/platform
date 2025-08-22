@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Only master admin can view other licenses' stats
-    if (!auth.isMaster && auth.license_key !== params.license_key) {
+    if (!auth.license_key !== params.license_key) {
       return NextResponse.json(
         { error: 'Unauthorised' },
         { status: 403 }

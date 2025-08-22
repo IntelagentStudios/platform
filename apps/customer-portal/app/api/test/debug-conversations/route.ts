@@ -31,13 +31,13 @@ export async function GET(request: NextRequest) {
     }
     
     // For non-master users
-    if (!auth.isMaster) {
+    {
       if (!userLicense?.site_key) {
         return NextResponse.json({
           debug: {
             auth: {
               license_key: auth.license_key,
-              isMaster: auth.isMaster
+              isMaster: false
             },
             userLicense: 'No site_key found',
             message: 'User has no site_key, should see no data',
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       debug: {
         auth: {
           license_key: auth.license_key,
-          isMaster: auth.isMaster,
+          isMaster: false,
           domain: auth.domain
         },
         userLicense: {

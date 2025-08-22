@@ -65,7 +65,7 @@ export async function GET() {
     const licenseMapping = licenses.map(license => {
       const chatbotData = chatbotSiteKeys.find(c => c.site_key === license.site_key)
       return {
-        license_key: auth.isMaster ? license.license_key : (license.license_key === auth.license_key ? license.license_key : 'HIDDEN'),
+        license_key: (license.license_key === auth.license_key ? license.license_key : 'HIDDEN'),
         domain: license.domain,
         site_key: license.site_key,
         chatbotLogCount: chatbotData?._count || 0,
@@ -82,7 +82,7 @@ export async function GET() {
     return NextResponse.json({
       currentUser: {
         license_key: auth.license_key,
-        isMaster: auth.isMaster,
+        isMaster: false,
         license: currentUserLicense || 'Not found',
         siteKeyComparisons
       },
@@ -93,17 +93,15 @@ export async function GET() {
         nullSiteKeyRecords: chatbotSiteKeys.find(c => !c.site_key)?._count || 0,
         orphanedSiteKeys: orphanedSiteKeys.length
       },
-      licenseMapping: auth.isMaster ? licenseMapping : licenseMapping.filter(l => l.isCurrentUser),
-      chatbotSiteKeys: auth.isMaster ? 
-        chatbotSiteKeys.slice(0, 10).map(c => ({
-          site_key: c.site_key || 'NULL',
+      licenseMapping: licenseMapping.filter(l => l.isCurrentUser),
+      chatbotSiteKeys: c.site_key || 'NULL',
           recordCount: c._count
         })) : 
         chatbotSiteKeys.filter(c => c.site_key === currentUserLicense?.site_key).map(c => ({
           site_key: c.site_key || 'NULL',
           recordCount: c._count
         })),
-      orphanedSiteKeys: auth.isMaster ? orphanedSiteKeys.slice(0, 5) : []
+      orphanedSiteKeys: []
     })
   } catch (error) {
     console.error('Compare siteKeys error:', error)

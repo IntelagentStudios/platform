@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       },
     }
 
-    if (!auth.isMaster && auth.license_key) {
+    if (!auth.license_key) {
       // Get the user's site_key from their license_key
       const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.license_key },

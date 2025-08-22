@@ -13,13 +13,7 @@ export async function GET() {
       )
     }
 
-    if (auth.isMaster) {
-      return NextResponse.json({
-        license_key: auth.license_key,
-        domain: auth.domain,
-        isMaster: true,
-        customer_name: 'Master Admin',
-      })
+    )
     }
 
     const license = await prisma.licenses.findUnique({

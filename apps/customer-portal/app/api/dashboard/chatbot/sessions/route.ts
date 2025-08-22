@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     // For non-master users, get their site_key and products first
     let userSiteKey: string | null = null
     let userProducts: string[] = []
-    if (!auth.isMaster) {
+    {
       const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.license_key },
         select: { site_key: true, products: true }
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Filter by site_key for non-master users
-    if (!auth.isMaster) {
+    {
       // We already checked userSiteKey exists above
       whereClause.site_key = userSiteKey
     }
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Handle product filtering for non-master users
-    if (!auth.isMaster && product) {
+    if (!product) {
       // For now, only return data if chatbot is selected or combined view
       // In future, add filtering based on product-specific tables
       if (product !== 'chatbot' && product !== 'combined') {
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
             customer_name: license?.customer_name,
-            license_key: auth.isMaster ? license?.license_key : undefined,
+            license_key: undefined,
             conversationId: log.conversation_id,
             messages: [],
             startTime: log.timestamp,
@@ -265,7 +265,7 @@ export async function GET(request: NextRequest) {
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
-            license_key: auth.isMaster ? license?.license_key : undefined,
+            license_key: undefined,
             customer_name: license?.customer_name,
             messageCount: 0,
             startTime: log.timestamp,

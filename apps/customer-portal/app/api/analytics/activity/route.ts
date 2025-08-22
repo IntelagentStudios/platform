@@ -18,86 +18,79 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Build where clause based on user role
-    const whereClause = auth.isMaster ? {} : { license_key: auth.license_key }
+    // Customer portal - only show data for their license
+    const whereClause = { license_key: auth.license_key }
 
     // Get recent activities from multiple sources
     const activities: any[] = []
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    // 1. Get recent license creations/updates (master admin only)
-    if (auth.isMaster) {
-      const recentLicenses = await prisma.licenses.findMany({
-        where: {
-          OR: [
-            { created_at: { gte: thirtyDaysAgo } },
-            { used_at: { gte: thirtyDaysAgo } }
-          ]
-        },
-        select: {
-          license_key: true,
-          customer_name: true,
-          domain: true,
-          status: true,
-          created_at: true,
-          used_at: true,
-          plan: true,
-          products: true
-        },
-        orderBy: { created_at: 'desc' },
-        take: 20
-      })
+    // 1. Get license status and recent updates for this customer
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: auth.license_key },
+      select: {
+        license_key: true,
+        customer_name: true,
+        domain: true,
+        status: true,
+        created_at: true,
+        used_at: true,
+        plan: true,
+        products: true,
+        first_activated_at: true,
+        last_accessed_at: true
+      }
+    })
 
-      recentLicenses.forEach((license: any) => {
-        if (license.created_at && license.created_at >= thirtyDaysAgo) {
-          activities.push({
-            type: 'license_created',
-            timestamp: license.created_at,
-            title: 'New License Created',
-            description: `${license?.customer_name || 'Unknown Customer'} - ${license.products?.join(', ') || 'Chatbot'}`,
-            metadata: {
-              license_key: license?.license_key,
-              domain: license.domain,
-              plan: license.plan,
-              products: license.products
-            },
-            icon: 'plus',
-            color: 'green'
-          })
-        }
+    if (license) {
+      // Show license activation
+      if (license.first_activated_at && license.first_activated_at >= thirtyDaysAgo) {
+        activities.push({
+          type: 'license_activated',
+          timestamp: license.first_activated_at,
+          title: 'License Activated',
+          description: `Your license was successfully activated`,
+          metadata: {
+            domain: license.domain,
+            products: license.products
+          },
+          icon: 'check',
+          color: 'green'
+        })
+      }
 
-        if (license.used_at && license.used_at >= thirtyDaysAgo && 
-            (!license.created_at || license.used_at > license.created_at)) {
-          activities.push({
-            type: 'license_activated',
-            timestamp: license.used_at,
-            title: 'License Activated',
-            description: `${license.domain || license?.customer_name || 'Unknown'} activated their license`,
-            metadata: {
-              license_key: license?.license_key,
-              domain: license.domain
-            },
-            icon: 'check',
-            color: 'blue'
-          })
-        }
+      // Show recent access
+      if (license.last_accessed_at && license.last_accessed_at >= thirtyDaysAgo) {
+        activities.push({
+          type: 'license_accessed',
+          timestamp: license.last_accessed_at,
+          title: 'Dashboard Accessed',
+          description: `Recent login to your dashboard`,
+          metadata: {
+            domain: license.domain
+          },
+          icon: 'user',
+          color: 'blue'
+        })
+      }
 
-        if (license.status === 'expired') {
-          activities.push({
-            type: 'license_expired',
-            timestamp: license.created_at || now,
-            title: 'License Expired',
-            description: `${license?.customer_name || license.domain || 'Unknown'} license expired`,
-            metadata: {
-              license_key: license?.license_key,
-              domain: license.domain
-            },
-            icon: 'alert',
-            color: 'red'
-          })
-        }
-      })
+      // Warning if license is expiring soon
+      if (license.status === 'active') {
+        // Check expiration in licenses table if needed
+        activities.push({
+          type: 'license_status',
+          timestamp: now,
+          title: 'License Active',
+          description: `Your ${license.plan || 'Standard'} license is active`,
+          metadata: {
+            plan: license.plan,
+            products: license.products
+          },
+          icon: 'shield',
+          color: 'green'
+        })
+      }
     }
 
     // 2. Get recent conversation sessions

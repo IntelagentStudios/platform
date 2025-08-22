@@ -79,7 +79,7 @@ export async function GET() {
       auth: {
         license_key: auth.license_key,
         domain: auth.domain,
-        isMaster: auth.isMaster
+        isMaster: false
       },
       userLicense: userLicense || 'No license found',
       analysis: {

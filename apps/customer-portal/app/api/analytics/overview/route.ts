@@ -17,14 +17,7 @@ export async function GET() {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    if (auth.isMaster) {
-      // Master admin sees everything
-      
-      // Get total active licenses
-      const totalLicenses = await prisma.licenses.count({
-        where: {
-          OR: [
-            { status: 'active' },
+    ,
             { status: 'trial' }
           ]
         }

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const { type, dateRange } = await request.json()
 
     let whereClause: any = {}
-    if (!auth.isMaster && auth.license_key) {
+    if (!auth.license_key) {
       // Find the user's site_key from their license_key
       const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.license_key },
@@ -35,8 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const [licenses, conversations, stats] = await Promise.all([
-      auth.isMaster 
-        ? prisma.licenses.findMany({ take: 10 })
+      10})
         : prisma.licenses.findMany({ where: { license_key: auth.license_key } }),
       prisma.chatbot_logs.groupBy({
         by: ['session_id', 'domain'],
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
         },
       }),
       Promise.resolve({
-        totalLicenses: auth.isMaster ? await prisma.licenses.count() : 1,
+        totalLicenses: 1,
         totalConversations: await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: whereClause,
@@ -64,7 +63,7 @@ export async function POST(request: NextRequest) {
     const reportData = {
       title: 'Intelagent Studios Dashboard Report',
       generatedDate: new Date().toLocaleDateString(),
-      generatedFor: auth.isMaster ? 'Master Admin' : auth.domain,
+      generatedFor: auth.domain,
       stats,
       licenses: licenses.slice(0, 5).map(l => ({
         license_key: l.license_key,

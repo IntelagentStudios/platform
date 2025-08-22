@@ -5,11 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, MessageSquare, TrendingUp, PoundSterling, TrendingDown, Activity, Clock } from 'lucide-react'
 import { useDashboardStore } from '@/lib/store'
 
-interface StatsCardsProps {
-  isMaster?: boolean
-}
-
-export default function StatsCards({ isMaster = false }: StatsCardsProps) {
+export default function StatsCards() {
   const [stats, setStats] = useState({
     totalLicenses: 0,
     activeConversations: 0,
@@ -127,7 +123,8 @@ export default function StatsCards({ isMaster = false }: StatsCardsProps) {
     },
   ]
 
-  const cards = isMaster ? masterCards : customerCards
+  // Customer portal only shows customer cards
+  const cards = customerCards
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

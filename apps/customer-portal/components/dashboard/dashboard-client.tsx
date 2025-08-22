@@ -50,11 +50,8 @@ export default function DashboardClient() {
     fetchAuthData()
   }, [])
 
-  useEffect(() => {
-    if (authData?.isMaster) {
-      fetchRecentActivity()
-    }
-  }, [authData])
+  // Customer portal doesn't show recent activity for all licenses
+  // Only show customer's own activity
 
   const fetchAuthData = async () => {
     try {
@@ -63,8 +60,8 @@ export default function DashboardClient() {
         const data = await response.json()
         setAuthData(data)
         
-        // Fetch user's license details if not master
-        if (!data.isMaster && data.licenseKey) {
+        // Fetch user's license details
+        if (data.licenseKey) {
           const licenseResponse = await fetch(`/api/dashboard/licenses/${data.licenseKey}`)
           if (licenseResponse.ok) {
             const licenseData = await licenseResponse.json()
@@ -155,7 +152,8 @@ export default function DashboardClient() {
     )
   }
 
-  const isMaster = authData?.isMaster
+  // Customer portal - no master admin view
+  const isMaster = false
 
   return (
     <div className="min-h-screen bg-background">
@@ -212,10 +210,10 @@ export default function DashboardClient() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <StatsCards isMaster={isMaster} />
+        <StatsCards />
 
-        {isMaster ? (
-          // Master Admin View
+        {false ? (
+          // This view is not shown in customer portal
           <Tabs defaultValue="overview" className="mt-8">
             <TabsList className="grid w-full grid-cols-4 max-w-md">
               <TabsTrigger value="overview">

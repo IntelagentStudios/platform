@@ -13,7 +13,7 @@ export async function GET() {
       )
     }
 
-    if (!auth.isMaster) {
+    {
       // Individual users don't see distribution data
       return NextResponse.json(
         { error: 'Unauthorized - Master admin access required' },

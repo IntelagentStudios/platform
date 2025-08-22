@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const auth = await getAuthFromCookies()
     
-    if (!auth || !auth.isMaster) {
+    if (!auth) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }

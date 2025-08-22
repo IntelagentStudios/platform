@@ -30,9 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // For master admin, show all data; for customers, filter by their license
-    const whereClause = auth.isMaster 
-      ? {} 
-      : { license_key: auth.license_key }
+    const whereClause = { license_key: auth.license_key}
 
     // Get licenses created (downloads) in the date range
     const licenses = await prisma.licenses.findMany({
