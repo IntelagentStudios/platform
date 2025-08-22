@@ -311,6 +311,7 @@ class NotificationService {
     // Store in database for in-app display
     await prisma.notifications.create({
       data: {
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         license_key: notification.licenseKey,
         type: 'in-app',
         subject: notification.subject,
@@ -632,4 +633,5 @@ export async function sendUsageAlert(licenseKey: string, product: string, usage:
   });
 }
 
-export { getNotificationService, NotificationService, Notification, NotificationPreferences };
+export { getNotificationService, NotificationService };
+export type { Notification, NotificationPreferences };

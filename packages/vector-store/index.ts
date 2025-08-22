@@ -103,9 +103,9 @@ class VectorStoreService {
     try {
       // Check cache first
       const cacheKey = `embedding:${crypto.createHash('md5').update(text).digest('hex')}`;
-      const cached = await this.cache.get<number[]>(cacheKey);
-      if (cached) {
-        return cached;
+      const cached = await this.cache.get(cacheKey);
+      if (cached && Array.isArray(cached)) {
+        return cached as number[];
       }
       
       // Generate new embedding
@@ -370,7 +370,11 @@ class VectorStoreService {
    */
   async getIndexingProgress(licenseKey: string, siteKey: string): Promise<IndexingProgress | null> {
     const progressKey = `indexing:${licenseKey}:${siteKey}`;
-    return await this.cache.get<IndexingProgress>(progressKey);
+    const progress = await this.cache.get(progressKey);
+    if (progress && typeof progress === 'object') {
+      return progress as IndexingProgress;
+    }
+    return null;
   }
 
   /**
@@ -507,4 +511,5 @@ export async function getIndexingStatus(licenseKey: string, siteKey: string): Pr
   return await getVectorStore().getIndexingProgress(licenseKey, siteKey);
 }
 
-export { vectorStore, VectorStoreService, VectorDocument, SearchResult, IndexingProgress };
+export { vectorStore, VectorStoreService };
+export type { VectorDocument, SearchResult, IndexingProgress };

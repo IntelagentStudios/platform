@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -176,7 +176,7 @@ const PLAN_PRICING = {
   enterprise: { multiplier: 3.5, name: 'Enterprise', description: 'For large organizations' }
 };
 
-export default function UpgradePage() {
+function UpgradePageContent() {
   const searchParams = useSearchParams();
   const productParam = searchParams.get('product');
   const { toast } = useToast();
@@ -653,5 +653,17 @@ export default function UpgradePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function UpgradePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <UpgradePageContent />
+    </Suspense>
   );
 }
