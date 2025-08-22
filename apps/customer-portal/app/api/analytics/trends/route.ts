@@ -46,27 +46,15 @@ export async function POST(request: NextRequest) {
       timestamp: { gte: startDate }
     }
 
-    {
-      // For individual users, filter by their site_key
-      const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.license_key },
-        select: { site_key: true }
-      })
-      if (userLicense?.site_key) {
-        whereClause.site_key = userLicense?.site_key
-      }
-    } else if (productType) {
-      // For master admin, filter by product type if specified
-      const licensesWithProduct = await prisma.licenses.findMany({
-        where: { 
-          products: { has: productType }
-        },
-        select: { site_key: true }
-      })
-      const siteKeys = licensesWithProduct.map(l => l.site_key).filter(Boolean)
-      if (siteKeys.length > 0) {
-        whereClause.site_key = { in: siteKeys }
-      }
+    // For customer portal users, filter by their site_key
+    const userLicense = await prisma.licenses.findUnique({
+      where: { license_key: auth.license_key },
+      select: { site_key: true }
+    })
+    if (userLicense?.site_key) {
+      whereClause.site_key = userLicense.site_key
+    } else {
+      whereClause.license_key = auth.license_key
     }
 
     // Get conversation logs

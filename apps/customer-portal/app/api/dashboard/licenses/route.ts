@@ -13,18 +13,12 @@ export async function GET() {
       )
     }
 
-    let licenses
-    
-    ,
-        take: 50,
-      })
-    } else {
-      licenses = await prisma.licenses.findMany({
-        where: {
-          license_key: auth.license_key,
-        },
-      })
-    }
+    // Customer portal - only show user's own license
+    const licenses = await prisma.licenses.findMany({
+      where: {
+        license_key: auth.license_key,
+      },
+    })
 
     return NextResponse.json(licenses)
   } catch (error) {
