@@ -117,10 +117,8 @@ export async function GET(request: Request) {
       // Total licenses (only for master admin)
       Promise.resolve(1),
       
-      // Active licenses (with status = 'active')
-      { status: 'active'}
-          })
-        : Promise.resolve(1),
+      // Active licenses (customer portal always 1)
+      Promise.resolve(1),
       
       // Total conversations (unique sessions)
       prisma.chatbot_logs.groupBy({
