@@ -53,8 +53,9 @@ function getRedisConfig(): RedisOptions | string | null {
   return null;
 }
 
-// Get Redis configuration
-const redisConfig = getRedisConfig();
+// Get Redis configuration (skip during build)
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || process.argv.includes('build');
+const redisConfig = isBuildTime ? null : getRedisConfig();
 
 class RedisManager {
   private static instances: Map<string, Redis> = new Map();

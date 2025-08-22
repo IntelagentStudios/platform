@@ -459,13 +459,20 @@ class NotificationService {
   }
 }
 
-// Singleton instance
-const notificationService = new NotificationService();
+// Singleton instance (lazy initialization)
+let notificationService: NotificationService | null = null;
+
+function getNotificationService(): NotificationService {
+  if (!notificationService) {
+    notificationService = new NotificationService();
+  }
+  return notificationService;
+}
 
 // Predefined notification templates
 
 export async function sendPaymentReminder(licenseKey: string, daysUntilDue: number) {
-  await notificationService.send({
+  await getNotificationService().send({
     licenseKey,
     type: 'email',
     priority: daysUntilDue <= 3 ? 'high' : 'normal',
@@ -480,7 +487,7 @@ export async function sendPaymentReminder(licenseKey: string, daysUntilDue: numb
 }
 
 export async function sendSystemAlert(licenseKey: string, alertType: string, details: string) {
-  await notificationService.send({
+  await getNotificationService().send({
     licenseKey,
     type: 'in-app',
     priority: 'high',
@@ -507,7 +514,7 @@ export async function sendWelcomeNotification(licenseKey: string, customerName: 
     dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://portal.intelagent.ai'}/dashboard`
   });
   
-  await notificationService.send({
+  await getNotificationService().send({
     licenseKey,
     type: 'email',
     priority: 'normal',
@@ -534,7 +541,7 @@ export async function sendSetupCompleteNotification(licenseKey: string, product:
     siteKey
   });
   
-  await notificationService.send({
+  await getNotificationService().send({
     licenseKey,
     type: 'email',
     priority: 'normal',
@@ -559,7 +566,7 @@ export async function sendPurchaseConfirmation(email: string, licenseKey: string
   const from = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || 'noreply@intelagent.ai';
   
   // Try Resend first
-  const resendClient = notificationService['resendClient'];
+  const resendClient = getNotificationService()['resendClient'];
   if (resendClient) {
     try {
       await resendClient.emails.send({
@@ -579,7 +586,7 @@ export async function sendPurchaseConfirmation(email: string, licenseKey: string
   }
   
   // Fallback to SMTP
-  const transporter = notificationService['emailTransporter'];
+  const transporter = getNotificationService()['emailTransporter'];
   if (transporter) {
     await transporter.sendMail({
       from,
@@ -610,7 +617,7 @@ export async function sendUsageAlert(licenseKey: string, product: string, usage:
     percentage
   });
   
-  await notificationService.send({
+  await getNotificationService().send({
     licenseKey,
     type: 'email',
     priority: percentage >= 90 ? 'high' : 'normal',
@@ -625,4 +632,4 @@ export async function sendUsageAlert(licenseKey: string, product: string, usage:
   });
 }
 
-export { notificationService, NotificationService, Notification, NotificationPreferences };
+export { getNotificationService, NotificationService, Notification, NotificationPreferences };
