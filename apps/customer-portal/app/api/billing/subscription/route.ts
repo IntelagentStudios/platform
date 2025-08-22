@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
+import Stripe from 'stripe';
 
 // GET /api/billing/subscription - Get current subscription
 export async function GET(request: NextRequest) {
@@ -160,9 +161,18 @@ export async function POST(request: NextRequest) {
       WHERE license_key = ${licenseData.license_key}
     `;
 
+    // Get client secret from latest invoice if it's expanded
+    let clientSecret: string | undefined;
+    if (subscription.latest_invoice && typeof subscription.latest_invoice !== 'string') {
+      const invoice = subscription.latest_invoice as Stripe.Invoice;
+      if (invoice.payment_intent && typeof invoice.payment_intent !== 'string') {
+        clientSecret = invoice.payment_intent.client_secret || undefined;
+      }
+    }
+    
     return NextResponse.json({
       subscription,
-      client_secret: subscription.latest_invoice?.payment_intent?.client_secret
+      client_secret: clientSecret
     });
   } catch (error) {
     console.error('Failed to create subscription:', error);

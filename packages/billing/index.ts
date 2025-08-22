@@ -50,7 +50,6 @@ class StripeService {
           license_key: params.licenseKey,
           ...params.metadata
         },
-        currency: 'gbp',
         preferred_locales: ['en-GB']
       });
       
@@ -333,7 +332,7 @@ class StripeService {
   /**
    * Get upcoming invoice for a subscription
    */
-  async getUpcomingInvoice(subscriptionId: string): Promise<Stripe.Invoice | null> {
+  async getUpcomingInvoice(subscriptionId: string): Promise<Stripe.UpcomingInvoice | null> {
     try {
       const invoice = await this.stripe.invoices.retrieveUpcoming({
         subscription: subscriptionId
