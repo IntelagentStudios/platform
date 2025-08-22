@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // TODO: Implement onboarding table
     // Get existing onboarding data
+    /*
     const existing = await prisma.onboarding.findUnique({
       where: { license_key: licenseKey }
     });
@@ -51,6 +53,13 @@ export async function POST(request: NextRequest) {
         data: mergedData
       }
     });
+    */
+
+    // Return mock data for now
+    const onboarding = {
+      current_step: step,
+      data: data
+    };
 
     // Track step completion analytics
     await trackStepProgress(licenseKey, step, data);
@@ -82,6 +91,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // TODO: Implement onboarding table
+    /*
     const onboarding = await prisma.onboarding.findUnique({
       where: { license_key: licenseKey }
     });
@@ -98,6 +109,14 @@ export async function GET(request: NextRequest) {
       currentStep: onboarding.current_step,
       completed: onboarding.completed,
       data: onboarding.data || {}
+    });
+    */
+
+    // Return mock data for now
+    return NextResponse.json({
+      currentStep: 0,
+      completed: false,
+      data: {}
     });
 
   } catch (error: any) {

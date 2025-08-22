@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     }
 
     // Save the request to database (without metadata field)
-    const savedRequest = await prisma.smart_dashboard_requests.create({
+    const savedRequest = await prisma.SmartDashboardRequest.create({
       data: {
         license_key: auth.license_key,
         request_type: 'query',
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
     const insights = await generateInsights(query, data, userLicense)
     if (insights.length > 0) {
       await Promise.all(insights.map(insight =>
-        prisma.smart_dashboard_insights.create({
+        prisma.SmartDashboardInsight.create({
           data: {
             license_key: auth.license_key,
             insight_type: insight.type,

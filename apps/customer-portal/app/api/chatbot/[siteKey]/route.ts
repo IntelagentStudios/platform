@@ -70,10 +70,17 @@ export async function POST(
     try {
       if (productSetup.setup_completed) {
         // Use Pinecone vector search for response
-        response = await getChatbotResponse(message, siteKey, sessionId);
+        // Get user's license key
+        const userLicense = await prisma.users.findFirst({
+          where: { id: siteKey },
+          select: { license_key: true }
+        });
+        const licenseKey = userLicense?.license_key || siteKey;
+        
+        response = await getChatbotResponse(message, licenseKey, siteKey);
         
         // Also get search results for transparency
-        const searchResults = await searchKnowledgeBase(message, siteKey, 5);
+        const searchResults = await searchKnowledgeBase(message, licenseKey, siteKey);
         metadata = {
           sources: searchResults.slice(0, 3).map(r => ({
             url: r.metadata?.url,

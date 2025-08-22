@@ -22,8 +22,10 @@ export async function POST(request: NextRequest) {
       await prisma.licenses.update({
         where: { license_key: licenseKey },
         data: {
-          company_name: data.business.company_name,
+          // company_name field doesn't exist in licenses table
+          // company_name: data.business.company_name,
           metadata: {
+            company_name: data.business.company_name,
             industry: data.business.industry,
             company_size: data.business.company_size,
             website: data.business.website,
@@ -33,7 +35,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Save onboarding completion
+    // TODO: Implement onboarding table
+    // Save onboarding completion - table doesn't exist yet
+    /*
     await prisma.onboarding.upsert({
       where: { license_key: licenseKey },
       update: {
@@ -49,88 +53,55 @@ export async function POST(request: NextRequest) {
         data: data
       }
     });
+    */
 
-    // Track onboarding analytics
-    await trackOnboardingCompletion(licenseKey, data);
-
-    // Send real-time notification
-    sendCustomEvent(licenseKey, 'onboarding-complete', {
-      message: 'Welcome! Your account setup is complete.',
-      products: data.products || []
-    });
-
-    // If products were selected, create initial configurations
-    if (data.products && data.products.length > 0) {
-      await setupInitialProducts(licenseKey, data.products, data.setup);
+    // Save product configurations - table doesn't exist yet
+    /*
+    if (data.products) {
+      for (const product of data.products) {
+        if (product.configured) {
+          await prisma.product_configs.upsert({
+            where: {
+              license_key_product: {
+                license_key: licenseKey,
+                product: product.name
+              }
+            },
+            update: {
+              config: product.config,
+              updated_at: new Date()
+            },
+            create: {
+              license_key: licenseKey,
+              product: product.name,
+              config: product.config,
+              created_at: new Date()
+            }
+          });
+        }
+      }
     }
+    */
+
+    // Send real-time event
+    await sendCustomEvent({
+      channel: `license:${licenseKey}`,
+      event: 'onboarding:complete',
+      data: {
+        completed: true,
+        products: data.products?.filter((p: any) => p.configured).map((p: any) => p.name)
+      }
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Onboarding completed successfully'
+      redirect: '/dashboard'
     });
-
-  } catch (error: any) {
+  } catch (error) {
     console.error('Onboarding completion error:', error);
     return NextResponse.json(
       { error: 'Failed to complete onboarding' },
       { status: 500 }
     );
-  }
-}
-
-async function trackOnboardingCompletion(licenseKey: string, data: any) {
-  // Track analytics
-  try {
-    // TODO: Add analytics table
-    // await prisma.analytics.create({
-    //   data: {
-    //     event_type: 'onboarding_completed',
-    //     license_key: licenseKey,
-    //     properties: {
-    //       products_selected: data.products?.length || 0,
-    //       goals: data.goals || [],
-    //       time_to_complete: Date.now() - (data.started_at || Date.now()),
-    //       skipped_steps: data.skipped || []
-    //     },
-    //     created_at: new Date()
-    //   }
-    // });
-  } catch (error) {
-    console.error('Analytics tracking error:', error);
-  }
-}
-
-async function setupInitialProducts(licenseKey: string, products: string[], setupData: any) {
-  // Create initial product configurations
-  for (const productId of products) {
-    try {
-      if (productId === 'chatbot' && setupData?.domain) {
-        // Configure chatbot for the domain
-        await prisma.product_configs.create({
-          data: {
-            license_key: licenseKey,
-            product_id: productId,
-            config: {
-              domain: setupData.domain,
-              enabled: true,
-              welcome_message: 'Hello! How can I help you today?'
-            }
-          }
-        });
-      } else {
-        // Create default config
-        await prisma.product_configs.create({
-          data: {
-            license_key: licenseKey,
-            product_id: productId,
-            config: {
-              enabled: true
-            }
-          }
-        });
-      }
-    } catch (error) {
-      console.error(`Failed to setup ${productId}:`, error);
-    }
   }
 }
