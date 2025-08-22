@@ -86,18 +86,29 @@ function getRedisConfig(): RedisOptions | string | null {
   return null;
 }
 
-// Get Redis configuration (skip during build)
-const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
-                     process.argv.includes('build') ||
-                     process.env.BUILDING === 'true' ||
-                     !process.env.REDIS_URL;
+// Defer Redis configuration until runtime
+let redisConfig: any = null;
+let isInitialized = false;
 
-// Log for debugging
-if (isBuildTime) {
-  console.log('Redis disabled during build time');
+function initializeRedisConfig() {
+  if (isInitialized) return redisConfig;
+  
+  // Skip Redis in build environment
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                       process.argv.includes('build') ||
+                       process.env.BUILDING === 'true' ||
+                       process.env.NODE_ENV === 'build';
+  
+  if (isBuildTime) {
+    console.log('Redis disabled during build time');
+    redisConfig = null;
+  } else {
+    redisConfig = getRedisConfig();
+  }
+  
+  isInitialized = true;
+  return redisConfig;
 }
-
-const redisConfig = isBuildTime ? null : getRedisConfig();
 
 class RedisManager {
   private static instances: Map<string, Redis> = new Map();
@@ -107,7 +118,8 @@ class RedisManager {
    * Get or create a Redis client for a specific purpose
    */
   static getClient(purpose: 'cache' | 'queue' | 'pubsub' | 'session' | 'rate-limit' = 'cache'): Redis | null {
-    if (!redisConfig) {
+    const config = initializeRedisConfig();
+    if (!config) {
       console.warn(`Redis not configured. ${purpose} features will be limited.`);
       return null;
     }
@@ -126,14 +138,15 @@ class RedisManager {
    * Create a new Redis client with purpose-specific configuration
    */
   private static createClient(purpose: string): Redis | null {
-    if (!redisConfig) return null;
+    const config = initializeRedisConfig();
+    if (!config) return null;
     
     let client: Redis;
 
     try {
-      if (typeof redisConfig === 'string') {
+      if (typeof config === 'string') {
         // Use Redis URL if available
-        client = new Redis(redisConfig, {
+        client = new Redis(config, {
           connectionName: `intelagent-${purpose}`,
           db: this.getDatabaseIndex(purpose),
           maxRetriesPerRequest: 3,
@@ -148,7 +161,7 @@ class RedisManager {
       } else {
         // Use individual connection parameters
         client = new Redis({
-          ...redisConfig,
+          ...config,
           connectionName: `intelagent-${purpose}`,
           db: this.getDatabaseIndex(purpose),
           lazyConnect: true,
