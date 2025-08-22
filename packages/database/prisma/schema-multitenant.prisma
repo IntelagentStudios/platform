@@ -1,0 +1,295 @@
+// This is your Prisma schema file for multi-tenant architecture
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// PUBLIC SCHEMA - SHARED ACROSS ALL TENANTS
+// ==========================================
+
+model licenses {
+  license_key        String    @id @default(dbgenerated("generate_license_key()")) @db.VarChar(20)
+  email              String    @db.VarChar(255)
+  domain             String?   @db.VarChar(255)
+  domain_locked_at   DateTime? @db.Timestamptz(6)
+  schema_name        String    @unique @db.VarChar(100) // license_intl_xxxx_xxxx_xxxx
+  
+  // Products & Pricing
+  products           Json      @default("[]") // Array of product IDs
+  is_pro             Boolean   @default(false)
+  
+  // Billing in GBP (stored in pence)
+  currency           String    @default("GBP") @db.VarChar(3)
+  billing_cycle      String    @default("monthly") @db.VarChar(20)
+  subtotal_pence     Int       @default(0)
+  discount_pence     Int       @default(0)
+  pro_addon_pence    Int       @default(0)
+  total_pence        Int       @default(0)
+  
+  // Stripe
+  stripe_customer_id String?   @db.VarChar(255)
+  stripe_subscription_id String? @db.VarChar(255)
+  
+  // Status
+  status             String    @default("pending") @db.VarChar(20)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  activated_at       DateTime? @db.Timestamptz(6)
+  suspended_at       DateTime? @db.Timestamptz(6)
+  cancelled_at       DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  users              users[]
+  billing_history    billing_history[]
+  applied_discounts  applied_discounts[]
+  audit_logs         audit_logs[]
+  
+  @@index([email])
+  @@index([domain])
+  @@index([status])
+  @@index([stripe_customer_id])
+  @@map("licenses")
+}
+
+model users {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  license_key        String    @db.VarChar(20)
+  email              String    @unique @db.VarChar(255)
+  password_hash      String    @db.VarChar(255)
+  name               String?   @db.VarChar(255)
+  role               String    @default("owner") @db.VarChar(20) // owner, admin, member, viewer
+  
+  // Metadata
+  last_login_at      DateTime? @db.Timestamptz(6)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  license            licenses  @relation(fields: [license_key], references: [license_key])
+  sessions           user_sessions[]
+  api_keys           api_keys[]
+  
+  @@index([license_key])
+  @@map("users")
+}
+
+model products {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  name               String    @unique @db.VarChar(100)
+  slug               String    @unique @db.VarChar(100)
+  description        String?   @db.Text
+  
+  // Pricing in pence (£1 = 100 pence)
+  base_price_pence   Int       // e.g., 44900 = £449
+  currency           String    @default("GBP") @db.VarChar(3)
+  
+  // Configuration
+  features           Json      @default("[]")
+  schema_tables      Json      @default("[]") // Tables to create for this product
+  setup_required     Boolean   @default(true)
+  active             Boolean   @default(true)
+  
+  // Metadata
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  pricing_rules      pricing_rule_products[]
+  
+  @@map("products")
+}
+
+model pricing_rules {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  type               String    @db.VarChar(20) // bundle, promotion, discount
+  name               String    @db.VarChar(255)
+  description        String?   @db.Text
+  
+  // Conditions
+  min_products       Int?
+  promo_code         String?   @unique @db.VarChar(50)
+  valid_from         DateTime? @db.Timestamptz(6)
+  valid_until        DateTime? @db.Timestamptz(6)
+  usage_limit        Int?
+  used_count         Int       @default(0)
+  
+  // Discount
+  discount_type      String    @db.VarChar(20) // percentage, fixed_amount
+  discount_value     Int       // percentage (e.g., 20 = 20%) or pence
+  
+  // Status
+  active             Boolean   @default(true)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  // Relations
+  products           pricing_rule_products[]
+  applied_discounts  applied_discounts[]
+  
+  @@index([promo_code])
+  @@index([active])
+  @@map("pricing_rules")
+}
+
+model pricing_rule_products {
+  pricing_rule_id    String
+  product_id         String
+  
+  pricing_rule       pricing_rules @relation(fields: [pricing_rule_id], references: [id])
+  product            products @relation(fields: [product_id], references: [id])
+  
+  @@id([pricing_rule_id, product_id])
+  @@map("pricing_rule_products")
+}
+
+model applied_discounts {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  license_key        String    @db.VarChar(20)
+  pricing_rule_id    String
+  
+  // Discount details
+  discount_amount_pence Int
+  applied_at         DateTime  @default(now()) @db.Timestamptz(6)
+  expires_at         DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  license            licenses @relation(fields: [license_key], references: [license_key])
+  pricing_rule       pricing_rules @relation(fields: [pricing_rule_id], references: [id])
+  
+  @@index([license_key])
+  @@map("applied_discounts")
+}
+
+model billing_history {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  license_key        String    @db.VarChar(20)
+  
+  // Invoice details
+  invoice_number     String    @unique @db.VarChar(50)
+  amount_pence       Int
+  currency           String    @default("GBP") @db.VarChar(3)
+  status             String    @db.VarChar(20) // paid, pending, failed
+  
+  // Stripe
+  stripe_invoice_id  String?   @db.VarChar(255)
+  stripe_payment_intent_id String? @db.VarChar(255)
+  
+  // Dates
+  billed_at          DateTime  @default(now()) @db.Timestamptz(6)
+  paid_at            DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  license            licenses @relation(fields: [license_key], references: [license_key])
+  
+  @@index([license_key])
+  @@index([status])
+  @@map("billing_history")
+}
+
+model api_keys {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  user_id            String    @db.VarChar(36)
+  name               String    @db.VarChar(255)
+  key_hash           String    @unique @db.VarChar(255)
+  key_preview        String    @db.VarChar(20)
+  
+  // Permissions
+  permissions        Json      @default("[\"read\"]")
+  rate_limit         Int       @default(100)
+  
+  // Status
+  status             String    @default("active") @db.VarChar(20)
+  last_used_at       DateTime? @db.Timestamptz(6)
+  expires_at         DateTime? @db.Timestamptz(6)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  user               users @relation(fields: [user_id], references: [id])
+  
+  @@index([user_id])
+  @@index([status])
+  @@map("api_keys")
+}
+
+model user_sessions {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  user_id            String    @db.VarChar(36)
+  token              String    @unique @db.VarChar(255)
+  
+  // Metadata
+  ip_address         String?   @db.VarChar(45)
+  user_agent         String?   @db.Text
+  expires_at         DateTime  @db.Timestamptz(6)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  user               users @relation(fields: [user_id], references: [id])
+  
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("user_sessions")
+}
+
+model audit_logs {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  license_key        String    @db.VarChar(20)
+  user_id            String?   @db.VarChar(36)
+  
+  // Event details
+  action             String    @db.VarChar(100)
+  resource_type      String    @db.VarChar(50)
+  resource_id        String?   @db.VarChar(255)
+  changes            Json?
+  
+  // Metadata
+  ip_address         String?   @db.VarChar(45)
+  user_agent         String?   @db.Text
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  license            licenses @relation(fields: [license_key], references: [license_key])
+  
+  @@index([license_key])
+  @@index([user_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+model system_config {
+  key                String    @id @db.VarChar(100)
+  value              Json
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  @@map("system_config")
+}
+
+// ==========================================
+// ADMIN SCHEMA - MASTER ADMIN ACCESS ONLY
+// ==========================================
+
+model admin_users {
+  id                 String    @id @default(uuid()) @db.VarChar(36)
+  email              String    @unique @db.VarChar(255)
+  password_hash      String    @db.VarChar(255)
+  name               String    @db.VarChar(255)
+  role               String    @default("admin") @db.VarChar(20) // super_admin, admin, support
+  
+  // Permissions
+  can_access_all_schemas Boolean @default(false)
+  can_modify_pricing Boolean    @default(false)
+  can_create_licenses Boolean   @default(false)
+  
+  // Metadata
+  last_login_at      DateTime? @db.Timestamptz(6)
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  
+  @@schema("admin")
+  @@map("admin_users")
+}

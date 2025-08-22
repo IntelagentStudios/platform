@@ -6,9 +6,9 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@intelagent/database": "workspace:*",
-    "@intelagent/security": "workspace:*",
-    "@intelagent/notifications": "workspace:*"
+    "@intelagent/database": "file:../../packages/database",
+    "@intelagent/security": "file:../../packages/security",
+    "@intelagent/notifications": "file:../../packages/notifications"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"

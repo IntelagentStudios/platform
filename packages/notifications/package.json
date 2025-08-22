@@ -6,10 +6,11 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@intelagent/database": "workspace:*",
+    "@intelagent/database": "file:../../packages/database",
     "@slack/web-api": "^6.9.0",
     "ioredis": "^5.3.2",
     "nodemailer": "^6.9.7",
+    "resend": "^6.0.1",
     "twilio": "^4.19.0"
   },
   "devDependencies": {

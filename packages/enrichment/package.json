@@ -6,8 +6,8 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@intelagent/database": "workspace:*",
-    "@intelagent/redis": "workspace:*"
+    "@intelagent/database": "file:../database",
+    "@intelagent/redis": "file:../redis"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"

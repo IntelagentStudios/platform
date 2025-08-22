@@ -28,6 +28,8 @@ model licenses {
   chatbot_logs         chatbot_logs[]
   api_keys             api_keys[]
   user                 users?
+  vector_documents     vector_documents[]
+  indexing_jobs        indexing_jobs[]
   @@schema("public")
 }
 
@@ -286,6 +288,45 @@ model admin_users {
   createdAt     DateTime? @default(now()) @db.Timestamp(6)
   updatedAt     DateTime? @default(now()) @db.Timestamp(6)
 
+  @@schema("public")
+}
+
+model vector_documents {
+  id          String    @id @db.VarChar(255)
+  license_key String    @db.VarChar(255)
+  site_key    String    @db.VarChar(255)
+  content     String    @db.Text
+  metadata    Json      @default("{}")
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  
+  license     licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([license_key])
+  @@index([site_key])
+  @@index([license_key, site_key])
+  @@schema("public")
+}
+
+model indexing_jobs {
+  job_id         String    @id @db.VarChar(255)
+  license_key    String    @db.VarChar(255)
+  site_key       String    @db.VarChar(255)
+  domain         String    @db.VarChar(255)
+  status         String    @default("pending") @db.VarChar(50)
+  pages_indexed  Int       @default(0)
+  pages_failed   Int       @default(0)
+  error_message  String?   @db.Text
+  metadata       Json      @default("{}")
+  started_at     DateTime? @db.Timestamptz(6)
+  completed_at   DateTime? @db.Timestamptz(6)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  
+  license        licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([license_key])
+  @@index([site_key])
+  @@index([status])
   @@schema("public")
 }
 

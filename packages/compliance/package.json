@@ -1,0 +1,19 @@
+{
+  "name": "@intelagent/compliance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GDPR and data compliance module for Intelagent Platform",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@intelagent/database": "file:../database"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

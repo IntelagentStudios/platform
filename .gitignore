@@ -84,3 +84,5 @@ cypress/downloads
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+# Credentials file
+CREDENTIALS.md

@@ -1,0 +1,21 @@
+{
+  "name": "@intelagent/vector-store",
+  "version": "1.0.0",
+  "description": "Vector store integration with Pinecone for Intelagent Platform",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^2.0.0",
+    "openai": "^4.0.0",
+    "@intelagent/database": "*",
+    "@intelagent/redis": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

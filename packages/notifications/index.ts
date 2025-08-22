@@ -1,6 +1,7 @@
 import { prisma } from '@intelagent/database';
 import { RedisManager, pubsub } from '@intelagent/redis';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { WebClient } from '@slack/web-api';
 import twilio from 'twilio';
 import * as emailTemplates from '@intelagent/email-templates';
@@ -50,6 +51,7 @@ interface NotificationPreferences {
 class NotificationService {
   private redis: any = null;
   private emailTransporter: nodemailer.Transporter | null = null;
+  private resendClient: Resend | null = null;
   private slackClient: WebClient | null = null;
   private twilioClient: any = null;
   private queue: Notification[] = [];
@@ -71,8 +73,13 @@ class NotificationService {
       console.warn('Failed to initialize Redis for notifications:', error);
     }
 
-    // Initialize email transport
-    if (process.env.SMTP_HOST) {
+    // Initialize Resend as primary email service
+    if (process.env.RESEND_API_KEY) {
+      this.resendClient = new Resend(process.env.RESEND_API_KEY);
+      console.log('Email service using Resend');
+    } 
+    // Fallback to SMTP if Resend not configured
+    else if (process.env.SMTP_HOST) {
       this.emailTransporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587'),
@@ -82,6 +89,7 @@ class NotificationService {
           pass: process.env.SMTP_PASS
         }
       });
+      console.log('Email service using SMTP');
     }
 
     // Initialize Slack client
@@ -184,17 +192,40 @@ class NotificationService {
   }
 
   private async sendEmail(notification: Notification, to: string): Promise<void> {
-    if (!this.emailTransporter) {
-      throw new Error('Email transport not configured');
+    const from = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || 'noreply@intelagent.ai';
+    const htmlContent = this.formatEmailContent(notification);
+
+    // Use Resend if available
+    if (this.resendClient) {
+      try {
+        await this.resendClient.emails.send({
+          from,
+          to: [to],
+          subject: notification.subject,
+          html: htmlContent,
+          tags: [
+            { name: 'priority', value: notification.priority },
+            { name: 'type', value: 'notification' }
+          ]
+        });
+        return;
+      } catch (error) {
+        console.error('Resend email failed, trying SMTP fallback:', error);
+      }
     }
 
-    await this.emailTransporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@intelagent.ai',
-      to,
-      subject: notification.subject,
-      html: this.formatEmailContent(notification),
-      priority: notification.priority === 'critical' ? 'high' : 'normal'
-    });
+    // Fallback to SMTP
+    if (this.emailTransporter) {
+      await this.emailTransporter.sendMail({
+        from,
+        to,
+        subject: notification.subject,
+        html: htmlContent,
+        priority: notification.priority === 'critical' ? 'high' : 'normal'
+      });
+    } else {
+      throw new Error('No email service configured (neither Resend nor SMTP)');
+    }
   }
 
   private async sendSMS(notification: Notification, to: string): Promise<void> {
@@ -540,16 +571,40 @@ export async function sendPurchaseConfirmation(email: string, licenseKey: string
     plan
   });
   
-  // Since user doesn't exist yet, send directly via email service
+  const from = process.env.RESEND_FROM_EMAIL || process.env.SMTP_FROM || 'noreply@intelagent.ai';
+  
+  // Try Resend first
+  const resendClient = notificationService['resendClient'];
+  if (resendClient) {
+    try {
+      await resendClient.emails.send({
+        from,
+        to: [email],
+        subject: emailData.subject,
+        html: emailData.html,
+        text: emailData.text,
+        tags: [
+          { name: 'type', value: 'purchase_confirmation' }
+        ]
+      });
+      return;
+    } catch (error) {
+      console.error('Resend email failed for purchase confirmation:', error);
+    }
+  }
+  
+  // Fallback to SMTP
   const transporter = notificationService['emailTransporter'];
   if (transporter) {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@intelagent.ai',
+      from,
       to: email,
       subject: emailData.subject,
       html: emailData.html,
       text: emailData.text
     });
+  } else {
+    console.error('No email service available for purchase confirmation');
   }
 }
 

@@ -10,8 +10,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@intelagent/core": "workspace:*",
-    "@intelagent/database": "workspace:*",
+    "@intelagent/core": "file:../../packages/core",
+    "@intelagent/database": "file:../../packages/database",
     "express": "^4.18.0",
     "openai": "^4.20.0",
     "bull": "^4.11.0",

@@ -6,7 +6,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@intelagent/database": "workspace:*"
+    "@intelagent/database": "file:../../packages/database"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"

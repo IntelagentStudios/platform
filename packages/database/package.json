@@ -2,19 +2,30 @@
   "name": "@intelagent/database",
   "version": "1.0.0",
   "private": true,
-  "description": "Database schemas and client for Intelagent Platform",
-  "main": "./client.js",
+  "description": "Multi-tenant database with schema isolation for Intelagent Platform",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "generate": "prisma generate",
-    "migrate": "prisma migrate dev",
-    "push": "prisma db push",
-    "studio": "prisma studio",
-    "seed": "node seed.js"
+    "build": "tsc",
+    "generate": "prisma generate --schema=./prisma/schema-multitenant.prisma",
+    "migrate": "prisma migrate dev --schema=./prisma/schema-multitenant.prisma",
+    "push": "prisma db push --schema=./prisma/schema-multitenant.prisma",
+    "studio": "prisma studio --schema=./prisma/schema-multitenant.prisma",
+    "seed": "node seed.js",
+    "create-tenant": "node scripts/create-tenant.js",
+    "init-db": "psql $DATABASE_URL -f prisma/tenant-schemas.sql"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0"
+    "@prisma/client": "^5.0.0",
+    "@intelagent/redis": "file:../redis",
+    "jose": "^5.2.0",
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
-    "prisma": "^5.0.0"
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "prisma": "^5.0.0",
+    "typescript": "^5.0.0"
   }
 }
