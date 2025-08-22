@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         take: 20
       })
 
-      recentLicenses.forEach(license => {
+      recentLicenses.forEach((license: any) => {
         if (license.created_at && license.created_at >= thirtyDaysAgo) {
           activities.push({
             type: 'license_created',
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       _count: { id: true }
     })
 
-    highVolumeCheck.forEach(domainActivity => {
+    highVolumeCheck.forEach((domainActivity: any) => {
       if (domainActivity._count.id > 100) { // More than 100 messages in an hour
         activities.push({
           type: 'high_volume',
