@@ -14,15 +14,15 @@ export async function GET() {
     }
 
     // Fetch existing insights from database
-    const insights = await prisma.SmartDashboardInsight.findMany({
+    const insights = await prisma.smartDashboardInsight.findMany({
       where: {
-        license_key: auth.license_key,
+        licenseKey: auth.license_key,
         OR: [
-          { expires_at: null },
-          { expires_at: { gt: new Date() } }
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } }
         ]
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 20
     })
 

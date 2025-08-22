@@ -18,19 +18,14 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Update license with business info
-    if (data.business) {
+    if (data.business && data.business.company_name) {
+      // Update customer_name field which exists in licenses table
       await prisma.licenses.update({
         where: { license_key: licenseKey },
         data: {
-          // company_name field doesn't exist in licenses table
-          // company_name: data.business.company_name,
-          metadata: {
-            company_name: data.business.company_name,
-            industry: data.business.industry,
-            company_size: data.business.company_size,
-            website: data.business.website,
-            description: data.business.description
-          }
+          customer_name: data.business.company_name
+          // Note: Other business info (industry, company_size, etc.) 
+          // cannot be stored as there's no metadata field in licenses table
         }
       });
     }
@@ -84,14 +79,14 @@ export async function POST(request: NextRequest) {
     */
 
     // Send real-time event
-    await sendCustomEvent({
-      channel: `license:${licenseKey}`,
-      event: 'onboarding:complete',
-      data: {
+    sendCustomEvent(
+      licenseKey,
+      'onboarding:complete',
+      {
         completed: true,
         products: data.products?.filter((p: any) => p.configured).map((p: any) => p.name)
       }
-    });
+    );
 
     return NextResponse.json({
       success: true,

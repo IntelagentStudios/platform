@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
           await db.licenses.update({
             where: { license_key: session.metadata.license_key },
             data: {
-              stripe_subscription_id: session.subscription,
-              status: 'active',
-              activated_at: new Date()
+              subscription_id: session.subscription,
+              status: 'active'
+              // activated_at field doesn't exist in licenses table
             }
           });
         }

@@ -45,16 +45,16 @@ export async function GET(request: NextRequest) {
     const formattedKeys = apiKeys.map(key => ({
       id: key.id,
       name: key.name,
-      keyPreview: key.key_preview,
+      keyPreview: key.key ? `${key.key.substring(0, 8)}...${key.key.substring(key.key.length - 4)}` : '',
       createdAt: key.created_at,
       lastUsed: key.last_used_at,
       expiresAt: key.expires_at,
-      permissions: key.permissions || ['read'],
+      permissions: key.scopes || ['read'],
       rateLimit: key.rate_limit || 100,
       status: key.status,
       usage: {
-        requests: key.request_count || 0,
-        errors: key.error_count || 0,
+        requests: 0, // These fields don't exist in the schema
+        errors: 0,
         lastRequest: key.last_used_at
       }
     }));
@@ -137,9 +137,8 @@ export async function POST(request: NextRequest) {
       data: {
         license_key: session.license_key,
         name: name.trim(),
-        key_hash: hashedKey,
-        key_preview: keyPreview,
-        permissions: permissions || ['read'],
+        key: hashedKey, // Store the hashed key
+        scopes: permissions || ['read'],
         expires_at: expiresAt,
         status: 'active',
         rate_limit: 100, // Default rate limit
@@ -147,19 +146,19 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Log API key creation
-    await prisma.events.create({
-      data: {
-        license_key: session.license_key,
-        user_id: session.userId,
-        event_type: 'api_key.created',
-        event_data: {
-          key_id: newKey.id,
-          name: newKey.name,
-          permissions
-        }
-      }
-    });
+    // TODO: Log API key creation when events table exists
+    // await prisma.events.create({
+    //   data: {
+    //     license_key: session.license_key,
+    //     user_id: session.userId,
+    //     event_type: 'api_key.created',
+    //     event_data: {
+    //       key_id: newKey.id,
+    //       name: newKey.name,
+    //       permissions
+    //     }
+    //   }
+    // });
 
     return NextResponse.json({
       id: newKey.id,
@@ -168,7 +167,7 @@ export async function POST(request: NextRequest) {
       keyPreview,
       createdAt: newKey.created_at,
       expiresAt: newKey.expires_at,
-      permissions: newKey.permissions,
+      permissions: newKey.scopes,
       message: 'API key created successfully. Make sure to copy it now.'
     });
 
