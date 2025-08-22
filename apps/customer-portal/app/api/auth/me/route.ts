@@ -18,11 +18,11 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      license_key: auth.license_key,
-      domain: auth.domain,
+      licenseKey: auth.license_key, // Changed to camelCase for consistency
+      domain: license?.domain || '',
       isMaster: false,
-      customer_name: license?.customer_name,
-      email: license?.email,
+      customerName: license?.customer_name,
+      email: license?.email || auth.email,
       products: license?.products,
     })
   } catch (error) {

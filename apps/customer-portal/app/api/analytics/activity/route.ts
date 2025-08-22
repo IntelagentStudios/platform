@@ -37,18 +37,16 @@ export async function GET(request: NextRequest) {
         created_at: true,
         used_at: true,
         plan: true,
-        products: true,
-        first_activated_at: true,
-        last_accessed_at: true
+        products: true
       }
     })
 
     if (license) {
-      // Show license activation
-      if (license.first_activated_at && license.first_activated_at >= thirtyDaysAgo) {
+      // Show license activation (using used_at as activation time)
+      if (license.used_at && license.used_at >= thirtyDaysAgo) {
         activities.push({
           type: 'license_activated',
-          timestamp: license.first_activated_at,
+          timestamp: license.used_at,
           title: 'License Activated',
           description: `Your license was successfully activated`,
           metadata: {
@@ -60,13 +58,13 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // Show recent access
-      if (license.last_accessed_at && license.last_accessed_at >= thirtyDaysAgo) {
+      // Show license creation
+      if (license.created_at && license.created_at >= thirtyDaysAgo) {
         activities.push({
-          type: 'license_accessed',
-          timestamp: license.last_accessed_at,
-          title: 'Dashboard Accessed',
-          description: `Recent login to your dashboard`,
+          type: 'license_created',
+          timestamp: license.created_at,
+          title: 'License Created',
+          description: `Your license was created`,
           metadata: {
             domain: license.domain
           },

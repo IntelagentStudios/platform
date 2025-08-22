@@ -50,7 +50,7 @@ export async function GET() {
 
     // Process chatbot product
     const chatbotData = productCounts.get('chatbot')
-    if (chatbotData || auth.isMaster) {
+    if (chatbotData) {
       let chatbotConversations = 0
       let chatbotGrowth = 0
       

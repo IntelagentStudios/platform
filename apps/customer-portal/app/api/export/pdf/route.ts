@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const reportData = {
       title: 'Intelagent Studios Dashboard Report',
       generatedDate: new Date().toLocaleDateString(),
-      generatedFor: auth.domain,
+      generatedFor: licenses[0]?.domain || auth.license_key,
       stats,
       licenses: licenses.slice(0, 5).map(l => ({
         license_key: l.license_key,

@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Check if license exists
     const license = await prisma.licenses.findUnique({
-      where: { license_key },
-      include: {
-        users: true
-      }
+      where: { license_key }
     });
 
     if (!license) {
@@ -40,30 +37,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check expiration
-    if (license.expires_at && new Date(license.expires_at) < new Date()) {
-      await prisma.licenses.update({
-        where: { license_key },
-        data: { status: 'expired' }
-      });
-      
-      return NextResponse.json(
-        { error: 'License has expired. Please renew your license.' },
-        { status: 403 }
-      );
-    }
-
     // If registering (first time with email and name)
+    let user = null;
     if (email && name) {
-      // Check if email already exists for this license
-      const existingUser = await prisma.users.findFirst({
+      // Check if user already exists for this license
+      user = await prisma.users.findFirst({
         where: {
           email,
           license_key
         }
       });
 
-      if (existingUser) {
+      if (user) {
         return NextResponse.json(
           { error: 'Email already registered with this license' },
           { status: 400 }
@@ -71,23 +56,21 @@ export async function POST(request: NextRequest) {
       }
 
       // Create new user
-      const user = await prisma.users.create({
+      user = await prisma.users.create({
         data: {
           email,
           name,
           license_key,
-          role: 'owner',
           status: 'active'
         }
       });
 
-      // Update license first_activated if not set
-      if (!license.first_activated_at) {
+      // Update license as used if not already
+      if (!license.used_at) {
         await prisma.licenses.update({
           where: { license_key },
           data: { 
-            first_activated_at: new Date(),
-            last_accessed_at: new Date()
+            used_at: new Date()
           }
         });
       }
@@ -106,17 +89,25 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Just validating existing license
+      // Update last used time
       await prisma.licenses.update({
         where: { license_key },
         data: { 
-          last_accessed_at: new Date()
+          used_at: new Date()
         }
+      });
+
+      // Get the first user for this license if any
+      user = await prisma.users.findFirst({
+        where: { license_key },
+        orderBy: { created_at: 'asc' }
       });
 
       // Log access event
       await prisma.events.create({
         data: {
           license_key,
+          user_id: user?.id,
           event_type: 'license.accessed',
           event_data: {}
         }
@@ -132,8 +123,8 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       { 
         license_key,
-        email: email || license.users[0]?.email,
-        name: name || license.users[0]?.name
+        email: email || user?.email || license.email,
+        name: name || user?.name || license.customer_name
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -159,14 +150,14 @@ export async function POST(request: NextRequest) {
       success: true,
       license: {
         license_key,
-        product: license.product,
+        products: license.products,
         status: license.status,
-        expires_at: license.expires_at
+        plan: license.plan
       },
       onboarding_completed: onboarding?.completed || false,
       user: {
-        email: email || license.users[0]?.email,
-        name: name || license.users[0]?.name
+        email: email || user?.email || license.email,
+        name: name || user?.name || license.customer_name
       }
     });
 

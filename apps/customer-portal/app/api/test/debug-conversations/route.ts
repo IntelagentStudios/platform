@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
         auth: {
           license_key: auth.license_key,
           isMaster: false,
-          domain: auth.domain
+          domain: auth.license_key
         },
         userLicense: {
           hasLicense: !!userLicense,

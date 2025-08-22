@@ -78,7 +78,7 @@ export async function GET() {
     return NextResponse.json({
       auth: {
         license_key: auth.license_key,
-        domain: auth.domain,
+        domain: auth.license_key,
         isMaster: false
       },
       userLicense: userLicense || 'No license found',

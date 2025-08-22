@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { license_key: string } }
+  { params }: { params: { licenseKey: string } }
 ) {
   try {
     const auth = await getAuthFromCookies()
@@ -16,8 +16,8 @@ export async function GET(
       )
     }
 
-    // Only master admin can view other licenses
-    if (!auth.license_key !== params.license_key) {
+    // Customer can only view their own license
+    if (auth.license_key !== params.licenseKey) {
       return NextResponse.json(
         { error: 'Unauthorised' },
         { status: 403 }
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const license = await prisma.licenses.findUnique({
-      where: { license_key: params.license_key },
+      where: { license_key: params.licenseKey },
       select: {
         license_key: true,
         email: true,
