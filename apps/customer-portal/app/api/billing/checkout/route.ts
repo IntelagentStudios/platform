@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantDb } from '@intelagent/database';
+import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
 
 // POST /api/billing/checkout - Create checkout session for new subscription
 export async function POST(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     const data = await request.json();
     
     // Get license and user info

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantDb } from '@intelagent/database';
+import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
 
 // GET /api/billing/invoices - List customer invoices
 export async function GET(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     
     // Get customer ID
     const result = await db.$queryRaw`

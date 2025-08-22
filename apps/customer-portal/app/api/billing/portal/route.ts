@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantDb } from '@intelagent/database';
+import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
 
 // POST /api/billing/portal - Create Stripe customer portal session
 export async function POST(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     const { return_url } = await request.json();
     
     // Get customer ID

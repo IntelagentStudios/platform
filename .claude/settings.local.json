@@ -23,7 +23,10 @@
       "Bash(cmd.exe /c quick-setup.bat)",
       "Bash(tsc)",
       "Bash(git fetch:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(for file in apps/customer-portal/app/api/billing/*/route.ts)",
+      "Bash(do sed -i \"s/import { getTenantDb }/import { prisma }/g; s/await getTenantDb()/prisma/g\" \"$file\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

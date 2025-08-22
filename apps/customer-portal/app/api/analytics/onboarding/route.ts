@@ -92,6 +92,7 @@ async function updateOnboardingMetrics(
 ) {
   // TODO: Add onboarding_metrics table to schema
   return;
+  /* Commented out until onboarding_metrics table is added
   try {
     // Track specific metrics based on event type
     switch (event) {
@@ -165,6 +166,7 @@ async function updateOnboardingMetrics(
   } catch (error) {
     console.error('Failed to update onboarding metrics:', error);
   }
+  */
 }
 
 function calculateOnboardingMetrics(analytics: any[]) {

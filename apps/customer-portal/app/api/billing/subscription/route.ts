@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantDb } from '@intelagent/database';
+import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
 
 // GET /api/billing/subscription - Get current subscription
 export async function GET(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     
     // Get license info
     const license = await db.$queryRaw`
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 // POST /api/billing/subscription - Create new subscription
 export async function POST(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     const data = await request.json();
     
     // Get license and user info
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/billing/subscription - Update subscription
 export async function PUT(request: NextRequest) {
   try {
-    const db = await getTenantDb();
+    const db = prisma;
     const data = await request.json();
     
     if (!data.action) {
