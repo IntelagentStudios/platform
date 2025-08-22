@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { sendCustomEvent } from '../../realtime/updates/route';
+import { sendCustomEvent } from '@/lib/realtime';
 
 export async function POST(request: NextRequest) {
   try {

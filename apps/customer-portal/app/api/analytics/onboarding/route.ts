@@ -17,14 +17,15 @@ export async function POST(request: NextRequest) {
     const { event, properties } = await request.json();
 
     // Track the onboarding event
-    await prisma.analytics.create({
-      data: {
-        event_type: `onboarding_${event}`,
-        license_key: licenseKey,
-        properties: properties || {},
-        created_at: new Date()
-      }
-    });
+    // TODO: Add analytics table to schema
+    // await prisma.analytics.create({
+    //   data: {
+    //     event_type: `onboarding_${event}`,
+    //     license_key: licenseKey,
+    //     properties: properties || {},
+    //     created_at: new Date()
+    //   }
+    // });
 
     // Update onboarding metrics
     await updateOnboardingMetrics(licenseKey, event, properties);
