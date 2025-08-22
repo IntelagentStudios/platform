@@ -21,7 +21,8 @@
       "Bash(dir services)",
       "Bash(.quick-setup.bat)",
       "Bash(cmd.exe /c quick-setup.bat)",
-      "Bash(tsc)"
+      "Bash(tsc)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
