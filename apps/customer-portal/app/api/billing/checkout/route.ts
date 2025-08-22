@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       WHERE l.license_key = current_setting('app.current_license')
         AND u.role = 'owner'
       LIMIT 1
-    `;
+    ` as any[];
 
     if (!result || result.length === 0) {
       return NextResponse.json(
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       FROM public.products 
       WHERE slug = ANY(${products}::text[])
         AND active = true
-    `;
+    ` as any[];
 
     for (const product of productData) {
       const productId = await stripeService.ensureProduct(

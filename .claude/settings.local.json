@@ -26,7 +26,10 @@
       "Bash(git rev-parse:*)",
       "Bash(for file in apps/customer-portal/app/api/billing/*/route.ts)",
       "Bash(do sed -i \"s/import { getTenantDb }/import { prisma }/g; s/await getTenantDb()/prisma/g\" \"$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

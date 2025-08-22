@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN public.users u ON u.license_key = l.license_key
       WHERE l.license_key = current_setting('app.current_license')
       LIMIT 1
-    `;
+    ` as any[];
 
     if (!license || license.length === 0) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       WHERE l.license_key = current_setting('app.current_license')
         AND u.role = 'owner'
       LIMIT 1
-    `;
+    ` as any[];
 
     if (!result || result.length === 0) {
       return NextResponse.json(
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         SELECT base_price_pence 
         FROM public.products 
         WHERE slug = ${productSlug}
-      `;
+      ` as any[];
       
       if (productData && productData[0]) {
         const priceId = await stripeService.createPrice({
@@ -191,7 +191,7 @@ export async function PUT(request: NextRequest) {
       SELECT stripe_subscription_id 
       FROM public.licenses 
       WHERE license_key = current_setting('app.current_license')
-    `;
+    ` as any[];
 
     if (!result || result.length === 0 || !result[0].stripe_subscription_id) {
       return NextResponse.json(

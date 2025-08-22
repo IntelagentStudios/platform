@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       WHERE u.license_key = current_setting('app.current_license')
         AND u.role = 'owner'
       LIMIT 1
-    `;
+    ` as any[];
 
     if (!result || result.length === 0 || !result[0].stripe_customer_id) {
       return NextResponse.json(

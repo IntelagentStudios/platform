@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       WHERE u.license_key = current_setting('app.current_license')
         AND u.role = 'owner'
       LIMIT 1
-    `;
+    ` as any[];
 
     if (!result || result.length === 0 || !result[0].stripe_customer_id) {
       // Return empty list if no Stripe customer
