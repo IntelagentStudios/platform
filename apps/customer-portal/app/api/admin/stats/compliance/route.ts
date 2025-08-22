@@ -112,12 +112,11 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    // Data processing agreements
+    // Data processing agreements (simplified - check by plan type)
     const dpaCount = await prisma.licenses.count({
       where: {
-        metadata: {
-          path: '$.dpa_signed',
-          equals: true
+        plan: {
+          in: ['pro', 'enterprise']
         }
       }
     });

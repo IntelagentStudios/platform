@@ -61,8 +61,7 @@ export async function GET(request: NextRequest) {
         select: {
           event_type: true,
           license_key: true,
-          created_at: true,
-          metadata: true
+          created_at: true
         }
       })
     ]);
@@ -89,8 +88,7 @@ export async function GET(request: NextRequest) {
       recentActivity: recentActivity.map(event => ({
         type: event.event_type,
         license: event.license_key,
-        time: event.created_at,
-        metadata: event.metadata
+        time: event.created_at
       }))
     });
 
