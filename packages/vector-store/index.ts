@@ -1,7 +1,7 @@
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 import { prisma } from '@intelagent/database';
-import { RedisCache } from '@intelagent/redis';
+import { cache } from '@intelagent/redis';
 import crypto from 'crypto';
 
 interface VectorDocument {
@@ -38,11 +38,10 @@ class VectorStoreService {
   private pinecone: Pinecone | null = null;
   private openai: OpenAI | null = null;
   private index: any = null;
-  private cache: RedisCache;
+  private cache = cache; // Use the lazy-loaded cache from redis package
   private embeddingDimension = 1536; // OpenAI embedding dimension
   
   constructor() {
-    this.cache = new RedisCache(3600); // 1 hour cache
     this.initialize();
   }
 
@@ -461,8 +460,15 @@ class VectorStoreService {
   }
 }
 
-// Singleton instance
-const vectorStore = new VectorStoreService();
+// Singleton instance (lazy initialization)
+let vectorStore: VectorStoreService | null = null;
+
+function getVectorStore(): VectorStoreService {
+  if (!vectorStore) {
+    vectorStore = new VectorStoreService();
+  }
+  return vectorStore;
+}
 
 // Export functions for easy use
 export async function indexWebsite(licenseKey: string, siteKey: string, domain: string, pages: any[]): Promise<IndexingProgress> {
@@ -482,23 +488,23 @@ export async function indexWebsite(licenseKey: string, siteKey: string, domain: 
     }
   }));
   
-  return await vectorStore.indexDocuments(documents);
+  return await getVectorStore().indexDocuments(documents);
 }
 
 export async function searchKnowledgeBase(query: string, licenseKey: string, siteKey: string): Promise<SearchResult[]> {
-  return await vectorStore.search(query, licenseKey, siteKey);
+  return await getVectorStore().search(query, licenseKey, siteKey);
 }
 
 export async function getChatbotResponse(query: string, licenseKey: string, siteKey: string): Promise<string> {
-  return await vectorStore.generateResponse(query, licenseKey, siteKey);
+  return await getVectorStore().generateResponse(query, licenseKey, siteKey);
 }
 
 export async function deleteKnowledgeBase(licenseKey: string, siteKey: string): Promise<void> {
-  return await vectorStore.deleteDocuments(licenseKey, siteKey);
+  return await getVectorStore().deleteDocuments(licenseKey, siteKey);
 }
 
 export async function getIndexingStatus(licenseKey: string, siteKey: string): Promise<IndexingProgress | null> {
-  return await vectorStore.getIndexingProgress(licenseKey, siteKey);
+  return await getVectorStore().getIndexingProgress(licenseKey, siteKey);
 }
 
 export { vectorStore, VectorStoreService, VectorDocument, SearchResult, IndexingProgress };
