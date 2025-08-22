@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { getAuthFromCookies } from '@/lib/auth'
-import DashboardClient from '@/components/dashboard/dashboard-client'
 
 export default async function HomePage() {
   const auth = await getAuthFromCookies()
@@ -9,5 +8,5 @@ export default async function HomePage() {
     redirect('/validate-license')
   }
 
-  return <DashboardClient />
+  redirect('/dashboard')
 }
