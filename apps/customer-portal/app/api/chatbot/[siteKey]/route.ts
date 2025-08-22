@@ -33,7 +33,7 @@ export async function POST(
       select: {
         domain: true,
         is_active: true,
-        indexing_completed: true,
+        setup_completed: true,
         setup_data: true
       }
     });
@@ -54,9 +54,9 @@ export async function POST(
     
     // Log the conversation
     const conversationId = crypto.randomBytes(16).toString('hex');
-    await prisma.chatbot_logs.create({
+    const chatLog = await prisma.chatbot_logs.create({
       data: {
-        id: conversationId,
+        conversation_id: conversationId,
         site_key: siteKey,
         session_id: sessionId,
         customer_message: message,
@@ -68,12 +68,12 @@ export async function POST(
     let metadata: any = {};
     
     try {
-      if (productSetup.indexing_completed) {
+      if (productSetup.setup_completed) {
         // Use Pinecone vector search for response
-        response = await getChatbotResponse(message, siteKey);
+        response = await getChatbotResponse(message, siteKey, sessionId);
         
         // Also get search results for transparency
-        const searchResults = await searchKnowledgeBase(message, siteKey);
+        const searchResults = await searchKnowledgeBase(message, siteKey, 5);
         metadata = {
           sources: searchResults.slice(0, 3).map(r => ({
             url: r.metadata?.url,
@@ -101,12 +101,10 @@ export async function POST(
     
     // Update conversation log with response
     await prisma.chatbot_logs.update({
-      where: { id: conversationId },
+      where: { id: chatLog.id },
       data: {
         chatbot_response: response,
-        intent_detected: detectIntent(message),
-        metadata,
-        responded_at: new Date()
+        intent_detected: detectIntent(message)
       }
     });
     
@@ -145,7 +143,7 @@ export async function PUT(
       select: {
         domain: true,
         user_id: true,
-        indexing_completed: true
+        setup_completed: true
       }
     });
     
@@ -159,7 +157,7 @@ export async function PUT(
     switch (action) {
       case 'index':
         // Start indexing
-        if (productSetup.indexing_completed) {
+        if (productSetup.setup_completed) {
           return NextResponse.json({
             status: 'already_indexed',
             message: 'Website is already indexed. Use action "reindex" to update.'
@@ -222,8 +220,8 @@ export async function GET(
       select: {
         domain: true,
         is_active: true,
-        indexing_completed: true,
-        indexing_completed_at: true,
+        setup_completed: true,
+        setup_completed_at: true,
         setup_data: true,
         created_at: true
       }
@@ -238,8 +236,13 @@ export async function GET(
     
     // Get indexing status if needed
     let indexingStatus = null;
-    if (!productSetup.indexing_completed) {
-      indexingStatus = await websiteIndexer.getStatus(siteKey);
+    if (!productSetup.setup_completed) {
+      // TODO: Implement websiteIndexer when enrichment service is ready
+      indexingStatus = {
+        status: 'pending',
+        progress: 0,
+        message: 'Indexing not yet started'
+      };
     }
     
     // Get usage statistics
@@ -257,8 +260,8 @@ export async function GET(
     return NextResponse.json({
       domain: productSetup.domain,
       active: productSetup.is_active,
-      indexed: productSetup.indexing_completed,
-      indexedAt: productSetup.indexing_completed_at,
+      indexed: productSetup.setup_completed,
+      indexedAt: productSetup.setup_completed_at,
       indexingStatus,
       configuration: productSetup.setup_data || {},
       usage: {
@@ -360,9 +363,9 @@ async function trackUsage(siteKey: string): Promise<void> {
     
     await prisma.usage_metrics.upsert({
       where: {
-        license_key_product_period_start: {
+        license_key_product_id_period_start: {
           license_key: user.license_key,
-          product: 'chatbot',
+          product_id: 'chatbot',
           period_start: today
         }
       },
@@ -372,11 +375,11 @@ async function trackUsage(siteKey: string): Promise<void> {
       },
       create: {
         license_key: user.license_key,
-        product: 'chatbot',
+        product_id: 'chatbot',
         period_start: today,
         period_end: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         messages: 1,
-        created_at: new Date()
+        updated_at: new Date()
       }
     });
   } catch (error) {
