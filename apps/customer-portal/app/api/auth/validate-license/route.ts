@@ -60,8 +60,7 @@ export async function POST(request: NextRequest) {
         data: {
           email,
           name,
-          license_key,
-          status: 'active'
+          license_key
         }
       });
 
