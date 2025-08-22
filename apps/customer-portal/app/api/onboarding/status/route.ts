@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: Implement onboarding table
     // Check if onboarding is completed
-    /*
     const onboarding = await prisma.onboarding.findUnique({
       where: { license_key: licenseKey }
     });
@@ -34,14 +32,6 @@ export async function GET(request: NextRequest) {
       completed: onboarding.completed,
       currentStep: onboarding.current_step,
       data: onboarding.data
-    });
-    */
-
-    // Return mock data for now - assume onboarding is complete
-    return NextResponse.json({
-      completed: true,
-      currentStep: 6,
-      data: {}
     });
 
   } catch (error: any) {

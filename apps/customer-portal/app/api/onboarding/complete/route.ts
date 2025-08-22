@@ -24,15 +24,11 @@ export async function POST(request: NextRequest) {
         where: { license_key: licenseKey },
         data: {
           customer_name: data.business.company_name
-          // Note: Other business info (industry, company_size, etc.) 
-          // cannot be stored as there's no metadata field in licenses table
         }
       });
     }
 
-    // TODO: Implement onboarding table
-    // Save onboarding completion - table doesn't exist yet
-    /*
+    // Save onboarding completion
     await prisma.onboarding.upsert({
       where: { license_key: licenseKey },
       update: {
@@ -48,10 +44,8 @@ export async function POST(request: NextRequest) {
         data: data
       }
     });
-    */
 
-    // Save product configurations - table doesn't exist yet
-    /*
+    // Save product configurations
     if (data.products) {
       for (const product of data.products) {
         if (product.configured) {
@@ -64,19 +58,43 @@ export async function POST(request: NextRequest) {
             },
             update: {
               config: product.config,
+              enabled: true,
               updated_at: new Date()
             },
             create: {
               license_key: licenseKey,
               product: product.name,
               config: product.config,
-              created_at: new Date()
+              enabled: true
             }
           });
         }
       }
     }
-    */
+
+    // Log completion event
+    await prisma.events.create({
+      data: {
+        license_key: licenseKey,
+        event_type: 'onboarding.completed',
+        event_data: {
+          products_configured: data.products?.filter((p: any) => p.configured).map((p: any) => p.name),
+          business_info: data.business
+        }
+      }
+    });
+
+    // Track onboarding metrics
+    await prisma.onboarding_metrics.create({
+      data: {
+        license_key: licenseKey,
+        step_completed: 'onboarding_complete',
+        properties: {
+          total_products: data.products?.length || 0,
+          configured_products: data.products?.filter((p: any) => p.configured).length || 0
+        }
+      }
+    });
 
     // Send real-time event
     sendCustomEvent(

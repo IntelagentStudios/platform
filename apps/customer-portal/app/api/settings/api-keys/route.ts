@@ -146,19 +146,18 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Log API key creation when events table exists
-    // await prisma.events.create({
-    //   data: {
-    //     license_key: session.license_key,
-    //     user_id: session.userId,
-    //     event_type: 'api_key.created',
-    //     event_data: {
-    //       key_id: newKey.id,
-    //       name: newKey.name,
-    //       permissions
-    //     }
-    //   }
-    // });
+    // Log API key creation
+    await prisma.events.create({
+      data: {
+        license_key: session.license_key,
+        event_type: 'api_key.created',
+        event_data: {
+          key_id: newKey.id,
+          name: newKey.name,
+          permissions
+        }
+      }
+    });
 
     return NextResponse.json({
       id: newKey.id,

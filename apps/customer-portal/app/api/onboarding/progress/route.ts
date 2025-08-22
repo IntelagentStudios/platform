@@ -24,16 +24,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Implement onboarding table
     // Get existing onboarding data
-    /*
     const existing = await prisma.onboarding.findUnique({
       where: { license_key: licenseKey }
     });
 
     // Merge new data with existing data
+    const existingData = existing?.data as Record<string, any> || {};
     const mergedData = {
-      ...(existing?.data || {}),
+      ...existingData,
       ...data,
       last_updated: new Date().toISOString()
     };
@@ -53,13 +52,6 @@ export async function POST(request: NextRequest) {
         data: mergedData
       }
     });
-    */
-
-    // Return mock data for now
-    const onboarding = {
-      current_step: step,
-      data: data
-    };
 
     // Track step completion analytics
     await trackStepProgress(licenseKey, step, data);
@@ -91,8 +83,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // TODO: Implement onboarding table
-    /*
     const onboarding = await prisma.onboarding.findUnique({
       where: { license_key: licenseKey }
     });
@@ -109,14 +99,6 @@ export async function GET(request: NextRequest) {
       currentStep: onboarding.current_step,
       completed: onboarding.completed,
       data: onboarding.data || {}
-    });
-    */
-
-    // Return mock data for now
-    return NextResponse.json({
-      currentStep: 0,
-      completed: false,
-      data: {}
     });
 
   } catch (error: any) {
@@ -139,20 +121,42 @@ async function trackStepProgress(licenseKey: string, step: number, data: any) {
       'completion'
     ];
 
-    // TODO: Add analytics table
-    // await prisma.analytics.create({
-    //   data: {
-    //     event_type: 'onboarding_step_completed',
-    //     license_key: licenseKey,
-    //     properties: {
-    //       step: step,
-    //       step_name: stepNames[step] || 'unknown',
-    //       has_data: !!data && Object.keys(data).length > 0,
-    //       timestamp: new Date().toISOString()
-    //     },
-    //     created_at: new Date()
-    //   }
-    // });
+    // Track step completion in analytics
+    await prisma.analytics.create({
+      data: {
+        license_key: licenseKey,
+        metric_type: 'onboarding',
+        metric_name: 'step_completed',
+        metric_value: step,
+        dimension: stepNames[step] || 'unknown',
+        period_start: new Date(),
+        period_end: new Date()
+      }
+    });
+
+    // Track step metrics
+    await prisma.onboarding_metrics.create({
+      data: {
+        license_key: licenseKey,
+        step_completed: stepNames[step] || `step_${step}`,
+        properties: {
+          has_data: !!data && Object.keys(data).length > 0,
+          timestamp: new Date().toISOString()
+        }
+      }
+    });
+
+    // Log event
+    await prisma.events.create({
+      data: {
+        license_key: licenseKey,
+        event_type: 'onboarding.step_completed',
+        event_data: {
+          step: step,
+          step_name: stepNames[step] || 'unknown'
+        }
+      }
+    });
   } catch (error) {
     console.error('Analytics tracking error:', error);
   }

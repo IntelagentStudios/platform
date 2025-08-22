@@ -883,3 +883,87 @@ model user_sessions {
   @@index([expires_at])
   @@schema("public")
 }
+
+// Onboarding tracking
+model onboarding {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  license_key   String    @unique @db.VarChar(20)
+  current_step  Int       @default(0)
+  completed     Boolean   @default(false)
+  completed_at  DateTime?
+  data          Json?     // Stores onboarding form data
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  
+  @@index([license_key])
+  @@index([completed])
+  @@schema("public")
+}
+
+// Product-specific configurations
+model product_configs {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  license_key   String    @db.VarChar(20)
+  product       String    @db.VarChar(50)
+  config        Json      // Product-specific configuration
+  enabled       Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  
+  @@unique([license_key, product])
+  @@index([license_key])
+  @@index([product])
+  @@schema("public")
+}
+
+// Event logging for audit and analytics
+model events {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  license_key   String?   @db.VarChar(20)
+  user_id       String?   @db.VarChar(36)
+  event_type    String    @db.VarChar(100)
+  event_data    Json?
+  ip_address    String?   @db.VarChar(45)
+  user_agent    String?   @db.Text
+  created_at    DateTime  @default(now())
+  
+  @@index([license_key])
+  @@index([user_id])
+  @@index([event_type])
+  @@index([created_at])
+  @@schema("public")
+}
+
+// Analytics data aggregation
+model analytics {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  license_key     String    @db.VarChar(20)
+  metric_type     String    @db.VarChar(50)
+  metric_name     String    @db.VarChar(100)
+  metric_value    Float
+  dimension       String?   @db.VarChar(100)
+  period_start    DateTime
+  period_end      DateTime
+  created_at      DateTime  @default(now())
+  
+  @@unique([license_key, metric_type, metric_name, period_start])
+  @@index([license_key])
+  @@index([metric_type])
+  @@index([period_start])
+  @@schema("public")
+}
+
+// Onboarding metrics tracking
+model onboarding_metrics {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  license_key     String    @db.VarChar(20)
+  step_completed  String    @db.VarChar(50)
+  time_spent      Int?      // Time in seconds
+  properties      Json?
+  created_at      DateTime  @default(now())
+  
+  @@index([license_key])
+  @@index([step_completed])
+  @@index([created_at])
+  @@schema("public")
+}

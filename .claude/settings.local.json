@@ -29,7 +29,8 @@
       "Bash(done)",
       "Bash(find:*)",
       "Bash(sed:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

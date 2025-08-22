@@ -17,15 +17,14 @@ export async function POST(request: NextRequest) {
     const { event, properties } = await request.json();
 
     // Track the onboarding event
-    // TODO: Add analytics table to schema
-    // await prisma.analytics.create({
-    //   data: {
-    //     event_type: `onboarding_${event}`,
-    //     license_key: licenseKey,
-    //     properties: properties || {},
-    //     created_at: new Date()
-    //   }
-    // });
+    await prisma.events.create({
+      data: {
+        event_type: `onboarding_${event}`,
+        license_key: licenseKey,
+        event_data: properties || {},
+        created_at: new Date()
+      }
+    });
 
     // Update onboarding metrics
     await updateOnboardingMetrics(licenseKey, event, properties);
@@ -54,22 +53,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Get onboarding analytics for this user
-    // TODO: Add analytics table to schema
-    const analytics: any[] = []; // Temporary empty array
-    // const analytics = await prisma.analytics.findMany({
-    //   where: {
-    //     license_key: licenseKey,
-    //     event_type: {
-    //       startsWith: 'onboarding_'
-    //     }
-    //   },
-    //   orderBy: {
-    //     created_at: 'desc'
-    //   }
-    // });
+    const analytics = await prisma.events.findMany({
+      where: {
+        license_key: licenseKey,
+        event_type: {
+          startsWith: 'onboarding_'
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+
+    // Get onboarding metrics
+    const onboardingMetrics = await prisma.onboarding_metrics.findMany({
+      where: { license_key: licenseKey },
+      orderBy: { created_at: 'desc' }
+    });
 
     // Calculate metrics
-    const metrics = calculateOnboardingMetrics(analytics);
+    const metrics = calculateOnboardingMetrics(analytics, onboardingMetrics);
 
     return NextResponse.json({
       events: analytics,
@@ -90,100 +93,71 @@ async function updateOnboardingMetrics(
   event: string, 
   properties: any
 ) {
-  // TODO: Add onboarding_metrics table to schema
-  return;
-  /* Commented out until onboarding_metrics table is added
   try {
     // Track specific metrics based on event type
-    switch (event) {
-      case 'started':
-        await prisma.onboarding_metrics.upsert({
-          where: { license_key: licenseKey },
-          update: {
-            started_at: new Date(),
-            updated_at: new Date()
-          },
-          create: {
-            license_key: licenseKey,
-            started_at: new Date(),
-            completed: false
-          }
-        });
-        break;
+    await prisma.onboarding_metrics.create({
+      data: {
+        license_key: licenseKey,
+        step_completed: event,
+        time_spent: properties?.duration || null,
+        properties: properties || {}
+      }
+    });
 
-      case 'step_completed':
-        const stepName = properties.step_name;
-        const duration = properties.duration;
-        
-        await prisma.onboarding_metrics.update({
-          where: { license_key: licenseKey },
-          data: {
-            [`step_${stepName}_completed`]: true,
-            [`step_${stepName}_duration`]: duration,
-            last_step_completed: stepName,
-            updated_at: new Date()
-          }
-        });
-        break;
+    // Also update analytics table
+    const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
 
-      case 'completed':
-        await prisma.onboarding_metrics.update({
-          where: { license_key: licenseKey },
-          data: {
-            completed: true,
-            completed_at: new Date(),
-            total_duration: properties.total_duration,
-            products_setup: properties.products || [],
-            updated_at: new Date()
-          }
-        });
-        break;
-
-      case 'skipped':
-        await prisma.onboarding_metrics.update({
-          where: { license_key: licenseKey },
-          data: {
-            skipped: true,
-            skipped_at: new Date(),
-            skipped_reason: properties.reason,
-            updated_at: new Date()
-          }
-        });
-        break;
-
-      case 'abandoned':
-        await prisma.onboarding_metrics.update({
-          where: { license_key: licenseKey },
-          data: {
-            abandoned: true,
-            abandoned_at: new Date(),
-            abandoned_step: properties.step,
-            updated_at: new Date()
-          }
-        });
-        break;
-    }
+    await prisma.analytics.upsert({
+      where: {
+        license_key_metric_type_metric_name_period_start: {
+          license_key: licenseKey,
+          metric_type: 'onboarding',
+          metric_name: event,
+          period_start: startOfDay
+        }
+      },
+      update: {
+        metric_value: {
+          increment: 1
+        }
+      },
+      create: {
+        license_key: licenseKey,
+        metric_type: 'onboarding',
+        metric_name: event,
+        metric_value: 1,
+        dimension: properties?.step_name || event,
+        period_start: startOfDay,
+        period_end: endOfDay
+      }
+    });
   } catch (error) {
     console.error('Failed to update onboarding metrics:', error);
   }
-  */
 }
 
-function calculateOnboardingMetrics(analytics: any[]) {
-  const metrics = {
-    total_events: analytics.length,
+function calculateOnboardingMetrics(events: any[], metrics: any[]) {
+  const result = {
+    total_events: events.length,
+    total_metrics: metrics.length,
     steps_completed: 0,
     time_to_complete: null as number | null,
     drop_off_points: [] as string[],
     engagement_score: 0,
     products_explored: new Set<string>(),
-    features_used: new Set<string>()
+    features_used: new Set<string>(),
+    step_times: {} as Record<string, number>
   };
 
   let startTime: Date | null = null;
   let endTime: Date | null = null;
 
-  analytics.forEach(event => {
+  // Process events
+  events.forEach(event => {
     if (event.event_type === 'onboarding_started') {
       startTime = new Date(event.created_at);
     }
@@ -193,39 +167,48 @@ function calculateOnboardingMetrics(analytics: any[]) {
     }
     
     if (event.event_type === 'onboarding_step_completed') {
-      metrics.steps_completed++;
+      result.steps_completed++;
     }
     
     if (event.event_type === 'onboarding_abandoned') {
-      metrics.drop_off_points.push(event.properties.step);
+      result.drop_off_points.push(event.event_data?.step || 'unknown');
     }
     
-    if (event.properties.product) {
-      metrics.products_explored.add(event.properties.product);
+    if (event.event_data?.product) {
+      result.products_explored.add(event.event_data.product);
     }
     
-    if (event.properties.feature) {
-      metrics.features_used.add(event.properties.feature);
+    if (event.event_data?.feature) {
+      result.features_used.add(event.event_data.feature);
     }
+  });
+
+  // Process metrics
+  metrics.forEach(metric => {
+    const step = metric.step_completed;
+    if (!result.step_times[step]) {
+      result.step_times[step] = 0;
+    }
+    result.step_times[step] += metric.time_spent || 0;
   });
 
   // Calculate time to complete
   if (startTime && endTime) {
-    metrics.time_to_complete = Math.round(
+    result.time_to_complete = Math.round(
       (endTime.getTime() - startTime.getTime()) / 1000 / 60
     ); // in minutes
   }
 
   // Calculate engagement score (0-100)
-  metrics.engagement_score = Math.min(100, 
-    (metrics.steps_completed * 10) + 
-    (metrics.products_explored.size * 15) + 
-    (metrics.features_used.size * 5)
+  result.engagement_score = Math.min(100, 
+    (result.steps_completed * 10) + 
+    (result.products_explored.size * 15) + 
+    (result.features_used.size * 5)
   );
 
   return {
-    ...metrics,
-    products_explored: Array.from(metrics.products_explored),
-    features_used: Array.from(metrics.features_used)
+    ...result,
+    products_explored: Array.from(result.products_explored),
+    features_used: Array.from(result.features_used)
   };
 }
