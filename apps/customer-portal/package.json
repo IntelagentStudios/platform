@@ -10,6 +10,12 @@
     "db:generate": "prisma generate"
   },
   "dependencies": {
+    "@intelagent/database": "*",
+    "@intelagent/redis": "*",
+    "@intelagent/notifications": "*",
+    "@intelagent/security": "*",
+    "@intelagent/billing": "*",
+    "@intelagent/vector-store": "*",
     "@prisma/client": "^6.13.0",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
