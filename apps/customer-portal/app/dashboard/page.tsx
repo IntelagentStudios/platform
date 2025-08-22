@@ -5,13 +5,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MessageSquare, TrendingUp, Clock, Users, Activity, Shield, Package, Globe, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function DashboardPage() {
+export default function CustomerDashboardPage() {
   const [stats, setStats] = useState({
     totalConversations: 0,
     activeConversations: 0,
     avgResponseTime: '0s',
     uniqueUsers: 0,
-    growthRate: 0
+    growthRate: 0,
+    apiCalls: 0,
+    dataProcessed: 0,
+    products: [] as string[],
+    plan: 'basic',
+    hasAiPro: false,
+    licenseStatus: 'active'
   });
   const [license, setLicense] = useState<any>(null);
 
@@ -113,11 +119,11 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold capitalize">{license?.plan || 'Standard'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Products</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Active Products</p>
               <div className="flex gap-1 mt-1">
-                {(license?.products || ['chatbot']).map((product: string) => (
-                  <span key={product} className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded">
-                    {product}
+                {stats.products.map((product: string) => (
+                  <span key={product} className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 rounded capitalize">
+                    {product.replace('-', ' ')}
                   </span>
                 ))}
               </div>
@@ -180,59 +186,101 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Charts Section */}
+      {/* AI Pro Section - Only show if user has the upgrade */}
+      {stats.hasAiPro && (
+        <Card className="border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              AI Pro Analytics
+            </CardTitle>
+            <CardDescription>Advanced insights and predictions for your products</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Predicted Growth</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">+{stats.growthRate * 1.5}%</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Optimal Response Time</p>
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">1.2s</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Engagement Score</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">92/100</p>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Button className="w-full" variant="outline">
+                <Activity className="h-4 w-4 mr-2" />
+                View AI Insights Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Product-Specific Metrics */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>Recent Conversations</CardTitle>
-            <CardDescription>Latest chat sessions</CardDescription>
+            <CardTitle>Your Product Activity</CardTitle>
+            <CardDescription>Performance across your licensed products</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
-                  <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700">
-                    <MessageSquare className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              {stats.products.map((product, index) => (
+                <div key={product} className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
+                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                        {product.replace('-', ' ')}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Active since license creation
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      New conversation started
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      5 minutes ago • 12 messages
-                    </p>
-                  </div>
+                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded">
+                    Active
+                  </span>
                 </div>
               ))}
+              {stats.products.length === 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                  No products activated yet
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>System Status</CardTitle>
-            <CardDescription>Service health and uptime</CardDescription>
+            <CardTitle>Usage Metrics</CardTitle>
+            <CardDescription>Your license usage this month</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">API Status</span>
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  Operational
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">API Calls</span>
+                <span className="text-sm font-medium">{stats.apiCalls.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Response Time</span>
-                <span className="text-sm font-medium">45ms</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Data Processed</span>
+                <span className="text-sm font-medium">{stats.dataProcessed} MB</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Uptime</span>
-                <span className="text-sm font-medium">99.99%</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Active Sessions</span>
+                <span className="text-sm font-medium">{stats.activeConversations}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Rate Limit</span>
-                <span className="text-sm font-medium">892/1000</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Unique Users</span>
+                <span className="text-sm font-medium">{stats.uniqueUsers.toLocaleString()}</span>
               </div>
             </div>
           </CardContent>

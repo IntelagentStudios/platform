@@ -8,37 +8,36 @@ export async function GET(request: Request) {
   try {
     const auth = await getAuthFromCookies()
     
-    if (!auth) {
+    if (!auth || !auth.license_key) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    let whereClause: any = {}
-    let userSiteKey: string | null = null
-    
-    if (!auth.license_key) {
-      // Get the user's site_key from their license_key
-      const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.license_key },
-        select: { site_key: true }
-      })
-      
-      if (userLicense?.site_key) {
-        whereClause.site_key = userLicense.site_key
-        userSiteKey = userLicense.site_key
-      } else {
-        // No site_key found, return zeros
-        return NextResponse.json({
-          totalLicenses: 1,
-          activeConversations: 0,
-          monthlyGrowth: 0,
-          revenue: 0,
-          responseTime: null,
-          sessionsToday: 0,
-        })
+    // Get the user's license data
+    const userLicense = await prisma.licenses.findUnique({
+      where: { license_key: auth.license_key },
+      select: { 
+        site_key: true,
+        products: true,
+        plan: true,
+        status: true,
+        subscription_status: true
       }
+    })
+    
+    if (!userLicense) {
+      return NextResponse.json(
+        { error: 'License not found' },
+        { status: 404 }
+      )
+    }
+
+    // Filter data by this license's site_key
+    let whereClause: any = {}
+    if (userLicense.site_key) {
+      whereClause.site_key = userLicense.site_key
     }
 
     // If requesting previous period stats
@@ -112,15 +111,9 @@ export async function GET(request: Request) {
       })
     }
 
-    // Get real counts from database
-    const [totalLicenses, activeLicenses, totalConversations, recentConversations] = await Promise.all([
-      // Total licenses (only for master admin)
-      Promise.resolve(1),
-      
-      // Active licenses (customer portal always 1)
-      Promise.resolve(1),
-      
-      // Total conversations (unique sessions)
+    // Get counts specific to this license's products
+    const [totalConversations, recentConversations, uniqueUsers] = await Promise.all([
+      // Total conversations for this license's site
       prisma.chatbot_logs.groupBy({
         by: ['session_id'],
         where: {
@@ -139,6 +132,16 @@ export async function GET(request: Request) {
           timestamp: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
+        },
+        _count: true,
+      }).then(result => result.length),
+      
+      // Unique users for this license
+      prisma.chatbot_logs.groupBy({
+        by: ['customer_identifier'],
+        where: {
+          ...whereClause,
+          customer_identifier: { not: null }
         },
         _count: true,
       }).then(result => result.length)
@@ -236,37 +239,38 @@ export async function GET(request: Request) {
         : `${avgResponseTime.toFixed(1)}s`
       : null
 
-    // Calculate revenue based on actual subscriptions
-    const subscriptions = await prisma.licenses.findMany({
-      where: { license_key: auth.license_key},
-      select: {
-        plan: true,
-        subscription_status: true
+    // Check if user has AI Pro upgrade
+    const hasAiPro = userLicense.products?.includes('ai-pro') || false
+
+    // Get API usage for this license
+    const apiCalls = await prisma.events.count({
+      where: {
+        license_key: auth.license_key,
+        event_type: 'api_call',
+        created_at: {
+          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        }
       }
     })
 
-    // Basic revenue calculation (you can adjust prices based on your actual pricing)
-    const planPrices: Record<string, number> = {
-      'basic': 25,
-      'pro': 89,
-      'enterprise': 259,
-      'starter': 15
-    }
-
-    const revenue = subscriptions.reduce((total, sub) => {
-      if (sub.subscription_status === 'active' && sub.plan) {
-        return total + (planPrices[sub.plan.toLowerCase()] || 25)
-      }
-      return total
-    }, 0)
+    // Calculate data processed (in MB)
+    const dataProcessed = Math.round(totalConversations * 2.5) // Estimate 2.5MB per conversation
 
     return NextResponse.json({
-      totalLicenses: 1,
+      // License-specific stats
+      totalConversations,
       activeConversations: recentConversations,
-      monthlyGrowth,
-      revenue,
-      responseTime,
-      sessionsToday,
+      avgResponseTime: responseTime || '0s',
+      uniqueUsers,
+      growthRate: monthlyGrowth,
+      apiCalls,
+      dataProcessed,
+      
+      // License details
+      products: userLicense.products || [],
+      plan: userLicense.plan || 'basic',
+      hasAiPro,
+      licenseStatus: userLicense.status
     })
   } catch (error) {
     console.error('Stats error:', error)
