@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { aiIntelligence } from '@intelagent/ai-intelligence';
+// TODO: Implement AI intelligence service
+// import { aiIntelligence } from '@intelagent/ai-intelligence';
 
 export async function GET(request: NextRequest) {
   try {
@@ -112,13 +113,15 @@ export async function GET(request: NextRequest) {
     // Generate new insights if needed
     let insights = aiInsights;
     if (insights.length === 0) {
-      const generatedInsights = await aiIntelligence.generateInsights({
-        licenseKey,
-        type: 'pattern',
-        products: products.includes('all') ? undefined : products,
-        timeRange: { start: startDate, end: endDate }
-      });
-      insights = generatedInsights as any;
+      // TODO: Implement AI intelligence service
+      // const generatedInsights = await aiIntelligence.generateInsights({
+      //   licenseKey,
+      //   type: 'pattern',
+      //   products: products.includes('all') ? undefined : products,
+      //   timeRange: { start: startDate, end: endDate }
+      // });
+      // insights = generatedInsights as any;
+      insights = [];
     }
 
     return NextResponse.json({

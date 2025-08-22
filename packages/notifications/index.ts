@@ -463,21 +463,6 @@ class NotificationService {
 const notificationService = new NotificationService();
 
 // Predefined notification templates
-export async function sendUsageAlert(licenseKey: string, product: string, percentage: number) {
-  await notificationService.send({
-    licenseKey,
-    type: 'email',
-    priority: percentage >= 90 ? 'high' : 'normal',
-    subject: `Usage Alert: ${product} at ${percentage}% capacity`,
-    message: `Your ${product} usage has reached ${percentage}% of your plan limit. Consider upgrading to avoid service interruption.`,
-    metadata: {
-      product,
-      percentage,
-      actionUrl: `${process.env.NEXT_PUBLIC_APP_URL}/upgrade`,
-      actionText: 'Upgrade Now'
-    }
-  });
-}
 
 export async function sendPaymentReminder(licenseKey: string, daysUntilDue: number) {
   await notificationService.send({

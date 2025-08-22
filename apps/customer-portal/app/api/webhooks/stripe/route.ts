@@ -111,36 +111,37 @@ export async function POST(request: NextRequest) {
           // TODO: Add billing_history table
           // await db.billing_history.create({
           //   data: {
-              license_key: invoice.metadata.license_key,
-              invoice_number: invoice.number || `INV-${Date.now()}`,
-              amount_pence: invoice.amount_due,
-              currency: 'GBP',
-              status: 'failed',
-              stripe_invoice_id: invoice.id,
+          //     license_key: invoice.metadata.license_key,
+          //     invoice_number: invoice.number || `INV-${Date.now()}`,
+          //     amount_pence: invoice.amount_due,
+          //     currency: 'GBP',
+          //     status: 'failed',
+          //     stripe_invoice_id: invoice.id,
           //     billed_at: new Date(invoice.created * 1000)
           //   }
           // });
 
           // Suspend license after multiple failures
-          const failedCount = await db.billing_history.count({
-            where: {
-              license_key: invoice.metadata.license_key,
-              status: 'failed',
-              billed_at: {
-                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-              }
-            }
-          });
+          // TODO: Implement once billing_history table is added
+          // const failedCount = await db.billing_history.count({
+          //   where: {
+          //     license_key: invoice.metadata.license_key,
+          //     status: 'failed',
+          //     billed_at: {
+          //       gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          //     }
+          //   }
+          // });
 
-          if (failedCount >= 3) {
-            await db.licenses.update({
-              where: { license_key: invoice.metadata.license_key },
-              data: {
-                status: 'suspended',
-                suspended_at: new Date()
-              }
-            });
-          }
+          // if (failedCount >= 3) {
+          //   await db.licenses.update({
+          //     where: { license_key: invoice.metadata.license_key },
+          //     data: {
+          //       status: 'suspended',
+          //       suspended_at: new Date()
+          //     }
+          //   });
+          // }
         }
         break;
       }

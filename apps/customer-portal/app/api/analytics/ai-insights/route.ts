@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { aiIntelligence } from '@intelagent/ai-intelligence';
+// TODO: Implement AI intelligence service
+// import { aiIntelligence } from '@intelagent/ai-intelligence';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,18 +38,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate new insights
-    const insights = await aiIntelligence.generateInsights({
-      licenseKey,
-      type: 'recommendation',
-      timeRange: {
-        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        end: new Date()
-      }
-    });
+    // TODO: Implement AI intelligence service
+    // const insights = await aiIntelligence.generateInsights({
+    //   licenseKey,
+    //   type: 'recommendation',
+    //   timeRange: {
+    //     start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    //     end: new Date()
+    //   }
+    // });
 
     return NextResponse.json({
-      insights,
-      generated: true
+      insights: [],
+      generated: false,
+      message: 'AI intelligence service not yet implemented'
     });
 
   } catch (error: any) {
@@ -75,18 +78,22 @@ export async function POST(request: NextRequest) {
     const { type, products, timeRange, context } = await request.json();
 
     // Generate insights based on request
-    const insights = await aiIntelligence.generateInsights({
-      licenseKey,
-      type: type || 'pattern',
-      products,
-      timeRange: timeRange ? {
-        start: new Date(timeRange.start),
-        end: new Date(timeRange.end)
-      } : undefined,
-      context
-    });
+    // TODO: Implement AI intelligence service
+    // const insights = await aiIntelligence.generateInsights({
+    //   licenseKey,
+    //   type: type || 'pattern',
+    //   products,
+    //   timeRange: timeRange ? {
+    //     start: new Date(timeRange.start),
+    //     end: new Date(timeRange.end)
+    //   } : undefined,
+    //   context
+    // });
 
-    return NextResponse.json({ insights });
+    return NextResponse.json({ 
+      insights: [],
+      message: 'AI intelligence service not yet implemented'
+    });
 
   } catch (error: any) {
     console.error('Generate insights error:', error);

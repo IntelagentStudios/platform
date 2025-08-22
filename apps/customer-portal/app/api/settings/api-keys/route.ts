@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@intelagent/database';
-import { getSession } from '@/lib/auth';
+import { getAuthFromCookies } from '@/lib/auth';
 import crypto from 'crypto';
 
 // Generate a secure API key
@@ -23,18 +23,18 @@ function getKeyPreview(key: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession(request);
-    if (!session?.userId) {
+    const session = await getAuthFromCookies();
+    if (!session?.license_key) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Fetch all API keys for the user
+    // Fetch all API keys for the user's license
     const apiKeys = await prisma.api_keys.findMany({
       where: {
-        user_id: session.userId
+        license_key: session.license_key
       },
       orderBy: {
         created_at: 'desc'
@@ -74,8 +74,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession(request);
-    if (!session?.userId) {
+    const session = await getAuthFromCookies();
+    if (!session?.license_key) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check API key limit (e.g., max 10 keys per user)
+    // Check API key limit (e.g., max 10 keys per license)
     const keyCount = await prisma.api_keys.count({
       where: {
-        user_id: session.userId,
+        license_key: session.license_key,
         status: 'active'
       }
     });
@@ -135,8 +135,7 @@ export async function POST(request: NextRequest) {
     // Create API key record
     const newKey = await prisma.api_keys.create({
       data: {
-        user_id: session.userId,
-        license_key: session.licenseKey,
+        license_key: session.license_key,
         name: name.trim(),
         key_hash: hashedKey,
         key_preview: keyPreview,
@@ -151,7 +150,7 @@ export async function POST(request: NextRequest) {
     // Log API key creation
     await prisma.events.create({
       data: {
-        license_key: session.licenseKey,
+        license_key: session.license_key,
         user_id: session.userId,
         event_type: 'api_key.created',
         event_data: {
