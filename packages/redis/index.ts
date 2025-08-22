@@ -7,13 +7,27 @@ import Redis, { RedisOptions } from 'ioredis';
 
 // Parse Redis configuration from environment
 function getRedisConfig(): RedisOptions | string | null {
-  // Check for REDIS_URL first (Railway provides this)
+  // Check for public Redis URL first (works during build and runtime)
+  const publicRedisUrl = process.env.REDIS_PUBLIC_URL || process.env.REDIS_URL_PUBLIC;
+  
+  if (publicRedisUrl) {
+    console.log('Using public Redis URL');
+    return publicRedisUrl;
+  }
+  
+  // Check for internal Redis URL (only works at runtime in Railway)
   const redisUrl = process.env.REDIS_URL;
   
   // If Redis URL is provided, parse it for connection
   if (redisUrl) {
     try {
       const url = new URL(redisUrl);
+      
+      // Skip internal URLs during build time
+      if (url.hostname.includes('.internal') && process.env.BUILDING === 'true') {
+        console.log('Skipping internal Redis URL during build');
+        return null;
+      }
       
       // Return URL string for ioredis to parse
       return redisUrl;
