@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     // Get subscription from Stripe if exists
     let subscription = null;
     if (licenseData.stripe_subscription_id) {
-      subscription = await stripeService.stripe.subscriptions.retrieve(
+      subscription = await stripeService.getSubscription(
         licenseData.stripe_subscription_id
       );
     }
@@ -220,10 +220,7 @@ export async function PUT(request: NextRequest) {
         break;
         
       case 'resume':
-        subscription = await stripeService.stripe.subscriptions.update(
-          subscriptionId,
-          { cancel_at_period_end: false }
-        );
+        subscription = await stripeService.resumeSubscription(subscriptionId);
         
         // Update license status
         await db.$executeRaw`

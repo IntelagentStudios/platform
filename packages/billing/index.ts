@@ -218,6 +218,32 @@ class StripeService {
   }
 
   /**
+   * Retrieve a subscription by ID
+   */
+  async getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    try {
+      return await this.stripe.subscriptions.retrieve(subscriptionId);
+    } catch (error) {
+      console.error('Failed to retrieve subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resume a cancelled subscription
+   */
+  async resumeSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    try {
+      return await this.stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: false
+      });
+    } catch (error) {
+      console.error('Failed to resume subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Create a payment intent for one-time payment
    */
   async createPaymentIntent(
