@@ -25,7 +25,10 @@ COPY . .
 RUN cd packages/database && npx prisma generate
 
 # Build the customer portal (main user dashboard)
+# Set BUILDING flag to disable Redis during build
+ENV BUILDING=true
 RUN cd apps/customer-portal && npm run build
+ENV BUILDING=false
 
 # Set environment variables
 ENV NODE_ENV=production

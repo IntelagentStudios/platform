@@ -7,6 +7,7 @@ import Redis, { RedisOptions } from 'ioredis';
 
 // Parse Redis configuration from environment
 function getRedisConfig(): RedisOptions | string | null {
+  // Check for REDIS_URL first (Railway provides this)
   const redisUrl = process.env.REDIS_URL;
   
   // If Redis URL is provided, parse it for connection
@@ -21,7 +22,39 @@ function getRedisConfig(): RedisOptions | string | null {
     }
   }
   
-  // If individual parameters are provided
+  // Check for Railway's naming convention (without underscores)
+  const railwayHost = process.env.REDISHOST;
+  const railwayPort = process.env.REDISPORT;
+  const railwayUser = process.env.REDISUSER;
+  const railwayPassword = process.env.REDIS_PASSWORD || process.env.REDISPASSWORD;
+  
+  if (railwayHost) {
+    return {
+      host: railwayHost,
+      port: parseInt(railwayPort || '6379'),
+      username: railwayUser,
+      password: railwayPassword,
+      retryStrategy: (times: number) => {
+        if (times > 10) {
+          console.warn('Redis connection failed after 10 retries');
+          return null; // Stop retrying
+        }
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+      maxRetriesPerRequest: 3,
+      enableReadyCheck: true,
+      enableOfflineQueue: true,
+      connectTimeout: 10000,
+      disconnectTimeout: 2000,
+      commandTimeout: 5000,
+      keepAlive: 30000,
+      lazyConnect: true,
+      tls: process.env.REDIS_TLS === 'true' ? {} : undefined
+    };
+  }
+  
+  // Check for standard naming convention (with underscores) as fallback
   if (process.env.REDIS_HOST) {
     return {
       host: process.env.REDIS_HOST,
@@ -54,7 +87,16 @@ function getRedisConfig(): RedisOptions | string | null {
 }
 
 // Get Redis configuration (skip during build)
-const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || process.argv.includes('build');
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' || 
+                     process.argv.includes('build') ||
+                     process.env.BUILDING === 'true' ||
+                     !process.env.REDIS_URL;
+
+// Log for debugging
+if (isBuildTime) {
+  console.log('Redis disabled during build time');
+}
+
 const redisConfig = isBuildTime ? null : getRedisConfig();
 
 class RedisManager {
