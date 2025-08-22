@@ -94,13 +94,10 @@ export async function GET() {
         orphanedSiteKeys: orphanedSiteKeys.length
       },
       licenseMapping: licenseMapping.filter(l => l.isCurrentUser),
-      chatbotSiteKeys: c.site_key || 'NULL',
-          recordCount: c._count
-        })) : 
-        chatbotSiteKeys.filter(c => c.site_key === currentUserLicense?.site_key).map(c => ({
-          site_key: c.site_key || 'NULL',
-          recordCount: c._count
-        })),
+      chatbotSiteKeys: chatbotSiteKeys.filter(c => c.site_key === currentUserLicense?.site_key).map(c => ({
+        site_key: c.site_key || 'NULL',
+        recordCount: c._count
+      })),
       orphanedSiteKeys: []
     })
   } catch (error) {

@@ -35,8 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const [licenses, conversations, stats] = await Promise.all([
-      10})
-        : prisma.licenses.findMany({ where: { license_key: auth.license_key } }),
+      prisma.licenses.findMany({ where: { license_key: auth.license_key } }),
       prisma.chatbot_logs.groupBy({
         by: ['session_id', 'domain'],
         where: whereClause,

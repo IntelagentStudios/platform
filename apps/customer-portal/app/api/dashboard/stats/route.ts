@@ -47,14 +47,7 @@ export async function GET(request: Request) {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       
       const [prevLicenses, prevConversations, prevSessions] = await Promise.all([
-        {
-                created_at: {
-                  gte: sixtyDaysAgo,
-                  lt: thirtyDaysAgo
-                }
-              }
-            })
-          : Promise.resolve(0),
+        Promise.resolve(0), // Customer portal doesn't track licenses
         
         prisma.chatbot_logs.groupBy({
           by: ['session_id'],
