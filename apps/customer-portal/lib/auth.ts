@@ -2,25 +2,23 @@ import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS'
-const MASTER_LICENSE_KEY = process.env.MASTER_LICENSE_KEY || 'INTL-MSTR-ADMN-PASS'
 
 export interface AuthToken {
   license_key: string
-  domain: string
-  isMaster: boolean
+  email?: string
+  name?: string
   exp: number
 }
 
-export function createAuthToken(license_key: string, domain: string): string {
-  const isMaster = license_key === MASTER_LICENSE_KEY
+export function createAuthToken(license_key: string, email?: string, name?: string): string {
   const token = jwt.sign(
     { 
       license_key, 
-      domain, 
-      isMaster 
+      email,
+      name
     },
     JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: '7d' }
   )
   return token
 }
@@ -36,9 +34,19 @@ export function verifyAuthToken(token: string): AuthToken | null {
 
 export async function getAuthFromCookies(): Promise<AuthToken | null> {
   const cookieStore = await cookies()
-  const token = cookieStore.get('auth-token')
+  const token = cookieStore.get('auth_token')
   
-  if (!token) return null
+  if (!token) {
+    // Check for license_key directly (backward compatibility)
+    const licenseKey = cookieStore.get('license_key')
+    if (licenseKey) {
+      return {
+        license_key: licenseKey.value,
+        exp: Math.floor(Date.now() / 1000) + 86400 // 24 hours
+      }
+    }
+    return null
+  }
   
   return verifyAuthToken(token.value)
 }

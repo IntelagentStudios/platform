@@ -6,7 +6,7 @@ export default async function HomePage() {
   const auth = await getAuthFromCookies()
   
   if (!auth) {
-    redirect('/login')
+    redirect('/validate-license')
   }
 
   return <DashboardClient />

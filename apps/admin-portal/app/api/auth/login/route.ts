@@ -1,82 +1,87 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { createAuthToken } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { createAuthToken } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 
-const MASTER_LICENSE_KEY = process.env.MASTER_LICENSE_KEY || 'INTL-MSTR-ADMN-PASS'
+// Master admin credentials (in production, store these securely)
+const MASTER_ADMINS = [
+  {
+    email: process.env.MASTER_ADMIN_EMAIL || 'admin@intelagentstudios.com',
+    password: process.env.MASTER_ADMIN_PASSWORD || '$2a$10$XQxOZF8WGpKFzV.0tcXnYOQKGxH6hZPVPpJ.vqRlXhRFYXhKGH5ey' // Default: AdminPass123!
+  }
+];
 
 export async function POST(request: NextRequest) {
   try {
-    const { license_key, domain, rememberMe } = await request.json()
+    const { email, password } = await request.json();
 
-    if (!license_key || !domain) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'License key and domain are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
-      )
+      );
     }
 
-    const isMaster = license_key === MASTER_LICENSE_KEY
-
-    if (!isMaster) {
-      const license = await prisma.licenses.findUnique({
-        where: { license_key: license_key },
-      })
-
-      if (!license) {
-        return NextResponse.json(
-          { error: 'Invalid license key' },
-          { status: 401 }
-        )
-      }
-
-      if (license.domain && license.domain !== domain) {
-        return NextResponse.json(
-          { error: 'Domain does not match license' },
-          { status: 401 }
-        )
-      }
-
-      const token = createAuthToken(license_key, domain)
-      
-      const response = NextResponse.json({
-        success: true,
-        isMaster: false,
-        customer_name: license.customer_name,
-        email: license.email,
-        products: license.products,
-      })
-
-      response.cookies.set('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
-      })
-
-      return response
+    // Find admin by email
+    const admin = MASTER_ADMINS.find(a => a.email === email);
+    
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
 
-    const token = createAuthToken(license_key, domain)
+    // Verify password
+    let isValidPassword = false;
+    
+    // Check if the stored password is already hashed
+    if (admin.password.startsWith('$2a$')) {
+      isValidPassword = await bcrypt.compare(password, admin.password);
+    } else {
+      // For plain text passwords (development only)
+      isValidPassword = password === admin.password;
+    }
+
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    // Create auth token
+    const token = createAuthToken('MASTER_ADMIN', email);
     
     const response = NextResponse.json({
       success: true,
       isMaster: true,
-      customer_name: 'Master Admin',
-    })
+      email: admin.email,
+      role: 'master_admin'
+    });
 
+    // Set secure cookie
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
-    })
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/'
+    });
 
-    return response
+    response.cookies.set('admin-role', 'master', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/'
+    });
+
+    return response;
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
 }

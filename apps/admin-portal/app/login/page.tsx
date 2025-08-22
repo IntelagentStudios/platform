@@ -1,132 +1,135 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
-import { Loader2, Shield } from 'lucide-react'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Shield, Mail, Lock, AlertCircle } from 'lucide-react';
 
-export default function LoginPage() {
-  const [licenseKey, setLicenseKey] = useState('')
-  const [domain, setDomain] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ license_key: licenseKey, domain, rememberMe }),
-      })
+        body: JSON.stringify({ email, password }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        if (rememberMe) {
-          localStorage.setItem('licenseKey', licenseKey)
-          localStorage.setItem('domain', domain)
-        }
-        
         toast({
-          title: 'Login successful',
-          description: data.isMaster ? 'Welcome, Master Admin' : `Welcome back, ${data.customer_name || 'User'}`,
-        })
+          title: 'Welcome back!',
+          description: 'Master Admin authenticated successfully',
+        });
         
-        console.log('Redirecting to dashboard...')
-        setTimeout(() => {
-          router.push('/')
-          router.refresh()
-        }, 500)
+        router.push('/');
+        router.refresh();
       } else {
-        toast({
-          title: 'Login failed',
-          description: data.error || 'Invalid credentials',
-          variant: 'destructive',
-        })
+        setError(data.error || 'Invalid credentials');
       }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to connect to server',
-        variant: 'destructive',
-      })
+      setError('Failed to connect to server');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-[400px]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <Card className="w-[400px] shadow-lg border-gray-200 dark:border-gray-800">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <CardTitle className="text-2xl">Intelagent Studios</CardTitle>
+            <Shield className="h-6 w-6 text-gray-900 dark:text-gray-100" />
+            <CardTitle className="text-2xl">Admin Portal</CardTitle>
           </div>
           <CardDescription>
-            Enter your license key and domain to access the dashboard
+            Master dashboard access for Intelagent Studios
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="license">License Key</Label>
-              <Input
-                id="license"
-                type="text"
-                placeholder="XXXX-XXXX-XXXX-XXXX"
-                value={licenseKey}
-                onChange={(e) => setLicenseKey(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@intelagentstudios.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                  disabled={isLoading}
+                  autoComplete="email"
+                />
+              </div>
             </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="domain">Domain</Label>
-              <Input
-                id="domain"
-                type="text"
-                placeholder="example.com"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  required
+                  disabled={isLoading}
+                  autoComplete="current-password"
+                />
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="remember"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded border-gray-300"
-              />
-              <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                Remember me
-              </Label>
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            
+            <Button 
+              type="submit" 
+              className="w-full bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900" 
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Authenticating...
                 </>
               ) : (
                 'Sign In'
               )}
             </Button>
           </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500">
+              Authorized personnel only. All access is logged.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
