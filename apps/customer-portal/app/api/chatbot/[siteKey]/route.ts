@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@intelagent/database';
 import { getChatbotResponse, searchKnowledgeBase } from '@intelagent/vector-store';
-import { websiteIndexer } from '@/services/enrichment/src/modules/websiteIndexer';
+// import { websiteIndexer } from '@/services/enrichment/src/modules/websiteIndexer';
+// Temporarily disabled - websiteIndexer needs to be properly packaged
 import crypto from 'crypto';
 
 // Generate session ID
@@ -165,22 +166,31 @@ export async function PUT(
           });
         }
         
-        const indexResult = await websiteIndexer.startIndexing(
-          siteKey,
-          productSetup.domain
-        );
+        // const indexResult = await websiteIndexer.startIndexing(
+        //   siteKey,
+        //   productSetup.domain
+        // );
         
-        return NextResponse.json(indexResult);
+        return NextResponse.json({
+          status: 'indexing_disabled',
+          message: 'Indexing service is currently being configured'
+        });
         
       case 'reindex':
         // Re-index website
-        const reindexResult = await websiteIndexer.reindex(siteKey);
-        return NextResponse.json(reindexResult);
+        // const reindexResult = await websiteIndexer.reindex(siteKey);
+        return NextResponse.json({
+          status: 'reindexing_disabled',
+          message: 'Reindexing service is currently being configured'
+        });
         
       case 'status':
         // Get indexing status
-        const status = await websiteIndexer.getStatus(siteKey);
-        return NextResponse.json(status);
+        // const status = await websiteIndexer.getStatus(siteKey);
+        return NextResponse.json({
+          status: 'not_indexed',
+          message: 'Indexing service is currently being configured'
+        });
         
       default:
         return NextResponse.json(
