@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@intelagent/database';
-import { getRedisClient } from '@intelagent/redis';
+import { RedisManager } from '@intelagent/redis';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     // Test Redis connection
     try {
-      const redis = await getRedisClient();
+      const redis = RedisManager.getClient('cache');
       if (redis) {
         await redis.ping();
       }
