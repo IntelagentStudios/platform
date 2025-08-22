@@ -55,12 +55,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create new user
+      // Create new user with a placeholder password hash (since we're using license-based auth)
       user = await prisma.users.create({
         data: {
           email,
           name,
-          license_key
+          license_key,
+          password_hash: 'LICENSE_AUTH' // Placeholder since we don't use password auth for license users
         }
       });
 
