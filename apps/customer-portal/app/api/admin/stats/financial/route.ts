@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     const expiredLastMonth = await prisma.licenses.count({
       where: {
         status: 'expired',
-        updated_at: {
+        created_at: {
           gte: lastMonth
         }
       }
