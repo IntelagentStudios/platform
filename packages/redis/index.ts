@@ -95,14 +95,21 @@ class RedisManager {
           db: this.getDatabaseIndex(purpose),
           maxRetriesPerRequest: 3,
           enableOfflineQueue: true,
-          lazyConnect: true
+          lazyConnect: true,
+          enableReadyCheck: false,
+          retryStrategy: (times: number) => {
+            if (times > 3) return null;
+            return Math.min(times * 100, 3000);
+          }
         });
       } else {
         // Use individual connection parameters
         client = new Redis({
           ...redisConfig,
           connectionName: `intelagent-${purpose}`,
-          db: this.getDatabaseIndex(purpose)
+          db: this.getDatabaseIndex(purpose),
+          lazyConnect: true,
+          enableReadyCheck: false
         });
       }
       
@@ -571,10 +578,63 @@ export class RedisSessionStore {
   }
 }
 
-// Export singleton instances
-export const cache = new RedisCache();
-export const pubsub = new RedisPubSub();
-export const sessionStore = new RedisSessionStore();
+// Export singleton instances (lazy initialization)
+let _cache: RedisCache | null = null;
+let _pubsub: RedisPubSub | null = null;
+let _sessionStore: RedisSessionStore | null = null;
+
+export const cache = {
+  get: async (key: string) => {
+    if (!_cache) _cache = new RedisCache();
+    return _cache.get(key);
+  },
+  set: async (key: string, value: any, ttl?: number) => {
+    if (!_cache) _cache = new RedisCache();
+    return _cache.set(key, value, ttl);
+  },
+  delete: async (key: string) => {
+    if (!_cache) _cache = new RedisCache();
+    return _cache.delete(key);
+  },
+  clear: async (pattern?: string) => {
+    if (!_cache) _cache = new RedisCache();
+    return _cache.clear(pattern);
+  }
+};
+
+export const pubsub = {
+  publish: async (channel: string, message: any) => {
+    if (!_pubsub) _pubsub = new RedisPubSub();
+    return _pubsub.publish(channel, message);
+  },
+  subscribe: async (channel: string, callback: (message: any) => void) => {
+    if (!_pubsub) _pubsub = new RedisPubSub();
+    return _pubsub.subscribe(channel, callback);
+  },
+  unsubscribe: async (channel: string) => {
+    if (!_pubsub) _pubsub = new RedisPubSub();
+    return _pubsub.unsubscribe(channel);
+  }
+};
+
+export const sessionStore = {
+  get: async (sessionId: string) => {
+    if (!_sessionStore) _sessionStore = new RedisSessionStore();
+    return _sessionStore.get(sessionId);
+  },
+  set: async (sessionId: string, data: any, ttl?: number) => {
+    if (!_sessionStore) _sessionStore = new RedisSessionStore();
+    return _sessionStore.set(sessionId, data, ttl);
+  },
+  destroy: async (sessionId: string) => {
+    if (!_sessionStore) _sessionStore = new RedisSessionStore();
+    return _sessionStore.destroy(sessionId);
+  },
+  touch: async (sessionId: string) => {
+    if (!_sessionStore) _sessionStore = new RedisSessionStore();
+    return _sessionStore.touch(sessionId);
+  }
+};
 
 // Export the manager for advanced usage
 export { RedisManager };
