@@ -81,19 +81,20 @@ export async function POST(request: NextRequest) {
 async function trackOnboardingCompletion(licenseKey: string, data: any) {
   // Track analytics
   try {
-    await prisma.analytics.create({
-      data: {
-        event_type: 'onboarding_completed',
-        license_key: licenseKey,
-        properties: {
-          products_selected: data.products?.length || 0,
-          goals: data.goals || [],
-          time_to_complete: Date.now() - (data.started_at || Date.now()),
-          skipped_steps: data.skipped || []
-        },
-        created_at: new Date()
-      }
-    });
+    // TODO: Add analytics table
+    // await prisma.analytics.create({
+    //   data: {
+    //     event_type: 'onboarding_completed',
+    //     license_key: licenseKey,
+    //     properties: {
+    //       products_selected: data.products?.length || 0,
+    //       goals: data.goals || [],
+    //       time_to_complete: Date.now() - (data.started_at || Date.now()),
+    //       skipped_steps: data.skipped || []
+    //     },
+    //     created_at: new Date()
+    //   }
+    // });
   } catch (error) {
     console.error('Analytics tracking error:', error);
   }

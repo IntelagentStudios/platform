@@ -120,19 +120,20 @@ async function trackStepProgress(licenseKey: string, step: number, data: any) {
       'completion'
     ];
 
-    await prisma.analytics.create({
-      data: {
-        event_type: 'onboarding_step_completed',
-        license_key: licenseKey,
-        properties: {
-          step: step,
-          step_name: stepNames[step] || 'unknown',
-          has_data: !!data && Object.keys(data).length > 0,
-          timestamp: new Date().toISOString()
-        },
-        created_at: new Date()
-      }
-    });
+    // TODO: Add analytics table
+    // await prisma.analytics.create({
+    //   data: {
+    //     event_type: 'onboarding_step_completed',
+    //     license_key: licenseKey,
+    //     properties: {
+    //       step: step,
+    //       step_name: stepNames[step] || 'unknown',
+    //       has_data: !!data && Object.keys(data).length > 0,
+    //       timestamp: new Date().toISOString()
+    //     },
+    //     created_at: new Date()
+    //   }
+    // });
   } catch (error) {
     console.error('Analytics tracking error:', error);
   }

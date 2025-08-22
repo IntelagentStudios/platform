@@ -54,17 +54,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Get onboarding analytics for this user
-    const analytics = await prisma.analytics.findMany({
-      where: {
-        license_key: licenseKey,
-        event_type: {
-          startsWith: 'onboarding_'
-        }
-      },
-      orderBy: {
-        created_at: 'desc'
-      }
-    });
+    // TODO: Add analytics table to schema
+    const analytics: any[] = []; // Temporary empty array
+    // const analytics = await prisma.analytics.findMany({
+    //   where: {
+    //     license_key: licenseKey,
+    //     event_type: {
+    //       startsWith: 'onboarding_'
+    //     }
+    //   },
+    //   orderBy: {
+    //     created_at: 'desc'
+    //   }
+    // });
 
     // Calculate metrics
     const metrics = calculateOnboardingMetrics(analytics);
@@ -88,6 +90,8 @@ async function updateOnboardingMetrics(
   event: string, 
   properties: any
 ) {
+  // TODO: Add onboarding_metrics table to schema
+  return;
   try {
     // Track specific metrics based on event type
     switch (event) {
