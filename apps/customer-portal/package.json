@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
-    "build": "prisma generate --schema=../../packages/database/prisma/schema.prisma && next build",
+    "build": "next build",
+    "build:with-prisma": "prisma generate --schema=../../packages/database/prisma/schema.prisma && next build",
     "start": "node server.js",
     "lint": "next lint",
-    "db:generate": "prisma generate",
-    "postinstall": "prisma generate --schema=../../packages/database/prisma/schema.prisma"
+    "db:generate": "prisma generate --schema=../../packages/database/prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=../../packages/database/prisma/schema.prisma || true"
   },
   "dependencies": {
     "@intelagent/database": "*",

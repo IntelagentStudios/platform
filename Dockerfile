@@ -21,8 +21,11 @@ RUN npm ci --ignore-scripts
 # Copy all source code
 COPY . .
 
-# Generate Prisma Client
+# Generate Prisma Client in the database package
 RUN cd packages/database && npx prisma generate
+
+# Also generate Prisma Client in customer-portal for Next.js
+RUN cd apps/customer-portal && npx prisma generate --schema=../../packages/database/prisma/schema.prisma
 
 # Build the customer portal (main user dashboard)
 # Set build environment to disable all external service connections
