@@ -76,7 +76,7 @@ export async function middleware(request: NextRequest) {
   
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
     
     // Add user info to headers for API routes
     const requestHeaders = new Headers(request.headers);

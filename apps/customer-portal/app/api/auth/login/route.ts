@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         licenseKey: user.license_key 
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS',
       { expiresIn: '7d' }
     );
     
