@@ -17,7 +17,6 @@ import {
 
 export default function ProductsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [activeProduct, setActiveProduct] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -101,8 +100,17 @@ export default function ProductsPage() {
   ];
 
   const handleConfigure = (productId: string) => {
-    // For now, show config details. Later this will navigate to configuration page
-    setActiveProduct(activeProduct === productId ? null : productId);
+    // Navigate to specific product setup pages
+    if (productId === 'chatbot') {
+      router.push('/products/chatbot/setup');
+    } else if (productId === 'sales-agent') {
+      router.push('/products/sales-agent/setup');
+    } else if (productId === 'setup-agent') {
+      router.push('/products/setup-agent');
+    } else {
+      // For other products, navigate to generic setup
+      router.push(`/products/${productId}/setup`);
+    }
   };
 
   return (
@@ -129,7 +137,7 @@ export default function ProductsPage() {
               className="rounded-lg border overflow-hidden transition-all"
               style={{ 
                 backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                borderColor: activeProduct === product.id ? 'rgba(169, 189, 203, 0.5)' : 'rgba(169, 189, 203, 0.15)'
+                borderColor: 'rgba(169, 189, 203, 0.15)'
               }}
             >
               {/* Product Header */}
@@ -176,56 +184,6 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {/* Configuration Details (shown when active) */}
-              {activeProduct === product.id && (
-                <div className="p-6 border-b" style={{ 
-                  borderColor: 'rgba(169, 189, 203, 0.1)',
-                  backgroundColor: 'rgba(48, 54, 54, 0.5)'
-                }}>
-                  <h4 className="text-sm font-medium mb-3" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                    Configuration Settings
-                  </h4>
-                  <div className="space-y-3">
-                    {Object.entries(product.config).map(([key, value]) => (
-                      <div key={key}>
-                        <label className="text-xs uppercase tracking-wider" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                        </label>
-                        <input
-                          type="text"
-                          value={String(value)}
-                          readOnly
-                          className="w-full mt-1 px-3 py-2 rounded border bg-transparent"
-                          style={{ 
-                            borderColor: 'rgba(169, 189, 203, 0.2)',
-                            color: 'rgba(229, 227, 220, 0.8)'
-                          }}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex space-x-3 pt-3">
-                      <button
-                        className="flex-1 px-3 py-2 rounded text-sm font-medium transition hover:opacity-80"
-                        style={{ 
-                          backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                          color: '#4CAF50'
-                        }}
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        className="flex-1 px-3 py-2 rounded text-sm font-medium transition hover:opacity-80"
-                        style={{ 
-                          backgroundColor: 'rgba(255, 100, 100, 0.2)',
-                          color: '#ff6464'
-                        }}
-                      >
-                        Reset to Default
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Actions */}
               <div className="p-6 flex space-x-3">
@@ -233,11 +191,11 @@ export default function ProductsPage() {
                   onClick={() => handleConfigure(product.id)}
                   className="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-80"
                   style={{ 
-                    backgroundColor: activeProduct === product.id ? 'rgba(169, 189, 203, 0.2)' : 'rgb(169, 189, 203)',
-                    color: activeProduct === product.id ? 'rgb(229, 227, 220)' : 'rgb(48, 54, 54)'
+                    backgroundColor: 'rgb(169, 189, 203)',
+                    color: 'rgb(48, 54, 54)'
                   }}
                 >
-                  {activeProduct === product.id ? 'Hide Configuration' : 'Configure'}
+                  Configure
                 </button>
                 <button
                   className="px-4 py-2 rounded-lg transition hover:opacity-80"
