@@ -149,6 +149,25 @@ function LoginForm() {
               )}
             </Button>
           </form>
+
+          {/* Temporary test button */}
+          <div className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                console.log('Test button clicked!');
+                if (!email || !password) {
+                  alert('Please enter email and password');
+                  return;
+                }
+                await handleSubmit(new Event('submit') as any);
+              }}
+            >
+              Test Login (Debug)
+            </Button>
+          </div>
           
           <div className="mt-6 space-y-4">
             <div className="relative">
