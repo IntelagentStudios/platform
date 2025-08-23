@@ -80,9 +80,9 @@ function LoginForm() {
           )}
           
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+            <Alert className="mb-4 border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <AlertDescription className="text-red-800 dark:text-red-300">{error}</AlertDescription>
             </Alert>
           )}
           

@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse and validate request body
     const body = await request.json();
+    console.log('Login attempt for:', body.email);
     const validatedData = loginSchema.parse(body);
     
     const { email, password } = validatedData;
@@ -44,14 +45,17 @@ export async function POST(request: NextRequest) {
     });
     
     if (!user) {
+      console.log('No user found with email:', email.toLowerCase());
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
     
+    console.log('User found:', user.email, 'Verifying password...');
     // Verify password
     const passwordValid = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', passwordValid);
     
     if (!passwordValid) {
       return NextResponse.json(
