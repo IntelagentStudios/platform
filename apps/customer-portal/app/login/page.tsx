@@ -37,8 +37,8 @@ function LoginForm() {
       if (response.ok && data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Immediate redirect without delay
-        window.location.href = redirect;
+        // Force redirect with replace to ensure it happens
+        window.location.replace('/dashboard');
       } else {
         setError(data.error || 'Login failed');
         setIsLoading(false);

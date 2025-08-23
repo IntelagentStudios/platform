@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
     
-    console.log('[LOGIN-FINAL] Attempt for:', email);
     
     // Validate input
     if (!email || !password) {
@@ -72,7 +71,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
     
-    console.log('[LOGIN-FINAL] Token created, setting cookie');
     
     // Create response
     const response = NextResponse.json({
@@ -110,12 +108,9 @@ export async function POST(request: NextRequest) {
     
     response.cookies.set('session', token, cookieOptions);
     
-    console.log('[LOGIN-FINAL] Cookie set for host:', hostname, 'with domain:', cookieOptions.domain || 'default');
-    
     return response;
     
   } catch (error: any) {
-    console.error('[LOGIN-FINAL] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }
