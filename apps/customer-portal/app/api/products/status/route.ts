@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { licenseKey } = authResult;
 
-    // Get license details
+    // Get license and user details
     const license = await prisma.licenses.findUnique({
       where: { license_key: licenseKey }
     });
@@ -27,9 +27,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get the user associated with this license
+    const user = await prisma.users.findUnique({
+      where: { license_key: licenseKey }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found for license' },
+        { status: 404 }
+      );
+    }
+
     // Get setup status for each product
     const productSetups = await prisma.product_setups.findMany({
-      where: { license_key: licenseKey }
+      where: { user_id: user.id }
     });
 
     // Map setup status by product
@@ -37,14 +49,14 @@ export async function GET(request: NextRequest) {
     const purchasedProducts = license.products || [];
 
     for (const productId of purchasedProducts) {
-      const setup = productSetups.find(s => s.product_id === productId);
+      const setup = productSetups.find(s => s.product === productId);
       
       if (setup) {
         setupStatus[productId] = {
           isComplete: setup.setup_completed,
           inProgress: !setup.setup_completed && setup.setup_data != null,
           progress: calculateSetupProgress(productId, setup.setup_data),
-          completedAt: setup.completed_at,
+          completedAt: setup.setup_completed_at,
           usage: await getProductUsage(licenseKey, productId)
         };
       } else {
@@ -73,6 +85,7 @@ function calculateSetupProgress(productId: string, setupData: any): number {
   if (!setupData) return 0;
 
   const data = typeof setupData === 'string' ? JSON.parse(setupData) : setupData;
+  if (!data) return 0;
 
   switch (productId) {
     case 'chatbot':
