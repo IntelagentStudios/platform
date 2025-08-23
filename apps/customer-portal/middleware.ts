@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
       pathname === '/test-login' || pathname === '/test-form' || pathname === '/login-success' || 
       pathname === '/dashboard-test' || pathname === '/simple' || pathname === '/login-fix' ||
       pathname === '/nav-test' || pathname === '/portal' || pathname === '/register-v2' ||
-      pathname === '/login-working' || pathname === '/session-test') {
+      pathname === '/login-working' || pathname === '/session-test' || pathname === '/simple-dashboard') {
     return NextResponse.next();
   }
   
@@ -55,8 +55,10 @@ export async function middleware(request: NextRequest) {
   // Check if this is an API route
   const isApiRoute = pathname.startsWith('/api');
   
-  // Get session token from cookie
-  const token = request.cookies.get('session')?.value || request.cookies.get('auth-token')?.value;
+  // Get session token from cookie (check multiple cookie names)
+  const token = request.cookies.get('session')?.value || 
+                request.cookies.get('auth-token')?.value ||
+                request.cookies.get('auth')?.value;
   
   // Debug logging for root and dashboard
   if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard-simple') {
