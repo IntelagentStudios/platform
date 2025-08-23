@@ -1,468 +1,286 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import DashboardLayout from '@/components/DashboardLayout';
 import { 
-  AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  ScatterChart, Scatter, ComposedChart
-} from 'recharts';
-import {
-  Activity, TrendingUp, TrendingDown, Users, MessageSquare,
-  Mail, Database, Zap, Brain, Target, Award, AlertCircle,
-  Calendar, Filter, Download, RefreshCw, Sparkles
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  Activity,
+  Users,
+  DollarSign,
+  Package,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 
-export default function CrossProductAnalyticsPage() {
-  const [timeRange, setTimeRange] = useState('7d');
-  const [loading, setLoading] = useState(true);
-  const [analyticsData, setAnalyticsData] = useState<any>({});
-  const [insights, setInsights] = useState<any[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>(['all']);
+export default function AnalyticsPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [dateRange, setDateRange] = useState('7d');
 
   useEffect(() => {
-    fetchAnalyticsData();
-    fetchAIInsights();
-  }, [timeRange, selectedProducts]);
+    // Check authentication
+    fetch('/api/auth/simple')
+      .then(res => res.json())
+      .then(data => {
+        setIsAuthenticated(data.authenticated);
+        if (!data.authenticated) {
+          window.location.href = '/login';
+        }
+      });
+  }, []);
 
-  const fetchAnalyticsData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/analytics/cross-product?range=${timeRange}&products=${selectedProducts.join(',')}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAnalyticsData(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAIInsights = async () => {
-    try {
-      const response = await fetch('/api/analytics/ai-insights');
-      if (response.ok) {
-        const data = await response.json();
-        setInsights(data.insights || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch insights:', error);
-    }
-  };
-
-  const exportData = () => {
-    const dataStr = JSON.stringify(analyticsData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `analytics_${new Date().toISOString()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-
-  // Sample data - would come from API
-  const usageOverTime = [
-    { date: 'Mon', chatbot: 450, salesAgent: 320, enrichment: 180, total: 950 },
-    { date: 'Tue', chatbot: 480, salesAgent: 340, enrichment: 220, total: 1040 },
-    { date: 'Wed', chatbot: 520, salesAgent: 380, enrichment: 240, total: 1140 },
-    { date: 'Thu', chatbot: 490, salesAgent: 360, enrichment: 200, total: 1050 },
-    { date: 'Fri', chatbot: 550, salesAgent: 400, enrichment: 260, total: 1210 },
-    { date: 'Sat', chatbot: 380, salesAgent: 280, enrichment: 150, total: 810 },
-    { date: 'Sun', chatbot: 350, salesAgent: 250, enrichment: 140, total: 740 }
-  ];
-
-  const productPerformance = [
-    { product: 'Chatbot', score: 92, usage: 85, satisfaction: 88 },
-    { product: 'Sales Agent', score: 85, usage: 72, satisfaction: 90 },
-    { product: 'Enrichment', score: 88, usage: 68, satisfaction: 95 }
-  ];
-
-  const conversionFunnel = [
-    { stage: 'Visitors', value: 10000, conversion: '100%' },
-    { stage: 'Engaged', value: 6500, conversion: '65%' },
-    { stage: 'Qualified', value: 3200, conversion: '32%' },
-    { stage: 'Contacted', value: 1800, conversion: '18%' },
-    { stage: 'Converted', value: 450, conversion: '4.5%' }
-  ];
-
-  const correlationData = [
-    { x: 'Chatbot Messages', y: 'Sales Emails', correlation: 0.78 },
-    { x: 'Enrichment Lookups', y: 'Lead Quality', correlation: 0.85 },
-    { x: 'Response Time', y: 'Satisfaction', correlation: -0.72 }
-  ];
-
-  const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
-
-  if (loading) {
+  if (isAuthenticated === null) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+             style={{ borderColor: 'rgb(169, 189, 203)' }}></div>
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Cross-Product Analytics</h1>
-          <p className="text-muted-foreground mt-2">
-            Unified insights across all your automation products
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">24 Hours</SelectItem>
-              <SelectItem value="7d">7 Days</SelectItem>
-              <SelectItem value="30d">30 Days</SelectItem>
-              <SelectItem value="90d">90 Days</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={fetchAnalyticsData}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="outline" onClick={exportData}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
+  if (!isAuthenticated) {
+    return null;
+  }
 
-      {/* AI Insights Panel */}
-      {insights.length > 0 && (
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              AI-Powered Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              {insights.slice(0, 3).map((insight, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <Badge variant={
-                      insight.impact === 'critical' ? 'destructive' :
-                      insight.impact === 'high' ? 'default' :
-                      'secondary'
-                    }>
-                      {insight.impact}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {Math.round(insight.confidence * 100)}% confidence
-                    </span>
-                  </div>
-                  <h4 className="font-semibold mb-1">{insight.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {insight.description}
-                  </p>
-                </div>
+  const metrics = [
+    { 
+      label: 'Total Revenue', 
+      value: '$45,231', 
+      change: '+20.1%', 
+      trend: 'up',
+      icon: DollarSign,
+      sparkline: [40, 45, 42, 48, 52, 58, 65]
+    },
+    { 
+      label: 'Active Users', 
+      value: '2,350', 
+      change: '+180', 
+      trend: 'up',
+      icon: Users,
+      sparkline: [2100, 2150, 2200, 2250, 2280, 2320, 2350]
+    },
+    { 
+      label: 'API Calls', 
+      value: '12.5M', 
+      change: '+12%', 
+      trend: 'up',
+      icon: Activity,
+      sparkline: [10, 10.5, 11, 11.2, 11.8, 12, 12.5]
+    },
+    { 
+      label: 'Products Active', 
+      value: '4', 
+      change: '0', 
+      trend: 'neutral',
+      icon: Package,
+      sparkline: [4, 4, 4, 4, 4, 4, 4]
+    }
+  ];
+
+  const productMetrics = [
+    { name: 'Chatbot', usage: '8.2M calls', revenue: '$18,450', growth: '+25%' },
+    { name: 'Sales Agent', usage: '3.1M calls', revenue: '$12,890', growth: '+18%' },
+    { name: 'Data Enrichment', usage: '1.2M calls', revenue: '$9,340', growth: '+32%' },
+    { name: 'Setup Agent', usage: '0.1M calls', revenue: '$4,551', growth: '+5%' }
+  ];
+
+  return (
+    <DashboardLayout>
+      {/* Header */}
+      <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+              Analytics
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+              Track your performance and usage metrics
+            </p>
+          </div>
+          {/* Date Range Selector */}
+          <select 
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-4 py-2 rounded-lg border bg-transparent"
+            style={{ 
+              borderColor: 'rgba(169, 189, 203, 0.2)',
+              color: 'rgb(229, 227, 220)'
+            }}
+          >
+            <option value="24h">Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+          </select>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="p-8">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {metrics.map((metric, index) => (
+            <div 
+              key={index}
+              className="rounded-lg p-6 border"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.15)'
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                  {metric.label}
+                </span>
+                <metric.icon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+              </div>
+              <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                {metric.value}
+              </div>
+              <div className="flex items-center space-x-2">
+                {metric.trend === 'up' ? (
+                  <ArrowUpRight className="h-4 w-4" style={{ color: '#4CAF50' }} />
+                ) : metric.trend === 'down' ? (
+                  <ArrowDownRight className="h-4 w-4" style={{ color: '#ff6464' }} />
+                ) : null}
+                <span className="text-sm" style={{ 
+                  color: metric.trend === 'up' ? '#4CAF50' : 
+                         metric.trend === 'down' ? '#ff6464' : 
+                         'rgba(169, 189, 203, 0.8)'
+                }}>
+                  {metric.change}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Revenue Chart */}
+          <div 
+            className="rounded-lg p-6 border"
+            style={{ 
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}
+          >
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+              Revenue Trend
+            </h2>
+            <div className="h-64 flex items-end justify-between space-x-2">
+              {[65, 72, 68, 74, 79, 85, 92].map((height, idx) => (
+                <div 
+                  key={idx}
+                  className="flex-1 rounded-t transition-all hover:opacity-80"
+                  style={{ 
+                    height: `${height}%`,
+                    backgroundColor: 'rgba(169, 189, 203, 0.6)'
+                  }}
+                />
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Key Metrics */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Interactions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">47.3K</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <TrendingUp className="inline h-3 w-3 text-green-500 mr-1" />
-              +12.3% from last period
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Conversion Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">4.8%</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <TrendingUp className="inline h-3 w-3 text-green-500 mr-1" />
-              +0.5% from last period
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3/3</div>
-            <div className="flex gap-1 mt-2">
-              <Badge variant="outline" className="text-xs">Chatbot</Badge>
-              <Badge variant="outline" className="text-xs">Sales</Badge>
-              <Badge variant="outline" className="text-xs">Enrich</Badge>
+            <div className="flex justify-between mt-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
+                <span key={idx} className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                  {day}
+                </span>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Efficiency Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">88/100</div>
-            <Progress value={88} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Charts */}
-      <Tabs defaultValue="usage" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="usage">Usage Trends</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="funnel">Conversion Funnel</TabsTrigger>
-          <TabsTrigger value="correlation">Correlations</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="usage">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cross-Product Usage Over Time</CardTitle>
-              <CardDescription>
-                Combined usage metrics across all products
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={usageOverTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="chatbot" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" />
-                  <Area type="monotone" dataKey="salesAgent" stackId="1" stroke="#3b82f6" fill="#3b82f6" />
-                  <Area type="monotone" dataKey="enrichment" stackId="1" stroke="#10b981" fill="#10b981" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="performance">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Performance Radar</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <RadarChart data={productPerformance}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="product" />
-                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                    <Radar name="Score" dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
-                    <Radar name="Usage" dataKey="usage" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                    <Radar name="Satisfaction" dataKey="satisfaction" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                    <Legend />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance Metrics</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {productPerformance.map((product) => (
-                  <div key={product.product} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{product.product}</span>
-                      <Badge variant="outline">{product.score}/100</Badge>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Usage</span>
-                        <span>{product.usage}%</span>
-                      </div>
-                      <Progress value={product.usage} className="h-2" />
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Satisfaction</span>
-                        <span>{product.satisfaction}%</span>
-                      </div>
-                      <Progress value={product.satisfaction} className="h-2" />
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
           </div>
-        </TabsContent>
 
-        <TabsContent value="funnel">
-          <Card>
-            <CardHeader>
-              <CardTitle>Unified Conversion Funnel</CardTitle>
-              <CardDescription>
-                Customer journey across all touchpoints
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={conversionFunnel} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="stage" type="category" />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#8b5cf6">
-                    {conversionFunnel.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          {/* Usage Chart */}
+          <div 
+            className="rounded-lg p-6 border"
+            style={{ 
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}
+          >
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+              API Usage
+            </h2>
+            <div className="h-64 flex items-end justify-between space-x-2">
+              {[45, 52, 58, 61, 55, 68, 75].map((height, idx) => (
+                <div 
+                  key={idx}
+                  className="flex-1 rounded-t transition-all hover:opacity-80"
+                  style={{ 
+                    height: `${height}%`,
+                    backgroundColor: 'rgba(76, 175, 80, 0.6)'
+                  }}
+                />
+              ))}
+            </div>
+            <div className="flex justify-between mt-2">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
+                <span key={idx} className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                  {day}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
 
-        <TabsContent value="correlation">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Correlation Analysis</CardTitle>
-              <CardDescription>
-                How products work together to drive results
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {correlationData.map((item) => (
-                  <div key={item.x} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{item.x}</span>
-                        <span className="text-muted-foreground">→</span>
-                        <span className="font-medium">{item.y}</span>
-                      </div>
-                      <Badge 
-                        variant={Math.abs(item.correlation) > 0.8 ? 'default' : 'secondary'}
-                      >
-                        {item.correlation > 0 ? '+' : ''}{item.correlation}
-                      </Badge>
-                    </div>
-                    <Progress 
-                      value={Math.abs(item.correlation) * 100} 
-                      className="h-2"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {Math.abs(item.correlation) > 0.8 ? 'Strong' : 
-                       Math.abs(item.correlation) > 0.5 ? 'Moderate' : 'Weak'} 
-                      {item.correlation > 0 ? ' positive' : ' negative'} correlation
-                    </p>
-                  </div>
+        {/* Product Performance */}
+        <div 
+          className="rounded-lg p-6 border"
+          style={{ 
+            backgroundColor: 'rgba(58, 64, 64, 0.5)',
+            borderColor: 'rgba(169, 189, 203, 0.15)'
+          }}
+        >
+          <h2 className="text-xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
+            Product Performance
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                  <th className="text-left py-3 px-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Product
+                  </th>
+                  <th className="text-left py-3 px-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Usage
+                  </th>
+                  <th className="text-left py-3 px-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Revenue
+                  </th>
+                  <th className="text-left py-3 px-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Growth
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {productMetrics.map((product, idx) => (
+                  <tr 
+                    key={idx}
+                    className="border-b hover:bg-opacity-10"
+                    style={{ borderColor: 'rgba(169, 189, 203, 0.05)' }}
+                  >
+                    <td className="py-4 px-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {product.name}
+                    </td>
+                    <td className="py-4 px-4" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                      {product.usage}
+                    </td>
+                    <td className="py-4 px-4" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                      {product.revenue}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="inline-flex items-center space-x-1">
+                        <TrendingUp className="h-4 w-4" style={{ color: '#4CAF50' }} />
+                        <span style={{ color: '#4CAF50' }}>{product.growth}</span>
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Product-Specific Insights */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Chatbot Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Response Time</span>
-              <Badge variant="outline">1.2s avg</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Resolution Rate</span>
-              <Badge variant="outline">78%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Top Intent</span>
-              <Badge variant="outline">Support</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Sales Agent Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Open Rate</span>
-              <Badge variant="outline">23.5%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Reply Rate</span>
-              <Badge variant="outline">8.2%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Best Day</span>
-              <Badge variant="outline">Tuesday</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Enrichment Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Match Rate</span>
-              <Badge variant="outline">87%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Data Quality</span>
-              <Badge variant="outline">94%</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Avg Fields</span>
-              <Badge variant="outline">12</Badge>
-            </div>
-          </CardContent>
-        </Card>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

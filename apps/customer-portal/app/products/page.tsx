@@ -1,388 +1,298 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import DashboardLayout from '@/components/DashboardLayout';
 import { 
-  Package, 
-  Bot, 
-  TrendingUp, 
-  Database, 
-  Wand2, 
-  Settings, 
-  PlayCircle, 
-  CheckCircle, 
-  Clock,
+  Zap,
+  Users,
+  BarChart3,
+  Settings as SettingsIcon,
+  CheckCircle,
   AlertCircle,
-  Sparkles,
-  ArrowRight
+  ExternalLink,
+  Play,
+  Pause
 } from 'lucide-react';
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  icon: any;
-  status: 'not_purchased' | 'pending_setup' | 'setting_up' | 'active' | 'disabled';
-  setupProgress?: number;
-  features?: string[];
-  usage?: {
-    current: number;
-    limit: number;
-    unit: string;
-  };
-}
-
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [license, setLicense] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [activeProduct, setActiveProduct] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    fetchLicenseAndProducts();
+    // Check authentication
+    fetch('/api/auth/simple')
+      .then(res => res.json())
+      .then(data => {
+        setIsAuthenticated(data.authenticated);
+        if (!data.authenticated) {
+          window.location.href = '/login';
+        }
+      });
   }, []);
 
-  const fetchLicenseAndProducts = async () => {
-    try {
-      // Fetch user's license info
-      const licenseResponse = await fetch('/api/auth/me');
-      if (licenseResponse.ok) {
-        const licenseData = await licenseResponse.json();
-        setLicense(licenseData);
-
-        // Fetch product setup status
-        const setupResponse = await fetch('/api/products/status');
-        if (setupResponse.ok) {
-          const setupData = await setupResponse.json();
-          
-          // Map products with their setup status
-          const productList = mapProductsWithStatus(licenseData.products || [], setupData);
-          setProducts(productList);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const mapProductsWithStatus = (purchasedProducts: string[], setupStatus: any): Product[] => {
-    const allProducts = [
-      {
-        id: 'chatbot',
-        name: 'AI Chatbot',
-        description: 'Intelligent customer support chatbot for your website',
-        icon: Bot,
-        features: [
-          'Natural language understanding',
-          'Multi-language support',
-          '24/7 automated responses',
-          'Customizable personality'
-        ]
-      },
-      {
-        id: 'sales-agent',
-        name: 'Sales Agent',
-        description: 'Automated sales outreach and lead qualification',
-        icon: TrendingUp,
-        features: [
-          'Lead scoring & qualification',
-          'Automated email sequences',
-          'CRM integration',
-          'Performance analytics'
-        ]
-      },
-      {
-        id: 'enrichment',
-        name: 'Data Enrichment',
-        description: 'Enhance your data with valuable insights',
-        icon: Database,
-        features: [
-          'Company data enrichment',
-          'Contact information discovery',
-          'Social media insights',
-          'Real-time data updates'
-        ]
-      },
-      {
-        id: 'setup-agent',
-        name: 'Setup Agent',
-        description: 'Universal setup assistant for any form or process',
-        icon: Wand2,
-        features: [
-          'Conversational form filling',
-          'Multi-step wizards',
-          'Smart validation',
-          'API integrations'
-        ]
-      }
-    ];
-
-    return allProducts.map(product => {
-      const isPurchased = purchasedProducts.includes(product.id);
-      const setup = setupStatus[product.id];
-      
-      let status: Product['status'] = 'not_purchased';
-      let setupProgress = 0;
-      
-      if (isPurchased) {
-        if (setup?.isComplete) {
-          status = 'active';
-          setupProgress = 100;
-        } else if (setup?.inProgress) {
-          status = 'setting_up';
-          setupProgress = setup.progress || 50;
-        } else {
-          status = 'pending_setup';
-          setupProgress = 0;
-        }
-      }
-
-      return {
-        ...product,
-        status,
-        setupProgress,
-        usage: setup?.usage
-      };
-    });
-  };
-
-  const handleProductAction = (product: Product) => {
-    switch (product.status) {
-      case 'pending_setup':
-        // Navigate to setup flow
-        router.push(`/setup/${product.id}`);
-        break;
-      case 'setting_up':
-        // Resume setup
-        router.push(`/setup/${product.id}`);
-        break;
-      case 'active':
-        // Go to product management
-        router.push(`/products/${product.id}`);
-        break;
-      case 'not_purchased':
-        // Redirect to purchase page
-        window.open('https://intelagentstudios.com/products', '_blank');
-        break;
-    }
-  };
-
-  const getStatusBadge = (status: Product['status']) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">Active</Badge>;
-      case 'pending_setup':
-        return <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">Setup Required</Badge>;
-      case 'setting_up':
-        return <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">In Progress</Badge>;
-      case 'disabled':
-        return <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">Disabled</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400">Not Purchased</Badge>;
-    }
-  };
-
-  const getActionButton = (product: Product) => {
-    switch (product.status) {
-      case 'active':
-        return (
-          <Button onClick={() => handleProductAction(product)} className="w-full">
-            <Settings className="h-4 w-4 mr-2" />
-            Manage
-          </Button>
-        );
-      case 'pending_setup':
-        return (
-          <Button onClick={() => handleProductAction(product)} className="w-full bg-blue-600 hover:bg-blue-700">
-            <PlayCircle className="h-4 w-4 mr-2" />
-            Start Setup
-          </Button>
-        );
-      case 'setting_up':
-        return (
-          <Button onClick={() => handleProductAction(product)} className="w-full bg-yellow-600 hover:bg-yellow-700">
-            <Clock className="h-4 w-4 mr-2" />
-            Resume Setup ({product.setupProgress}%)
-          </Button>
-        );
-      case 'not_purchased':
-        return (
-          <Button onClick={() => handleProductAction(product)} variant="outline" className="w-full">
-            <Package className="h-4 w-4 mr-2" />
-            Purchase
-          </Button>
-        );
-      default:
-        return null;
-    }
-  };
-
-  if (isLoading) {
+  if (isAuthenticated === null) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600 dark:text-gray-400">Loading products...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+             style={{ borderColor: 'rgb(169, 189, 203)' }}></div>
       </div>
     );
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const products = [
+    {
+      id: 'chatbot',
+      name: 'Chatbot',
+      description: 'AI-powered customer support chatbot for your website',
+      status: 'Active',
+      icon: Zap,
+      features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
+      config: {
+        apiKey: 'chat_key_xxxxx',
+        widgetColor: '#a9bdcb',
+        position: 'bottom-right'
+      }
+    },
+    {
+      id: 'sales-agent',
+      name: 'Sales Agent',
+      description: 'Intelligent sales assistant that converts leads',
+      status: 'Active',
+      icon: Users,
+      features: ['Lead Scoring', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
+      config: {
+        apiKey: 'sales_key_xxxxx',
+        agentName: 'Alex',
+        responseTime: '< 1 minute'
+      }
+    },
+    {
+      id: 'data-enrichment',
+      name: 'Data Enrichment',
+      description: 'Enhance your customer data with AI insights',
+      status: 'Active',
+      icon: BarChart3,
+      features: ['Contact Enrichment', 'Company Data', 'Social Profiles', 'Intent Signals'],
+      config: {
+        apiKey: 'data_key_xxxxx',
+        enrichmentLevel: 'comprehensive',
+        autoUpdate: true
+      }
+    },
+    {
+      id: 'setup-agent',
+      name: 'Setup Agent',
+      description: 'Automated setup and configuration assistant',
+      status: 'Active',
+      icon: SettingsIcon,
+      features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Custom Scripts'],
+      config: {
+        apiKey: 'setup_key_xxxxx',
+        automationLevel: 'high',
+        notifications: true
+      }
+    }
+  ];
+
+  const handleConfigure = (productId: string) => {
+    // For now, show config details. Later this will navigate to configuration page
+    setActiveProduct(activeProduct === productId ? null : productId);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Your Products</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Manage and configure your Intelagent products
-        </p>
-      </div>
+    <DashboardLayout>
+      {/* Header */}
+      <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+        <div>
+          <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+            Products
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+            Manage and configure your active products
+          </p>
+        </div>
+      </header>
 
-      {/* Pro AI Upgrade Banner */}
-      {license && !license.hasProAI && (
-        <Card className="border-purple-200 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <div>
-                  <CardTitle>Upgrade to Pro AI</CardTitle>
-                  <CardDescription>
-                    Connect all your products with intelligent insights and automation
-                  </CardDescription>
-                </div>
-              </div>
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Upgrade Now
-              </Button>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
-
-      {/* Products Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {products.map((product) => {
-          const Icon = product.icon;
-          return (
-            <Card 
-              key={product.id} 
-              className={`border-gray-200 dark:border-gray-700 ${
-                product.status === 'active' ? 'ring-2 ring-green-500 ring-opacity-50' : ''
-              }`}
+      {/* Content */}
+      <div className="p-8">
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {products.map((product) => (
+            <div 
+              key={product.id}
+              className="rounded-lg border overflow-hidden transition-all"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: activeProduct === product.id ? 'rgba(169, 189, 203, 0.5)' : 'rgba(169, 189, 203, 0.15)'
+              }}
             >
-              <CardHeader>
+              {/* Product Header */}
+              <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      product.status === 'active' 
-                        ? 'bg-green-100 dark:bg-green-900/20' 
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}>
-                      <Icon className={`h-6 w-6 ${
-                        product.status === 'active'
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-gray-600 dark:text-gray-400'
-                      }`} />
+                  <div className="flex items-start space-x-4">
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+                      <product.icon className="h-6 w-6" style={{ color: 'rgb(169, 189, 203)' }} />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
-                      <CardDescription className="mt-1">
+                      <h3 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                        {product.name}
+                      </h3>
+                      <p className="text-sm mt-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
                         {product.description}
-                      </CardDescription>
+                      </p>
                     </div>
                   </div>
-                  {getStatusBadge(product.status)}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Features List */}
-                {product.features && product.status !== 'not_purchased' && (
-                  <div className="space-y-2">
-                    {product.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span className="text-gray-600 dark:text-gray-400">{feature}</span>
-                      </div>
-                    ))}
+                  <div className="flex items-center space-x-1 px-2 py-1 rounded-full text-xs"
+                       style={{ 
+                         backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                         color: '#4CAF50'
+                       }}>
+                    <CheckCircle className="h-3 w-3" />
+                    <span>{product.status}</span>
                   </div>
-                )}
+                </div>
+              </div>
 
-                {/* Usage Stats */}
-                {product.usage && product.status === 'active' && (
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Usage this month</span>
-                      <span className="font-medium">
-                        {product.usage.current.toLocaleString()} / {product.usage.limit.toLocaleString()} {product.usage.unit}
+              {/* Features */}
+              <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                <h4 className="text-sm font-medium mb-3" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Features
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {product.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center space-x-2">
+                      <CheckCircle className="h-3 w-3 flex-shrink-0" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                        {feature}
                       </span>
                     </div>
-                    <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min((product.usage.current / product.usage.limit) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Setup Progress */}
-                {product.status === 'setting_up' && product.setupProgress !== undefined && (
-                  <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between text-sm mb-2">
-                      <span className="text-gray-600 dark:text-gray-400">Setup Progress</span>
-                      <span className="font-medium">{product.setupProgress}%</span>
-                    </div>
-                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-yellow-600 h-2 rounded-full transition-all"
-                        style={{ width: `${product.setupProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Button */}
-                <div className="pt-3">
-                  {getActionButton(product)}
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
 
-      {/* Help Section */}
-      <Card className="border-gray-200 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5" />
-            Need Help?
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Having trouble setting up your products? We're here to help!
-            </p>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm">
-                View Documentation
-              </Button>
-              <Button variant="outline" size="sm">
-                Contact Support
-              </Button>
+              {/* Configuration Details (shown when active) */}
+              {activeProduct === product.id && (
+                <div className="p-6 border-b" style={{ 
+                  borderColor: 'rgba(169, 189, 203, 0.1)',
+                  backgroundColor: 'rgba(48, 54, 54, 0.5)'
+                }}>
+                  <h4 className="text-sm font-medium mb-3" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                    Configuration Settings
+                  </h4>
+                  <div className="space-y-3">
+                    {Object.entries(product.config).map(([key, value]) => (
+                      <div key={key}>
+                        <label className="text-xs uppercase tracking-wider" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                        </label>
+                        <input
+                          type="text"
+                          value={String(value)}
+                          readOnly
+                          className="w-full mt-1 px-3 py-2 rounded border bg-transparent"
+                          style={{ 
+                            borderColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgba(229, 227, 220, 0.8)'
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <div className="flex space-x-3 pt-3">
+                      <button
+                        className="flex-1 px-3 py-2 rounded text-sm font-medium transition hover:opacity-80"
+                        style={{ 
+                          backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                          color: '#4CAF50'
+                        }}
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        className="flex-1 px-3 py-2 rounded text-sm font-medium transition hover:opacity-80"
+                        style={{ 
+                          backgroundColor: 'rgba(255, 100, 100, 0.2)',
+                          color: '#ff6464'
+                        }}
+                      >
+                        Reset to Default
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="p-6 flex space-x-3">
+                <button
+                  onClick={() => handleConfigure(product.id)}
+                  className="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-80"
+                  style={{ 
+                    backgroundColor: activeProduct === product.id ? 'rgba(169, 189, 203, 0.2)' : 'rgb(169, 189, 203)',
+                    color: activeProduct === product.id ? 'rgb(229, 227, 220)' : 'rgb(48, 54, 54)'
+                  }}
+                >
+                  {activeProduct === product.id ? 'Hide Configuration' : 'Configure'}
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg transition hover:opacity-80"
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgba(229, 227, 220, 0.8)'
+                  }}
+                >
+                  {product.status === 'Active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg transition hover:opacity-80"
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgba(229, 227, 220, 0.8)'
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Help Section */}
+        <div 
+          className="mt-8 rounded-lg p-6 border"
+          style={{ 
+            backgroundColor: 'rgba(58, 64, 64, 0.5)',
+            borderColor: 'rgba(169, 189, 203, 0.15)'
+          }}
+        >
+          <div className="flex items-start space-x-4">
+            <AlertCircle className="h-5 w-5 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
+            <div>
+              <h3 className="font-medium mb-1" style={{ color: 'rgb(229, 227, 220)' }}>
+                Need help with configuration?
+              </h3>
+              <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Check our documentation or contact support for assistance with product setup and configuration.
+              </p>
+              <div className="flex space-x-4 mt-3">
+                <button className="text-sm font-medium hover:underline" style={{ color: 'rgb(169, 189, 203)' }}>
+                  View Documentation →
+                </button>
+                <button className="text-sm font-medium hover:underline" style={{ color: 'rgb(169, 189, 203)' }}>
+                  Contact Support →
+                </button>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
