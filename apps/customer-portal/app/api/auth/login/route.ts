@@ -50,14 +50,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Check if user is active
-    if (!user.is_active) {
-      return NextResponse.json(
-        { error: 'Your account has been deactivated. Please contact support.' },
-        { status: 403 }
-      );
-    }
-    
     // Verify password
     const passwordValid = await bcrypt.compare(password, user.password_hash);
     
@@ -67,12 +59,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    
-    // Update last login
-    await prisma.users.update({
-      where: { id: user.id },
-      data: { last_login_at: new Date() }
-    });
     
     // Invalidate old sessions (optional - for single session)
     await prisma.user_sessions.deleteMany({
@@ -109,13 +95,11 @@ export async function POST(request: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
-      avatar_url: user.avatar_url,
       license_key: user.license_key,
       products: user.license?.products || [],
       plan: user.license?.plan,
       subscription_status: user.license?.subscription_status,
       next_billing_date: user.license?.next_billing_date,
-      onboarding_completed: user.onboarding_completed,
       product_setups: user.product_setups.map(setup => ({
         product: setup.product,
         setup_completed: setup.setup_completed,
