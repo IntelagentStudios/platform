@@ -39,10 +39,23 @@ function LoginForm() {
       });
 
       const data = await response.json();
+      console.log('Login response:', response.ok, data);
 
       if (response.ok && data.success) {
         // Successful login - force redirect to dashboard
-        window.location.replace('/dashboard');
+        console.log('Login successful, redirecting...');
+        setError('');
+        setSuccess('Login successful! Redirecting...');
+        setIsLoading(false);
+        
+        // Get redirect URL from query params or default to dashboard
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect') || '/dashboard';
+        
+        // Force immediate redirect
+        setTimeout(() => {
+          window.location.href = redirect;
+        }, 500);
         return;
       } else {
         setError(data.error || 'Invalid email or password');
