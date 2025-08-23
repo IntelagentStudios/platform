@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
   }
   
   // Always allow the root page and auth pages
-  if (pathname === '/' || pathname === '/login' || pathname === '/register') {
+  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/test-login') {
     return NextResponse.next();
   }
   
