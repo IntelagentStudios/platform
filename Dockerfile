@@ -14,9 +14,11 @@ COPY packages/*/package*.json ./packages/
 COPY products/*/package*.json ./products/
 COPY services/*/package*.json ./services/
 
+# Clean npm cache and install dependencies
+RUN npm cache clean --force
 # Install ALL dependencies (we need them for Prisma and build)
-# Use --ignore-scripts to prevent postinstall scripts from running before files are copied
-RUN npm ci --ignore-scripts
+# Use --legacy-peer-deps to avoid version conflicts
+RUN npm install --legacy-peer-deps
 
 # Copy all source code
 COPY . .
