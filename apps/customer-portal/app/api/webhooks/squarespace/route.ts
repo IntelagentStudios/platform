@@ -142,17 +142,13 @@ async function processOrder(data: any) {
       : billingAddress?.firstName || customerEmail.split('@')[0];
 
     // Check if this order was already processed
-    // We'll check all licenses for this email and look for the order ID in metadata
-    const existingLicenses = await prisma.licenses.findMany({
+    // Since we don't have a metadata field, we'll use subscription_id to store order info
+    // or check if a license already exists for this email
+    const existingLicense = await prisma.licenses.findFirst({
       where: { 
-        email: customerEmail.toLowerCase()
+        email: customerEmail.toLowerCase(),
+        subscription_id: `sq_${orderId}` // Prefix with sq_ to identify Squarespace orders
       }
-    });
-
-    const existingLicense = existingLicenses.find(license => {
-      const metadata = license.metadata as any;
-      return metadata?.squarespace_order_id === orderId ||
-             metadata?.squarespace_orders?.some((order: any) => order.order_id === orderId);
     });
 
     if (existingLicense) {
@@ -186,19 +182,10 @@ async function processOrder(data: any) {
           plan: plan === 'enterprise' || license.plan === 'enterprise' ? 'enterprise' :
                 plan === 'professional' || license.plan === 'professional' ? 'professional' :
                 plan,
-          metadata: {
-            ...(license.metadata as any || {}),
-            squarespace_orders: [
-              ...((license.metadata as any)?.squarespace_orders || []),
-              {
-                order_id: orderId,
-                amount: grandTotal?.value || 0,
-                currency: grandTotal?.currency || 'USD',
-                date: createdOn
-              }
-            ]
-          },
-          updated_at: new Date()
+          // Store the latest order ID in subscription_id if not already set
+          subscription_id: license.subscription_id || `sq_${orderId}`,
+          last_payment_date: new Date(createdOn),
+          subscription_status: 'active'
         }
       });
 
@@ -216,15 +203,9 @@ async function processOrder(data: any) {
           products,
           plan,
           status: 'pending', // Will become active after registration
-          metadata: {
-            squarespace_order_id: orderId,
-            squarespace_orders: [{
-              order_id: orderId,
-              amount: grandTotal?.value || 0,
-              currency: grandTotal?.currency || 'USD',
-              date: createdOn
-            }]
-          },
+          subscription_id: `sq_${orderId}`, // Store Squarespace order ID
+          last_payment_date: new Date(createdOn),
+          subscription_status: 'pending',
           created_at: new Date()
         }
       });
