@@ -44,6 +44,7 @@ function LoginForm() {
       if (response.ok && data.success) {
         // Successful login - immediate redirect
         console.log('Login successful, redirecting to dashboard...');
+        setSuccess('Login successful! Redirecting...');
         
         // Don't update state, just redirect immediately
         window.location.href = '/dashboard';

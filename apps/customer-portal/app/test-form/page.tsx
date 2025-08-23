@@ -1,3 +1,5 @@
+'use client';
+
 export default function TestFormPage() {
   return (
     <div style={{ padding: '20px' }}>
