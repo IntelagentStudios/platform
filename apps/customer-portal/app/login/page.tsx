@@ -42,20 +42,11 @@ function LoginForm() {
       console.log('Login response:', response.ok, data);
 
       if (response.ok && data.success) {
-        // Successful login - force redirect to dashboard
-        console.log('Login successful, redirecting...');
-        setError('');
-        setSuccess('Login successful! Redirecting...');
-        setIsLoading(false);
+        // Successful login - immediate redirect
+        console.log('Login successful, redirecting to dashboard...');
         
-        // Get redirect URL from query params or default to dashboard
-        const params = new URLSearchParams(window.location.search);
-        const redirect = params.get('redirect') || '/dashboard';
-        
-        // Force immediate redirect
-        setTimeout(() => {
-          window.location.href = redirect;
-        }, 500);
+        // Don't update state, just redirect immediately
+        window.location.href = '/dashboard';
         return;
       } else {
         setError(data.error || 'Invalid email or password');

@@ -8,8 +8,10 @@ const publicRoutes = [
   '/validate',
   '/validate-license',
   '/test-login',
+  '/test-form',
   '/api/auth/login',
   '/api/auth/login-simple',
+  '/api/auth/login-redirect',
   '/api/auth/register',
   '/api/auth/check',
   '/api/webhooks',
@@ -33,7 +35,7 @@ export async function middleware(request: NextRequest) {
   }
   
   // Always allow auth pages
-  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login') {
+  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login' || pathname === '/test-form') {
     return NextResponse.next();
   }
   
