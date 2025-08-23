@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
     
+    console.log('Login attempt for:', email);
+    
     // Check if it's the correct email
     if (email.toLowerCase() !== HARDCODED_USER.email) {
       return NextResponse.json(
@@ -26,17 +28,12 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Verify password
-    const passwordValid = await bcrypt.compare(password, HARDCODED_USER.password_hash);
-    
-    if (!passwordValid) {
-      // For testing, also allow the exact password
-      if (password !== 'Birksgrange226!') {
-        return NextResponse.json(
-          { error: 'Invalid email or password' },
-          { status: 401 }
-        );
-      }
+    // Simple password check - skip bcrypt for now
+    if (password !== 'Birksgrange226!') {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
     }
     
     // Create session token
