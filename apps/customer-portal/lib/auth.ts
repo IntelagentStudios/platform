@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
+import { NextRequest } from 'next/server'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS'
 
@@ -49,4 +50,43 @@ export async function getAuthFromCookies(): Promise<AuthToken | null> {
   }
   
   return verifyAuthToken(token.value)
+}
+
+export async function verifyAuth(request: NextRequest): Promise<{
+  isAuthenticated: boolean;
+  licenseKey?: string;
+  email?: string;
+  userId?: string;
+}> {
+  // Check for session cookie
+  const sessionToken = request.cookies.get('session')?.value || request.cookies.get('auth-token')?.value;
+  
+  if (!sessionToken) {
+    return { isAuthenticated: false };
+  }
+  
+  try {
+    const decoded = jwt.verify(sessionToken, JWT_SECRET) as any;
+    
+    // Handle both new session format and old auth-token format
+    if (decoded.userId) {
+      return {
+        isAuthenticated: true,
+        licenseKey: decoded.licenseKey,
+        email: decoded.email,
+        userId: decoded.userId
+      };
+    } else if (decoded.license_key) {
+      // Old format compatibility
+      return {
+        isAuthenticated: true,
+        licenseKey: decoded.license_key,
+        email: decoded.email
+      };
+    }
+    
+    return { isAuthenticated: false };
+  } catch (error) {
+    return { isAuthenticated: false };
+  }
 }
