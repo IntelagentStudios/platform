@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Pure HTML Redirect Test</h1>
+    <p>This page tests various redirect methods without any framework interference.</p>
+    
+    <h2>Test Redirects:</h2>
+    
+    <button onclick="testRedirect('href')">Test window.location.href</button>
+    <button onclick="testRedirect('replace')">Test window.location.replace</button>
+    <button onclick="testRedirect('assign')">Test window.location.assign</button>
+    <button onclick="testRedirect('meta')">Test Meta Refresh</button>
+    <button onclick="testRedirect('form')">Test Form Submit</button>
+    <button onclick="testRedirect('anchor')">Test Anchor Click</button>
+    
+    <h2>Test Links:</h2>
+    <a href="/simple">Regular Link to /simple</a><br>
+    <a href="/dashboard">Regular Link to /dashboard</a><br>
+    <a href="/">Regular Link to Root</a>
+    
+    <h2>Test Form:</h2>
+    <form action="/dashboard" method="GET">
+        <button type="submit">Form Submit to /dashboard</button>
+    </form>
+    
+    <div class="log" id="log">Logs will appear here...</div>
+    
+    <script>
+        const logElement = document.getElementById('log');
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logElement.innerHTML += `<span class="${type}">${logEntry}</span>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        // Capture all errors
+        window.onerror = function(msg, url, line, col, error) {
+            log(`ERROR: ${msg} at ${url}:${line}:${col}`, 'error');
+            return false;
+        };
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            log(`UNHANDLED PROMISE: ${event.reason}`, 'error');
+        });
+        
+        function testRedirect(method) {
+            const targetUrl = '/dashboard';
+            log(`Testing ${method} redirect to ${targetUrl}`);
+            
+            try {
+                switch(method) {
+                    case 'href':
+                        log('Setting window.location.href...');
+                        window.location.href = targetUrl;
+                        break;
+                        
+                    case 'replace':
+                        log('Calling window.location.replace...');
+                        window.location.replace(targetUrl);
+                        break;
+                        
+                    case 'assign':
+                        log('Calling window.location.assign...');
+                        window.location.assign(targetUrl);
+                        break;
+                        
+                    case 'meta':
+                        log('Creating meta refresh tag...');
+                        const meta = document.createElement('meta');
+                        meta.httpEquiv = 'refresh';
+                        meta.content = '0; url=' + targetUrl;
+                        document.head.appendChild(meta);
+                        break;
+                        
+                    case 'form':
+                        log('Creating and submitting form...');
+                        const form = document.createElement('form');
+                        form.method = 'GET';
+                        form.action = targetUrl;
+                        document.body.appendChild(form);
+                        form.submit();
+                        break;
+                        
+                    case 'anchor':
+                        log('Creating and clicking anchor...');
+                        const anchor = document.createElement('a');
+                        anchor.href = targetUrl;
+                        anchor.style.display = 'none';
+                        document.body.appendChild(anchor);
+                        anchor.click();
+                        break;
+                }
+                
+                log(`${method} redirect initiated`, 'success');
+                
+                // Check if we're still on the same page after 2 seconds
+                setTimeout(() => {
+                    log(`Still on page after ${method} redirect attempt`, 'error');
+                }, 2000);
+                
+            } catch (error) {
+                log(`${method} failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test if JavaScript navigation is working at all
+        log('Page loaded successfully');
+        log('Current URL: ' + window.location.href);
+        log('User Agent: ' + navigator.userAgent);
+        
+        // Check for any blocking extensions or settings
+        if (window.location.protocol === 'file:') {
+            log('WARNING: Running from file:// protocol, redirects may be blocked', 'error');
+        }
+        
+        // Test basic JavaScript functionality
+        try {
+            const testObj = { test: 'value' };
+            const jsonStr = JSON.stringify(testObj);
+            JSON.parse(jsonStr);
+            log('JSON operations work');
+        } catch (e) {
+            log('JSON operations failed: ' + e.message, 'error');
+        }
+        
+        // Check if cookies are enabled
+        document.cookie = 'test=1';
+        if (document.cookie.indexOf('test=1') === -1) {
+            log('WARNING: Cookies appear to be disabled', 'error');
+        } else {
+            log('Cookies are enabled');
+        }
+    </script>
+</body>
+</html>

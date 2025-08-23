@@ -35,8 +35,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Always allow auth pages
-  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login' || pathname === '/test-form' || pathname === '/login-success' || pathname === '/dashboard-test') {
+  // Always allow auth pages and test pages
+  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || 
+      pathname === '/test-login' || pathname === '/test-form' || pathname === '/login-success' || 
+      pathname === '/dashboard-test' || pathname === '/simple' || pathname === '/login-fix' ||
+      pathname === '/nav-test') {
     return NextResponse.next();
   }
   
