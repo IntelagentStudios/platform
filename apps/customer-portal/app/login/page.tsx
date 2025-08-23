@@ -39,14 +39,19 @@ function LoginForm() {
       });
 
       const data = await response.json();
+      console.log('Login response:', { ok: response.ok, success: data.success });
 
       if (response.ok && data.success) {
         // Successful login - force redirect to dashboard
-        window.location.href = '/dashboard';
+        console.log('Redirecting to dashboard...');
+        setIsLoading(false);
+        window.location.replace('/dashboard');
+        return;
       } else {
         setError(data.error || 'Invalid email or password');
       }
     } catch (error) {
+      console.error('Login error:', error);
       setError('Failed to connect to server. Please try again.');
     } finally {
       setIsLoading(false);

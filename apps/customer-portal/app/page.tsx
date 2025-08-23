@@ -16,13 +16,16 @@ export default function HomePage() {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include'
+      });
       if (response.ok) {
         // User is authenticated, redirect to dashboard
         router.push('/dashboard');
       }
     } catch (error) {
       // Not authenticated, stay on home page
+      console.log('Auth check - user not logged in');
     }
   };
 
