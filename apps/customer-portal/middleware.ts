@@ -22,8 +22,14 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
-    pathname.includes('.') // files with extensions
+    pathname.includes('.') || // files with extensions
+    pathname === '/favicon.ico'
   ) {
+    return NextResponse.next();
+  }
+  
+  // Always allow the root page and auth pages
+  if (pathname === '/' || pathname === '/login' || pathname === '/register') {
     return NextResponse.next();
   }
   
@@ -31,7 +37,8 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => 
     pathname === route || 
     pathname.startsWith(route + '/') ||
-    pathname.startsWith('/api/webhooks')
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/auth')
   );
   
   // Check if this is an API route
@@ -42,16 +49,6 @@ export async function middleware(request: NextRequest) {
   
   // For public routes, allow access
   if (isPublicRoute) {
-    // If user has valid token and trying to access login/register, redirect to dashboard
-    if (token && (pathname === '/login' || pathname === '/register')) {
-      try {
-        // Verify token is valid
-        jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      } catch {
-        // Invalid token, allow access to login/register
-      }
-    }
     return NextResponse.next();
   }
   
