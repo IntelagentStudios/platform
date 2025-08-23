@@ -37,10 +37,8 @@ function LoginForm() {
       if (response.ok && data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Small delay to ensure cookie is set, then force redirect
-        setTimeout(() => {
-          window.location.replace('/dashboard');
-        }, 100);
+        // Immediate hard navigation - no delay
+        window.location.href = '/dashboard';
       } else {
         setError(data.error || 'Login failed');
         setIsLoading(false);
