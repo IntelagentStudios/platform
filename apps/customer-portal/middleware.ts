@@ -17,6 +17,7 @@ const publicRoutes = [
   '/api/webhooks',
   '/api/health',
   '/api/test',
+  '/api/test-redirect',
   '/terms',
   '/privacy',
 ];
