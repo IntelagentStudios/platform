@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: userData,
-      requiresOnboarding: !user.onboarding_completed,
+      requiresOnboarding: false, // No onboarding field in DB, set to false
       message: 'Login successful'
     });
     
