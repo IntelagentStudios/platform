@@ -21,11 +21,6 @@ RUN npm ci --ignore-scripts
 # Copy all source code
 COPY . .
 
-# Set Prisma binary targets for Alpine Linux
-ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node
-ENV PRISMA_QUERY_ENGINE_BINARY=/app/node_modules/.prisma/client/query-engine-linux-musl-openssl-3.0.x
-ENV PRISMA_CLI_QUERY_ENGINE_TYPE=library
-
 # Generate Prisma Client in the database package
 RUN cd packages/database && npx prisma generate
 
