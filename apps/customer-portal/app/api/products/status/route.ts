@@ -124,9 +124,19 @@ async function getProductUsage(licenseKey: string, productId: string) {
 
   switch (productId) {
     case 'chatbot':
+      // Get the license to find the site_key
+      const license = await prisma.licenses.findUnique({
+        where: { license_key: licenseKey },
+        select: { site_key: true }
+      });
+      
+      if (!license?.site_key) {
+        return { current: 0, limit: 10000, unit: 'conversations' };
+      }
+      
       const chatbotLogs = await prisma.chatbot_logs.count({
         where: {
-          license_key: licenseKey,
+          site_key: license.site_key,
           created_at: { gte: startOfMonth }
         }
       });
@@ -141,6 +151,7 @@ async function getProductUsage(licenseKey: string, productId: string) {
       const salesEvents = await prisma.usage_events.count({
         where: {
           license_key: licenseKey,
+          product_id: 'sales-agent',
           event_type: 'sales_outreach',
           created_at: { gte: startOfMonth }
         }
@@ -156,6 +167,7 @@ async function getProductUsage(licenseKey: string, productId: string) {
       const enrichmentEvents = await prisma.usage_events.count({
         where: {
           license_key: licenseKey,
+          product_id: 'enrichment',
           event_type: 'data_enrichment',
           created_at: { gte: startOfMonth }
         }
@@ -171,6 +183,7 @@ async function getProductUsage(licenseKey: string, productId: string) {
       const setupEvents = await prisma.usage_events.count({
         where: {
           license_key: licenseKey,
+          product_id: 'setup-agent',
           event_type: 'setup_session',
           created_at: { gte: startOfMonth }
         }
