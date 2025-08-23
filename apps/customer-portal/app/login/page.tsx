@@ -15,7 +15,8 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/simple', {
+      // Try secure endpoint first, fallback to simple if it fails
+      const response = await fetch('/api/auth/secure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -26,6 +27,10 @@ export default function LoginPage() {
 
       if (data.success) {
         setMessage('Login successful! Redirecting...');
+        // Store user data in sessionStorage for dashboard
+        if (data.user) {
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+        }
         window.location.href = '/dashboard';
       } else {
         setMessage(data.error || 'Login failed');

@@ -16,20 +16,46 @@ import {
 
 export default function DashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/auth/simple')
+    // Try secure auth first
+    fetch('/api/auth/secure')
       .then(res => res.json())
       .then(data => {
         setIsAuthenticated(data.authenticated);
-        if (!data.authenticated) {
-          window.location.href = '/login';
+        if (data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
+          // Fallback to simple auth
+          return fetch('/api/auth/simple').then(res => res.json());
         }
+      })
+      .then(fallbackData => {
+        if (fallbackData && !user) {
+          setIsAuthenticated(fallbackData.authenticated);
+          if (!fallbackData.authenticated) {
+            window.location.href = '/login';
+          }
+          // Try to get user from sessionStorage
+          const storedUser = sessionStorage.getItem('user');
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+        }
+      })
+      .catch(() => {
+        window.location.href = '/login';
       });
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Call logout endpoint
+    await fetch('/api/auth/secure', { method: 'DELETE' });
+    // Clear cookies
     document.cookie = 'auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    sessionStorage.removeItem('user');
     window.location.href = '/login';
   };
 
@@ -75,7 +101,7 @@ export default function DashboardPage() {
                   Intelagent Dashboard
                 </h1>
                 <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                  Welcome back, Harry
+                  Welcome back, {user?.name || 'Harry'}
                 </p>
               </div>
             </div>
@@ -181,11 +207,11 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm mb-1" style={{ color: 'rgb(169, 189, 203)' }}>Email</div>
-                <div style={{ color: 'rgb(229, 227, 220)' }}>harry@intelagentstudios.com</div>
+                <div style={{ color: 'rgb(229, 227, 220)' }}>{user?.email || 'harry@intelagentstudios.com'}</div>
               </div>
               <div>
                 <div className="text-sm mb-1" style={{ color: 'rgb(169, 189, 203)' }}>License Key</div>
-                <div className="font-mono" style={{ color: 'rgb(229, 227, 220)' }}>INTL-AGNT-BOSS-MODE</div>
+                <div className="font-mono" style={{ color: 'rgb(229, 227, 220)' }}>{user?.license_key || 'INTL-AGNT-BOSS-MODE'}</div>
               </div>
               <div>
                 <div className="text-sm mb-1" style={{ color: 'rgb(169, 189, 203)' }}>Plan</div>
@@ -194,7 +220,7 @@ export default function DashboardPage() {
                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
                        color: 'rgb(169, 189, 203)'
                      }}>
-                  Pro Platform
+                  {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Pro Platform'}
                 </div>
               </div>
               <div>
