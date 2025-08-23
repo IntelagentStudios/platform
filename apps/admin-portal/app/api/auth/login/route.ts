@@ -1,61 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAuthToken } from '@/lib/auth';
+import { prisma } from '@intelagent/database';
 import bcrypt from 'bcryptjs';
 
-// Master admin credentials (in production, store these securely)
-const MASTER_ADMINS = [
-  {
-    email: process.env.MASTER_ADMIN_EMAIL || 'admin@intelagentstudios.com',
-    password: process.env.MASTER_ADMIN_PASSWORD || '$2a$10$XQxOZF8WGpKFzV.0tcXnYOQKGxH6hZPVPpJ.vqRlXhRFYXhKGH5ey' // Default: AdminPass123!
-  }
-];
+// Master admin license key
+const MASTER_ADMIN_LICENSE = 'INTL-AGNT-BOSS-MODE';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { licenseKey, password } = await request.json();
 
-    if (!email || !password) {
+    if (!licenseKey || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'License key and password are required' },
         { status: 400 }
       );
     }
 
-    // Find admin by email
-    const admin = MASTER_ADMINS.find(a => a.email === email);
-    
-    if (!admin) {
+    // Check if this is the master admin license
+    if (licenseKey !== MASTER_ADMIN_LICENSE) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { error: 'Invalid admin credentials' },
         { status: 401 }
       );
     }
 
-    // Verify password
-    let isValidPassword = false;
-    
-    // Check if the stored password is already hashed
-    if (admin.password.startsWith('$2a$')) {
-      isValidPassword = await bcrypt.compare(password, admin.password);
+    // Verify the license exists in database
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: licenseKey }
+    });
+
+    if (!license) {
+      return NextResponse.json(
+        { error: 'License not found' },
+        { status: 401 }
+      );
+    }
+
+    // Check if a user exists for this license
+    const user = await prisma.users.findUnique({
+      where: { license_key: licenseKey }
+    });
+
+    if (user) {
+      // Verify password if user exists
+      const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      if (!isValidPassword) {
+        return NextResponse.json(
+          { error: 'Invalid password' },
+          { status: 401 }
+        );
+      }
     } else {
-      // For plain text passwords (development only)
-      isValidPassword = password === admin.password;
-    }
-
-    if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      // First time setup - create admin user
+      const passwordHash = await bcrypt.hash(password, 12);
+      await prisma.users.create({
+        data: {
+          email: 'admin@intelagentstudios.com',
+          password_hash: passwordHash,
+          license_key: licenseKey,
+          name: 'Master Admin',
+          email_verified: true,
+          email_verified_at: new Date()
+        }
+      });
     }
 
     // Create auth token
-    const token = createAuthToken('MASTER_ADMIN', email);
+    const token = createAuthToken('MASTER_ADMIN', license.email || 'admin@intelagentstudios.com');
     
     const response = NextResponse.json({
       success: true,
       isMaster: true,
-      email: admin.email,
+      licenseKey: licenseKey,
+      email: license.email || 'admin@intelagentstudios.com',
       role: 'master_admin'
     });
 

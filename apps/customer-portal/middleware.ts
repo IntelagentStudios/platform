@@ -7,17 +7,32 @@ const publicRoutes = [
   '/register',
   '/api/auth/login',
   '/api/auth/register',
-  '/',
+  '/api/auth/check',
+  '/api/webhooks',
+  '/validate-license',
   '/terms',
   '/privacy',
-  '/api/webhook'
+  '/',
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
+  // Allow all static assets and Next.js internal routes
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') // files with extensions
+  ) {
+    return NextResponse.next();
+  }
+  
   // Check if this is a public route
-  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || 
+    pathname.startsWith(route + '/') ||
+    pathname.startsWith('/api/webhooks')
+  );
   
   // Check if this is an API route
   const isApiRoute = pathname.startsWith('/api');
@@ -50,9 +65,16 @@ export async function middleware(request: NextRequest) {
       );
     }
     
-    const url = new URL('/login', request.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+    // Only redirect if not already on login page to prevent loops
+    if (pathname !== '/login' && pathname !== '/register') {
+      const url = new URL('/login', request.url);
+      // Only add redirect param for actual app pages
+      if (pathname !== '/' && !pathname.startsWith('/validate-license')) {
+        url.searchParams.set('redirect', pathname);
+      }
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
   
   try {

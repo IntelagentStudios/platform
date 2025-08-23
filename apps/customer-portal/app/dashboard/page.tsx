@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, TrendingUp, Clock, Users, Activity, Shield, Package, Globe, FileText } from 'lucide-react';
+import { MessageSquare, TrendingUp, Clock, Users, Activity, Shield, Package, Globe, FileText, PlayCircle, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export default function CustomerDashboardPage() {
+  const router = useRouter();
   const [stats, setStats] = useState({
     totalConversations: 0,
     activeConversations: 0,
@@ -20,10 +23,12 @@ export default function CustomerDashboardPage() {
     licenseStatus: 'active'
   });
   const [license, setLicense] = useState<any>(null);
+  const [productStatus, setProductStatus] = useState<any>({});
 
   useEffect(() => {
     fetchStats();
     fetchLicense();
+    fetchProductStatus();
   }, []);
 
   const fetchStats = async () => {
@@ -47,6 +52,18 @@ export default function CustomerDashboardPage() {
       }
     } catch (error) {
       console.error('Failed to fetch license:', error);
+    }
+  };
+
+  const fetchProductStatus = async () => {
+    try {
+      const response = await fetch('/api/products/status');
+      if (response.ok) {
+        const data = await response.json();
+        setProductStatus(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch product status:', error);
     }
   };
 
@@ -225,37 +242,91 @@ export default function CustomerDashboardPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>Your Product Activity</CardTitle>
-            <CardDescription>Performance across your licensed products</CardDescription>
+            <CardTitle>Your Products</CardTitle>
+            <CardDescription>Setup and manage your licensed products</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.products.map((product, index) => (
-                <div key={product} className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
-                      <Package className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              {stats.products.map((product, index) => {
+                const status = productStatus[product];
+                const needsSetup = status && !status.isComplete;
+                
+                return (
+                  <div key={product} className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${
+                        status?.isComplete 
+                          ? 'bg-green-100 dark:bg-green-900/20' 
+                          : 'bg-yellow-100 dark:bg-yellow-900/20'
+                      }`}>
+                        {status?.isComplete ? (
+                          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                          {product.replace('-', ' ')}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {status?.isComplete 
+                            ? `Active - ${status.usage?.current || 0} ${status.usage?.unit || 'uses'} this month`
+                            : status?.inProgress 
+                              ? `Setup ${status.progress}% complete`
+                              : 'Setup required'
+                          }
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
-                        {product.replace('-', ' ')}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Active since license creation
-                      </p>
+                    <div className="flex items-center gap-2">
+                      {needsSetup ? (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => router.push(`/setup/${product}`)}
+                          className="text-xs"
+                        >
+                          <PlayCircle className="h-3 w-3 mr-1" />
+                          {status?.inProgress ? 'Resume' : 'Start'} Setup
+                        </Button>
+                      ) : (
+                        <Badge className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+                          Active
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded">
-                    Active
-                  </span>
-                </div>
-              ))}
+                );
+              })}
               {stats.products.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                  No products activated yet
-                </p>
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    No products purchased yet
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open('https://intelagentstudios.com/products', '_blank')}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Browse Products
+                  </Button>
+                </div>
               )}
             </div>
+            {stats.products.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => router.push('/products')}
+                >
+                  <Package className="h-4 w-4 mr-2" />
+                  View All Products
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Loader2, Shield, Key, Lock, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
+  const [licenseKey, setLicenseKey] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ licenseKey, password }),
       });
 
       const data = await response.json();
@@ -72,19 +72,19 @@ export default function AdminLoginPage() {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="licenseKey">License Key</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@intelagentstudios.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  id="licenseKey"
+                  type="text"
+                  placeholder="INTL-AGNT-BOSS-MODE"
+                  value={licenseKey}
+                  onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
+                  className="pl-10 font-mono"
                   required
                   disabled={isLoading}
-                  autoComplete="email"
+                  autoComplete="off"
                 />
               </div>
             </div>
