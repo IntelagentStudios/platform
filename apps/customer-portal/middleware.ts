@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 const publicRoutes = [
   '/login',
   '/register',
+  '/validate',
+  '/validate-license',
   '/test-login',
   '/api/auth/login',
   '/api/auth/login-simple',
@@ -13,10 +15,8 @@ const publicRoutes = [
   '/api/webhooks',
   '/api/health',
   '/api/test',
-  '/validate-license',
   '/terms',
   '/privacy',
-  '/',
 ];
 
 export async function middleware(request: NextRequest) {
@@ -32,8 +32,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Always allow the root page and auth pages
-  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/test-login') {
+  // Always allow auth pages
+  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login') {
     return NextResponse.next();
   }
   

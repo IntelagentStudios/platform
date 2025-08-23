@@ -20,37 +20,37 @@ const sidebarItems = [
   },
   {
     title: 'Products',
-    href: '/dashboard/products',
+    href: '/products',
     icon: MessageSquare
   },
   {
     title: 'Analytics',
-    href: '/dashboard/analytics',
+    href: '/analytics',
     icon: BarChart3
   },
   {
     title: 'API Keys',
-    href: '/dashboard/api-keys',
+    href: '/api-keys',
     icon: Key
   },
   {
     title: 'Webhooks',
-    href: '/dashboard/webhooks',
+    href: '/webhooks',
     icon: Webhook
   },
   {
     title: 'Reports',
-    href: '/dashboard/reports',
+    href: '/reports',
     icon: FileText
   },
   {
     title: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: Settings
   },
   {
     title: 'Support',
-    href: '/dashboard/support',
+    href: '/support',
     icon: HelpCircle
   }
 ];
