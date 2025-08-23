@@ -20,8 +20,10 @@ export async function POST(request: NextRequest) {
     
     const { email, password } = validatedData;
     
-    // Find user by email
-    const user = await prisma.users.findUnique({
+    // Find user by email - wrapped in try-catch for better error handling
+    let user;
+    try {
+      user = await prisma.users.findUnique({
       where: { email: email.toLowerCase() },
       include: {
         license: {
@@ -44,6 +46,13 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+    } catch (dbError) {
+      console.error('Database error during login:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection error. Please try again.' },
+        { status: 500 }
+      );
+    }
     
     if (!user) {
       return NextResponse.json(
@@ -62,15 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Invalidate old sessions (optional - for single session)
-    await prisma.user_sessions.deleteMany({
-      where: { 
-        user_id: user.id,
-        expires_at: { lt: new Date() }
-      }
-    });
-    
-    // Create session token
+    // Create session token (skip database session for now)
     const token = jwt.sign(
       { 
         userId: user.id, 
@@ -80,17 +81,6 @@ export async function POST(request: NextRequest) {
       process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS',
       { expiresIn: '7d' }
     );
-    
-    // Create session in database
-    await prisma.user_sessions.create({
-      data: {
-        user_id: user.id,
-        token,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        user_agent: request.headers.get('user-agent')
-      }
-    });
     
     // Prepare user data
     const userData = {
@@ -138,8 +128,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Return more detailed error in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? `Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      : 'Login failed. Please try again.';
+    
     return NextResponse.json(
-      { error: 'Login failed. Please try again.' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
