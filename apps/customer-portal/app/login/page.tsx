@@ -26,8 +26,8 @@ function LoginForm() {
     }
   }, [searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
     setError('');
 
@@ -125,9 +125,10 @@ function LoginForm() {
             </div>
             
             <Button 
-              type="submit" 
+              type="button" 
               className="w-full" 
               disabled={isLoading}
+              onClick={handleSubmit}
             >
               {isLoading ? (
                 <>
