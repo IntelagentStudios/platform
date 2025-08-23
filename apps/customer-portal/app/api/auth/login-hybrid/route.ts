@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: user,
       message: isUsingFallback ? 'Login successful (fallback mode)' : 'Login successful',
-      redirectTo: '/dashboard-simple'
+      redirectTo: '/'
     });
     
     // Set session cookie

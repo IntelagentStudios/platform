@@ -86,8 +86,8 @@ export async function middleware(request: NextRequest) {
     // Only redirect if not already on login page to prevent loops
     if (pathname !== '/login' && pathname !== '/register') {
       const url = new URL('/login', request.url);
-      // Only add redirect param for actual app pages
-      if (pathname !== '/' && !pathname.startsWith('/validate-license')) {
+      // Add redirect param for the page they were trying to access
+      if (!pathname.startsWith('/validate-license')) {
         url.searchParams.set('redirect', pathname);
       }
       return NextResponse.redirect(url);
