@@ -213,7 +213,7 @@ export default function LoginWorkingPage() {
             <summary className="text-xs text-gray-500 cursor-pointer">Debug Info</summary>
             <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
 {JSON.stringify({
-  cookies: document.cookie.split(';').map(c => c.trim().split('=')[0]),
+  cookies: typeof document !== 'undefined' ? document.cookie.split(';').map(c => c.trim().split('=')[0]) : [],
   timestamp: new Date().toISOString()
 }, null, 2)}
             </pre>

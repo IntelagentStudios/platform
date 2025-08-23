@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@intelagent/database';
 import stripeService from '@intelagent/billing';
 
+
+export const dynamic = 'force-dynamic';
 // GET /api/billing/invoices - List customer invoices
 export async function GET(request: NextRequest) {
   try {

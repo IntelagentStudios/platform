@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+
+export const dynamic = 'force-dynamic';
 // Temporary endpoint to check recent chatbot logs with new structure
 export async function GET() {
   try {

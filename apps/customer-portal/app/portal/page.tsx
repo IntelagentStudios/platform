@@ -24,6 +24,8 @@ export default function PortalPage() {
   // Check if already logged in on mount
   useEffect(() => {
     const checkSession = () => {
+      if (typeof document === 'undefined') return;
+      
       const cookies = document.cookie.split(';').map(c => c.trim());
       const sessionCookie = cookies.find(c => c.startsWith('session='));
       
@@ -81,7 +83,9 @@ export default function PortalPage() {
 
   const handleLogout = () => {
     // Clear cookies
-    document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    if (typeof document !== 'undefined') {
+      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    }
     setIsLoggedIn(false);
     setUser(null);
     setEmail('');
