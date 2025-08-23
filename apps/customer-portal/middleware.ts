@@ -11,6 +11,7 @@ const publicRoutes = [
   '/api/auth/check',
   '/api/webhooks',
   '/api/health',
+  '/api/test',
   '/validate-license',
   '/terms',
   '/privacy',

@@ -28,30 +28,36 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted with:', { email, password: '***' });
     setIsLoading(true);
     setError('');
 
     try {
+      console.log('Sending login request to /api/auth/login-simple');
       const response = await fetch('/api/auth/login-simple', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Login response:', { ok: response.ok, success: data.success });
+      console.log('Login response data:', data);
 
       if (response.ok && data.success) {
         // Successful login - force redirect to dashboard
-        console.log('Redirecting to dashboard...');
+        console.log('Login successful! Redirecting to dashboard...');
+        setError(''); // Clear any errors
         setIsLoading(false);
-        window.location.replace('/dashboard');
+        // Use immediate redirect
+        window.location.href = '/dashboard';
         return;
       } else {
+        console.log('Login failed:', data.error);
         setError(data.error || 'Invalid email or password');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login request failed:', error);
       setError('Failed to connect to server. Please try again.');
     } finally {
       setIsLoading(false);
