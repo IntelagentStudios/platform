@@ -25,10 +25,13 @@ export default function TestLoginPage() {
       setResponse(JSON.stringify(data, null, 2));
       
       if (res.ok && data.success) {
-        setStatus('Login successful! Redirecting...');
+        setStatus('Login successful! Redirecting in 2 seconds...');
+        setResponse(JSON.stringify(data, null, 2));
+        // Force redirect after showing success
         setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1000);
+          console.log('Redirecting to dashboard...');
+          window.location.replace('/dashboard');
+        }, 2000);
       } else {
         setStatus('Login failed: ' + (data.error || 'Unknown error'));
       }
