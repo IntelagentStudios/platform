@@ -82,9 +82,7 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase(),
         password_hash: passwordHash,
         license_key: licenseKey,
-        name: license.customer_name || email.split('@')[0],
-        email_verified: true, // Auto-verify since they have a valid license
-        email_verified_at: new Date()
+        name: license.customer_name || email.split('@')[0]
       }
     });
     

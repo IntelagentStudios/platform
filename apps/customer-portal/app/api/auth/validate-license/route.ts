@@ -127,18 +127,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check onboarding status (if table exists)
-    let onboarding = null;
-    try {
-      // Try to check if user has completed onboarding
-      const userRecord = await prisma.users.findFirst({
-        where: { license_key }
-      });
-      onboarding = { completed: userRecord?.onboarding_completed || false };
-    } catch (e) {
-      // Onboarding table might not exist
-      onboarding = { completed: false };
-    }
+    // Set onboarding as false (field doesn't exist in current DB)
+    const onboarding = { completed: false };
 
     // Create session token
     const token = jwt.sign(
