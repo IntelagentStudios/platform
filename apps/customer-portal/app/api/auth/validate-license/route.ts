@@ -3,6 +3,8 @@ import { prisma } from '@intelagent/database';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
+
+export const dynamic = 'force-dynamic';
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
 export async function POST(request: NextRequest) {

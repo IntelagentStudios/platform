@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+
+export const dynamic = 'force-dynamic';
 // Master admin credentials (in production, store these securely)
 const MASTER_ADMINS = [
   {

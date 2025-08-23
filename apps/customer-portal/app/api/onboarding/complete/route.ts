@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { sendCustomEvent } from '@/lib/realtime';
 
+
+export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();

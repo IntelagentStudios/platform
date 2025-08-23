@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 // TODO: Implement AI intelligence service
 // import { aiIntelligence } from '@intelagent/ai-intelligence';
 

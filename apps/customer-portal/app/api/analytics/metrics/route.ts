@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
 
+
+export const dynamic = 'force-dynamic';
 // GET /api/analytics/metrics - Get analytics metrics
 export async function GET(request: NextRequest) {
   try {
