@@ -32,12 +32,10 @@ RUN cd apps/customer-portal && npx prisma generate --schema=../../packages/datab
 # Build the customer portal (main user dashboard)
 # Set build environment to disable all external service connections
 ENV BUILDING=true
-ENV NODE_ENV=build
-ENV NEXT_PHASE=phase-production-build
+ENV NODE_ENV=production
 RUN cd apps/customer-portal && npm run build
 # Reset environment for runtime
 ENV BUILDING=false
-ENV NODE_ENV=production
 ENV PORT=3000
 
 # Expose the port
