@@ -65,7 +65,7 @@ export default function SidebarLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-50">
         <div className="flex items-center justify-between h-full px-4">
@@ -151,11 +151,11 @@ export default function SidebarLayout({
       {/* Main Content */}
       <main
         className={cn(
-          "pt-16 transition-all duration-300",
+          "pt-16 transition-all duration-300 min-h-screen",
           sidebarOpen ? "ml-64" : "ml-0"
         )}
       >
-        <div className="p-6">
+        <div className="p-6 bg-gradient-to-br from-transparent to-gray-50/50 dark:to-gray-900/50 min-h-full">
           {children}
         </div>
       </main>

@@ -203,13 +203,13 @@ export default function CustomerDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* AI Pro Section - Only show if user has the upgrade */}
+      {/* Pro Analytics Section - Only show if user has the upgrade */}
       {stats.hasAiPro && (
         <Card className="border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              AI Pro Analytics
+              Pro Analytics
             </CardTitle>
             <CardDescription>Advanced insights and predictions for your products</CardDescription>
           </CardHeader>
@@ -231,7 +231,7 @@ export default function CustomerDashboardPage() {
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button className="w-full" variant="outline">
                 <Activity className="h-4 w-4 mr-2" />
-                View AI Insights Dashboard
+                View Insights Dashboard
               </Button>
             </div>
           </CardContent>
@@ -242,7 +242,7 @@ export default function CustomerDashboardPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle>Your Products</CardTitle>
+            <CardTitle>Products</CardTitle>
             <CardDescription>Setup and manage your licensed products</CardDescription>
           </CardHeader>
           <CardContent>

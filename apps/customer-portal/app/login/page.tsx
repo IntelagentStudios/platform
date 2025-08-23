@@ -41,13 +41,8 @@ function LoginForm() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Successful login - redirect to dashboard
-        console.log('Login successful, redirecting to dashboard...');
-        router.push('/dashboard');
-        // Force a page reload if router.push doesn't work
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 100);
+        // Successful login - force redirect to dashboard
+        window.location.href = '/dashboard';
       } else {
         setError(data.error || 'Invalid email or password');
       }
