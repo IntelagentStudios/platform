@@ -89,24 +89,15 @@ export async function POST(request: NextRequest) {
     // Set secure cookie with proper settings
     const hostname = request.headers.get('host') || '';
     const isProduction = hostname.includes('intelagentstudios.com');
-    const isRailway = hostname.includes('railway.app');
     
-    // Determine cookie domain based on environment
-    let cookieOptions: any = {
+    // Set cookie - simpler approach without domain restriction
+    response.cookies.set('session', token, {
       httpOnly: true,
-      secure: isProduction || isRailway,
+      secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/'
-    };
-    
-    // Only set domain for intelagentstudios.com
-    if (isProduction) {
-      cookieOptions.domain = '.intelagentstudios.com';
-    }
-    // Don't set domain for localhost or railway to allow cookie to work
-    
-    response.cookies.set('session', token, cookieOptions);
+    });
     
     return response;
     

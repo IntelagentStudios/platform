@@ -37,8 +37,10 @@ function LoginForm() {
       if (response.ok && data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Force redirect with replace to ensure it happens
-        window.location.replace('/dashboard');
+        // Small delay to ensure cookie is set, then force redirect
+        setTimeout(() => {
+          window.location.replace('/dashboard');
+        }, 100);
       } else {
         setError(data.error || 'Login failed');
         setIsLoading(false);
