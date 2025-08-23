@@ -138,10 +138,10 @@ export async function GET(request: Request) {
       
       // Unique users for this license
       prisma.chatbot_logs.groupBy({
-        by: ['customer_identifier'],
+        by: ['user_id'],
         where: {
           ...whereClause,
-          customer_identifier: { not: null }
+          user_id: { not: null }
         },
         _count: true,
       }).then(result => result.length)
@@ -220,7 +220,7 @@ export async function GET(request: Request) {
 
     sessionMessages.forEach(messages => {
       for (let i = 0; i < messages.length - 1; i++) {
-        if (messages[i].customerMessage && messages[i + 1].chatbotResponse) {
+        if (messages[i].customer_message && messages[i + 1].chatbot_response) {
           const responseTime = (messages[i + 1].timestamp.getTime() - messages[i].timestamp.getTime()) / 1000
           if (responseTime > 0 && responseTime < 60) { // Reasonable response time (under 60 seconds)
             responseTimes.push(responseTime)
