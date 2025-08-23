@@ -58,13 +58,12 @@ export async function middleware(request: NextRequest) {
   // Get session token from cookie
   const token = request.cookies.get('session')?.value || request.cookies.get('auth-token')?.value;
   
-  // Debug logging
-  if (pathname === '/dashboard' || pathname === '/dashboard-simple') {
-    console.log('[MIDDLEWARE] Dashboard access:', {
+  // Debug logging for root and dashboard
+  if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard-simple') {
+    console.log('[MIDDLEWARE] Protected route access:', {
       pathname,
       hasToken: !!token,
-      tokenLength: token?.length,
-      cookies: request.cookies.getAll().map(c => c.name)
+      tokenFirstChars: token?.substring(0, 20)
     });
   }
   
@@ -98,9 +97,7 @@ export async function middleware(request: NextRequest) {
   try {
     // Verify token
     const jwtSecret = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-    console.log('[MIDDLEWARE] Verifying token for:', pathname, 'Secret:', jwtSecret.substring(0, 10) + '...');
     const decoded = jwt.verify(token, jwtSecret) as any;
-    console.log('[MIDDLEWARE] Token valid for:', decoded.email);
     
     // Add user info to headers for API routes
     const requestHeaders = new Headers(request.headers);

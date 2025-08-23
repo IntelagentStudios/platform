@@ -10,13 +10,21 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export default function DashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
+    // First check if we have a session cookie client-side
+    const hasSessionCookie = typeof document !== 'undefined' && 
+      document.cookie.includes('session=');
+    
+    console.log('[ROOT] Checking auth, has cookie:', hasSessionCookie);
+    
+    // Check authentication via API
     fetch('/api/auth/verify', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
+        console.log('[ROOT] Auth verify response:', data);
         if (data.authenticated) {
           setIsAuthenticated(true);
           setUser(data.user || {
@@ -25,11 +33,14 @@ export default function DashboardPage() {
           });
         } else {
           setIsAuthenticated(false);
-          // Don't redirect, just show message
+          // Don't auto-redirect to avoid loops
         }
+        setCheckingAuth(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('[ROOT] Auth check error:', error);
         setIsAuthenticated(false);
+        setCheckingAuth(false);
       });
   }, []);
 
@@ -38,7 +49,7 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
-  if (isAuthenticated === null) {
+  if (checkingAuth || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

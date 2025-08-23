@@ -117,14 +117,21 @@ export async function POST(request: NextRequest) {
       redirectTo: '/'
     });
     
-    // Set session cookie
-    response.cookies.set('session', token, {
+    // Set session cookie with explicit domain for production
+    const cookieOptions: any = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/'
-    });
+    };
+    
+    // In production, set domain to ensure cookie works across subdomains
+    if (process.env.NODE_ENV === 'production') {
+      cookieOptions.domain = '.intelagentstudios.com'; // Allow cookie on all subdomains
+    }
+    
+    response.cookies.set('session', token, cookieOptions);
     
     console.log('[LOGIN-HYBRID] Token set, login complete');
     return response;
