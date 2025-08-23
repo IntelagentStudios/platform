@@ -5,10 +5,13 @@ const publicRoutes = [
   '/login',
   '/login-v2',
   '/register',
+  '/test-simple-login',
   '/api/auth/login',
   '/api/auth/login-final',
+  '/api/auth/login-debug-v2',
   '/api/auth/register',
   '/api/auth/check-session',
+  '/api/auth/debug-env',
   '/api/health',
   '/_next',
   '/favicon.ico'
@@ -18,6 +21,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  console.log('[MIDDLEWARE] Processing:', pathname);
+  console.log('[MIDDLEWARE] Cookies:', request.cookies.getAll().map(c => c.name));
   
   // Skip static files and Next.js internals
   if (
