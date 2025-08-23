@@ -142,14 +142,17 @@ async function processOrder(data: any) {
       : billingAddress?.firstName || customerEmail.split('@')[0];
 
     // Check if this order was already processed
-    const existingLicense = await prisma.licenses.findFirst({
+    // We'll check all licenses for this email and look for the order ID in metadata
+    const existingLicenses = await prisma.licenses.findMany({
       where: { 
-        email: customerEmail.toLowerCase(),
-        metadata: {
-          path: '$.squarespace_order_id',
-          equals: orderId
-        }
+        email: customerEmail.toLowerCase()
       }
+    });
+
+    const existingLicense = existingLicenses.find(license => {
+      const metadata = license.metadata as any;
+      return metadata?.squarespace_order_id === orderId ||
+             metadata?.squarespace_orders?.some((order: any) => order.order_id === orderId);
     });
 
     if (existingLicense) {
