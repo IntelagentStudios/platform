@@ -60,8 +60,8 @@ export default function RegisterPage() {
         return;
       }
 
-      // Success! Redirect to dashboard
-      router.push('/dashboard?welcome=true');
+      // Success! Redirect to login page
+      router.push('/login?registered=true');
     } catch (err) {
       setError('Failed to create account. Please try again.');
     } finally {

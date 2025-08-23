@@ -98,28 +98,6 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    // Create session token
-    const token = jwt.sign(
-      { 
-        userId: user.id, 
-        email: user.email,
-        licenseKey: user.license_key 
-      },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
-    
-    // Create session in database
-    await prisma.user_sessions.create({
-      data: {
-        user_id: user.id,
-        token,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        user_agent: request.headers.get('user-agent')
-      }
-    });
-    
     // Send welcome email
     try {
       await sendWelcomeNotification(license.license_key, user.name || user.email);
@@ -128,30 +106,12 @@ export async function POST(request: NextRequest) {
       // Don't fail registration if email fails
     }
     
-    // Create response with session cookie
-    const response = NextResponse.json({
+    // Return success response (no session cookie - user must login)
+    return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        licenseKey: user.license_key,
-        products: license.products || [],
-        plan: license.plan
-      },
-      message: 'Account created successfully! Welcome to Intelagent.'
+      message: 'Account created successfully! Please log in to continue.',
+      redirectTo: '/login?registered=true'
     });
-    
-    // Set secure session cookie
-    response.cookies.set('session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/'
-    });
-    
-    return response;
     
   } catch (error) {
     console.error('Registration error:', error);
