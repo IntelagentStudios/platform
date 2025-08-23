@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthFromCookies } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+
+export const dynamic = 'force-dynamic';
 // Route to fetch recent activity data
 export async function GET(request: NextRequest) {
   try {
