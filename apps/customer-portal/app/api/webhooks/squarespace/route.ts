@@ -21,7 +21,7 @@ function generateLicenseKey(): string {
 
 // Map Squarespace product IDs to our product IDs
 function mapSquarespaceProducts(items: any[]): string[] {
-  const productMap: Record<string, string> = {
+  const productMap: Record<string, string | string[]> = {
     // Map Squarespace product IDs/SKUs to our internal product IDs
     'chatbot-basic': 'chatbot',
     'chatbot-pro': 'chatbot',
