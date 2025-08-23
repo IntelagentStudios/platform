@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Hardcoded fallback user
-const FALLBACK_USER = {
-  id: '1a66bf30-01cc-4f6b-ae50-e8d063a7443e',
-  email: 'harry@intelagentstudios.com',
-  password: 'Birksgrange226!',
-  password_hash: '$2b$12$2ukCbMdeoeptdXCwKsaVeuVskSkPFeOZvknT6qyPWI8ueAwHzCWRO',
-  license_key: 'INTL-AGNT-BOSS-MODE',
-  name: 'Harry',
-  products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent'],
-  plan: 'Pro Platform'
-};
+// Hardcoded fallback users (includes both registered and pre-registered)
+const FALLBACK_USERS = [
+  {
+    id: '1a66bf30-01cc-4f6b-ae50-e8d063a7443e',
+    email: 'harry@intelagentstudios.com',
+    password: 'Birksgrange226!',
+    password_hash: '$2b$12$2ukCbMdeoeptdXCwKsaVeuVskSkPFeOZvknT6qyPWI8ueAwHzCWRO',
+    license_key: 'INTL-AGNT-BOSS-MODE',
+    name: 'Harry',
+    products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent'],
+    plan: 'Pro Platform'
+  }
+];
 
 export const dynamic = 'force-dynamic';
 
@@ -69,20 +71,23 @@ export async function POST(request: NextRequest) {
       isUsingFallback = true;
     }
     
-    // If database failed or user not found, try fallback
-    if (!user && email.toLowerCase() === FALLBACK_USER.email) {
-      const passwordValid = await bcrypt.compare(password, FALLBACK_USER.password_hash);
-      if (passwordValid) {
-        user = {
-          id: FALLBACK_USER.id,
-          email: FALLBACK_USER.email,
-          name: FALLBACK_USER.name,
-          license_key: FALLBACK_USER.license_key,
-          products: FALLBACK_USER.products,
-          plan: FALLBACK_USER.plan
-        };
-        isUsingFallback = true;
-        console.log('[LOGIN-HYBRID] Fallback login successful');
+    // If database failed or user not found, try fallback users
+    if (!user) {
+      const fallbackUser = FALLBACK_USERS.find(u => u.email === email.toLowerCase());
+      if (fallbackUser) {
+        const passwordValid = await bcrypt.compare(password, fallbackUser.password_hash);
+        if (passwordValid) {
+          user = {
+            id: fallbackUser.id,
+            email: fallbackUser.email,
+            name: fallbackUser.name,
+            license_key: fallbackUser.license_key,
+            products: fallbackUser.products,
+            plan: fallbackUser.plan
+          };
+          isUsingFallback = true;
+          console.log('[LOGIN-HYBRID] Fallback login successful');
+        }
       }
     }
     
