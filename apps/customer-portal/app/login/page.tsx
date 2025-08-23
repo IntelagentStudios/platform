@@ -32,22 +32,33 @@ function LoginForm() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login-simple', {
+      const response = await fetch('/api/auth/login-hybrid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
 
       const data = await response.json();
       console.log('Login response:', response.ok, data);
 
       if (response.ok && data.success) {
-        // Successful login - redirect to success page that will redirect to dashboard
+        // Successful login
         console.log('Login successful, redirecting...');
         setSuccess('Login successful! Redirecting...');
         
-        // Redirect to success page which has meta refresh
-        window.location.href = '/login-success';
+        // Get redirect URL from params or default to dashboard
+        const redirectTo = searchParams.get('redirect') || data.redirectTo || '/dashboard';
+        
+        // Try multiple redirect methods
+        setTimeout(() => {
+          try {
+            window.location.replace(redirectTo);
+          } catch (e) {
+            window.location.href = redirectTo;
+          }
+        }, 100);
+        
         return;
       } else {
         setError(data.error || 'Invalid email or password');
