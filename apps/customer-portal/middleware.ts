@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
       pathname === '/test-login' || pathname === '/test-form' || pathname === '/login-success' || 
       pathname === '/dashboard-test' || pathname === '/simple' || pathname === '/login-fix' ||
       pathname === '/nav-test' || pathname === '/portal' || pathname === '/register-v2' ||
-      pathname === '/login-working') {
+      pathname === '/login-working' || pathname === '/session-test') {
     return NextResponse.next();
   }
   
@@ -57,6 +57,16 @@ export async function middleware(request: NextRequest) {
   
   // Get session token from cookie
   const token = request.cookies.get('session')?.value || request.cookies.get('auth-token')?.value;
+  
+  // Debug logging
+  if (pathname === '/dashboard' || pathname === '/dashboard-simple') {
+    console.log('[MIDDLEWARE] Dashboard access:', {
+      pathname,
+      hasToken: !!token,
+      tokenLength: token?.length,
+      cookies: request.cookies.getAll().map(c => c.name)
+    });
+  }
   
   // For public routes, allow access
   if (isPublicRoute) {
@@ -87,7 +97,10 @@ export async function middleware(request: NextRequest) {
   
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
+    const jwtSecret = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    console.log('[MIDDLEWARE] Verifying token for:', pathname, 'Secret:', jwtSecret.substring(0, 10) + '...');
+    const decoded = jwt.verify(token, jwtSecret) as any;
+    console.log('[MIDDLEWARE] Token valid for:', decoded.email);
     
     // Add user info to headers for API routes
     const requestHeaders = new Headers(request.headers);
@@ -107,9 +120,13 @@ export async function middleware(request: NextRequest) {
         headers: requestHeaders,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     // Invalid token
-    console.error('Invalid token:', error);
+    console.error('[MIDDLEWARE] Token verification failed:', {
+      pathname,
+      error: error.message,
+      tokenLength: token?.length
+    });
     
     if (isApiRoute) {
       return NextResponse.json(
