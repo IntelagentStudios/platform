@@ -21,18 +21,22 @@ export async function POST(request: NextRequest) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     
+    // Get host for error redirects
+    const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    
     // Validate credentials
     if (!email || !password) {
-      return NextResponse.redirect(new URL('/login?error=missing', request.url));
+      return NextResponse.redirect(`${protocol}://${host}/login?error=missing`);
     }
     
     if (email.toLowerCase() !== TEST_USER.email.toLowerCase()) {
-      return NextResponse.redirect(new URL('/login?error=invalid', request.url));
+      return NextResponse.redirect(`${protocol}://${host}/login?error=invalid`);
     }
     
     const passwordValid = await bcrypt.compare(password, TEST_USER.password_hash);
     if (!passwordValid) {
-      return NextResponse.redirect(new URL('/login?error=invalid', request.url));
+      return NextResponse.redirect(`${protocol}://${host}/login?error=invalid`);
     }
     
     // Create JWT token
@@ -46,15 +50,20 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
     
-    // Create redirect response with cookie
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    // Get the host from the request headers
+    const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    
+    // Create redirect response with correct URL
+    const redirectUrl = `${protocol}://${host}/dashboard`;
+    const response = NextResponse.redirect(redirectUrl);
     
     // Set cookie directly on redirect response
     response.cookies.set({
       name: 'session',
       value: token,
       httpOnly: true,
-      secure: true,
+      secure: !host.includes('localhost'),
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/'
@@ -63,6 +72,8 @@ export async function POST(request: NextRequest) {
     return response;
     
   } catch (error: any) {
-    return NextResponse.redirect(new URL('/login?error=failed', request.url));
+    const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    return NextResponse.redirect(`${protocol}://${host}/login?error=failed`);
   }
 }

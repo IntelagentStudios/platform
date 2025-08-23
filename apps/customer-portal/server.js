@@ -4,9 +4,10 @@ const next = require('next')
 const { Server } = require('socket.io')
 
 const dev = process.env.NODE_ENV !== 'production'
-const hostname = '0.0.0.0'
+const hostname = '0.0.0.0'  // Listen on all interfaces
 const port = process.env.PORT || 3002
-const app = next({ dev, hostname, port })
+// Don't pass hostname to Next.js to avoid URL issues
+const app = next({ dev, port })
 const handle = app.getRequestHandler()
 
 app.prepare().then(() => {
