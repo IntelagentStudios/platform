@@ -44,22 +44,12 @@ function LoginForm() {
 
       if (response.ok && data.success) {
         // Successful login
-        console.log('Login successful, redirecting...');
-        setSuccess('Login successful! Redirecting...');
+        console.log('Login successful!');
+        setSuccess('Login successful! You can now access the dashboard.');
         
-        // Get redirect URL from params or default to dashboard
-        const redirectTo = searchParams.get('redirect') || data.redirectTo || '/dashboard';
-        
-        // Try multiple redirect methods
-        setTimeout(() => {
-          try {
-            window.location.replace(redirectTo);
-          } catch (e) {
-            window.location.href = redirectTo;
-          }
-        }, 100);
-        
-        return;
+        // Don't try to redirect automatically
+        // Just show success and let user click a link
+        setIsLoading(false);
       } else {
         setError(data.error || 'Invalid email or password');
         setIsLoading(false);
@@ -90,10 +80,20 @@ function LoginForm() {
         </CardHeader>
         <CardContent>
           {success && (
-            <Alert className="mb-4 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <AlertDescription className="text-green-800 dark:text-green-200">{success}</AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+              <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertDescription className="text-green-800 dark:text-green-200">{success}</AlertDescription>
+              </Alert>
+              <div className="text-center">
+                <a 
+                  href="/dashboard" 
+                  className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Go to Dashboard →
+                </a>
+              </div>
+            </div>
           )}
           
           {error && (
