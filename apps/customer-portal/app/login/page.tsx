@@ -42,12 +42,12 @@ function LoginForm() {
       console.log('Login response:', response.ok, data);
 
       if (response.ok && data.success) {
-        // Successful login - immediate redirect
-        console.log('Login successful, redirecting to dashboard...');
+        // Successful login - redirect to success page that will redirect to dashboard
+        console.log('Login successful, redirecting...');
         setSuccess('Login successful! Redirecting...');
         
-        // Don't update state, just redirect immediately
-        window.location.href = '/dashboard';
+        // Redirect to success page which has meta refresh
+        window.location.href = '/login-success';
         return;
       } else {
         setError(data.error || 'Invalid email or password');

@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
   }
   
   // Always allow auth pages
-  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login' || pathname === '/test-form') {
+  if (pathname === '/login' || pathname === '/register' || pathname === '/validate' || pathname === '/test-login' || pathname === '/test-form' || pathname === '/login-success') {
     return NextResponse.next();
   }
   

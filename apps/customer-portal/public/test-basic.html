@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Login Test</title>
+</head>
+<body>
+    <h1>Basic Login Test</h1>
+    <div id="status">Ready</div>
+    
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testRedirect()">Test Redirect</button>
+    
+    <script>
+        function testRedirect() {
+            console.log('Testing redirect...');
+            document.getElementById('status').innerText = 'Redirecting...';
+            window.location.href = '/dashboard';
+        }
+        
+        async function testLogin() {
+            document.getElementById('status').innerText = 'Logging in...';
+            
+            try {
+                const response = await fetch('/api/auth/login-simple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'harry@intelagentstudios.com',
+                        password: 'Birksgrange226!'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                if (response.ok && data.success) {
+                    document.getElementById('status').innerText = 'Success! Redirecting...';
+                    
+                    // Try multiple redirect methods
+                    setTimeout(() => {
+                        console.log('Attempting redirect...');
+                        window.location.href = '/dashboard';
+                        // Backup redirect
+                        window.location.assign('/dashboard');
+                        // Another backup
+                        window.location = '/dashboard';
+                    }, 1000);
+                } else {
+                    document.getElementById('status').innerText = 'Login failed: ' + (data.error || 'Unknown');
+                }
+            } catch (error) {
+                document.getElementById('status').innerText = 'Error: ' + error;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
