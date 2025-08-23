@@ -1,6 +1,6 @@
 'use client';
 
-import SidebarLayout from '@/components/layout/sidebar-layout';
+import SidebarLayout from '@/components/layout/sidebar-layout-old';
 import { 
   LayoutDashboard, 
   Users, 
