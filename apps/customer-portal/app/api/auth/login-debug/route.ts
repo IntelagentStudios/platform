@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const HARDCODED_USER = {
   id: '1a66bf30-01cc-4f6b-ae50-e8d063a7443e',
   email: 'harry@intelagentstudios.com',
-  password_hash: '$2b$12$Tmj6rJCRpBCXWBEn1a2mWOcFUcFcGJF9UaYEU5TzcdKBL7Iz10S9y',
+  password_hash: '$2b$12$2ukCbMdeoeptdXCwKsaVeuVskSkPFeOZvknT6qyPWI8ueAwHzCWRO',
   license_key: 'INTL-AGNT-BOSS-MODE',
   name: 'harry'
 };
