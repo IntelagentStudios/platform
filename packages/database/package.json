@@ -6,14 +6,15 @@
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "push": "prisma db push",
     "studio": "prisma studio",
     "seed": "node seed.js",
     "create-tenant": "node scripts/create-tenant.js",
-    "init-db": "psql $DATABASE_URL -f prisma/tenant-schemas.sql"
+    "init-db": "psql $DATABASE_URL -f prisma/tenant-schemas.sql",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
