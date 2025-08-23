@@ -34,7 +34,8 @@
       "Bash(npm run:*)",
       "Bash(git reset:*)",
       "Bash(npx tsx:*)",
-      "WebFetch(domain:dashboard.intelagentstudios.com)"
+      "WebFetch(domain:dashboard.intelagentstudios.com)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
