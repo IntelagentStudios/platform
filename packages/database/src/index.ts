@@ -34,8 +34,22 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Use the local DATABASE_URL as fallback for production
+const databaseUrl = process.env.DATABASE_URL || 
+  'postgresql://postgres:tZtE5VGf9CGhCOXx2pUS@centerbeam.proxy.rlwy.net:34807/railway';
+
+// Check for DATABASE_URL before initializing
+if (!databaseUrl) {
+  console.error('DATABASE_URL is not set. Please configure your database connection.');
+}
+
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: databaseUrl
+    }
+  }
 });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
