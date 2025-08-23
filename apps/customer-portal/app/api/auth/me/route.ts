@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       name: 'Harry',
       license_key: decoded.licenseKey,
       products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent'],
-      plan: 'enterprise',
+      plan: 'Pro Platform',
       subscription_status: 'active',
       next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
     };

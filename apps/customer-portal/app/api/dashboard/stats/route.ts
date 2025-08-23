@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       apiCalls: 45678,
       dataProcessed: 234.5, // MB
       products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent'],
-      plan: 'enterprise',
+      plan: 'Pro Platform',
       hasAiPro: true,
       licenseStatus: 'active'
     };

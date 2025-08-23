@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       name: HARDCODED_USER.name,
       license_key: HARDCODED_USER.license_key,
       products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent'],
-      plan: 'enterprise'
+      plan: 'Pro Platform'
     };
     
     // Create response with session cookie
