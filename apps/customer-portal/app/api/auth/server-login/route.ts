@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     
-    // Get host for error redirects
+    // Get host and protocol for all redirects
     const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     
@@ -50,10 +50,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
     
-    // Get the host from the request headers
-    const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    
     // Create redirect response with correct URL
     const redirectUrl = `${protocol}://${host}/dashboard`;
     const response = NextResponse.redirect(redirectUrl);
@@ -72,8 +68,9 @@ export async function POST(request: NextRequest) {
     return response;
     
   } catch (error: any) {
-    const host = request.headers.get('host') || 'dashboard.intelagentstudios.com';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    return NextResponse.redirect(`${protocol}://${host}/login?error=failed`);
+    // Get host from headers for error redirect
+    const errorHost = request.headers.get('host') || 'dashboard.intelagentstudios.com';
+    const errorProtocol = errorHost.includes('localhost') ? 'http' : 'https';
+    return NextResponse.redirect(`${errorProtocol}://${errorHost}/login?error=failed`);
   }
 }
