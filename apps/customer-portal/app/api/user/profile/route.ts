@@ -56,14 +56,12 @@ export async function GET(request: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
-      avatar_url: user.avatar_url,
       license_key: user.license_key,
       products: user.license?.products || [],
       plan: user.license?.plan || 'starter',
       status: user.license?.status,
       subscription_status: user.license?.subscription_status,
       next_billing_date: user.license?.next_billing_date,
-      onboarding_completed: user.onboarding_completed,
       created_at: user.created_at,
       product_setups: user.product_setups
     };
@@ -92,24 +90,18 @@ export async function PATCH(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { name, avatar_url, preferences, onboarding_completed } = body;
+    const { name } = body;
     
-    // Update user profile
+    // Update user profile (only name field exists)
     const updatedUser = await prisma.users.update({
       where: { id: userId },
       data: {
-        ...(name !== undefined && { name }),
-        ...(avatar_url !== undefined && { avatar_url }),
-        ...(preferences !== undefined && { preferences }),
-        ...(onboarding_completed !== undefined && { onboarding_completed })
+        ...(name !== undefined && { name })
       },
       select: {
         id: true,
         email: true,
-        name: true,
-        avatar_url: true,
-        onboarding_completed: true,
-        preferences: true
+        name: true
       }
     });
     
