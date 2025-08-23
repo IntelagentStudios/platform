@@ -3,10 +3,12 @@ import jwt from 'jsonwebtoken';
 
 const publicRoutes = [
   '/login',
+  '/login-v2',
   '/register',
   '/api/auth/login',
   '/api/auth/login-final',
   '/api/auth/register',
+  '/api/auth/check-session',
   '/api/health',
   '/_next',
   '/favicon.ico'

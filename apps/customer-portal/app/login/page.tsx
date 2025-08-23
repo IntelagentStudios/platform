@@ -37,10 +37,8 @@ function LoginForm() {
       if (response.ok && data.success) {
         setSuccess('Login successful! Redirecting...');
         
-        // Use window.location for hard redirect to ensure cookies are set
-        setTimeout(() => {
-          window.location.href = redirect;
-        }, 500);
+        // Immediate redirect without delay
+        window.location.href = redirect;
       } else {
         setError(data.error || 'Login failed');
         setIsLoading(false);
@@ -131,12 +129,6 @@ function LoginForm() {
               )}
             </Button>
           </form>
-          
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Test Credentials:</p>
-            <p className="font-mono">harry@intelagentstudios.com</p>
-            <p className="font-mono">Birksgrange226!</p>
-          </div>
         </CardContent>
       </Card>
     </div>

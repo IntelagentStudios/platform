@@ -88,20 +88,29 @@ export async function POST(request: NextRequest) {
       }
     });
     
-    // Set secure cookie with proper settings for production
-    const isProduction = process.env.NODE_ENV === 'production';
+    // Set secure cookie with proper settings
+    const hostname = request.headers.get('host') || '';
+    const isProduction = hostname.includes('intelagentstudios.com');
+    const isRailway = hostname.includes('railway.app');
     
-    response.cookies.set('session', token, {
+    // Determine cookie domain based on environment
+    let cookieOptions: any = {
       httpOnly: true,
-      secure: isProduction,
+      secure: isProduction || isRailway,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-      // Critical: Set domain for production to work across subdomains
-      ...(isProduction && { domain: '.intelagentstudios.com' })
-    });
+      path: '/'
+    };
     
-    console.log('[LOGIN-FINAL] Cookie set with domain:', isProduction ? '.intelagentstudios.com' : 'localhost');
+    // Only set domain for intelagentstudios.com
+    if (isProduction) {
+      cookieOptions.domain = '.intelagentstudios.com';
+    }
+    // Don't set domain for localhost or railway to allow cookie to work
+    
+    response.cookies.set('session', token, cookieOptions);
+    
+    console.log('[LOGIN-FINAL] Cookie set for host:', hostname, 'with domain:', cookieOptions.domain || 'default');
     
     return response;
     

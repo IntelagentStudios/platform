@@ -131,12 +131,6 @@ function LoginV2Form() {
               )}
             </Button>
           </form>
-          
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Test Credentials:</p>
-            <p className="font-mono">harry@intelagentstudios.com</p>
-            <p className="font-mono">Birksgrange226!</p>
-          </div>
         </CardContent>
       </Card>
     </div>
