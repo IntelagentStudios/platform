@@ -52,6 +52,11 @@ export async function GET(request: NextRequest) {
         embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-site-key="${license.site_key}"></script>`
       };
     }
+    
+    // Log for debugging
+    console.log('License found:', !!license);
+    console.log('Site key:', license?.site_key);
+    console.log('Chatbot configured:', configurations.chatbot.configured);
 
     // Override with product_configs if available
     productConfigs.forEach(config => {
@@ -68,7 +73,15 @@ export async function GET(request: NextRequest) {
       // Add other products as needed
     });
 
-    return NextResponse.json(configurations);
+    return NextResponse.json({
+      ...configurations,
+      _debug: {
+        license_key_used: licenseKey,
+        site_key_found: license?.site_key || 'none',
+        domain_found: license?.domain || 'none',
+        chatbot_configured: configurations.chatbot?.configured || false
+      }
+    });
   } catch (error) {
     console.error('Failed to fetch configurations:', error);
     return NextResponse.json({ 
