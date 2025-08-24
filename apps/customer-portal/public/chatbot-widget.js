@@ -589,8 +589,7 @@
           }
         });
         
-        // Scroll to the top of the new message
-        scrollToMessage(botMsgDiv);
+        // No need to scroll - we already scrolled when showing the typing indicator
 
       } catch (error) {
         removeTypingIndicator();

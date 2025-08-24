@@ -405,8 +405,7 @@ export async function GET() {
         <div class="agent-message">
           <strong>Agent:</strong> 
           Welcome to the Intelagent Chatbot Setup.<br><br>
-          To get started, please provide your website domain (e.g., example.com) and I'll help you set up your chatbot.<br><br>
-          <em>Note: Make sure to use the exact domain where you'll install the chatbot.</em>
+          To get started, please provide your website domain (e.g., example.com) and I'll help you set up your chatbot.
         </div>
       \`;
       
