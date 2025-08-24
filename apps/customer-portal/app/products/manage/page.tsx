@@ -10,7 +10,8 @@ import {
   Copy,
   RefreshCw,
   Eye,
-  EyeOff
+  EyeOff,
+  MessageSquare
 } from 'lucide-react';
 
 export default function ProductManagementPage() {
@@ -186,15 +187,16 @@ export default function ProductManagementPage() {
 
                 <div className="flex space-x-3 mt-4">
                   <button
-                    onClick={() => router.push('/products/chatbot/setup-agent')}
+                    onClick={() => router.push('/products/chatbot/conversations')}
                     className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
                     style={{ 
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(169, 189, 203)'
+                      backgroundColor: 'rgb(169, 189, 203)',
+                      color: 'rgb(48, 54, 54)',
+                      fontWeight: '500'
                     }}
                   >
-                    <RefreshCw className="h-4 w-4" />
-                    <span>Reconfigure</span>
+                    <MessageSquare className="h-4 w-4" />
+                    <span>View Conversations</span>
                   </button>
                   <button
                     onClick={() => router.push('/products/analytics?product=chatbot')}
@@ -205,7 +207,18 @@ export default function ProductManagementPage() {
                     }}
                   >
                     <BarChart3 className="h-4 w-4" />
-                    <span>View Analytics</span>
+                    <span>Analytics</span>
+                  </button>
+                  <button
+                    onClick={() => router.push('/products/chatbot/setup-agent')}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
+                    style={{ 
+                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(169, 189, 203)'
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    <span>Reconfigure</span>
                   </button>
                 </div>
               </div>
