@@ -22,6 +22,8 @@ export default function ChatbotConversationsPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const router = useRouter();
 
   useEffect(() => {
@@ -38,20 +40,50 @@ export default function ChatbotConversationsPage() {
       });
   }, []);
 
-  const fetchConversations = async () => {
-    setLoading(true);
+  // Auto-refresh conversations
+  useEffect(() => {
+    if (!isAuthenticated || !autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      fetchConversations(false); // Don't show loading spinner for auto-refresh
+    }, 10000); // Refresh every 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated, autoRefresh]);
+
+  const fetchConversations = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await fetch('/api/products/chatbot/conversations');
       const data = await response.json();
+      
+      // Check if there are new conversations
+      const hasNewConversations = data.conversations && 
+        data.conversations.length > conversations.length;
+      
       setConversations(data.conversations || []);
       setStats(data.stats);
-      if (data.conversations && data.conversations.length > 0) {
+      setLastRefresh(new Date());
+      
+      // If a conversation is selected, update it with fresh data
+      if (selectedConversation) {
+        const updated = data.conversations?.find((c: any) => c.id === selectedConversation.id);
+        if (updated) {
+          setSelectedConversation(updated);
+        }
+      } else if (data.conversations && data.conversations.length > 0 && !selectedConversation) {
         setSelectedConversation(data.conversations[0]);
+      }
+      
+      // Show notification for new conversations
+      if (hasNewConversations && !showLoading) {
+        // Could add a toast notification here
+        console.log('New conversation received!');
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -128,17 +160,45 @@ export default function ChatbotConversationsPage() {
               </p>
             </div>
           </div>
-          <button
-            onClick={fetchConversations}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
-            style={{ 
-              backgroundColor: 'rgba(169, 189, 203, 0.2)',
-              color: 'rgb(169, 189, 203)'
-            }}
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Refresh</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="rounded"
+                  style={{ accentColor: 'rgb(169, 189, 203)' }}
+                />
+                <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                  Auto-refresh
+                </span>
+              </label>
+              {autoRefresh && (
+                <span className="text-xs px-2 py-1 rounded" 
+                      style={{ 
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        color: 'rgb(76, 175, 80)'
+                      }}>
+                  Live
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => fetchConversations()}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
+              style={{ 
+                backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                color: 'rgb(169, 189, 203)'
+              }}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+            <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+              Last: {lastRefresh.toLocaleTimeString()}
+            </span>
+          </div>
         </div>
       </header>
 
