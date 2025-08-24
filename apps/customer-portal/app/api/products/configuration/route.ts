@@ -13,15 +13,26 @@ export async function GET(request: NextRequest) {
     // Get the user's license key (hardcoded for now since we're using simple auth)
     const licenseKey = 'INTL-AGNT-BOSS-MODE';
     
-    // Fetch product configurations from database
-    const productConfigs = await prisma.product_configs.findMany({
-      where: { license_key: licenseKey }
-    });
+    let license = null;
+    let productConfigs: any[] = [];
+    
+    try {
+      // Fetch product configurations from database
+      productConfigs = await prisma.product_configs.findMany({
+        where: { license_key: licenseKey }
+      });
+    } catch (e) {
+      console.error('Failed to fetch product_configs:', e);
+    }
 
-    // Also check for site_key in licenses table for chatbot
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey }
-    });
+    try {
+      // Also check for site_key in licenses table for chatbot
+      license = await prisma.licenses.findUnique({
+        where: { license_key: licenseKey }
+      });
+    } catch (e) {
+      console.error('Failed to fetch license:', e);
+    }
 
     let configurations = {
       chatbot: {
