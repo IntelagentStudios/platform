@@ -269,25 +269,39 @@ export async function GET() {
         });
 
         let agentReply = "Unable to process your request. Please try again.";
+        let data = null;
         
         if (response.ok) {
-          const data = await response.json();
-          console.log("Setup response:", data);
-        console.log("Response status:", response.status);
-        console.log("Response headers:", response.headers);
+          // Check if response has content
+          const responseText = await response.text();
+          console.log("Response text:", responseText);
+          console.log("Response status:", response.status);
+          console.log("Response headers:", response.headers);
           
-          // Extract response from various possible fields
-          agentReply = data?.agent_response || 
-                      data?.chatbot_response || 
-                      data?.agent_message || 
-                      data?.message ||
-                      data?.response ||
-                      data?.text ||
-                      JSON.stringify(data) || 
-                      "Response received but no message found.";
+          if (responseText && responseText.trim() !== '') {
+            try {
+              data = JSON.parse(responseText);
+              console.log("Setup response:", data);
+              
+              // Extract response from various possible fields
+              agentReply = data?.agent_response || 
+                          data?.chatbot_response || 
+                          data?.agent_message || 
+                          data?.message ||
+                          data?.response ||
+                          data?.text ||
+                          JSON.stringify(data) || 
+                          "Response received but no message found.";
+            } catch (parseError) {
+              console.error("JSON parse error:", parseError);
+              agentReply = "The setup agent is currently being configured. Please check back later or contact support.";
+            }
+          } else {
+            agentReply = "The setup agent workflow is active but not returning data. Please ensure the N8N workflow has a 'Respond to Webhook' node configured with response data.";
+          }
           
           // Check if it's a success response with a site key
-          if (data?.site_key || data?.siteKey) {
+          if (data && (data.site_key || data.siteKey)) {
             const siteKey = data.site_key || data.siteKey;
             agentReply = \`<span class="success-message">Success!</span><br><br>
                          Your chatbot has been configured successfully.<br><br>

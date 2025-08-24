@@ -79,7 +79,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-              Dashboard
+              Overview
             </h1>
             <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
               Welcome back, {user?.name || 'Harry'}. Here's your overview.
@@ -173,7 +173,14 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <button 
-                      className="px-3 py-1 rounded text-sm transition hover:opacity-80"
+                      onClick={() => {
+                        if (product.name === 'Chatbot') {
+                          window.location.href = '/products/chatbot/setup-agent';
+                        } else {
+                          window.location.href = '/products';
+                        }
+                      }}
+                      className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
                       style={{ 
                         backgroundColor: 'rgb(169, 189, 203)',
                         color: 'rgb(48, 54, 54)'

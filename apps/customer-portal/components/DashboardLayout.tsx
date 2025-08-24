@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'dashboard', label: 'Overview', icon: Home, path: '/dashboard' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
     { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
