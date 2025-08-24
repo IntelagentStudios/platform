@@ -49,52 +49,52 @@ export default function ProductsPage() {
       id: 'chatbot',
       name: 'Chatbot',
       description: 'AI-powered customer support chatbot for your website',
-      status: 'Active',
+      status: 'Not Configured',
       icon: Zap,
       features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
       config: {
-        apiKey: 'chat_key_xxxxx',
-        widgetColor: '#a9bdcb',
-        position: 'bottom-right'
+        apiKey: '-',
+        widgetColor: '-',
+        position: '-'
       }
     },
     {
       id: 'sales-agent',
       name: 'Sales Agent',
       description: 'Intelligent sales assistant that converts leads',
-      status: 'Active',
+      status: 'Not Configured',
       icon: Users,
       features: ['Lead Scoring', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
       config: {
-        apiKey: 'sales_key_xxxxx',
-        agentName: 'Alex',
-        responseTime: '< 1 minute'
+        apiKey: '-',
+        agentName: '-',
+        responseTime: '-'
       }
     },
     {
       id: 'data-enrichment',
       name: 'Data Enrichment',
       description: 'Enhance your customer data with AI insights',
-      status: 'Active',
+      status: 'Not Configured',
       icon: BarChart3,
       features: ['Contact Enrichment', 'Company Data', 'Social Profiles', 'Intent Signals'],
       config: {
-        apiKey: 'data_key_xxxxx',
-        enrichmentLevel: 'comprehensive',
-        autoUpdate: true
+        apiKey: '-',
+        enrichmentLevel: '-',
+        autoUpdate: '-'
       }
     },
     {
       id: 'setup-agent',
       name: 'Setup Agent',
       description: 'Automated setup and configuration assistant',
-      status: 'Active',
+      status: 'Not Configured',
       icon: SettingsIcon,
       features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Custom Scripts'],
       config: {
-        apiKey: 'setup_key_xxxxx',
-        automationLevel: 'high',
-        notifications: true
+        apiKey: '-',
+        automationLevel: '-',
+        notifications: '-'
       }
     }
   ];
@@ -158,10 +158,10 @@ export default function ProductsPage() {
                   </div>
                   <div className="flex items-center space-x-1 px-2 py-1 rounded-full text-xs"
                        style={{ 
-                         backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                         color: '#4CAF50'
+                         backgroundColor: product.status === 'Not Configured' ? 'rgba(169, 189, 203, 0.2)' : 'rgba(76, 175, 80, 0.2)',
+                         color: product.status === 'Not Configured' ? 'rgba(169, 189, 203, 0.8)' : '#4CAF50'
                        }}>
-                    <CheckCircle className="h-3 w-3" />
+                    {product.status === 'Not Configured' ? <AlertCircle className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
                     <span>{product.status}</span>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function ProductsPage() {
                     color: 'rgba(229, 227, 220, 0.8)'
                   }}
                 >
-                  {product.status === 'Active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  {product.status === 'Not Configured' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                 </button>
                 <button
                   className="px-4 py-2 rounded-lg transition hover:opacity-80"

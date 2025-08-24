@@ -46,43 +46,39 @@ export default function AnalyticsPage() {
   const metrics = [
     { 
       label: 'Total Revenue', 
-      value: '$45,231', 
-      change: '+20.1%', 
-      trend: 'up',
-      icon: DollarSign,
-      sparkline: [40, 45, 42, 48, 52, 58, 65]
+      value: '-', 
+      change: '-', 
+      trend: 'neutral',
+      icon: DollarSign
     },
     { 
       label: 'Active Users', 
-      value: '2,350', 
-      change: '+180', 
-      trend: 'up',
-      icon: Users,
-      sparkline: [2100, 2150, 2200, 2250, 2280, 2320, 2350]
+      value: '-', 
+      change: '-', 
+      trend: 'neutral',
+      icon: Users
     },
     { 
       label: 'API Calls', 
-      value: '12.5M', 
-      change: '+12%', 
-      trend: 'up',
-      icon: Activity,
-      sparkline: [10, 10.5, 11, 11.2, 11.8, 12, 12.5]
+      value: '-', 
+      change: '-', 
+      trend: 'neutral',
+      icon: Activity
     },
     { 
-      label: 'Products Active', 
+      label: 'Products Available', 
       value: '4', 
-      change: '0', 
+      change: '-', 
       trend: 'neutral',
-      icon: Package,
-      sparkline: [4, 4, 4, 4, 4, 4, 4]
+      icon: Package
     }
   ];
 
   const productMetrics = [
-    { name: 'Chatbot', usage: '8.2M calls', revenue: '$18,450', growth: '+25%' },
-    { name: 'Sales Agent', usage: '3.1M calls', revenue: '$12,890', growth: '+18%' },
-    { name: 'Data Enrichment', usage: '1.2M calls', revenue: '$9,340', growth: '+32%' },
-    { name: 'Setup Agent', usage: '0.1M calls', revenue: '$4,551', growth: '+5%' }
+    { name: 'Chatbot', usage: '-', revenue: '-', growth: '-' },
+    { name: 'Sales Agent', usage: '-', revenue: '-', growth: '-' },
+    { name: 'Data Enrichment', usage: '-', revenue: '-', growth: '-' },
+    { name: 'Setup Agent', usage: '-', revenue: '-', growth: '-' }
   ];
 
   return (
@@ -169,24 +165,8 @@ export default function AnalyticsPage() {
             <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
               Revenue Trend
             </h2>
-            <div className="h-64 flex items-end justify-between space-x-2">
-              {[65, 72, 68, 74, 79, 85, 92].map((height, idx) => (
-                <div 
-                  key={idx}
-                  className="flex-1 rounded-t transition-all hover:opacity-80"
-                  style={{ 
-                    height: `${height}%`,
-                    backgroundColor: 'rgba(169, 189, 203, 0.6)'
-                  }}
-                />
-              ))}
-            </div>
-            <div className="flex justify-between mt-2">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
-                <span key={idx} className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  {day}
-                </span>
-              ))}
+            <div className="h-64 flex items-center justify-center">
+              <span style={{ color: 'rgba(169, 189, 203, 0.6)' }}>No data available</span>
             </div>
           </div>
 
@@ -201,24 +181,8 @@ export default function AnalyticsPage() {
             <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
               API Usage
             </h2>
-            <div className="h-64 flex items-end justify-between space-x-2">
-              {[45, 52, 58, 61, 55, 68, 75].map((height, idx) => (
-                <div 
-                  key={idx}
-                  className="flex-1 rounded-t transition-all hover:opacity-80"
-                  style={{ 
-                    height: `${height}%`,
-                    backgroundColor: 'rgba(76, 175, 80, 0.6)'
-                  }}
-                />
-              ))}
-            </div>
-            <div className="flex justify-between mt-2">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
-                <span key={idx} className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  {day}
-                </span>
-              ))}
+            <div className="h-64 flex items-center justify-center">
+              <span style={{ color: 'rgba(169, 189, 203, 0.6)' }}>No data available</span>
             </div>
           </div>
         </div>

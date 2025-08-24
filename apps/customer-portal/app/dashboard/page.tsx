@@ -59,17 +59,17 @@ export default function DashboardPage() {
   }
 
   const stats = [
-    { label: 'Total Revenue', value: '$45,231', change: '+20.1%', icon: DollarSign },
-    { label: 'Active Users', value: '2,350', change: '+180', icon: Users },
-    { label: 'API Calls', value: '12.5M', change: '+12%', icon: Activity },
+    { label: 'Total Revenue', value: '-', change: '-', icon: DollarSign },
+    { label: 'Active Users', value: '-', change: '-', icon: Users },
+    { label: 'API Calls', value: '-', change: '-', icon: Activity },
     { label: 'Products', value: '4', change: 'Active', icon: Package }
   ];
 
   const products = [
-    { name: 'Chatbot', status: 'Active', icon: Zap },
-    { name: 'Sales Agent', status: 'Active', icon: Users },
-    { name: 'Data Enrichment', status: 'Active', icon: BarChart3 },
-    { name: 'Setup Agent', status: 'Active', icon: Settings }
+    { name: 'Chatbot', status: 'Ready', icon: Zap },
+    { name: 'Sales Agent', status: 'Ready', icon: Users },
+    { name: 'Data Enrichment', status: 'Ready', icon: BarChart3 },
+    { name: 'Setup Agent', status: 'Ready', icon: Settings }
   ];
 
   return (

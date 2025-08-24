@@ -57,17 +57,9 @@ export default function BillingPage() {
     return null;
   }
 
-  const invoices = [
-    { id: 1, date: '2024-01-01', amount: '$599', status: 'Paid', description: 'Pro Platform License' },
-    { id: 2, date: '2023-12-01', amount: '$599', status: 'Paid', description: 'Pro Platform License' },
-    { id: 3, date: '2023-11-01', amount: '$599', status: 'Paid', description: 'Pro Platform License' },
-    { id: 4, date: '2023-10-01', amount: '$599', status: 'Paid', description: 'Pro Platform License' }
-  ];
+  const invoices: any[] = [];
 
-  const paymentMethods = [
-    { id: 1, type: 'Visa', last4: '4242', expires: '12/25', isDefault: true },
-    { id: 2, type: 'Mastercard', last4: '8888', expires: '06/24', isDefault: false }
-  ];
+  const paymentMethods: any[] = [];
 
   return (
     <DashboardLayout>
@@ -183,16 +175,16 @@ export default function BillingPage() {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>API Calls</span>
-                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>12.5M / Unlimited</span>
+                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>- / Unlimited</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="h-2 rounded-full" style={{ width: '45%', backgroundColor: 'rgb(169, 189, 203)' }}></div>
+                    <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: 'rgb(169, 189, 203)' }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
                     <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Active Users</span>
-                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>2,350 / Unlimited</span>
+                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>- / Unlimited</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div className="h-2 rounded-full" style={{ width: '30%', backgroundColor: 'rgb(169, 189, 203)' }}></div>
@@ -201,10 +193,10 @@ export default function BillingPage() {
                 <div>
                   <div className="flex justify-between mb-1">
                     <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Storage</span>
-                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>450GB / 1TB</span>
+                    <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>- / 1TB</span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div className="h-2 rounded-full" style={{ width: '45%', backgroundColor: 'rgb(169, 189, 203)' }}></div>
+                    <div className="h-2 rounded-full" style={{ width: '0%', backgroundColor: 'rgb(169, 189, 203)' }}></div>
                   </div>
                 </div>
               </div>
@@ -247,7 +239,11 @@ export default function BillingPage() {
 
         {activeTab === 'invoices' && (
           <div className="space-y-4">
-            {invoices.map((invoice) => (
+            {invoices.length === 0 ? (
+              <div className="text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                No invoices yet
+              </div>
+            ) : invoices.map((invoice) => (
               <div 
                 key={invoice.id}
                 className="rounded-lg p-4 border flex items-center justify-between"
@@ -295,7 +291,13 @@ export default function BillingPage() {
 
         {activeTab === 'payment-methods' && (
           <div className="space-y-4">
-            {paymentMethods.map((method) => (
+            {paymentMethods.length === 0 ? (
+              <div className="text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                No payment methods configured
+              </div>
+            ) : (
+              <>
+                {paymentMethods.map((method) => (
               <div 
                 key={method.id}
                 className="rounded-lg p-4 border flex items-center justify-between"
@@ -337,16 +339,18 @@ export default function BillingPage() {
                   </button>
                 </div>
               </div>
-            ))}
-            <button
-              className="w-full py-3 rounded-lg border-2 border-dashed transition hover:opacity-80"
-              style={{ 
-                borderColor: 'rgba(169, 189, 203, 0.2)',
-                color: 'rgba(229, 227, 220, 0.6)'
-              }}
-            >
-              + Add Payment Method
-            </button>
+                ))}
+                <button
+                  className="w-full py-3 rounded-lg border-2 border-dashed transition hover:opacity-80"
+                  style={{ 
+                    borderColor: 'rgba(169, 189, 203, 0.2)',
+                    color: 'rgba(229, 227, 220, 0.6)'
+                  }}
+                >
+                  + Add Payment Method
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
