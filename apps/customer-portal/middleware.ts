@@ -4,7 +4,8 @@ const publicPaths = [
   '/login',
   '/api/auth/simple',
   '/_next',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/chatbot-widget.js'
 ];
 
 export async function middleware(request: NextRequest) {

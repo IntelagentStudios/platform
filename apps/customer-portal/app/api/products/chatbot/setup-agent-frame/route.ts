@@ -311,7 +311,7 @@ export async function GET() {
                          <strong>For Squarespace:</strong><br>
                          1. Go to Settings → Advanced → Code Injection<br>
                          2. Paste this in the FOOTER section (not Header):<br>
-                         <pre><code>&lt;script src="https://intelagentchatbot.up.railway.app/widget.js" 
+                         <pre><code>&lt;script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" 
   data-site-key="\${siteKey}"&gt;&lt;/script&gt;</code></pre>
                          3. Click Save<br><br>
                          <strong>For other websites:</strong><br>
