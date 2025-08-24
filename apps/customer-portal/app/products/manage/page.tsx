@@ -197,6 +197,7 @@ export default function ProductManagementPage() {
                     <span>Reconfigure</span>
                   </button>
                   <button
+                    onClick={() => router.push('/products/analytics?product=chatbot')}
                     className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
                     style={{ 
                       backgroundColor: 'rgba(169, 189, 203, 0.2)',
