@@ -178,11 +178,11 @@ export default function ProductsPage() {
                   </div>
                   <div className="flex items-center space-x-1 px-2 py-1 rounded-full text-xs"
                        style={{ 
-                         backgroundColor: product.status === 'Not Configured' ? 'rgba(169, 189, 203, 0.2)' : 'rgba(76, 175, 80, 0.2)',
-                         color: product.status === 'Not Configured' ? 'rgba(169, 189, 203, 0.8)' : '#4CAF50'
+                         backgroundColor: configurations[product.id]?.configured ? 'rgba(76, 175, 80, 0.2)' : 'rgba(169, 189, 203, 0.2)',
+                         color: configurations[product.id]?.configured ? '#4CAF50' : 'rgba(169, 189, 203, 0.8)'
                        }}>
-                    {product.status === 'Not Configured' ? <AlertCircle className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-                    <span>{product.status}</span>
+                    {configurations[product.id]?.configured ? <CheckCircle className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                    <span>{configurations[product.id]?.configured ? 'Configured' : 'Not Configured'}</span>
                   </div>
                 </div>
               </div>
@@ -238,16 +238,42 @@ export default function ProductsPage() {
 
               {/* Actions */}
               <div className="p-6 flex space-x-3">
-                <button
-                  onClick={() => handleConfigure(product.id)}
-                  className="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-80"
-                  style={{ 
-                    backgroundColor: 'rgb(169, 189, 203)',
-                    color: 'rgb(48, 54, 54)'
-                  }}
-                >
-                  {configurations[product.id]?.configured ? 'Reconfigure' : 'Configure'}
-                </button>
+                {configurations[product.id]?.configured ? (
+                  <>
+                    <button
+                      onClick={() => router.push('/products/manage')}
+                      className="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-80"
+                      style={{ 
+                        backgroundColor: 'rgb(169, 189, 203)',
+                        color: 'rgb(48, 54, 54)'
+                      }}
+                    >
+                      View Details
+                    </button>
+                    <button
+                      onClick={() => handleConfigure(product.id)}
+                      className="px-4 py-2 rounded-lg transition hover:opacity-80"
+                      style={{ 
+                        backgroundColor: 'transparent',
+                        border: '1px solid rgba(169, 189, 203, 0.2)',
+                        color: 'rgba(229, 227, 220, 0.8)'
+                      }}
+                    >
+                      Reconfigure
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleConfigure(product.id)}
+                    className="flex-1 px-4 py-2 rounded-lg font-medium transition hover:opacity-80"
+                    style={{ 
+                      backgroundColor: 'rgb(169, 189, 203)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
+                  >
+                    Configure
+                  </button>
+                )}
                 <button
                   className="px-4 py-2 rounded-lg transition hover:opacity-80"
                   style={{ 

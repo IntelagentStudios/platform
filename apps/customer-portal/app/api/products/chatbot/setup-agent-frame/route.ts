@@ -243,8 +243,8 @@ export async function GET() {
       if (!message) return;
 
       // Add user message
-      chatLog.innerHTML += \`<div class="user-message"><strong>You:</strong> \${message}</div>\`;
-      chatLog.innerHTML += \`<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span></div>\`;
+      chatLog.innerHTML += '<div class="user-message"><strong>You:</strong> ' + message + '</div>';
+      chatLog.innerHTML += '<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span></div>';
       // Smooth scroll to bottom with a small offset for better visibility
       chatLog.scrollTo({
         top: chatLog.scrollHeight - chatLog.clientHeight,
@@ -320,37 +320,37 @@ export async function GET() {
                   site_key: siteKey,
                   domain: domain,
                   created_at: new Date().toISOString(),
-                  embed_code: \`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-site-key="\${siteKey}"></script>\`
+                  embed_code: '<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-site-key="' + siteKey + '"></script>'
                 }
               })
             }).catch(err => console.error('Failed to save configuration:', err));
             
-            agentReply = \`<span class="success-message">Success!</span><br><br>
-                         Your chatbot has been configured successfully.<br><br>
-                         <strong>Your Site Key:</strong><br>
-                         <pre><code>\${siteKey}</code></pre>
-                         <br><strong>Installation Instructions:</strong><br><br>
-                         <strong>For Squarespace:</strong><br>
-                         1. Go to Settings → Advanced → Code Injection<br>
-                         2. Paste this in the FOOTER section (not Header):<br>
-                         <pre><code>&lt;script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" 
-  data-site-key="\${siteKey}"&gt;&lt;/script&gt;</code></pre>
-                         3. Click Save<br><br>
-                         <strong>For other websites:</strong><br>
-                         Add the script before the closing &lt;/body&gt; tag in your HTML.<br><br>
-                         <strong>Note:</strong> Your configuration has been saved. You can view it in the Products page.\`;
+            agentReply = '<span class="success-message">Success!</span><br><br>' +
+                         'Your chatbot has been configured successfully.<br><br>' +
+                         '<strong>Your Site Key:</strong><br>' +
+                         '<pre><code>' + siteKey + '</code></pre>' +
+                         '<br><strong>Installation Instructions:</strong><br><br>' +
+                         '<strong>For Squarespace:</strong><br>' +
+                         '1. Go to Settings → Advanced → Code Injection<br>' +
+                         '2. Paste this in the FOOTER section (not Header):<br>' +
+                         '<pre><code>&lt;script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" ' +
+                         'data-site-key="' + siteKey + '"&gt;&lt;/script&gt;</code></pre>' +
+                         '3. Click Save<br><br>' +
+                         '<strong>For other websites:</strong><br>' +
+                         'Add the script before the closing &lt;/body&gt; tag in your HTML.<br><br>' +
+                         '<strong>Note:</strong> Your configuration has been saved. You can view it in the Products page.';
           }
         } else {
           console.error("Response not OK:", response.status, response.statusText);
           if (response.status === 404) {
             const errorText = await response.text();
             if (errorText.includes("workflow must be active")) {
-              agentReply = \`<span class="error-message">Setup workflow is inactive</span><br>The N8N workflow needs to be activated. Please contact support to enable the setup agent.\`;
+              agentReply = '<span class="error-message">Setup workflow is inactive</span><br>The N8N workflow needs to be activated. Please contact support to enable the setup agent.';
             } else {
-              agentReply = \`<span class="error-message">Setup agent webhook not found</span><br>The webhook endpoint is not currently available. Please contact support to configure your setup agent.\`;
+              agentReply = '<span class="error-message">Setup agent webhook not found</span><br>The webhook endpoint is not currently available. Please contact support to configure your setup agent.';
             }
           } else {
-            agentReply = \`<span class="error-message">Connection error (\${response.status})</span><br>Please check your domain and try again.\`;
+            agentReply = '<span class="error-message">Connection error (' + response.status + ')</span><br>Please check your domain and try again.';
           }
         }
         
@@ -362,7 +362,7 @@ export async function GET() {
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
         
-        chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> \${formattedReply}</div>\`;
+        chatLog.innerHTML += '<div class="agent-message"><strong>Agent:</strong> ' + formattedReply + '</div>';
         // Smooth scroll to bottom with a small offset for better visibility
       chatLog.scrollTo({
         top: chatLog.scrollHeight - chatLog.clientHeight,
@@ -375,7 +375,7 @@ export async function GET() {
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
         
-        chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> <span class="error-message">Connection failed</span><br>Error: \${err.message}<br>Please check your connection and try again.</div>\`;
+        chatLog.innerHTML += '<div class="agent-message"><strong>Agent:</strong> <span class="error-message">Connection failed</span><br>Error: ' + err.message + '<br>Please check your connection and try again.</div>';
         // Smooth scroll to bottom with a small offset for better visibility
       chatLog.scrollTo({
         top: chatLog.scrollHeight - chatLog.clientHeight,

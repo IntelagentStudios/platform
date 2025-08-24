@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 
-  // TODO: Fetch from database using user's email/id
-  // For now, return placeholder data
-  const configurations = {
+  // Get stored configuration from cookie (temporary solution)
+  const configCookie = cookies().get('product_configs');
+  let configurations = {
     chatbot: {
       configured: false,
       site_key: null,
@@ -31,6 +31,15 @@ export async function GET(request: NextRequest) {
     }
   };
 
+  if (configCookie) {
+    try {
+      const stored = JSON.parse(configCookie.value);
+      configurations = { ...configurations, ...stored };
+    } catch (e) {
+      console.error('Failed to parse stored configurations');
+    }
+  }
+
   return NextResponse.json(configurations);
 }
 
@@ -45,14 +54,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { product, configuration } = body;
 
-    // TODO: Save to database
-    // For now, we'll just return success
-    console.log('Saving configuration:', { product, configuration });
+    // Get existing configurations
+    const configCookie = cookies().get('product_configs');
+    let existingConfigs = {};
+    
+    if (configCookie) {
+      try {
+        existingConfigs = JSON.parse(configCookie.value);
+      } catch (e) {
+        console.error('Failed to parse existing configurations');
+      }
+    }
 
-    return NextResponse.json({ 
+    // Update with new configuration
+    existingConfigs[product] = configuration;
+
+    // Store in cookie (temporary solution - should use database)
+    const response = NextResponse.json({ 
       success: true, 
       message: 'Configuration saved successfully' 
     });
+    
+    response.cookies.set('product_configs', JSON.stringify(existingConfigs), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    return response;
   } catch (error) {
     return NextResponse.json({ 
       success: false, 
