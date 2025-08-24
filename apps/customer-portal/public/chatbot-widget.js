@@ -7,6 +7,8 @@
     console.error('IntelagentChat: No site key provided');
     return;
   }
+  
+  console.log('IntelagentChat: Initializing with site key:', siteKey);
 
   // Check if widget already exists
   if (document.getElementById('intelagent-chat-widget-loader')) {
@@ -755,4 +757,6 @@
       location.reload();
     }
   };
+  
+  console.log('IntelagentChat: Widget loaded successfully');
 })();
