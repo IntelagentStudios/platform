@@ -335,7 +335,7 @@
     const sessionId = localStorage.getItem('intelagent_session_id') || 'sess_' + Math.random().toString(36).substring(2, 10);
     localStorage.setItem('intelagent_session_id', sessionId);
     
-    const webhookUrl = 'https://intelagentchatbotn8n.up.railway.app/webhook/chatbot';
+    const webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
 
     // Load chat history from localStorage
     function loadChatHistory() {

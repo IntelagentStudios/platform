@@ -40,7 +40,7 @@ app.post('/api/setup', async (req, res) => {
       controller.abort();
     }, 30000); // 30 second timeout
     
-    const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent', {
+    const response = await fetch('https://1ntelagent.up.railway.app/webhook/setup', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

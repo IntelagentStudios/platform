@@ -219,7 +219,7 @@ export async function GET() {
 </head>
 <body>
   <div class="setup-container" id="main-container">
-    <h1>🤖 Intelagent Chatbot Setup</h1>
+    <h1>Intelagent Chatbot Setup</h1>
     <p>I'll help you connect your domain and generate your personalized chatbot key.</p>
     <div id="chat-log"></div>
     <div class="input-container">
@@ -233,7 +233,7 @@ export async function GET() {
     localStorage.setItem("setup_session_id", sessionId);
     
     // N8N webhook URL
-    const WEBHOOK_URL = "https://primary-production-f36e.up.railway.app/webhook-test/setup-agent";
+    const WEBHOOK_URL = "https://1ntelagent.up.railway.app/webhook/setup";
 
     async function sendMessage(messageOverride) {
       const input = document.getElementById("chat-input");
@@ -268,11 +268,13 @@ export async function GET() {
           })
         });
 
-        let agentReply = "⚠️ Unable to process your request. Please try again.";
+        let agentReply = "Unable to process your request. Please try again.";
         
         if (response.ok) {
           const data = await response.json();
           console.log("Setup response:", data);
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
           
           // Extract response from various possible fields
           agentReply = data?.agent_response || 
@@ -280,12 +282,14 @@ export async function GET() {
                       data?.agent_message || 
                       data?.message ||
                       data?.response ||
+                      data?.text ||
+                      JSON.stringify(data) || 
                       "Response received but no message found.";
           
           // Check if it's a success response with a site key
           if (data?.site_key || data?.siteKey) {
             const siteKey = data.site_key || data.siteKey;
-            agentReply = \`<span class="success-message">✅ Success!</span><br><br>
+            agentReply = \`<span class="success-message">Success!</span><br><br>
                          Your chatbot has been configured successfully.<br><br>
                          <strong>Your Site Key:</strong><br>
                          <pre><code>\${siteKey}</code></pre>
@@ -295,7 +299,16 @@ export async function GET() {
           }
         } else {
           console.error("Response not OK:", response.status, response.statusText);
-          agentReply = \`<span class="error-message">⚠️ Connection error (\${response.status})</span><br>Please check your domain and try again.\`;
+          if (response.status === 404) {
+            const errorText = await response.text();
+            if (errorText.includes("workflow must be active")) {
+              agentReply = \`<span class="error-message">Setup workflow is inactive</span><br>The N8N workflow needs to be activated. Please contact support to enable the setup agent.\`;
+            } else {
+              agentReply = \`<span class="error-message">Setup agent webhook not found</span><br>The webhook endpoint is not currently available. Please contact support to configure your setup agent.\`;
+            }
+          } else {
+            agentReply = \`<span class="error-message">Connection error (\${response.status})</span><br>Please check your domain and try again.\`;
+          }
         }
         
         // Format the reply
@@ -311,10 +324,11 @@ export async function GET() {
         
       } catch (err) {
         console.error("Setup error:", err);
+        console.error("Error details:", err.message, err.stack);
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
         
-        chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> <span class="error-message">⚠️ Connection failed</span><br>Please check your internet connection and try again.</div>\`;
+        chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> <span class="error-message">Connection failed</span><br>Error: \${err.message}<br>Please check your connection and try again.</div>\`;
         chatLog.scrollTop = chatLog.scrollHeight;
       } finally {
         input.disabled = false;
@@ -339,7 +353,7 @@ export async function GET() {
       document.getElementById("chat-log").innerHTML = \`
         <div class="agent-message">
           <strong>Agent:</strong> 
-          👋 Hi! I'm your Intelagent setup assistant.<br><br>
+          Welcome to the Intelagent Chatbot Setup.<br><br>
           To get started, please provide your website domain (e.g., example.com) and I'll help you set up your chatbot.<br><br>
           <em>Note: Make sure to use the exact domain where you'll install the chatbot.</em>
         </div>
