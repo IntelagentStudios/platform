@@ -245,7 +245,11 @@ export async function GET() {
       // Add user message
       chatLog.innerHTML += \`<div class="user-message"><strong>You:</strong> \${message}</div>\`;
       chatLog.innerHTML += \`<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span></div>\`;
-      chatLog.scrollTop = chatLog.scrollHeight;
+      // Smooth scroll to bottom with a small offset for better visibility
+      chatLog.scrollTo({
+        top: chatLog.scrollHeight - chatLog.clientHeight,
+        behavior: 'smooth'
+      });
       
       input.value = "";
       input.disabled = true;
@@ -303,6 +307,24 @@ export async function GET() {
           // Check if it's a success response with a site key
           if (data && (data.site_key || data.siteKey)) {
             const siteKey = data.site_key || data.siteKey;
+            const domain = data.domain || 'unknown';
+            
+            // Save configuration to backend
+            fetch('/api/products/configuration', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                product: 'chatbot',
+                configuration: {
+                  configured: true,
+                  site_key: siteKey,
+                  domain: domain,
+                  created_at: new Date().toISOString(),
+                  embed_code: \`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-site-key="\${siteKey}"></script>\`
+                }
+              })
+            }).catch(err => console.error('Failed to save configuration:', err));
+            
             agentReply = \`<span class="success-message">Success!</span><br><br>
                          Your chatbot has been configured successfully.<br><br>
                          <strong>Your Site Key:</strong><br>
@@ -315,7 +337,8 @@ export async function GET() {
   data-site-key="\${siteKey}"&gt;&lt;/script&gt;</code></pre>
                          3. Click Save<br><br>
                          <strong>For other websites:</strong><br>
-                         Add the script before the closing &lt;/body&gt; tag in your HTML.\`;
+                         Add the script before the closing &lt;/body&gt; tag in your HTML.<br><br>
+                         <strong>Note:</strong> Your configuration has been saved. You can view it in the Products page.\`;
           }
         } else {
           console.error("Response not OK:", response.status, response.statusText);
@@ -340,7 +363,11 @@ export async function GET() {
         if (loader) loader.remove();
         
         chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> \${formattedReply}</div>\`;
-        chatLog.scrollTop = chatLog.scrollHeight;
+        // Smooth scroll to bottom with a small offset for better visibility
+      chatLog.scrollTo({
+        top: chatLog.scrollHeight - chatLog.clientHeight,
+        behavior: 'smooth'
+      });
         
       } catch (err) {
         console.error("Setup error:", err);
@@ -349,7 +376,11 @@ export async function GET() {
         if (loader) loader.remove();
         
         chatLog.innerHTML += \`<div class="agent-message"><strong>Agent:</strong> <span class="error-message">Connection failed</span><br>Error: \${err.message}<br>Please check your connection and try again.</div>\`;
-        chatLog.scrollTop = chatLog.scrollHeight;
+        // Smooth scroll to bottom with a small offset for better visibility
+      chatLog.scrollTo({
+        top: chatLog.scrollHeight - chatLog.clientHeight,
+        behavior: 'smooth'
+      });
       } finally {
         input.disabled = false;
         button.disabled = false;

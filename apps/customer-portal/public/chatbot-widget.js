@@ -413,7 +413,11 @@
       });
       
       // Scroll to bottom after rendering
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      // Smooth scroll with better visibility
+      messagesDiv.scrollTo({
+        top: messagesDiv.scrollHeight - messagesDiv.clientHeight,
+        behavior: 'smooth'
+      });
     }
 
     // Toggle chat visibility
@@ -446,7 +450,11 @@
         </div>
       \`;
       messagesDiv.appendChild(typingDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      // Smooth scroll with better visibility
+      messagesDiv.scrollTo({
+        top: messagesDiv.scrollHeight - messagesDiv.clientHeight,
+        behavior: 'smooth'
+      });
     }
 
     function removeTypingIndicator() {
@@ -501,7 +509,11 @@
         </div>
       \`;
       messagesDiv.appendChild(userMsgDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      // Smooth scroll with better visibility
+      messagesDiv.scrollTo({
+        top: messagesDiv.scrollHeight - messagesDiv.clientHeight,
+        behavior: 'smooth'
+      });
 
       // Disable input while processing
       const inputTextarea = document.getElementById('intelagent-input');

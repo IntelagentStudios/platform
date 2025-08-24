@@ -17,6 +17,7 @@ import {
 
 export default function ProductsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [configurations, setConfigurations] = useState<any>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -27,6 +28,12 @@ export default function ProductsPage() {
         setIsAuthenticated(data.authenticated);
         if (!data.authenticated) {
           window.location.href = '/login';
+        } else {
+          // Fetch product configurations
+          fetch('/api/products/configuration')
+            .then(res => res.json())
+            .then(configs => setConfigurations(configs))
+            .catch(err => console.error('Failed to fetch configurations:', err));
         }
       });
   }, []);
@@ -117,13 +124,26 @@ export default function ProductsPage() {
     <DashboardLayout>
       {/* Header */}
       <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-        <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-            Products
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-            Manage and configure your active products
-          </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+              Products
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+              Manage and configure your active products
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/products/manage')}
+            className="px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
+            style={{ 
+              backgroundColor: 'rgba(169, 189, 203, 0.2)',
+              border: '1px solid rgba(169, 189, 203, 0.3)',
+              color: 'rgb(169, 189, 203)'
+            }}
+          >
+            Manage Products
+          </button>
         </div>
       </header>
 
@@ -184,6 +204,37 @@ export default function ProductsPage() {
                 </div>
               </div>
 
+              {/* Configuration Details - Show if configured */}
+              {configurations[product.id]?.configured && (
+                <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                  <h4 className="text-sm font-medium mb-3" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                    Configuration
+                  </h4>
+                  {product.id === 'chatbot' && configurations.chatbot?.site_key && (
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Site Key:</span>
+                        <div className="font-mono text-xs mt-1 p-2 rounded" 
+                             style={{ 
+                               backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                               color: 'rgb(169, 189, 203)'
+                             }}>
+                          {configurations.chatbot.site_key}
+                        </div>
+                      </div>
+                      {configurations.chatbot.domain && (
+                        <div>
+                          <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Domain:</span>
+                          <div className="text-sm mt-1" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                            {configurations.chatbot.domain}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
 
               {/* Actions */}
               <div className="p-6 flex space-x-3">
@@ -195,7 +246,7 @@ export default function ProductsPage() {
                     color: 'rgb(48, 54, 54)'
                   }}
                 >
-                  Configure
+                  {configurations[product.id]?.configured ? 'Reconfigure' : 'Configure'}
                 </button>
                 <button
                   className="px-4 py-2 rounded-lg transition hover:opacity-80"
