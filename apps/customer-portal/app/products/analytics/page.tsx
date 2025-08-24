@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { 
@@ -17,7 +17,7 @@ import {
   Tablet
 } from 'lucide-react';
 
-export default function ProductAnalyticsPage() {
+function ProductAnalyticsContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -444,5 +444,18 @@ export default function ProductAnalyticsPage() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function ProductAnalyticsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+             style={{ borderColor: 'rgb(169, 189, 203)' }}></div>
+      </div>
+    }>
+      <ProductAnalyticsContent />
+    </Suspense>
   );
 }
