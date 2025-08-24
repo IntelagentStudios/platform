@@ -307,9 +307,15 @@ export async function GET() {
                          Your chatbot has been configured successfully.<br><br>
                          <strong>Your Site Key:</strong><br>
                          <pre><code>\${siteKey}</code></pre>
-                         <br>Add this script to your website before the closing &lt;/body&gt; tag:<br>
-                         <pre><code>&lt;script src="https://cdn.intelagent.ai/chatbot.js" 
-  data-site-key="\${siteKey}"&gt;&lt;/script&gt;</code></pre>\`;
+                         <br><strong>Installation Instructions:</strong><br><br>
+                         <strong>For Squarespace:</strong><br>
+                         1. Go to Settings → Advanced → Code Injection<br>
+                         2. Paste this in the FOOTER section (not Header):<br>
+                         <pre><code>&lt;script src="https://intelagentchatbot.up.railway.app/widget.js" 
+  data-site-key="\${siteKey}"&gt;&lt;/script&gt;</code></pre>
+                         3. Click Save<br><br>
+                         <strong>For other websites:</strong><br>
+                         Add the script before the closing &lt;/body&gt; tag in your HTML.\`;
           }
         } else {
           console.error("Response not OK:", response.status, response.statusText);

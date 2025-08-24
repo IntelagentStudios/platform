@@ -1,7 +1,7 @@
 (function() {
   // Get the site key from the script tag
   const script = document.currentScript;
-  const siteKey = script.getAttribute('data-site');
+  const siteKey = script.getAttribute('data-site-key') || script.getAttribute('data-site');
   
   if (!siteKey) {
     console.error('IntelagentChat: No site key provided');
