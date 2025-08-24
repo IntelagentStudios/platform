@@ -401,13 +401,12 @@ export async function GET() {
       });
 
       // Welcome message
-      document.getElementById("chat-log").innerHTML = \`
-        <div class="agent-message">
-          <strong>Agent:</strong> 
-          Welcome to the Intelagent Chatbot Setup.<br><br>
-          To get started, please provide your website domain (e.g., example.com) and I'll help you set up your chatbot.
-        </div>
-      \`;
+      document.getElementById("chat-log").innerHTML = 
+        '<div class="agent-message">' +
+        '<strong>Agent:</strong> ' +
+        'Welcome to the Intelagent Chatbot Setup.<br><br>' +
+        'To get started, please provide your website domain (e.g., example.com) and I\'ll help you set up your chatbot.' +
+        '</div>';
       
       input.focus();
     });
