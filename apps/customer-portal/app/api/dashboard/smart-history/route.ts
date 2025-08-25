@@ -16,23 +16,23 @@ export async function GET() {
     }
 
     // Fetch query history from database
-    const requests = await prisma.smartDashboardRequest.findMany({
+    const requests = await prisma.smart_dashboard_requests.findMany({
       where: {
-        licenseKey: auth.license_key,
-        requestType: 'query'
+        license_key: auth.license_key,
+        request_type: 'query'
       },
       select: {
         query: true,
-        createdAt: true
+        created_at: true
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 20
     })
 
     // Extract unique queries
     const history = Array.from(
-      new Set(requests.map(r => r.query))
-    ).slice(0, 10)
+      new Set(requests.map(r => r.query || ''))
+    ).filter(q => q).slice(0, 10)
 
     return NextResponse.json({ history })
   } catch (error) {

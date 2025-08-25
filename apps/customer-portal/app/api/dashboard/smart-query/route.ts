@@ -100,14 +100,14 @@ export async function POST(request: Request) {
       suggestions = generateMockSuggestions(query)
     }
 
-    // Save the request to database (without metadata field)
-    const savedRequest = await prisma.smartDashboardRequest.create({
+    // Save the request to database (using correct table and field names)
+    const savedRequest = await prisma.smart_dashboard_requests.create({
       data: {
-        licenseKey: auth.license_key,
-        requestType: 'query',
+        license_key: auth.license_key,
+        request_type: 'query',
         query: query,
         response: aiResponse,
-        processedAt: new Date()
+        processed_at: new Date()
       }
     })
 
@@ -115,10 +115,10 @@ export async function POST(request: Request) {
     const insights = await generateInsights(query, data, userLicense)
     if (insights.length > 0) {
       await Promise.all(insights.map(insight =>
-        prisma.smartDashboardInsight.create({
+        prisma.smart_dashboard_insights.create({
           data: {
-            licenseKey: auth.license_key,
-            insightType: insight.type,
+            license_key: auth.license_key,
+            insight_type: insight.type,
             title: insight.title,
             content: insight.content,
             severity: insight.severity,
@@ -185,21 +185,36 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
   }
 
   if (queryLower.includes('trend') || queryLower.includes('growth')) {
-    // Fetch trend data
-    const trends = await prisma.chatbot_logs.groupBy({
-      by: ['timestamp'],
+    // Fetch trend data - simplified to avoid groupBy issues
+    const logs = await prisma.chatbot_logs.findMany({
       where: {
         ...(site_key ? { site_key: site_key } : {}),
         timestamp: { 
           gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
         }
       },
-      _count: true,
-      take: 7,
+      select: {
+        timestamp: true
+      },
       orderBy: {
         timestamp: 'desc'
       }
     })
+    
+    // Group by day manually
+    const trendMap = new Map<string, number>()
+    logs.forEach(log => {
+      if (log.timestamp) {
+        const day = log.timestamp.toISOString().split('T')[0]
+        trendMap.set(day, (trendMap.get(day) || 0) + 1)
+      }
+    })
+    
+    const trends = Array.from(trendMap.entries())
+      .map(([timestamp, count]) => ({ timestamp, _count: count }))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+      .slice(0, 7)
+    
     data.charts = { trends }
   }
 
