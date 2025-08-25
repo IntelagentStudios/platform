@@ -112,12 +112,42 @@ export async function POST(request: NextRequest) {
       // Don't fail registration if email fails
     }
     
-    // Return success response (no session cookie - user must login)
-    return NextResponse.json({
+    // Create JWT token for automatic login
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email,
+        licenseKey: license.license_key,
+        role: user.role || 'customer'
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
+    
+    // Create response with auto-login
+    const response = NextResponse.json({
       success: true,
-      message: 'Account created successfully! Please log in to continue.',
-      redirectTo: '/login?registered=true'
+      message: 'Account created successfully! Redirecting to dashboard...',
+      redirectTo: '/dashboard',
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        licenseKey: license.license_key
+      }
     });
+    
+    // Set auth cookie for automatic login
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/'
+    });
+    
+    return response;
     
   } catch (error) {
     console.error('Registration error:', error);

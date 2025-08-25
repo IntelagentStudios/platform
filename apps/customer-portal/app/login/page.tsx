@@ -144,7 +144,7 @@ export default function LoginPage() {
                     borderWidth: '1px',
                     borderStyle: 'solid'
                   }}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                 />
               </div>
             </div>

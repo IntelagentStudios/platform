@@ -60,8 +60,18 @@ export default function RegisterPage() {
         return;
       }
 
-      // Success! Redirect to login page
-      router.push('/login?registered=true');
+      // Success! Auto-login and redirect to dashboard
+      if (data.success && data.token) {
+        // Store user data if provided
+        if (data.user) {
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+        }
+        // Redirect to dashboard
+        window.location.href = data.redirectTo || '/dashboard';
+      } else {
+        // Fallback to login page if auto-login not supported
+        router.push('/login?registered=true');
+      }
     } catch (err) {
       setError('Failed to create account. Please try again.');
     } finally {
@@ -148,7 +158,7 @@ export default function RegisterPage() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="Create a password"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     className="pl-10"
@@ -169,7 +179,7 @@ export default function RegisterPage() {
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     className="pl-10"
