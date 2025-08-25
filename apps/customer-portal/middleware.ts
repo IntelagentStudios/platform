@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 const publicPaths = [
   '/login',
-  '/api/auth/simple',
+  '/register',
+  '/api/auth',
   '/_next',
   '/favicon.ico',
   '/chatbot-widget.js'
@@ -16,16 +20,30 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Check for auth cookie
-  const authCookie = request.cookies.get('auth');
+  // Check for JWT auth token first
+  const authToken = request.cookies.get('auth_token');
   
-  if (!authCookie || authCookie.value !== 'authenticated-user-harry') {
-    // Not authenticated, redirect to login
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (authToken) {
+    try {
+      // Verify JWT token
+      jwt.verify(authToken.value, JWT_SECRET);
+      // Token is valid, allow access
+      return NextResponse.next();
+    } catch (error) {
+      // Invalid token, continue to check old auth
+    }
   }
   
-  // Authenticated, allow access
-  return NextResponse.next();
+  // Fall back to old auth cookie for backward compatibility
+  const oldAuthCookie = request.cookies.get('auth');
+  
+  if (oldAuthCookie && oldAuthCookie.value === 'authenticated-user-harry') {
+    // Old auth is valid, allow access
+    return NextResponse.next();
+  }
+  
+  // Not authenticated, redirect to login
+  return NextResponse.redirect(new URL('/login', request.url));
 }
 
 export const config = {

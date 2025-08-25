@@ -76,13 +76,21 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
     
+    // Determine role based on license key
+    let role = 'customer';
+    if (licenseKey === 'INTL-ADMIN-MASTER-KEY') {
+      role = 'master_admin';
+    }
+    
     // Create user account
     const user = await prisma.users.create({
       data: {
         email: email.toLowerCase(),
         password_hash: passwordHash,
         license_key: licenseKey,
-        name: license.customer_name || email.split('@')[0]
+        name: license.customer_name || email.split('@')[0],
+        role,
+        email_verified: false
       }
     });
     
