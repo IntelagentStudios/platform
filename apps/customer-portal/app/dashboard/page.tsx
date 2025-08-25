@@ -68,19 +68,28 @@ export default function DashboardPage() {
     return null;
   }
 
+  // Get user's products from their profile
+  const userProducts = user?.products || ['chatbot'];
+  
   const stats = [
     { label: 'Total Revenue', value: '-', change: '-', icon: DollarSign },
     { label: 'Active Users', value: '-', change: '-', icon: Users },
     { label: 'API Calls', value: '-', change: '-', icon: Activity },
-    { label: 'Products', value: '4', change: 'Active', icon: Package }
+    { label: 'Products', value: userProducts.length.toString(), change: 'Active', icon: Package }
   ];
 
-  const products = [
-    { name: 'Chatbot', status: 'Ready', icon: Zap },
-    { name: 'Sales Agent', status: 'Ready', icon: Users },
-    { name: 'Data Enrichment', status: 'Ready', icon: BarChart3 },
-    { name: 'Setup Agent', status: 'Ready', icon: Settings }
-  ];
+  // Define all possible products
+  const allProductsMap = {
+    'chatbot': { name: 'Chatbot', status: 'Ready', icon: Zap },
+    'sales-agent': { name: 'Sales Agent', status: 'Ready', icon: Users },
+    'data-enrichment': { name: 'Data Enrichment', status: 'Ready', icon: BarChart3 },
+    'setup-agent': { name: 'Setup Agent', status: 'Ready', icon: Settings }
+  };
+  
+  // Filter to only show user's products
+  const products = userProducts.map(productId => 
+    allProductsMap[productId] || { name: productId, status: 'Ready', icon: Package }
+  ).filter(Boolean);
 
   return (
     <DashboardLayout>

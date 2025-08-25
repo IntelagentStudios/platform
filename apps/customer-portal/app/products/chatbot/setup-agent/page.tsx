@@ -91,7 +91,7 @@ export default function ChatbotSetupAgentPage() {
       {/* Content */}
       <div className="flex-1" style={{ height: 'calc(100vh - 120px)' }}>
         <iframe
-          src="/api/products/chatbot/setup-agent-frame"
+          src="/products/chatbot/setup-agent-frame"
           className="w-full h-full border-0"
           style={{ backgroundColor: 'rgb(48, 54, 54)' }}
           title="Chatbot Setup Agent"
