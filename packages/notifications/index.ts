@@ -340,13 +340,18 @@ class NotificationService {
   }
 
   private async getUserPreferences(licenseKey: string): Promise<NotificationPreferences> {
-    // Get from database
-    const preferences = await prisma.notification_preferences.findUnique({
-      where: { license_key: licenseKey }
+    // TODO: Get from audit_logs since notification_preferences table doesn't exist
+    const preferencesLog = await prisma.audit_logs.findFirst({
+      where: { 
+        license_key: licenseKey,
+        action: 'notification_preferences_updated',
+        resource_type: 'preferences'
+      },
+      orderBy: { created_at: 'desc' }
     });
 
-    if (preferences) {
-      return preferences.preferences as NotificationPreferences;
+    if (preferencesLog && preferencesLog.changes) {
+      return preferencesLog.changes as NotificationPreferences;
     }
 
     // Default preferences
@@ -368,30 +373,42 @@ class NotificationService {
   }
 
   private async storeNotification(notification: Notification): Promise<void> {
-    await prisma.notifications.create({
+    // TODO: Store in audit_logs since notifications table doesn't exist
+    await prisma.audit_logs.create({
       data: {
-        id: notification.id,
         license_key: notification.licenseKey,
-        type: notification.type,
-        channel: notification.channel,
-        priority: notification.priority,
-        subject: notification.subject,
-        message: notification.message,
-        metadata: notification.metadata || {},
-        scheduled_for: notification.scheduledFor,
-        status: 'pending',
-        created_at: new Date()
+        user_id: notification.licenseKey,
+        action: 'notification_stored',
+        resource_type: 'notification',
+        resource_id: notification.id,
+        changes: {
+          type: notification.type,
+          channel: notification.channel,
+          priority: notification.priority,
+          subject: notification.subject,
+          message: notification.message,
+          metadata: notification.metadata || {},
+          scheduled_for: notification.scheduledFor,
+          status: 'pending'
+        }
       }
     });
   }
 
   private async updateNotificationStatus(id: string, status: string): Promise<void> {
-    await prisma.notifications.update({
-      where: { id },
+    // TODO: Update in audit_logs since notifications table doesn't exist
+    await prisma.audit_logs.create({
       data: {
-        status,
-        sent_at: status === 'sent' ? new Date() : undefined,
-        updated_at: new Date()
+        license_key: id.split('_')[1] || 'unknown', // Extract from ID if possible
+        user_id: 'system',
+        action: 'notification_status_updated',
+        resource_type: 'notification',
+        resource_id: id,
+        changes: {
+          status,
+          sent_at: status === 'sent' ? new Date() : undefined,
+          updated_at: new Date()
+        }
       }
     });
   }
