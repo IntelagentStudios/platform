@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
           expires_at: expiresAt,
           ip_address: request.headers.get('x-forwarded-for') || 
                      request.headers.get('x-real-ip') || 
-                     'unknown'
+                     'unknown',
+          user_agent: request.headers.get('user-agent') || 'unknown'
         }
       });
     } catch (sessionError) {
