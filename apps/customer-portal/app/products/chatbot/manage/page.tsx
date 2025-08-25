@@ -15,101 +15,223 @@ import {
   Settings,
   Code,
   Activity,
-  RefreshCw
+  RefreshCw,
+  Calendar,
+  Filter,
+  Search,
+  ChevronRight,
+  User,
+  Bot
 } from 'lucide-react';
+
+interface Conversation {
+  id: string;
+  session_id: string;
+  domain: string;
+  messages: any[];
+  first_message_at: string;
+  last_message_at: string;
+}
+
+interface Stats {
+  totalConversations: number;
+  uniqueSessions: number;
+  totalMessages: number;
+  avgMessagesPerConversation: number;
+  domains: string[];
+  todayConversations: number;
+  weekConversations: number;
+  monthConversations: number;
+}
 
 export default function ChatbotManagePage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [config, setConfig] = useState<any>(null);
-  const [stats, setStats] = useState<any>(null);
+  const [siteKey, setSiteKey] = useState<string | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('conversations');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [domainFilter, setDomainFilter] = useState('all');
+  const [groupBy, setGroupBy] = useState('time'); // time, domain, session
 
   useEffect(() => {
-    // Check authentication
-    fetch('/api/auth/me', {
-      credentials: 'include'
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated && data.user) {
-          setIsAuthenticated(true);
-          setUser(data.user);
-          fetchConfig(data.user.license_key);
-          fetchStats(data.user.license_key);
-        } else {
-          setIsAuthenticated(false);
-          window.location.href = '/login';
-        }
-      })
-      .catch(err => {
-        console.error('Auth check failed:', err);
-        setIsAuthenticated(false);
-        window.location.href = '/login';
-      });
+    checkAuth();
   }, []);
 
-  const fetchConfig = async (licenseKey: string) => {
+  useEffect(() => {
+    filterConversations();
+  }, [conversations, searchQuery, dateFilter, domainFilter]);
+
+  const checkAuth = async () => {
     try {
-      const res = await fetch('/api/products/configuration');
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
       const data = await res.json();
-      if (data.chatbot && data.chatbot.configured) {
-        setConfig(data.chatbot);
+      
+      if (data.authenticated && data.user) {
+        setIsAuthenticated(true);
+        setUser(data.user);
+        setSiteKey(data.user.site_key);
+        
+        if (data.user.site_key) {
+          await fetchConversations();
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+        window.location.href = '/login';
       }
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch config:', error);
-      setLoading(false);
+    } catch (err) {
+      console.error('Auth check failed:', err);
+      setIsAuthenticated(false);
+      window.location.href = '/login';
     }
   };
 
-  const fetchStats = async (licenseKey: string) => {
+  const fetchConversations = async () => {
     try {
-      // Site key should be in user data now
-      const siteKey = user?.site_key;
+      setRefreshing(true);
+      const res = await fetch('/api/products/chatbot/conversations');
+      const data = await res.json();
       
-      if (siteKey) {
-        // Fetch conversations stats
-        const convRes = await fetch('/api/products/chatbot/conversations');
-        const convData = await convRes.json();
-        
-        setStats({
-          totalConversations: convData.conversations?.length || 0,
-          uniqueSessions: new Set(convData.conversations?.map((c: any) => c.session_id)).size || 0,
-          domains: [...new Set(convData.conversations?.map((c: any) => c.domain))].filter(Boolean),
-          avgResponseTime: '< 1s',
-          site_key: siteKey
-        });
+      if (data.conversations) {
+        setConversations(data.conversations);
+        calculateStats(data.conversations);
       }
+      
+      setLoading(false);
+      setRefreshing(false);
     } catch (error) {
-      console.error('Failed to fetch stats:', error);
+      console.error('Failed to fetch conversations:', error);
+      setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const calculateStats = (convs: Conversation[]) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const uniqueSessions = new Set(convs.map(c => c.session_id));
+    const domains = [...new Set(convs.map(c => c.domain).filter(Boolean))];
+    
+    let totalMessages = 0;
+    let todayCount = 0;
+    let weekCount = 0;
+    let monthCount = 0;
+
+    convs.forEach(conv => {
+      totalMessages += conv.messages.length;
+      const convDate = new Date(conv.first_message_at);
+      
+      if (convDate >= today) todayCount++;
+      if (convDate >= weekAgo) weekCount++;
+      if (convDate >= monthAgo) monthCount++;
+    });
+
+    setStats({
+      totalConversations: convs.length,
+      uniqueSessions: uniqueSessions.size,
+      totalMessages,
+      avgMessagesPerConversation: convs.length > 0 ? Math.round(totalMessages / convs.length) : 0,
+      domains,
+      todayConversations: todayCount,
+      weekConversations: weekCount,
+      monthConversations: monthCount
+    });
+  };
+
+  const filterConversations = () => {
+    let filtered = [...conversations];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(conv => 
+        conv.messages.some(msg => 
+          msg.content?.toLowerCase().includes(searchQuery.toLowerCase())
+        ) ||
+        conv.session_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        conv.domain?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Date filter
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      let cutoffDate: Date;
+
+      switch(dateFilter) {
+        case 'today':
+          cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          cutoffDate = new Date(0);
+      }
+
+      filtered = filtered.filter(conv => 
+        new Date(conv.first_message_at) >= cutoffDate
+      );
+    }
+
+    // Domain filter
+    if (domainFilter !== 'all') {
+      filtered = filtered.filter(conv => conv.domain === domainFilter);
+    }
+
+    setFilteredConversations(filtered);
   };
 
   const copySiteKey = () => {
-    if (stats?.site_key) {
-      navigator.clipboard.writeText(stats.site_key);
+    if (siteKey) {
+      navigator.clipboard.writeText(siteKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   const getEmbedCode = () => {
-    if (!stats?.site_key) return '';
+    if (!siteKey) return '';
     
     return `<!-- Intelagent Chatbot -->
 <script>
   (function() {
     var script = document.createElement('script');
     script.src = 'https://chat.intelagentstudios.com/widget.js';
-    script.setAttribute('data-site-key', '${stats.site_key}');
+    script.setAttribute('data-site-key', '${siteKey}');
     script.async = true;
     document.head.appendChild(script);
   })();
 </script>`;
+  };
+
+  const formatTimeAgo = (date: string) => {
+    const now = new Date();
+    const then = new Date(date);
+    const diff = now.getTime() - then.getTime();
+    
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
   };
 
   if (isAuthenticated === null || loading) {
@@ -121,7 +243,7 @@ export default function ChatbotManagePage() {
     );
   }
 
-  if (!config) {
+  if (!siteKey) {
     return (
       <DashboardLayout>
         <div className="p-8">
@@ -156,106 +278,28 @@ export default function ChatbotManagePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-              Chatbot Management
+              Chatbot Dashboard
             </h1>
             <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-              Manage your AI chatbot configuration and view analytics
+              Monitor conversations and manage your AI chatbot
             </p>
           </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => router.push('/products/chatbot/conversations')}
-              className="px-4 py-2 rounded-lg flex items-center space-x-2"
-              style={{ 
-                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                border: '1px solid rgba(169, 189, 203, 0.2)',
-                color: 'rgb(229, 227, 220)'
-              }}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span>View Conversations</span>
-            </button>
-            <button
-              onClick={() => fetchStats(user.license_key)}
-              className="p-2 rounded-lg"
-              style={{ 
-                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                border: '1px solid rgba(169, 189, 203, 0.2)',
-                color: 'rgb(229, 227, 220)'
-              }}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={fetchConversations}
+            className="p-2 rounded-lg transition hover:opacity-80"
+            style={{ 
+              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+              border: '1px solid rgba(169, 189, 203, 0.2)',
+              color: 'rgb(229, 227, 220)'
+            }}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </header>
 
-      {/* Site Key Display */}
+      {/* Quick Stats */}
       <div className="px-8 pt-6">
-        <div 
-          className="rounded-lg p-6 border"
-          style={{ 
-            backgroundColor: 'rgba(58, 64, 64, 0.5)',
-            borderColor: 'rgba(169, 189, 203, 0.15)'
-          }}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
-                <Key className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                <h2 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Site Key
-                </h2>
-              </div>
-              <div className="flex items-center space-x-3">
-                <code 
-                  className="px-3 py-2 rounded text-sm font-mono"
-                  style={{ 
-                    backgroundColor: 'rgba(48, 54, 54, 0.8)',
-                    color: 'rgb(169, 189, 203)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}
-                >
-                  {stats?.site_key || 'Loading...'}
-                </code>
-                <button
-                  onClick={copySiteKey}
-                  className="p-2 rounded-lg transition hover:opacity-80"
-                  style={{ 
-                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}
-                >
-                  {copied ? (
-                    <CheckCircle className="h-4 w-4" style={{ color: '#4CAF50' }} />
-                  ) : (
-                    <Copy className="h-4 w-4" style={{ color: 'rgb(229, 227, 220)' }} />
-                  )}
-                </button>
-              </div>
-              <p className="text-sm mt-2" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                Use this key to integrate the chatbot on your website
-              </p>
-            </div>
-            {config?.domain && (
-              <div className="ml-6">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Globe className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                  <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                    Configured for:
-                  </span>
-                </div>
-                <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                  {config.domain}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div 
             className="rounded-lg p-4 border"
@@ -267,10 +311,59 @@ export default function ChatbotManagePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                  Total Conversations
+                  Today
                 </p>
                 <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
-                  {stats?.totalConversations || 0}
+                  {stats?.todayConversations || 0}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                  conversations
+                </p>
+              </div>
+              <Calendar className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+            </div>
+          </div>
+
+          <div 
+            className="rounded-lg p-4 border"
+            style={{ 
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  This Week
+                </p>
+                <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
+                  {stats?.weekConversations || 0}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                  conversations
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+            </div>
+          </div>
+
+          <div 
+            className="rounded-lg p-4 border"
+            style={{ 
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Total Messages
+                </p>
+                <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
+                  {stats?.totalMessages || 0}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                  all time
                 </p>
               </div>
               <MessageSquare className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
@@ -287,63 +380,26 @@ export default function ChatbotManagePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                  Unique Sessions
+                  Unique Users
                 </p>
                 <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
                   {stats?.uniqueSessions || 0}
                 </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                  sessions
+                </p>
               </div>
               <Users className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
-            </div>
-          </div>
-
-          <div 
-            className="rounded-lg p-4 border"
-            style={{ 
-              backgroundColor: 'rgba(58, 64, 64, 0.5)',
-              borderColor: 'rgba(169, 189, 203, 0.15)'
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                  Active Domains
-                </p>
-                <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
-                  {stats?.domains?.length || 0}
-                </p>
-              </div>
-              <Globe className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
-            </div>
-          </div>
-
-          <div 
-            className="rounded-lg p-4 border"
-            style={{ 
-              backgroundColor: 'rgba(58, 64, 64, 0.5)',
-              borderColor: 'rgba(169, 189, 203, 0.15)'
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
-                  Avg Response Time
-                </p>
-                <p className="text-2xl font-bold mt-1" style={{ color: 'rgb(229, 227, 220)' }}>
-                  {stats?.avgResponseTime || '< 1s'}
-                </p>
-              </div>
-              <Clock className="h-8 w-8" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="px-8">
+      <div className="px-8 pt-6">
         <div className="border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
           <div className="flex space-x-8">
-            {['overview', 'embed', 'settings'].map((tab) => (
+            {['conversations', 'analytics', 'settings', 'embed'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -354,7 +410,7 @@ export default function ChatbotManagePage() {
                   color: activeTab === tab ? 'rgb(169, 189, 203)' : 'rgba(229, 227, 220, 0.6)'
                 }}
               >
-                {tab === 'embed' ? 'Embed Code' : tab}
+                {tab}
               </button>
             ))}
           </div>
@@ -363,8 +419,144 @@ export default function ChatbotManagePage() {
 
       {/* Tab Content */}
       <div className="px-8 py-6">
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
+        {activeTab === 'conversations' && (
+          <div>
+            {/* Filters */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" 
+                          style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search conversations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 rounded-lg"
+                    style={{ 
+                      backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                      border: '1px solid rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(229, 227, 220)',
+                      minWidth: '250px'
+                    }}
+                  />
+                </div>
+                
+                <select
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="px-3 py-2 rounded-lg"
+                  style={{ 
+                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">Last 7 Days</option>
+                  <option value="month">Last 30 Days</option>
+                </select>
+
+                {stats?.domains && stats.domains.length > 1 && (
+                  <select
+                    value={domainFilter}
+                    onChange={(e) => setDomainFilter(e.target.value)}
+                    className="px-3 py-2 rounded-lg"
+                    style={{ 
+                      backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                      border: '1px solid rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(229, 227, 220)'
+                    }}
+                  >
+                    <option value="all">All Domains</option>
+                    {stats.domains.map(domain => (
+                      <option key={domain} value={domain}>{domain}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              
+              <div className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Showing {filteredConversations.length} of {conversations.length} conversations
+              </div>
+            </div>
+
+            {/* Conversations List */}
+            <div className="space-y-4">
+              {filteredConversations.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4" 
+                                 style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+                  <p style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                    No conversations found
+                  </p>
+                </div>
+              ) : (
+                filteredConversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className="rounded-lg p-4 border cursor-pointer hover:opacity-80 transition"
+                    style={{ 
+                      backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                      borderColor: 'rgba(169, 189, 203, 0.15)'
+                    }}
+                    onClick={() => router.push(`/products/chatbot/conversations?id=${conversation.id}`)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                            Session: {conversation.session_id}
+                          </span>
+                          {conversation.domain && (
+                            <>
+                              <span style={{ color: 'rgba(229, 227, 220, 0.3)' }}>•</span>
+                              <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                                {conversation.domain}
+                              </span>
+                            </>
+                          )}
+                          <span style={{ color: 'rgba(229, 227, 220, 0.3)' }}>•</span>
+                          <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                            {formatTimeAgo(conversation.last_message_at)}
+                          </span>
+                        </div>
+                        
+                        {conversation.messages.length > 0 && (
+                          <div className="space-y-2">
+                            {conversation.messages.slice(0, 2).map((msg, idx) => (
+                              <div key={idx} className="flex items-start space-x-2">
+                                {msg.role === 'user' ? (
+                                  <User className="h-4 w-4 mt-0.5" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                                ) : (
+                                  <Bot className="h-4 w-4 mt-0.5" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                                )}
+                                <p className="text-sm line-clamp-1" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                                  {msg.content}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center space-x-4 mt-2">
+                          <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                            {conversation.messages.length} messages
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div 
               className="rounded-lg p-6 border"
               style={{ 
@@ -373,27 +565,91 @@ export default function ChatbotManagePage() {
               }}
             >
               <h3 className="text-lg font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                Chatbot Status
+                Conversation Metrics
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Status</span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs"
-                       style={{ 
-                         backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                         color: '#4CAF50'
-                       }}>
-                    <Activity className="h-3 w-3 mr-1" />
-                    Active
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Average Messages per Conversation</span>
+                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                    {stats?.avgMessagesPerConversation || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Configuration</span>
-                  <span style={{ color: 'rgb(169, 189, 203)' }}>Complete</span>
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Total Conversations</span>
+                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                    {stats?.totalConversations || 0}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Last Activity</span>
-                  <span style={{ color: 'rgb(169, 189, 203)' }}>Recently</span>
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Active Domains</span>
+                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                    {stats?.domains?.length || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-lg p-6 border"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.15)'
+              }}
+            >
+              <h3 className="text-lg font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                Activity Trend
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Today</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-32 bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          width: `${stats?.todayConversations ? (stats.todayConversations / Math.max(stats.monthConversations, 1)) * 100 : 0}%`,
+                          backgroundColor: 'rgb(169, 189, 203)' 
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      {stats?.todayConversations || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>This Week</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-32 bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          width: `${stats?.weekConversations ? (stats.weekConversations / Math.max(stats.monthConversations, 1)) * 100 : 0}%`,
+                          backgroundColor: 'rgb(169, 189, 203)' 
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      {stats?.weekConversations || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>This Month</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-32 bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          width: '100%',
+                          backgroundColor: 'rgb(169, 189, 203)' 
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      {stats?.monthConversations || 0}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -410,7 +666,7 @@ export default function ChatbotManagePage() {
                   Active Domains
                 </h3>
                 <div className="space-y-2">
-                  {stats.domains.map((domain: string, idx: number) => (
+                  {stats.domains.map((domain, idx) => (
                     <div key={idx} className="flex items-center space-x-2">
                       <Globe className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                       <span style={{ color: 'rgba(229, 227, 220, 0.8)' }}>{domain}</span>
@@ -419,6 +675,106 @@ export default function ChatbotManagePage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div 
+              className="rounded-lg p-6 border"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.15)'
+              }}
+            >
+              <div className="flex items-center space-x-2 mb-4">
+                <Key className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                <h3 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Site Configuration
+                </h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                    Site Key
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={siteKey || ''}
+                      readOnly
+                      className="flex-1 px-3 py-2 rounded-lg font-mono text-sm"
+                      style={{ 
+                        backgroundColor: 'rgba(48, 54, 54, 0.8)',
+                        color: 'rgb(169, 189, 203)',
+                        border: '1px solid rgba(169, 189, 203, 0.2)'
+                      }}
+                    />
+                    <button
+                      onClick={copySiteKey}
+                      className="p-2 rounded-lg transition hover:opacity-80"
+                      style={{ 
+                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                        border: '1px solid rgba(169, 189, 203, 0.2)'
+                      }}
+                    >
+                      {copied ? (
+                        <CheckCircle className="h-4 w-4" style={{ color: '#4CAF50' }} />
+                      ) : (
+                        <Copy className="h-4 w-4" style={{ color: 'rgb(229, 227, 220)' }} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                    Status
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <Activity className="h-4 w-4" style={{ color: '#4CAF50' }} />
+                    <span style={{ color: '#4CAF50' }}>Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-lg p-6 border"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.15)'
+              }}
+            >
+              <div className="flex items-center space-x-2 mb-4">
+                <Settings className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                <h3 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Data Management
+                </h3>
+              </div>
+              <div className="space-y-4">
+                <button
+                  className="w-full px-4 py-2 rounded-lg text-left"
+                  style={{ 
+                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  Export Conversations (CSV)
+                </button>
+                <button
+                  className="w-full px-4 py-2 rounded-lg text-left"
+                  style={{ 
+                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  Download Analytics Report
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -456,70 +812,6 @@ export default function ChatbotManagePage() {
                 <li>The chatbot will appear automatically on your website</li>
                 <li>For Squarespace: Use Code Injection in Settings → Advanced → Code Injection</li>
               </ol>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div 
-            className="rounded-lg p-6 border"
-            style={{ 
-              backgroundColor: 'rgba(58, 64, 64, 0.5)',
-              borderColor: 'rgba(169, 189, 203, 0.15)'
-            }}
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <Settings className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-              <h3 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                Chatbot Settings
-              </h3>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                  Welcome Message
-                </label>
-                <textarea
-                  className="w-full px-3 py-2 rounded-lg"
-                  rows={3}
-                  placeholder="Hi! How can I help you today?"
-                  style={{ 
-                    backgroundColor: 'rgba(48, 54, 54, 0.8)',
-                    color: 'rgb(229, 227, 220)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}
-                  defaultValue="Hi! How can I help you today?"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                  Position
-                </label>
-                <select
-                  className="w-full px-3 py-2 rounded-lg"
-                  style={{ 
-                    backgroundColor: 'rgba(48, 54, 54, 0.8)',
-                    color: 'rgb(229, 227, 220)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}
-                >
-                  <option>Bottom Right</option>
-                  <option>Bottom Left</option>
-                  <option>Top Right</option>
-                  <option>Top Left</option>
-                </select>
-              </div>
-              <div className="pt-4">
-                <button
-                  className="px-4 py-2 rounded-lg"
-                  style={{ 
-                    backgroundColor: 'rgb(169, 189, 203)',
-                    color: 'rgb(48, 54, 54)'
-                  }}
-                >
-                  Save Settings
-                </button>
-              </div>
             </div>
           </div>
         )}
