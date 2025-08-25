@@ -551,7 +551,7 @@ export async function sendWelcomeNotification(licenseKey: string, customerName: 
 
 // New function to send setup complete notification
 export async function sendSetupCompleteNotification(licenseKey: string, product: string, domain: string, siteKey: string) {
-  const user = await prisma.users.findUnique({
+  const user = await prisma.users.findFirst({
     where: { license_key: licenseKey },
     select: { name: true, email: true }
   });
