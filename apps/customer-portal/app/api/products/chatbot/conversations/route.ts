@@ -36,6 +36,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * Correct data access pattern:
+ * 1. Use license_key as primary filter (from JWT)
+ * 2. Get site_key from license for chatbot-specific queries
+ * 3. Query chatbot_logs using site_key
+ * 
+ * This ensures data is scoped to the account (license_key)
+ * while using product-specific routing (site_key)
+ */
 async function fetchConversations(licenseKey: string) {
   try {
     // Check if master admin - they see all conversations
@@ -43,33 +52,73 @@ async function fetchConversations(licenseKey: string) {
     
     let logs;
     let siteKeyUsed: string | null = null;
+    let licenseInfo = null;
     
     if (isMasterAdmin) {
-      // Master admin sees all conversations
+      // Master admin sees all conversations across all accounts
       logs = await prisma.chatbot_logs.findMany({
         orderBy: { timestamp: 'desc' },
         take: 500 // More for admin
       });
-      siteKeyUsed = 'MASTER_ADMIN';
+      siteKeyUsed = 'MASTER_ADMIN_VIEW';
+      
+      // Get all licenses for admin stats
+      const allLicenses = await prisma.licenses.findMany({
+        where: { site_key: { not: null } },
+        select: { license_key: true, site_key: true, domain: true }
+      });
+      
+      licenseInfo = {
+        total_accounts: allLicenses.length,
+        active_sites: allLicenses.filter(l => l.site_key).length
+      };
     } else {
-      // Regular users see only their conversations
+      // Regular users: license_key → site_key → chatbot data
+      // Step 1: Get the license to find the site_key
       const license = await prisma.licenses.findUnique({
         where: { license_key: licenseKey },
-        select: { site_key: true }
+        select: { 
+          site_key: true,
+          products: true,
+          domain: true,
+          is_pro: true
+        }
       });
 
-      if (!license?.site_key) {
+      // Step 2: Check if chatbot product is available and configured
+      if (!license) {
+        return NextResponse.json({ 
+          error: 'License not found',
+          conversations: []
+        }, { status: 404 });
+      }
+
+      if (!license.products.includes('chatbot')) {
+        return NextResponse.json({ 
+          error: 'Chatbot product not purchased',
+          conversations: [],
+          message: 'Please purchase the chatbot product to access this feature'
+        }, { status: 403 });
+      }
+
+      if (!license.site_key) {
         return NextResponse.json({ 
           conversations: [],
-          message: 'No chatbot configured' 
+          message: 'Chatbot not configured. Please complete setup first.',
+          needs_configuration: true
         });
       }
       
       siteKeyUsed = license.site_key;
+      licenseInfo = {
+        domain: license.domain,
+        is_pro: license.is_pro,
+        products: license.products
+      };
 
-      // Fetch chatbot logs for this site_key ONLY
+      // Step 3: Fetch chatbot logs using the site_key (product-specific routing)
       logs = await prisma.chatbot_logs.findMany({
-        where: { site_key: license.site_key }, // Strict filtering by site_key
+        where: { site_key: license.site_key }, // Use site_key for chatbot data
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
@@ -86,6 +135,7 @@ async function fetchConversations(licenseKey: string) {
           id: conversationId,
           session_id: log.session_id,
           domain: log.domain,
+          site_key: log.site_key, // Include for debugging
           messages: [],
           first_message_at: log.timestamp || log.created_at,
           last_message_at: log.timestamp || log.created_at
@@ -137,14 +187,21 @@ async function fetchConversations(licenseKey: string) {
       total_conversations: conversations.length,
       total_messages: logs.length,
       unique_sessions: new Set(logs.map(l => l.session_id).filter(Boolean)).size,
-      domains: [...new Set(logs.map(l => l.domain).filter(Boolean))]
+      domains: [...new Set(logs.map(l => l.domain).filter(Boolean))],
+      unique_site_keys: isMasterAdmin ? 
+        [...new Set(logs.map(l => l.site_key).filter(Boolean))].length : 1
     };
 
     return NextResponse.json({
       conversations,
       stats,
       site_key: siteKeyUsed,
-      is_admin: licenseKey === MASTER_ADMIN_KEY
+      license_key: isMasterAdmin ? 'MASTER_ADMIN' : licenseKey,
+      license_info: licenseInfo,
+      is_admin: isMasterAdmin,
+      data_access_pattern: isMasterAdmin ? 
+        'GLOBAL_ACCESS' : 
+        'LICENSE_KEY → SITE_KEY → CHATBOT_DATA'
     });
   } catch (error) {
     console.error('Failed to fetch conversations:', error);
