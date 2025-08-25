@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
   const authCookie = cookies().get('auth');
@@ -121,16 +122,34 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authCookie = cookies().get('auth');
+  // Check JWT auth first
+  const authToken = cookies().get('auth_token') || cookies().get('auth-token');
+  let licenseKey = '';
   
-  if (!authCookie || authCookie.value !== 'authenticated-user-harry') {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+  if (authToken) {
+    try {
+      const decoded = jwt.verify(authToken.value, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
+      licenseKey = decoded.licenseKey;
+    } catch (e) {
+      // Fall back to old auth
+    }
+  }
+  
+  // Fall back to old auth if JWT not found
+  if (!licenseKey) {
+    const authCookie = cookies().get('auth');
+    if (authCookie?.value === 'authenticated-user-harry') {
+      licenseKey = 'INTL-AGNT-BOSS-MODE';
+    } else if (authCookie?.value === 'authenticated-test-friend') {
+      licenseKey = 'INTL-8K3M-QB7X-2024';
+    } else {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
   }
 
   try {
     const body = await request.json();
     const { product, configuration } = body;
-    const licenseKey = 'INTL-AGNT-BOSS-MODE';
 
     // Update licenses table for chatbot
     if (product === 'chatbot' && configuration.site_key) {

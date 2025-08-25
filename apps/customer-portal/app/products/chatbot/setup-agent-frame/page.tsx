@@ -13,7 +13,7 @@ export default function SetupAgentFramePage() {
       const sessionId = localStorage.getItem("setup_session_id") || "sess_" + Math.random().toString(36).substring(2, 10);
       localStorage.setItem("setup_session_id", sessionId);
       
-      const WEBHOOK_URL = "https://1ntelagent.up.railway.app/webhook/setup";
+      const SETUP_API_URL = "/api/products/chatbot/setup";
 
       // Define sendMessage function globally
       (window as any).sendMessage = async function(messageOverride?: string) {
@@ -47,67 +47,44 @@ export default function SetupAgentFramePage() {
         if (button) button.disabled = true;
 
         try {
-          const response = await fetch(WEBHOOK_URL, {
+          // Simplified direct setup - no N8N webhook needed
+          const response = await fetch(SETUP_API_URL, {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
               "Accept": "application/json"
             },
-            body: JSON.stringify({
-              user_message: message,
-              store_id: "chatbot_setup",
-              session_id: sessionId,
-              timestamp: new Date().toISOString(),
-              source: "dashboard"
-            })
+            body: JSON.stringify({ domain: message })
           });
 
           let agentReply = "Unable to process your request. Please try again.";
           
           if (response.ok) {
-            const responseText = await response.text();
-            if (responseText && responseText.trim() !== '') {
-              try {
-                const data = JSON.parse(responseText);
-                agentReply = data?.agent_response || 
-                            data?.chatbot_response || 
-                            data?.message ||
-                            "Response received but no message found.";
+            const data = await response.json();
+            
+            if (data.success && data.site_key) {
+              agentReply = `
+                <span style="color: #4CAF50; font-weight: 600;">Success!</span><br><br>
+                Your chatbot has been configured for <strong>${data.domain}</strong><br><br>
+                <strong>Site Key:</strong><br>
+                <pre style="background: rgba(48, 54, 54, 0.8); padding: 12px; border-radius: 8px; margin: 8px 0;">${data.site_key}</pre>
                 
-                // Check for success with site key
-                if (data.site_key || data.siteKey) {
-                  const siteKey = data.site_key || data.siteKey;
-                  
-                  // Save configuration
-                  fetch('/api/products/configuration', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      product: 'chatbot',
-                      configuration: {
-                        configured: true,
-                        site_key: siteKey,
-                        domain: data.domain || message,
-                        created_at: new Date().toISOString()
-                      }
-                    })
-                  });
-                  
-                  agentReply = `
-                    <span style="color: #4CAF50; font-weight: 600;">Success!</span><br><br>
-                    Your chatbot has been configured.<br><br>
-                    <strong>Site Key:</strong> ${siteKey}<br><br>
-                    <strong>Add this to your website:</strong><br>
-                    <pre style="background: rgba(48, 54, 54, 0.8); padding: 12px; border-radius: 8px; margin: 8px 0;">
-&lt;script src="https://dashboard.intelagentstudios.com/widget.js" data-site-key="${siteKey}"&gt;&lt;/script&gt;
-                    </pre>`;
-                }
-              } catch (e) {
-                agentReply = "Setup agent is being configured. Please try again later.";
-              }
+                <strong>Installation Instructions:</strong><br><br>
+                <strong>For Squarespace:</strong><br>
+                1. Go to Settings → Advanced → Code Injection<br>
+                2. Paste this in the FOOTER section:<br>
+                <pre style="background: rgba(48, 54, 54, 0.8); padding: 12px; border-radius: 8px; margin: 8px 0;">
+${data.embed_code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                3. Click Save<br><br>
+                <strong>For other websites:</strong><br>
+                Add the script before the closing &lt;/body&gt; tag in your HTML.<br><br>
+                <span style="color: #4CAF50;">Your configuration has been saved and is ready to use!</span>`;
+            } else {
+              agentReply = data.error || 'Failed to configure chatbot. Please try again.';
             }
           } else {
-            agentReply = '<span style="color: #ff6464;">Connection error. Please try again.</span>';
+            const errorData = await response.json().catch(() => ({}));
+            agentReply = `<span style="color: #ff6464;">Error: ${errorData.error || 'Failed to configure chatbot'}</span>`;
           }
           
           // Remove typing indicator and show response
@@ -163,8 +140,8 @@ export default function SetupAgentFramePage() {
       if (chatLog) {
         chatLog.innerHTML = `
           <div style="background: rgba(58, 64, 64, 0.5); padding: 10px 14px; border-radius: 8px; margin: 12px 0; margin-right: 40px; border-left: 3px solid rgba(76, 175, 80, 0.6);">
-            <strong>Agent:</strong> Welcome to the Intelagent Chatbot Setup.<br><br>
-            To get started, please provide your website domain (e.g., example.com) and I'll help you set up your chatbot.
+            <strong>Setup Assistant:</strong> Welcome! I'll help you set up your Intelagent Chatbot.<br><br>
+            Simply enter your website domain (e.g., example.com) and I'll generate your unique site key and installation instructions.
           </div>`;
       }
       

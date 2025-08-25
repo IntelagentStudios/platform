@@ -1,22 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@intelagent/database';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 // Generate a unique site key
-function generateSiteKey(domain: string, licenseKey: string): string {
-  const hash = crypto
-    .createHash('sha256')
-    .update(`${domain}-${licenseKey}-${Date.now()}`)
-    .digest('hex');
-  return `sk_${hash.substring(0, 32)}`;
+function generateSiteKey(): string {
+  return `sk_${crypto.randomBytes(16).toString('hex')}`;
+}
+
+// Helper to get auth info from JWT
+function getAuthInfo() {
+  const authToken = cookies().get('auth_token') || cookies().get('auth-token');
+  if (!authToken) return null;
+  
+  try {
+    const decoded = jwt.verify(authToken.value, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
+    return {
+      licenseKey: decoded.licenseKey,
+      userEmail: decoded.email,
+      userId: decoded.userId || decoded.licenseKey
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
 // GET existing setup
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userId) {
+    const authInfo = getAuthInfo();
+    if (!authInfo) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -26,7 +40,7 @@ export async function GET(request: NextRequest) {
     // TODO: Get existing chatbot setup from audit_logs since product_setups doesn't exist
     const setupLog = await prisma.audit_logs.findFirst({
       where: {
-        user_id: userId,
+        license_key: authInfo.licenseKey,
         action: 'chatbot_setup',
         resource_type: 'chatbot'
       },
@@ -59,21 +73,19 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST create or update setup
+// POST create or update setup - simplified version for direct setup
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    const licenseKey = request.headers.get('x-license-key');
-    
-    if (!userId || !licenseKey) {
+    const authInfo = getAuthInfo();
+    if (!authInfo) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
     
     const body = await request.json();
-    const { domain, setup_data } = body;
+    const { domain } = body;
     
     if (!domain) {
       return NextResponse.json(
@@ -82,11 +94,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Clean up domain (remove protocol, trailing slashes, etc)
+    const cleanDomain = domain
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/\/.*$/, '')
+      .trim();
+    
     // Check if domain is already used by another license
     const existingDomain = await prisma.licenses.findFirst({
       where: {
-        domain,
-        license_key: { not: licenseKey }
+        domain: cleanDomain,
+        license_key: { not: authInfo.licenseKey }
       }
     });
     
@@ -98,62 +117,54 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate site key
-    const siteKey = generateSiteKey(domain, licenseKey);
+    const siteKey = generateSiteKey();
     
-    // TODO: Create or update product setup in audit_logs since product_setups doesn't exist
+    // Update the license with domain and site_key
+    await prisma.licenses.update({
+      where: { license_key: authInfo.licenseKey },
+      data: {
+        domain: cleanDomain,
+        site_key: siteKey
+      }
+    });
+    
+    // Create audit log for product configuration
     await prisma.audit_logs.create({
       data: {
-        license_key: licenseKey,
-        user_id: userId,
-        action: 'chatbot_setup',
-        resource_type: 'chatbot',
-        resource_id: siteKey,
+        license_key: authInfo.licenseKey,
+        user_id: authInfo.userId,
+        action: 'product_configured',
+        resource_type: 'product_config',
+        resource_id: 'chatbot',
         changes: {
-          domain,
-          site_key: siteKey,
-          setup_data: setup_data || {},
-          setup_started_at: new Date(),
-          webhook_url: process.env.N8N_WEBHOOK_URL || null,
-          api_endpoint: `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/${siteKey}`,
-          is_active: true
+          config: {
+            configured: true,
+            site_key: siteKey,
+            domain: cleanDomain,
+            created_at: new Date()
+          },
+          enabled: true,
+          updated_at: new Date()
         }
       }
     });
     
-    // Also update the license with domain and site_key for backward compatibility
-    await prisma.licenses.update({
-      where: { license_key: licenseKey },
-      data: {
-        domain,
-        site_key: siteKey,
-        used_at: new Date()
-      }
-    });
-    
-    // Call N8N webhook to set up the agent (if configured)
-    if (process.env.N8N_SETUP_WEBHOOK) {
-      try {
-        await fetch(process.env.N8N_SETUP_WEBHOOK, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            site_key: siteKey,
-            domain,
-            license_key: licenseKey,
-            config: setup_data
-          })
-        });
-      } catch (webhookError) {
-        console.error('N8N webhook error:', webhookError);
-        // Don't fail the setup if webhook fails
-      }
-    }
-    
+    // Return success response with embed code
     return NextResponse.json({
       success: true,
       site_key: siteKey,
-      domain,
-      message: 'Chatbot setup created successfully'
+      domain: cleanDomain,
+      embed_code: `<script src="https://dashboard.intelagentstudios.com/widget.js" data-site-key="${siteKey}"></script>`,
+      instructions: {
+        squarespace: [
+          'Go to Settings → Advanced → Code Injection',
+          'Paste the embed code in the FOOTER section',
+          'Click Save'
+        ],
+        general: [
+          'Add the embed code before the closing </body> tag in your HTML'
+        ]
+      }
     });
     
   } catch (error) {
@@ -168,9 +179,8 @@ export async function POST(request: NextRequest) {
 // PATCH update setup status
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userId) {
+    const authInfo = getAuthInfo();
+    if (!authInfo) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -183,11 +193,11 @@ export async function PATCH(request: NextRequest) {
     // TODO: Update setup completion status in audit_logs since product_setups doesn't exist
     await prisma.audit_logs.create({
       data: {
-        license_key: request.headers.get('x-license-key') || '',
-        user_id: userId,
+        license_key: authInfo.licenseKey,
+        user_id: authInfo.userId,
         action: 'chatbot_setup_completed',
         resource_type: 'chatbot',
-        resource_id: userId,
+        resource_id: authInfo.userId,
         changes: {
           setup_completed,
           ...(setup_completed && { setup_completed_at: new Date() })
