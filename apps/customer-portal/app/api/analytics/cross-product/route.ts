@@ -48,17 +48,36 @@ export async function GET(request: NextRequest) {
       aiInsights,
       licenseInfo
     ] = await Promise.all([
-      // Chatbot logs
-      prisma.chatbot_logs.groupBy({
-        by: ['created_at'],
+      // Chatbot logs - simplified query to avoid circular type reference
+      prisma.chatbot_logs.findMany({
         where: {
-          license: { license_key: licenseKey },
+          site_key: (await prisma.licenses.findUnique({ 
+            where: { license_key: licenseKey },
+            select: { site_key: true }
+          }))?.site_key || '',
           created_at: {
             gte: startDate,
             lte: endDate
           }
         },
-        _count: true
+        select: {
+          created_at: true,
+          id: true
+        },
+        orderBy: { created_at: 'asc' }
+      }).then(logs => {
+        // Group by date manually
+        const grouped = logs.reduce((acc: any[], log) => {
+          const date = log.created_at;
+          const existing = acc.find(g => g.created_at?.toISOString() === date?.toISOString());
+          if (existing) {
+            existing._count++;
+          } else {
+            acc.push({ created_at: date, _count: 1 });
+          }
+          return acc;
+        }, []);
+        return grouped;
       }),
 
       // TODO: Usage metrics table doesn't exist - using empty array
@@ -225,25 +244,42 @@ async function getProductAnalytics(
   const analytics: any = {};
 
   if (products.includes('all') || products.includes('chatbot')) {
+    // Get site_key for this license
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: licenseKey },
+      select: { site_key: true }
+    });
+    
     const [sessions, intents, avgResponseTime] = await Promise.all([
-      prisma.chatbot_logs.groupBy({
-        by: ['session_id'],
+      // Get unique sessions
+      prisma.chatbot_logs.findMany({
         where: {
-          license: { license_key: licenseKey },
+          site_key: license?.site_key || '',
           created_at: { gte: startDate, lte: endDate }
         },
-        _count: true
+        select: { session_id: true },
+        distinct: ['session_id']
       }),
 
-      prisma.chatbot_logs.groupBy({
-        by: ['intent_detected'],
+      // Get top intents
+      prisma.chatbot_logs.findMany({
         where: {
-          license: { license_key: licenseKey },
-          created_at: { gte: startDate, lte: endDate }
+          site_key: license?.site_key || '',
+          created_at: { gte: startDate, lte: endDate },
+          intent_detected: { not: null }
         },
-        _count: true,
-        orderBy: { _count: { intent_detected: 'desc' } },
-        take: 5
+        select: { intent_detected: true }
+      }).then(logs => {
+        // Group and count intents manually
+        const intentCounts = logs.reduce((acc: any, log) => {
+          const intent = log.intent_detected || 'unknown';
+          acc[intent] = (acc[intent] || 0) + 1;
+          return acc;
+        }, {});
+        return Object.entries(intentCounts)
+          .map(([intent_detected, count]) => ({ intent_detected, _count: count }))
+          .sort((a, b) => (b._count as number) - (a._count as number))
+          .slice(0, 5);
       }),
 
       // Simulated response time

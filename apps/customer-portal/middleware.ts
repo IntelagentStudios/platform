@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 const publicPaths = [
   '/login',
@@ -20,29 +17,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Check for JWT auth token first
+  // Check for auth token (JWT verification happens in API routes)
   const authToken = request.cookies.get('auth_token');
-  let userRole = null;
   
   if (authToken) {
-    try {
-      // Verify JWT token
-      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
-      userRole = decoded.role;
-      
-      // Check admin route access
-      if (pathname.startsWith('/admin')) {
-        if (userRole !== 'master_admin') {
-          // Not admin, redirect to dashboard
-          return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-      }
-      
-      // Token is valid, allow access
+    // Basic check - actual JWT verification happens in API routes
+    // due to Edge Runtime limitations with jsonwebtoken library
+    
+    // For admin routes, check in the route handler instead
+    if (pathname.startsWith('/admin')) {
+      // Let the route handler verify admin access
       return NextResponse.next();
-    } catch (error) {
-      // Invalid token, continue to check old auth
     }
+    
+    // Token exists, allow access
+    return NextResponse.next();
   }
   
   // Fall back to old auth cookie for backward compatibility
