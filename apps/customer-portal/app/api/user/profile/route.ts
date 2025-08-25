@@ -13,35 +13,9 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Fetch user data with related information
+    // Fetch user data
     const user = await prisma.users.findUnique({
-      where: { id: userId },
-      include: {
-        license: {
-          select: {
-            license_key: true,
-            products: true,
-            plan: true,
-            status: true,
-            subscription_status: true,
-            next_billing_date: true,
-            customer_name: true,
-            email: true
-          }
-        },
-        product_setups: {
-          select: {
-            id: true,
-            product: true,
-            setup_completed: true,
-            domain: true,
-            site_key: true,
-            setup_data: true,
-            created_at: true,
-            updated_at: true
-          }
-        }
-      }
+      where: { id: userId }
     });
     
     if (!user) {
@@ -51,19 +25,27 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    // Fetch license data separately
+    let license = null;
+    if (user.license_key) {
+      license = await prisma.licenses.findUnique({
+        where: { license_key: user.license_key }
+      });
+    }
+    
     // Prepare response data
     const userData = {
       id: user.id,
       email: user.email,
       name: user.name,
       license_key: user.license_key,
-      products: user.license?.products || [],
-      plan: user.license?.plan || 'starter',
-      status: user.license?.status,
-      subscription_status: user.license?.subscription_status,
-      next_billing_date: user.license?.next_billing_date,
+      products: license?.products || [],
+      plan: license?.plan || 'starter',
+      status: license?.status,
+      subscription_status: license?.subscription_status,
+      next_billing_date: license?.next_billing_date,
       created_at: user.created_at,
-      product_setups: user.product_setups
+      product_setups: [] // product_setups table doesn't exist
     };
     
     return NextResponse.json(userData);
