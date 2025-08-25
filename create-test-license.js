@@ -3,7 +3,7 @@ const { prisma } = require('./packages/database/dist/index.js');
 async function createTestLicense() {
   try {
     // Generate a proper license key format
-    const licenseKey = 'TEST-CHAT-BOT1-2024';
+    const licenseKey = 'INTL-8K3M-QB7X-2024';
     const friendEmail = 'friend@testbusiness.com';
     const businessName = 'Test Business Inc';
     
@@ -23,7 +23,7 @@ async function createTestLicense() {
           customer_name: businessName,
           products: ['chatbot'],
           status: 'active',
-          plan: 'pro',
+          plan: 'starter',
           used_at: null,  // Reset so it can be registered again
           site_key: null,  // Will be generated during setup
           domain: null
@@ -39,7 +39,7 @@ async function createTestLicense() {
           customer_name: businessName,
           products: ['chatbot'],
           status: 'active',
-          plan: 'pro',
+          plan: 'starter',
           created_at: new Date(),
           expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
         }
@@ -52,7 +52,7 @@ async function createTestLicense() {
     console.log('Email:', friendEmail);
     console.log('Business:', businessName);
     console.log('Products:', ['chatbot']);
-    console.log('Plan:', 'pro');
+    console.log('Plan:', 'starter');
     console.log('\nYour friend can now register at:');
     console.log('https://dashboard.intelagentstudios.com/register');
     console.log('\nThey will need to enter:');

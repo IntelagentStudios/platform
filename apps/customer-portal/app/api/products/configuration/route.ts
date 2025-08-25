@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     let licenseKey = 'INTL-AGNT-BOSS-MODE'; // Default for harry
     
     if (authCookie.value === 'authenticated-test-friend') {
-      licenseKey = 'TEST-CHAT-BOT1-2024'; // Friend's test license
+      licenseKey = 'INTL-8K3M-QB7X-2024'; // Friend's test license
     }
     
     let license = null;

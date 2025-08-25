@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 const TEST_CREDENTIALS = {
   email: 'friend@testbusiness.com',
   password: 'TestDemo123!',
-  licenseKey: 'TEST-CHAT-BOT1-2024'
+  licenseKey: 'INTL-8K3M-QB7X-2024'
 };
 
 export async function POST(request: NextRequest) {

@@ -8,12 +8,12 @@ INSERT INTO licenses (
   plan,
   created_at
 ) VALUES (
-  'TEST-CHAT-BOT1-2024',
+  'INTL-8K3M-QB7X-2024',
   'friend@testbusiness.com',
   'Test Business Inc',
   ARRAY['chatbot'],
   'active',
-  'pro',
+  'starter',
   NOW()
 )
 ON CONFLICT (license_key) 

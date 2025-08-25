@@ -64,9 +64,9 @@ If they have any issues, they can:
 3. Contact you for help
 
 ## License Info:
-- License Key: TEST-CHAT-BOT1-2024
+- License Key: INTL-8K3M-QB7X-2024
 - Business: Test Business Inc
-- Products: Chatbot (Pro Plan)
+- Products: Chatbot (Starter Plan)
 
 ---
 

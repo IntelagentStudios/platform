@@ -7,7 +7,7 @@ async function testAuthFlow() {
   // Test credentials
   const testEmail = 'test@friend.com';
   const testPassword = 'Password123!';
-  const licenseKey = 'TEST-CHAT-BOT1-2024';
+  const licenseKey = 'INTL-8K3M-QB7X-2024';
   
   try {
     // 1. Test Login
