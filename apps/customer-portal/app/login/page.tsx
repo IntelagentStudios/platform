@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Shield, Mail, Lock, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('harry@intelagentstudios.com');
-  const [password, setPassword] = useState('Birksgrange226!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,8 +15,8 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      // Try secure endpoint first, fallback to simple if it fails
-      const response = await fetch('/api/auth/secure', {
+      // Use new JWT auth endpoint
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -31,13 +31,30 @@ export default function LoginPage() {
         if (data.user) {
           sessionStorage.setItem('user', JSON.stringify(data.user));
         }
-        window.location.href = '/dashboard';
+        // Redirect based on role
+        window.location.href = data.redirectTo || '/dashboard';
       } else {
-        setMessage(data.error || 'Login failed');
+        // If new auth fails, try old auth for backward compatibility
+        if (email === 'harry@intelagentstudios.com') {
+          const oldResponse = await fetch('/api/auth/simple', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password }),
+            credentials: 'include'
+          });
+          
+          const oldData = await oldResponse.json();
+          if (oldData.authenticated) {
+            window.location.href = '/dashboard';
+            return;
+          }
+        }
+        
+        setMessage(data.error || 'Invalid email or password');
         setLoading(false);
       }
     } catch (error) {
-      setMessage('Network error');
+      setMessage('Network error. Please try again.');
       setLoading(false);
     }
   };
@@ -168,9 +185,21 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-          Pro Platform License
-        </p>
+        <div className="mt-6 text-center">
+          <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+            Don't have an account?{' '}
+            <a 
+              href="/register" 
+              className="font-medium hover:underline"
+              style={{ color: 'rgb(229, 227, 220)' }}
+            >
+              Register with your license key
+            </a>
+          </p>
+          <p className="mt-4 text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
+            Pro Platform License • Intelagent Studios
+          </p>
+        </div>
       </div>
     </div>
   );
