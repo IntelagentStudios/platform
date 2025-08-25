@@ -101,7 +101,7 @@ export default function BillingPage() {
               </h2>
               <div className="flex items-center space-x-3 mb-4">
                 <span className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
-                  Pro Platform
+                  {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
                 </span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs"
                      style={{ 

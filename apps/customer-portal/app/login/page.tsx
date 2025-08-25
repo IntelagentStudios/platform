@@ -206,7 +206,7 @@ export default function LoginPage() {
             </a>
           </p>
           <p className="mt-4 text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
-            Pro Platform License • Intelagent Studios
+            Platform License • Intelagent Studios
           </p>
         </div>
       </div>

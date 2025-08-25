@@ -241,7 +241,7 @@ export default function DashboardPage() {
                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
                          color: 'rgb(169, 189, 203)'
                        }}>
-                    {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Pro Platform'}
+                    {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
                   </div>
                 </div>
                 <div>

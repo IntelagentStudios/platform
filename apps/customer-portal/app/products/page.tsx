@@ -173,7 +173,7 @@ export default function ProductsPage() {
 
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
-      router.push('/products/chatbot/conversations');
+      router.push('/products/chatbot/manage');
     } else {
       router.push('/products/manage');
     }

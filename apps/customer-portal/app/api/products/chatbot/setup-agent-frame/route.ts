@@ -226,7 +226,7 @@ export async function GET() {
       <input autofocus id="chat-input" placeholder="Type your website domain (e.g., example.com)..." type="text"/>
       <button id="send-button">Send</button>
     </div>
-    <div class="setup-footer">Powered by Intelagent Studios • Pro Platform</div>
+    <div class="setup-footer">Powered by Intelagent Studios • Platform</div>
   </div>
   <script>
     const sessionId = localStorage.getItem("setup_session_id") || "sess_" + Math.random().toString(36).substring(2, 10);

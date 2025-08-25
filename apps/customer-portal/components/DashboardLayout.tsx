@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   Intelagent
                 </h2>
                 <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                  Pro Platform
+                  {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
                 </p>
               </div>
             )}

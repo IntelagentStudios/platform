@@ -245,7 +245,7 @@ ${data.embed_code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
           color: 'rgba(169, 189, 203, 0.6)',
           textAlign: 'center',
           marginTop: '24px'
-        }}>Powered by Intelagent Studios • Pro Platform</div>
+        }}>Powered by Intelagent Studios • Platform</div>
       </div>
     </div>
   );
