@@ -155,22 +155,20 @@ class VectorStoreService {
       // Upsert to Pinecone with namespace
       await this.index.namespace(namespace).upsert([vector]);
       
-      // Store full content in database for retrieval
-      await prisma.audit_logs.upsert({
-        where: { id: document.id },
-        update: {
-          content: document.content,
-          metadata: document.metadata,
+      // TODO: Store document in audit_logs since vector_documents table doesn't exist
+      // Note: audit_logs doesn't support upsert by id, so we'll just create a new entry
+      await prisma.audit_logs.create({
+        data: {
           license_key: document.metadata.licenseKey,
-          updated_at: new Date()
-        },
-        create: {
-          id: document.id,
-          license_key: document.metadata.licenseKey,
-          site_key: document.metadata.siteKey,
-          content: document.content,
-          metadata: document.metadata,
-          created_at: new Date()
+          user_id: document.metadata.licenseKey,
+          action: 'vector_document_indexed',
+          resource_type: 'vector_document',
+          resource_id: document.id,
+          changes: {
+            content: document.content,
+            metadata: document.metadata,
+            site_key: document.metadata.siteKey
+          }
         }
       });
       
@@ -223,22 +221,19 @@ class VectorStoreService {
             }
           });
           
-          // Store full content in database
-          await prisma.audit_logs.upsert({
-            where: { id: doc.id },
-            update: {
-              content: doc.content,
-              metadata: doc.metadata,
+          // TODO: Store document in audit_logs since vector_documents table doesn't exist
+          await prisma.audit_logs.create({
+            data: {
               license_key: doc.metadata.licenseKey,
-              updated_at: new Date()
-            },
-            create: {
-              id: doc.id,
-              license_key: doc.metadata.licenseKey,
-              site_key: doc.metadata.siteKey,
-              content: doc.content,
-              metadata: doc.metadata,
-              created_at: new Date()
+              user_id: doc.metadata.licenseKey,
+              action: 'vector_document_batch_indexed',
+              resource_type: 'vector_document',
+              resource_id: doc.id,
+              changes: {
+                content: doc.content,
+                metadata: doc.metadata,
+                site_key: doc.metadata.siteKey
+              }
             }
           });
           
@@ -300,19 +295,21 @@ class VectorStoreService {
       const results: SearchResult[] = [];
       
       for (const match of searchResponse.matches || []) {
-        // Double-check license key when retrieving from database
+        // TODO: Retrieve document from audit_logs
         const document = await prisma.audit_logs.findFirst({
           where: { 
-            id: match.id,
-            license_key: licenseKey // Ensure we only get documents for this license
+            resource_id: match.id,
+            license_key: licenseKey,
+            action: 'vector_document_indexed'
           }
         });
         
-        if (document) {
+        if (document && document.changes) {
+          const docData = document.changes as any;
           results.push({
             id: match.id,
             score: match.score || 0,
-            content: document.content,
+            content: docData.content || '',
             metadata: match.metadata
           });
         }
@@ -334,28 +331,40 @@ class VectorStoreService {
     }
     
     try {
-      // Get all document IDs for this site and license
+      // TODO: Get all document IDs from audit_logs
       const documents = await prisma.audit_logs.findMany({
         where: { 
           license_key: licenseKey,
-          site_key: siteKey 
+          action: 'vector_document_indexed'
         },
-        select: { id: true }
+        select: { resource_id: true, changes: true }
       });
       
-      const ids = documents.map(doc => doc.id);
+      // Filter by site_key from changes
+      const siteDocuments = documents.filter(doc => {
+        const docData = doc.changes as any;
+        return docData?.site_key === siteKey;
+      });
+      
+      const ids = siteDocuments.map(doc => doc.resource_id).filter(id => id) as string[];
       
       if (ids.length > 0) {
         // Delete from Pinecone namespace
         await this.index.namespace(licenseKey).deleteMany(ids);
         
-        // Delete from database
-        await prisma.audit_logs.deleteMany({
-          where: { 
-            license_key: licenseKey,
-            site_key: siteKey 
-          }
-        });
+        // Mark as deleted in database
+        for (const id of ids) {
+          await prisma.audit_logs.create({
+            data: {
+              license_key: licenseKey,
+              user_id: licenseKey,
+              action: 'vector_document_deleted',
+              resource_type: 'vector_document',
+              resource_id: id,
+              changes: { site_key: siteKey }
+            }
+          });
+        }
       }
       
       console.log(`Deleted ${ids.length} documents for site ${siteKey}`);
