@@ -24,15 +24,26 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data); // Debug log
 
       if (data.success) {
         setMessage('Login successful! Redirecting...');
+        setLoading(false); // Clear loading state
+        
         // Store user data in sessionStorage for dashboard
         if (data.user) {
           sessionStorage.setItem('user', JSON.stringify(data.user));
         }
-        // Redirect based on role
-        window.location.href = data.redirectTo || '/dashboard';
+        
+        const redirectUrl = data.redirectTo || '/dashboard';
+        console.log('Redirecting to:', redirectUrl); // Debug log
+        
+        // Small delay to ensure message is shown, then redirect
+        setTimeout(() => {
+          // Force redirect with replace to avoid back button issues
+          window.location.replace(redirectUrl);
+        }, 500);
+        return; // Exit early to prevent further processing
       } else {
         // If new auth fails, try old auth for backward compatibility
         if (email === 'harry@intelagentstudios.com') {
