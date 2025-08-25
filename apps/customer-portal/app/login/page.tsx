@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Shield, Mail, Lock, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -28,7 +30,6 @@ export default function LoginPage() {
 
       if (data.success) {
         setMessage('Login successful! Redirecting...');
-        setLoading(false); // Clear loading state
         
         // Store user data in sessionStorage for dashboard
         if (data.user) {
@@ -38,11 +39,8 @@ export default function LoginPage() {
         const redirectUrl = data.redirectTo || '/dashboard';
         console.log('Redirecting to:', redirectUrl); // Debug log
         
-        // Small delay to ensure message is shown, then redirect
-        setTimeout(() => {
-          // Force redirect with replace to avoid back button issues
-          window.location.replace(redirectUrl);
-        }, 500);
+        // Use Next.js router for client-side navigation
+        router.push(redirectUrl);
         return; // Exit early to prevent further processing
       } else {
         // If new auth fails, try old auth for backward compatibility
@@ -56,7 +54,7 @@ export default function LoginPage() {
           
           const oldData = await oldResponse.json();
           if (oldData.authenticated) {
-            window.location.href = '/dashboard';
+            router.push('/dashboard');
             return;
           }
         }
