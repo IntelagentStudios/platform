@@ -16,24 +16,47 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if onboarding is completed
-    const onboarding = await prisma.onboarding.findUnique({
-      where: { license_key: licenseKey }
+    // TODO: Check if onboarding is completed from audit_logs since onboarding table doesn't exist
+    const onboardingLog = await prisma.audit_logs.findFirst({
+      where: {
+        license_key: licenseKey,
+        action: 'onboarding_completed'
+      },
+      orderBy: { created_at: 'desc' }
     });
 
-    if (!onboarding) {
-      // First time user
+    if (!onboardingLog) {
+      // Check for progress
+      const progressLog = await prisma.audit_logs.findFirst({
+        where: {
+          license_key: licenseKey,
+          action: 'onboarding_progress'
+        },
+        orderBy: { created_at: 'desc' }
+      });
+
+      if (!progressLog) {
+        // First time user
+        return NextResponse.json({
+          completed: false,
+          currentStep: 0,
+          data: {}
+        });
+      }
+
+      const progress = progressLog.changes as any;
       return NextResponse.json({
         completed: false,
-        currentStep: 0,
-        data: {}
+        currentStep: progress?.current_step || 0,
+        data: progress?.data || {}
       });
     }
 
+    const onboardingData = onboardingLog.changes as any;
     return NextResponse.json({
-      completed: onboarding.completed,
-      currentStep: onboarding.current_step,
-      data: onboarding.data
+      completed: true,
+      currentStep: onboardingData?.current_step || 6,
+      data: onboardingData?.data || {}
     });
 
   } catch (error: any) {
