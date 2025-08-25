@@ -626,7 +626,7 @@ export async function sendPurchaseConfirmation(email: string, licenseKey: string
 export async function sendUsageAlert(licenseKey: string, product: string, usage: number, limit: number) {
   const percentage = Math.round((usage / limit) * 100);
   
-  const user = await prisma.users.findUnique({
+  const user = await prisma.users.findFirst({
     where: { license_key: licenseKey },
     select: { name: true }
   });
