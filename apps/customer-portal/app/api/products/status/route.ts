@@ -30,15 +30,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the user associated with this license
-    const user = await prisma.users.findUnique({
+    const user = await prisma.users.findFirst({
       where: { license_key: licenseKey }
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found for license' },
-        { status: 404 }
-      );
+      // User might not be registered yet, use license key as user id
+      // This is okay for checking product status
     }
 
     // TODO: product_setups table doesn't exist - return empty array
