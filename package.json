@@ -21,7 +21,10 @@
     "db:push": "prisma db push",
     "setup": "npm install && npm run db:generate",
     "start": "node apps/admin-portal/server.js",
-    "start:worker": "node services/worker/index.js"
+    "start:worker": "node services/worker/index.js",
+    "setup-test-accounts": "tsx scripts/setup-test-accounts.ts",
+    "verify-isolation": "tsx scripts/verify-isolation.ts",
+    "test:isolation": "npm run setup-test-accounts && npm run verify-isolation"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

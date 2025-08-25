@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
+import { MASTER_ADMIN_KEY } from '@/types/license';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
@@ -37,26 +38,42 @@ export async function GET(request: NextRequest) {
 
 async function fetchConversations(licenseKey: string) {
   try {
+    // Check if master admin - they see all conversations
+    const isMasterAdmin = licenseKey === MASTER_ADMIN_KEY;
     
-    // Get the user's site_key from licenses table
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey },
-      select: { site_key: true }
-    });
+    let logs;
+    let siteKeyUsed: string | null = null;
+    
+    if (isMasterAdmin) {
+      // Master admin sees all conversations
+      logs = await prisma.chatbot_logs.findMany({
+        orderBy: { timestamp: 'desc' },
+        take: 500 // More for admin
+      });
+      siteKeyUsed = 'MASTER_ADMIN';
+    } else {
+      // Regular users see only their conversations
+      const license = await prisma.licenses.findUnique({
+        where: { license_key: licenseKey },
+        select: { site_key: true }
+      });
 
-    if (!license?.site_key) {
-      return NextResponse.json({ 
-        conversations: [],
-        message: 'No chatbot configured' 
+      if (!license?.site_key) {
+        return NextResponse.json({ 
+          conversations: [],
+          message: 'No chatbot configured' 
+        });
+      }
+      
+      siteKeyUsed = license.site_key;
+
+      // Fetch chatbot logs for this site_key ONLY
+      logs = await prisma.chatbot_logs.findMany({
+        where: { site_key: license.site_key }, // Strict filtering by site_key
+        orderBy: { timestamp: 'desc' },
+        take: 100 // Limit to last 100 messages
       });
     }
-
-    // Fetch chatbot logs for this site_key
-    const logs = await prisma.chatbot_logs.findMany({
-      where: { site_key: license.site_key },
-      orderBy: { timestamp: 'desc' },
-      take: 100 // Limit to last 100 messages
-    });
 
     // Group logs by conversation_id or session_id
     const conversationsMap = new Map();
@@ -126,7 +143,8 @@ async function fetchConversations(licenseKey: string) {
     return NextResponse.json({
       conversations,
       stats,
-      site_key: license.site_key
+      site_key: siteKeyUsed,
+      is_admin: licenseKey === MASTER_ADMIN_KEY
     });
   } catch (error) {
     console.error('Failed to fetch conversations:', error);
