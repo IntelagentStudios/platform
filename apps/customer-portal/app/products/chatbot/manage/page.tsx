@@ -54,10 +54,10 @@ export default function ChatbotManagePage() {
 
   const fetchConfig = async (licenseKey: string) => {
     try {
-      const res = await fetch(`/api/products/configuration?license_key=${licenseKey}&product=chatbot`);
+      const res = await fetch('/api/products/configuration');
       const data = await res.json();
-      if (data.configs && data.configs.length > 0) {
-        setConfig(data.configs[0]);
+      if (data.chatbot && data.chatbot.configured) {
+        setConfig(data.chatbot);
       }
       setLoading(false);
     } catch (error) {
@@ -68,11 +68,10 @@ export default function ChatbotManagePage() {
 
   const fetchStats = async (licenseKey: string) => {
     try {
-      // Get site key from licenses table
-      const licenseRes = await fetch('/api/auth/secure');
-      const licenseData = await licenseRes.json();
+      // Site key should be in user data now
+      const siteKey = user?.site_key;
       
-      if (licenseData.user?.site_key) {
+      if (siteKey) {
         // Fetch conversations stats
         const convRes = await fetch('/api/products/chatbot/conversations');
         const convData = await convRes.json();
@@ -82,7 +81,7 @@ export default function ChatbotManagePage() {
           uniqueSessions: new Set(convData.conversations?.map((c: any) => c.session_id)).size || 0,
           domains: [...new Set(convData.conversations?.map((c: any) => c.domain))].filter(Boolean),
           avgResponseTime: '< 1s',
-          site_key: licenseData.user.site_key
+          site_key: siteKey
         });
       }
     } catch (error) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,27 @@ export async function GET(request: NextRequest) {
     // Verify and decode token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
     
+    // Fetch the user's actual license data
+    let products = ['chatbot']; // Default products
+    let licenseType = 'platform';
+    let siteKey = null;
+    
+    try {
+      const license = await prisma.licenses.findUnique({
+        where: { license_key: decoded.licenseKey }
+      });
+      
+      if (license) {
+        // Products is already an array in Prisma
+        products = license.products.length > 0 ? license.products : ['chatbot'];
+        siteKey = license.site_key;
+        // Determine license type based on is_pro flag
+        licenseType = license.is_pro ? 'pro_platform' : 'platform';
+      }
+    } catch (error) {
+      console.error('Error fetching license:', error);
+    }
+    
     // Return user data in the expected format
     const userData = {
       authenticated: true,
@@ -26,8 +48,10 @@ export async function GET(request: NextRequest) {
         email: decoded.email,
         name: decoded.name || decoded.email.split('@')[0],
         license_key: decoded.licenseKey,
+        license_type: licenseType,
+        site_key: siteKey,
         role: decoded.role || 'customer',
-        products: ['chatbot'], // Based on the license we created
+        products: products,
         plan: 'starter',
         subscription_status: 'active',
         next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
