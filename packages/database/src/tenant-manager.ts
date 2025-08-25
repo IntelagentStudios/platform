@@ -438,4 +438,5 @@ export function getTenantManager(): TenantManager {
   return tenantManager;
 }
 
-export { TenantManager, TenantConfig };
+export { TenantManager };
+export type { TenantConfig };
