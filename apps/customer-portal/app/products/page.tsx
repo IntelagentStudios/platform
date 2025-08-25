@@ -26,23 +26,35 @@ import {
 export default function ProductsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [configurations, setConfigurations] = useState<any>({});
+  const [userProducts, setUserProducts] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
-    fetch('/api/auth/simple')
+    // Check authentication using JWT endpoint
+    fetch('/api/auth/me', {
+      credentials: 'include'
+    })
       .then(res => res.json())
       .then(data => {
-        setIsAuthenticated(data.authenticated);
-        if (!data.authenticated) {
-          window.location.href = '/login';
-        } else {
+        if (data.authenticated && data.user) {
+          setIsAuthenticated(true);
+          // Get user's products from their license
+          setUserProducts(data.user.products || ['chatbot']);
+          
           // Fetch product configurations
           fetch('/api/products/configuration')
             .then(res => res.json())
             .then(configs => setConfigurations(configs))
             .catch(err => console.error('Failed to fetch configurations:', err));
+        } else {
+          setIsAuthenticated(false);
+          window.location.href = '/login';
         }
+      })
+      .catch(err => {
+        console.error('Auth check failed:', err);
+        setIsAuthenticated(false);
+        window.location.href = '/login';
       });
   }, []);
 
@@ -139,10 +151,13 @@ export default function ProductsPage() {
     }
   ];
 
-  // Separate products by configuration status
-  const configuredProducts = allProducts.filter(p => configurations[p.id]?.configured);
-  const availableProducts = allProducts.filter(p => !configurations[p.id]?.configured && p.status === 'available');
-  const comingSoonProducts = allProducts.filter(p => p.status === 'coming_soon');
+  // Filter products based on user's license
+  const userAllProducts = allProducts.filter(p => userProducts.includes(p.id));
+  
+  // Separate products by configuration status (only from user's products)
+  const configuredProducts = userAllProducts.filter(p => configurations[p.id]?.configured);
+  const availableProducts = userAllProducts.filter(p => !configurations[p.id]?.configured && p.status === 'available');
+  const comingSoonProducts = []; // Don't show coming soon for now
 
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {

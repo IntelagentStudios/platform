@@ -20,13 +20,22 @@ export default function BillingPage() {
 
   useEffect(() => {
     // Check authentication
-    fetch('/api/auth/simple')
+        fetch('/api/auth/me', {
+      credentials: 'include'
+    })
       .then(res => res.json())
       .then(data => {
-        setIsAuthenticated(data.authenticated);
-        if (!data.authenticated) {
+        if (data.authenticated && data.user) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
           window.location.href = '/login';
         }
+      })
+      .catch(err => {
+        console.error('Auth check failed:', err);
+        setIsAuthenticated(false);
+        window.location.href = '/login';
       });
     
     // Get user data
