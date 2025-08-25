@@ -12,7 +12,9 @@ import {
   Globe,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  X,
+  ChevronDown
 } from 'lucide-react';
 
 export default function ChatbotConversationsPage() {
@@ -24,6 +26,10 @@ export default function ChatbotConversationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [showFilters, setShowFilters] = useState(false);
+  const [dateFilter, setDateFilter] = useState('all'); // all, today, week, month
+  const [domainFilter, setDomainFilter] = useState('all');
+  const [intentFilter, setIntentFilter] = useState('all');
   const router = useRouter();
 
   useEffect(() => {
@@ -115,12 +121,62 @@ export default function ChatbotConversationsPage() {
   };
 
   const filteredConversations = conversations.filter(conv => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return conv.messages.some((msg: any) => 
-      msg.content.toLowerCase().includes(query)
-    ) || conv.domain?.toLowerCase().includes(query);
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = conv.messages?.some((msg: any) => 
+        msg.content?.toLowerCase().includes(query)
+      ) || 
+      conv.domain?.toLowerCase().includes(query) ||
+      conv.session_id?.toLowerCase().includes(query);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Date filter
+    if (dateFilter !== 'all' && conv.first_message_at) {
+      const convDate = new Date(conv.first_message_at);
+      const now = new Date();
+      
+      switch (dateFilter) {
+        case 'today':
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          if (convDate < today) return false;
+          break;
+        case 'week':
+          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          if (convDate < weekAgo) return false;
+          break;
+        case 'month':
+          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          if (convDate < monthAgo) return false;
+          break;
+      }
+    }
+    
+    // Domain filter
+    if (domainFilter !== 'all' && conv.domain !== domainFilter) {
+      return false;
+    }
+    
+    // Intent filter
+    if (intentFilter !== 'all') {
+      const hasIntent = conv.messages?.some((msg: any) => 
+        msg.intent === intentFilter
+      );
+      if (!hasIntent) return false;
+    }
+    
+    return true;
   });
+  
+  // Get unique domains and intents for filter dropdowns
+  const uniqueDomains = [...new Set(conversations.map(c => c.domain).filter(Boolean))];
+  const uniqueIntents = [...new Set(
+    conversations.flatMap(c => 
+      c.messages?.map((m: any) => m.intent).filter(Boolean) || []
+    )
+  )];
 
   if (isAuthenticated === null) {
     return (
@@ -234,28 +290,141 @@ export default function ChatbotConversationsPage() {
       <div className="flex h-[calc(100vh-200px)]">
         {/* Conversations List */}
         <div className="w-1/3 border-r" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-          {/* Search */}
-          <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" 
-                      style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg text-sm"
-                style={{ 
-                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                  border: '1px solid rgba(169, 189, 203, 0.2)',
-                  color: 'rgb(229, 227, 220)'
-                }}
-              />
+          {/* Search and Filters */}
+          <div className="border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+            <div className="p-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" 
+                        style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                <input
+                  type="text"
+                  placeholder="Search by message, session ID, or domain..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2 rounded-lg text-sm"
+                  style={{ 
+                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  >
+                    <X className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                  </button>
+                )}
+              </div>
+              
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center space-x-2 mt-3 text-sm transition hover:opacity-80"
+                style={{ color: 'rgb(169, 189, 203)' }}
+              >
+                <Filter className="h-4 w-4" />
+                <span>Filters</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                {(dateFilter !== 'all' || domainFilter !== 'all' || intentFilter !== 'all') && (
+                  <span className="px-2 py-0.5 rounded text-xs" 
+                        style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}>
+                    Active
+                  </span>
+                )}
+              </button>
+              
+              {/* Filter Options */}
+              {showFilters && (
+                <div className="mt-3 space-y-2">
+                  <div>
+                    <label className="text-xs mb-1 block" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      Date Range
+                    </label>
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded text-sm"
+                      style={{ 
+                        backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                        border: '1px solid rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="week">Last 7 Days</option>
+                      <option value="month">Last 30 Days</option>
+                    </select>
+                  </div>
+                  
+                  {uniqueDomains.length > 0 && (
+                    <div>
+                      <label className="text-xs mb-1 block" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        Domain
+                      </label>
+                      <select
+                        value={domainFilter}
+                        onChange={(e) => setDomainFilter(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded text-sm"
+                        style={{ 
+                          backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                      >
+                        <option value="all">All Domains</option>
+                        {uniqueDomains.map(domain => (
+                          <option key={domain} value={domain}>{domain}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  {uniqueIntents.length > 0 && (
+                    <div>
+                      <label className="text-xs mb-1 block" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        Intent
+                      </label>
+                      <select
+                        value={intentFilter}
+                        onChange={(e) => setIntentFilter(e.target.value)}
+                        className="w-full px-3 py-1.5 rounded text-sm"
+                        style={{ 
+                          backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                      >
+                        <option value="all">All Intents</option>
+                        {uniqueIntents.map(intent => (
+                          <option key={intent} value={intent}>{intent}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  {(dateFilter !== 'all' || domainFilter !== 'all' || intentFilter !== 'all') && (
+                    <button
+                      onClick={() => {
+                        setDateFilter('all');
+                        setDomainFilter('all');
+                        setIntentFilter('all');
+                      }}
+                      className="text-xs transition hover:opacity-80"
+                      style={{ color: 'rgb(169, 189, 203)' }}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Conversations */}
-          <div className="overflow-y-auto" style={{ height: 'calc(100% - 64px)' }}>
+          <div className="overflow-y-auto" style={{ height: showFilters ? 'calc(100% - 280px)' : 'calc(100% - 120px)' }}>
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2" 
@@ -266,10 +435,38 @@ export default function ChatbotConversationsPage() {
                 <MessageSquare className="h-8 w-8 mx-auto mb-2" 
                                style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
                 <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  No conversations found
+                  {searchQuery || dateFilter !== 'all' || domainFilter !== 'all' || intentFilter !== 'all' 
+                    ? 'No conversations match your filters' 
+                    : 'No conversations found'}
                 </p>
+                {(searchQuery || dateFilter !== 'all' || domainFilter !== 'all' || intentFilter !== 'all') && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setDateFilter('all');
+                      setDomainFilter('all');
+                      setIntentFilter('all');
+                    }}
+                    className="mt-2 text-xs transition hover:opacity-80"
+                    style={{ color: 'rgb(169, 189, 203)' }}
+                  >
+                    Clear all filters
+                  </button>
+                )}
               </div>
             ) : (
+              <>
+                {filteredConversations.length < conversations.length && (
+                  <div className="px-4 py-2 text-xs border-b" 
+                       style={{ 
+                         backgroundColor: 'rgba(169, 189, 203, 0.05)',
+                         borderColor: 'rgba(169, 189, 203, 0.1)',
+                         color: 'rgba(169, 189, 203, 0.8)'
+                       }}>
+                    Showing {filteredConversations.length} of {conversations.length} conversations
+                  </div>
+                )}
+                {
               filteredConversations.map((conv) => (
                 <div
                   key={conv.id}
@@ -308,7 +505,8 @@ export default function ChatbotConversationsPage() {
                     )}
                   </div>
                 </div>
-              ))
+              ))}
+              </>
             )}
           </div>
         </div>
