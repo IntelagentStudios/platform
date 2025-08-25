@@ -23,10 +23,23 @@ export async function GET(request: NextRequest) {
     let productConfigs: any[] = [];
     
     try {
-      // Fetch product configurations from database
-      productConfigs = await prisma.product_configs.findMany({
-        where: { license_key: licenseKey }
+      // TODO: Fetch product configurations from audit_logs since product_configs table doesn't exist
+      const configLogs = await prisma.audit_logs.findMany({
+        where: { 
+          license_key: licenseKey,
+          action: 'product_configured'
+        },
+        orderBy: { created_at: 'desc' }
       });
+      
+      // Transform audit logs to product config format
+      productConfigs = configLogs.map(log => ({
+        license_key: log.license_key,
+        product: log.resource_id || '',
+        config: log.changes || {},
+        enabled: true,
+        created_at: log.created_at
+      }));
     } catch (e) {
       console.error('Failed to fetch product_configs:', e);
     }
@@ -130,24 +143,19 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Upsert product configuration
-    await prisma.product_configs.upsert({
-      where: {
-        license_key_product: {
-          license_key: licenseKey,
-          product: product
-        }
-      },
-      update: {
-        config: configuration,
-        enabled: true,
-        updated_at: new Date()
-      },
-      create: {
+    // TODO: Save product configuration in audit_logs since product_configs table doesn't exist
+    await prisma.audit_logs.create({
+      data: {
         license_key: licenseKey,
-        product: product,
-        config: configuration,
-        enabled: true
+        user_id: licenseKey,
+        action: 'product_configured',
+        resource_type: 'product_config',
+        resource_id: product,
+        changes: {
+          config: configuration,
+          enabled: true,
+          updated_at: new Date()
+        }
       }
     });
 
