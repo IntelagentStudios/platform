@@ -1,62 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { prisma } from '@/lib/prisma';
+import { validateAuth } from '@/lib/auth-validator';
+import { licenseCache } from '@/packages/redis/license-cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for auth_token (new JWT auth) first, then session (old)
-    const token = request.cookies.get('auth_token')?.value || request.cookies.get('auth-token')?.value || request.cookies.get('session')?.value;
+    // Use the centralized auth validator for consistency and performance
+    const authResult = await validateAuth(request);
     
-    if (!token) {
+    if (!authResult.authenticated) {
       return NextResponse.json(
-        { authenticated: false, error: 'Not authenticated' },
+        { authenticated: false, error: authResult.error || 'Not authenticated' },
         { status: 401 }
       );
     }
     
-    // Verify and decode token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS') as any;
+    const { user, license } = authResult;
     
-    // Fetch the user's actual license data
-    let products = ['chatbot']; // Default products
-    let licenseType = 'platform';
-    let siteKey = null;
-    
-    try {
-      const license = await prisma.licenses.findUnique({
-        where: { license_key: decoded.licenseKey }
-      });
-      
-      if (license) {
-        // Products is already an array in Prisma
-        products = license.products.length > 0 ? license.products : ['chatbot'];
-        siteKey = license.site_key;
-        // Determine license type based on is_pro flag
-        licenseType = license.is_pro ? 'pro_platform' : 'platform';
-      }
-    } catch (error) {
-      console.error('Error fetching license:', error);
+    // Get additional cached data if available
+    let cachedStats = null;
+    if (user?.licenseKey) {
+      // Try to get cached dashboard stats for faster response
+      cachedStats = await licenseCache.get(
+        user.licenseKey,
+        'api',
+        'user_stats'
+      );
     }
     
-    // Return user data in the expected format
+    // Build the response with all required fields
     const userData = {
       authenticated: true,
       user: {
-        id: decoded.userId,
-        email: decoded.email,
-        name: decoded.name || decoded.email.split('@')[0],
-        license_key: decoded.licenseKey,
-        license_type: licenseType,
-        site_key: siteKey,
-        role: decoded.role || 'customer',
-        products: products,
-        plan: 'starter',
-        subscription_status: 'active',
-        next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+        id: user!.userId,
+        email: user!.email,
+        name: user!.name || user!.email.split('@')[0],
+        license_key: user!.licenseKey,
+        license_type: license?.is_pro ? 'pro_platform' : 'platform',
+        site_key: license?.site_key || null,
+        role: user!.role || 'customer',
+        products: license?.products || ['chatbot'],
+        plan: license?.is_pro ? 'pro' : 'starter',
+        subscription_status: license?.status || 'active',
+        next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        // Include cached stats if available
+        ...(cachedStats && { stats: cachedStats })
+      },
+      license: {
+        key: license?.key,
+        products: license?.products || [],
+        is_pro: license?.is_pro || false,
+        site_key: license?.site_key,
+        status: license?.status || 'active'
       }
     };
+    
+    // Cache the user data for subsequent requests (5 minute TTL)
+    if (user?.licenseKey) {
+      await licenseCache.set(
+        user.licenseKey,
+        'api',
+        'user_data',
+        userData,
+        300
+      );
+    }
     
     return NextResponse.json(userData);
     
