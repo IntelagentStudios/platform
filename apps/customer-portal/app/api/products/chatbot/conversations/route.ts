@@ -1,16 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export async function GET(request: NextRequest) {
-  const authCookie = cookies().get('auth');
+  // Check for JWT auth token
+  const authToken = cookies().get('auth_token');
   
-  if (!authCookie || authCookie.value !== 'authenticated-user-harry') {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+  if (!authToken) {
+    // Fall back to old auth for backward compatibility
+    const oldAuth = cookies().get('auth');
+    if (!oldAuth || oldAuth.value !== 'authenticated-user-harry') {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+    // Use the default license key for old auth
+    const licenseKey = 'INTL-AGNT-BOSS-MODE';
+    return fetchConversations(licenseKey);
   }
 
   try {
-    const licenseKey = 'INTL-AGNT-BOSS-MODE';
+    // Verify JWT and get user info
+    const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+    const licenseKey = decoded.licenseKey;
+    
+    if (!licenseKey) {
+      return NextResponse.json({ error: 'No license key found' }, { status: 403 });
+    }
+    
+    return fetchConversations(licenseKey);
+  } catch (error) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+  }
+}
+
+async function fetchConversations(licenseKey: string) {
+  try {
     
     // Get the user's site_key from licenses table
     const license = await prisma.licenses.findUnique({
