@@ -31,10 +31,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all API keys for the user's license
+    // Get user_id for this license
+    const user = await prisma.users.findFirst({
+      where: { license_key: session.license_key }
+    });
+
+    if (!user) {
+      return NextResponse.json({
+        keys: [] // No user registered yet
+      });
+    }
+
+    // Fetch all API keys for the user
     const apiKeys = await prisma.api_keys.findMany({
       where: {
-        license_key: session.license_key
+        user_id: user.id
       },
       orderBy: {
         created_at: 'desc'
@@ -45,11 +56,11 @@ export async function GET(request: NextRequest) {
     const formattedKeys = apiKeys.map(key => ({
       id: key.id,
       name: key.name,
-      keyPreview: key.key ? `${key.key.substring(0, 8)}...${key.key.substring(key.key.length - 4)}` : '',
+      keyPreview: key.key_preview || '',
       createdAt: key.created_at,
       lastUsed: key.last_used_at,
       expiresAt: key.expires_at,
-      permissions: key.scopes || ['read'],
+      permissions: key.permissions || ['read'],
       rateLimit: key.rate_limit || 100,
       status: key.status,
       usage: {
@@ -92,10 +103,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check API key limit (e.g., max 10 keys per license)
+    // Get user_id for this license
+    const user = await prisma.users.findFirst({
+      where: { license_key: session.license_key }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found. Please complete registration first.' },
+        { status: 404 }
+      );
+    }
+
+    // Check API key limit (e.g., max 10 keys per user)
     const keyCount = await prisma.api_keys.count({
       where: {
-        license_key: session.license_key,
+        user_id: user.id,
         status: 'active'
       }
     });
@@ -135,10 +158,11 @@ export async function POST(request: NextRequest) {
     // Create API key record
     const newKey = await prisma.api_keys.create({
       data: {
-        license_key: session.license_key,
+        user_id: user.id,
         name: name.trim(),
-        key: hashedKey, // Store the hashed key
-        scopes: permissions || ['read'],
+        key_hash: hashedKey, // Store the hashed key
+        key_preview: keyPreview,
+        permissions: permissions || ['read'],
         expires_at: expiresAt,
         status: 'active',
         rate_limit: 100, // Default rate limit
@@ -168,7 +192,7 @@ export async function POST(request: NextRequest) {
       keyPreview,
       createdAt: newKey.created_at,
       expiresAt: newKey.expires_at,
-      permissions: newKey.scopes,
+      permissions: newKey.permissions,
       message: 'API key created successfully. Make sure to copy it now.'
     });
 
