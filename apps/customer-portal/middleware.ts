@@ -48,7 +48,9 @@ export async function middleware(request: NextRequest) {
   // Fall back to old auth cookie for backward compatibility
   const oldAuthCookie = request.cookies.get('auth');
   
-  if (oldAuthCookie && oldAuthCookie.value === 'authenticated-user-harry') {
+  if (oldAuthCookie && 
+      (oldAuthCookie.value === 'authenticated-user-harry' || 
+       oldAuthCookie.value === 'authenticated-test-friend')) {
     // Old auth is valid, but restrict admin access
     if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/dashboard', request.url));

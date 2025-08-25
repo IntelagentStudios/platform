@@ -5,13 +5,19 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   const authCookie = cookies().get('auth');
   
-  if (!authCookie || authCookie.value !== 'authenticated-user-harry') {
+  if (!authCookie || 
+      (authCookie.value !== 'authenticated-user-harry' && 
+       authCookie.value !== 'authenticated-test-friend')) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
 
   try {
-    // Get the user's license key (hardcoded for now since we're using simple auth)
-    const licenseKey = 'INTL-AGNT-BOSS-MODE';
+    // Get the user's license key based on who is logged in
+    let licenseKey = 'INTL-AGNT-BOSS-MODE'; // Default for harry
+    
+    if (authCookie.value === 'authenticated-test-friend') {
+      licenseKey = 'TEST-CHAT-BOT1-2024'; // Friend's test license
+    }
     
     let license = null;
     let productConfigs: any[] = [];
