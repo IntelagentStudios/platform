@@ -9,144 +9,6 @@ datasource db {
   schemas  = ["public"]
 }
 
-model licenses {
-  license_key         String         @id @db.VarChar(20)
-  email               String?        @db.VarChar(255)
-  created_at          DateTime?
-  used_at             DateTime?
-  domain              String?        @db.VarChar(255)
-  site_key            String?        @unique @db.VarChar(255)
-  status              String?        @db.VarChar(20)
-  subscription_id     String?        @db.VarChar(255)
-  last_payment_date   DateTime?
-  next_billing_date   DateTime?
-  subscription_status String?        @db.VarChar(50)
-  customer_name       String?        @db.VarChar(255)
-  last_indexed        DateTime?
-  plan                String?        @db.VarChar(50)
-  products            String[]       @default([])
-  is_pro              Boolean?       @default(false)
-  currency            String?        @default("GBP") @db.VarChar(3)
-  schema_name         String?        @db.VarChar(255)
-  subtotal_pence      Int?           @default(0)
-  discount_pence      Int?           @default(0)
-  pro_addon_pence     Int?           @default(0)
-  total_pence         Int?           @default(0)
-  activated_at        DateTime?      @db.Timestamptz(6)
-  suspended_at        DateTime?      @db.Timestamptz(6)
-  cancelled_at        DateTime?      @db.Timestamptz(6)
-  chatbot_logs        chatbot_logs[]
-
-  @@index([domain], map: "idx_licenses_domain")
-  @@index([email], map: "idx_licenses_email")
-  @@index([site_key], map: "idx_licenses_site_key")
-  @@index([status], map: "idx_licenses_status")
-  @@index([used_at], map: "idx_licenses_used_at")
-  @@schema("public")
-}
-
-model chatbot_logs {
-  id               Int       @id @default(autoincrement())
-  session_id       String?   @db.VarChar(255)
-  customer_message String?
-  chatbot_response String?
-  timestamp        DateTime? @db.Timestamp(6)
-  intent_detected  String?   @db.VarChar(255)
-  conversation_id  String?   @db.VarChar(255)
-  site_key         String?   @db.VarChar(255)
-  domain           String?   @db.VarChar(255)
-  user_id          String?   @db.VarChar(255)
-  role             String?   @db.VarChar(50)
-  content          String?
-  created_at       DateTime? @db.Timestamp(6)
-  license          licenses? @relation(fields: [site_key], references: [site_key])
-
-  @@schema("public")
-}
-
-model SharedItem {
-  id         Int       @id @default(autoincrement())
-  sharedBy   String    @map("shared_by") @db.VarChar(20)
-  sharedWith String    @map("shared_with") @db.VarChar(255)
-  itemType   String    @map("item_type") @db.VarChar(50)
-  itemConfig Json      @map("item_config")
-  expiresAt  DateTime? @map("expires_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-
-  @@map("shared_items")
-  @@schema("public")
-}
-
-model domain_licenses {
-  domain       String @db.VarChar(255)
-  license_key  String @db.VarChar(20)
-  product_type String @db.VarChar(50)
-
-  @@id([domain, license_key])
-  @@schema("public")
-}
-
-model api_keys {
-  id           String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  user_id      String    @db.VarChar(36)
-  name         String    @db.VarChar(255)
-  key_hash     String    @unique @db.VarChar(255)
-  key_preview  String    @db.VarChar(20)
-  permissions  Json?     @default("[\"read\"]")
-  rate_limit   Int?      @default(100)
-  status       String?   @default("active") @db.VarChar(20)
-  last_used_at DateTime? @db.Timestamptz(6)
-  expires_at   DateTime? @db.Timestamptz(6)
-  created_at   DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@index([user_id], map: "idx_api_keys_user")
-  @@schema("public")
-}
-
-model audit_logs {
-  id            String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key   String    @db.VarChar(20)
-  user_id       String?   @db.VarChar(36)
-  action        String    @db.VarChar(100)
-  resource_type String?   @db.VarChar(50)
-  resource_id   String?   @db.VarChar(255)
-  changes       Json?
-  ip_address    String?   @db.VarChar(45)
-  user_agent    String?
-  created_at    DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@index([license_key], map: "idx_audit_license")
-  @@schema("public")
-}
-
-model SmartDashboardInsight {
-  id          Int       @id @default(autoincrement())
-  licenseKey  String    @map("license_key") @db.VarChar(20)
-  insightType String    @map("insight_type") @db.VarChar(50)
-  title       String    @db.VarChar(255)
-  content     String
-  severity    String?   @db.VarChar(20)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  expiresAt   DateTime? @map("expires_at")
-  metadata    Json?
-
-  @@map("smart_dashboard_insights")
-  @@schema("public")
-}
-
-model SmartDashboardRequest {
-  id          Int       @id @default(autoincrement())
-  licenseKey  String    @map("license_key") @db.VarChar(20)
-  requestType String    @map("request_type") @db.VarChar(50)
-  query       String
-  response    String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  processedAt DateTime? @map("processed_at")
-
-  @@map("smart_dashboard_requests")
-  @@schema("public")
-}
-
 model admin_users {
   id            String    @id @db.VarChar(30)
   email         String    @unique @db.VarChar(255)
@@ -168,6 +30,50 @@ model annotation_tag_entity {
   updatedAt                 DateTime                    @default(dbgenerated("CURRENT_TIMESTAMP(3)")) @db.Timestamptz(3)
   execution_annotation_tags execution_annotation_tags[]
 
+  @@schema("public")
+}
+
+model api_keys {
+  id           String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  user_id      String    @db.VarChar(36)
+  name         String    @db.VarChar(255)
+  key_hash     String    @unique @db.VarChar(255)
+  key_preview  String    @db.VarChar(20)
+  permissions  Json?     @default("[\"read\"]")
+  rate_limit   Int?      @default(100)
+  status       String?   @default("active") @db.VarChar(20)
+  last_used_at DateTime? @db.Timestamptz(6)
+  expires_at   DateTime? @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id], map: "idx_api_keys_user")
+  @@schema("public")
+}
+
+model applied_discounts {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key           String    @db.VarChar(20)
+  pricing_rule_id       String    @db.VarChar(36)
+  discount_amount_pence Int
+  applied_at            DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at            DateTime? @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+model audit_logs {
+  id            String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key   String    @db.VarChar(20)
+  user_id       String?   @db.VarChar(36)
+  action        String    @db.VarChar(100)
+  resource_type String?   @db.VarChar(50)
+  resource_id   String?   @db.VarChar(255)
+  changes       Json?
+  ip_address    String?   @db.VarChar(45)
+  user_agent    String?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_audit_license")
   @@schema("public")
 }
 
@@ -199,6 +105,56 @@ model auth_provider_sync_history {
   @@schema("public")
 }
 
+model billing_history {
+  id                       String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key              String    @db.VarChar(20)
+  invoice_number           String    @unique @db.VarChar(50)
+  amount_pence             Int
+  currency                 String?   @default("GBP") @db.VarChar(3)
+  status                   String    @db.VarChar(20)
+  stripe_invoice_id        String?   @db.VarChar(255)
+  stripe_payment_intent_id String?   @db.VarChar(255)
+  billed_at                DateTime? @default(now()) @db.Timestamptz(6)
+  paid_at                  DateTime? @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_billing_license")
+  @@schema("public")
+}
+
+model chatbot_config {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String?   @default("Assistant") @db.VarChar(255)
+  welcome_message String?
+  primary_color   String?   @default("#667eea") @db.VarChar(7)
+  position        String?   @default("bottom-right") @db.VarChar(20)
+  avatar_url      String?
+  active          Boolean?  @default(true)
+  settings        Json?     @default("{}")
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+model chatbot_logs {
+  id               Int       @id @default(autoincrement())
+  session_id       String?   @db.VarChar(255)
+  customer_message String?
+  chatbot_response String?
+  timestamp        DateTime? @db.Timestamp(6)
+  intent_detected  String?   @db.VarChar(255)
+  conversation_id  String?   @db.VarChar(255)
+  site_key         String?   @db.VarChar(255)
+  domain           String?   @db.VarChar(255)
+  user_id          String?   @db.VarChar(255)
+  role             String?   @db.VarChar(50)
+  content          String?
+  created_at       DateTime? @db.Timestamp(6)
+  licenses         licenses? @relation(fields: [site_key], references: [site_key])
+
+  @@schema("public")
+}
+
 model credentials_entity {
   name               String               @db.VarChar(128)
   data               String
@@ -210,6 +166,15 @@ model credentials_entity {
   shared_credentials shared_credentials[]
 
   @@index([type], map: "idx_07fde106c0b471d8cc80a64fc8")
+  @@schema("public")
+}
+
+model domain_licenses {
+  domain       String @db.VarChar(255)
+  license_key  String @db.VarChar(20)
+  product_type String @db.VarChar(50)
+
+  @@id([domain, license_key])
   @@schema("public")
 }
 
@@ -386,10 +351,75 @@ model invalid_auth_token {
   @@schema("public")
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model licenses {
+  license_key         String         @id @db.VarChar(20)
+  email               String?        @db.VarChar(255)
+  created_at          DateTime?
+  used_at             DateTime?
+  domain              String?        @db.VarChar(255)
+  site_key            String?        @unique @db.VarChar(255)
+  status              String?        @db.VarChar(20)
+  subscription_id     String?        @db.VarChar(255)
+  last_payment_date   DateTime?
+  next_billing_date   DateTime?
+  subscription_status String?        @db.VarChar(50)
+  customer_name       String?        @db.VarChar(255)
+  last_indexed        DateTime?
+  plan                String?        @db.VarChar(50)
+  products            String[]       @default([])
+  is_pro              Boolean?       @default(false)
+  currency            String?        @default("GBP") @db.VarChar(3)
+  schema_name         String?        @db.VarChar(255)
+  subtotal_pence      Int?           @default(0)
+  discount_pence      Int?           @default(0)
+  pro_addon_pence     Int?           @default(0)
+  total_pence         Int?           @default(0)
+  activated_at        DateTime?      @db.Timestamptz(6)
+  suspended_at        DateTime?      @db.Timestamptz(6)
+  cancelled_at        DateTime?      @db.Timestamptz(6)
+  chatbot_logs        chatbot_logs[]
+
+  @@index([domain], map: "idx_licenses_domain")
+  @@index([email], map: "idx_licenses_email")
+  @@index([site_key], map: "idx_licenses_site_key")
+  @@index([status], map: "idx_licenses_status")
+  @@index([used_at], map: "idx_licenses_used_at")
+  @@schema("public")
+}
+
 model migrations {
   id        Int    @id(map: "PK_8c82d7f526340ab734260ea46be") @default(autoincrement())
   timestamp BigInt
   name      String @db.VarChar
+
+  @@schema("public")
+}
+
+model pricing_rule_products {
+  pricing_rule_id String @db.VarChar(36)
+  product_id      String @db.VarChar(36)
+
+  @@id([pricing_rule_id, product_id])
+  @@schema("public")
+}
+
+model pricing_rules {
+  id             String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  type           String    @db.VarChar(20)
+  name           String    @db.VarChar(255)
+  description    String?
+  min_products   Int?
+  promo_code     String?   @unique @db.VarChar(50)
+  valid_from     DateTime? @db.Timestamptz(6)
+  valid_until    DateTime? @db.Timestamptz(6)
+  usage_limit    Int?
+  used_count     Int?      @default(0)
+  discount_type  String    @db.VarChar(20)
+  discount_value Int
+  active         Boolean?  @default(true)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
 
   @@schema("public")
 }
@@ -403,6 +433,23 @@ model processed_data {
   workflow_entity workflow_entity @relation(fields: [workflowId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_06a69a7032c97a763c2c7599464")
 
   @@id([workflowId, context], map: "PK_ca04b9d8dc72de268fe07a65773")
+  @@schema("public")
+}
+
+model products {
+  id               String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  name             String    @unique @db.VarChar(100)
+  slug             String    @unique @db.VarChar(100)
+  description      String?
+  base_price_pence Int
+  currency         String?   @default("GBP") @db.VarChar(3)
+  features         Json?     @default("[]")
+  schema_tables    Json?     @default("[]")
+  setup_required   Boolean?  @default(true)
+  active           Boolean?  @default(true)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+
   @@schema("public")
 }
 
@@ -446,6 +493,20 @@ model settings {
   @@schema("public")
 }
 
+model setup_agent_logs {
+  id             Int      @id @default(autoincrement())
+  session_id     String   @db.VarChar(255)
+  user_message   String?
+  agent_response String?
+  site_key       String?  @db.VarChar(255)
+  domain         String?  @db.VarChar(255)
+  timestamp      DateTime @db.Timestamp(6)
+
+  @@index([session_id], map: "idx_setup_agent_logs_session_id")
+  @@index([timestamp], map: "idx_setup_agent_logs_timestamp")
+  @@schema("public")
+}
+
 model shared_credentials {
   credentialsId      String             @db.VarChar(36)
   projectId          String             @db.VarChar(36)
@@ -459,6 +520,18 @@ model shared_credentials {
   @@schema("public")
 }
 
+model shared_items {
+  id          Int       @id @default(autoincrement())
+  shared_by   String    @db.VarChar(20)
+  shared_with String    @db.VarChar(255)
+  item_type   String    @db.VarChar(50)
+  item_config Json
+  expires_at  DateTime?
+  created_at  DateTime  @default(now())
+
+  @@schema("public")
+}
+
 model shared_workflow {
   workflowId      String          @db.VarChar(36)
   projectId       String          @db.VarChar(36)
@@ -469,6 +542,45 @@ model shared_workflow {
   workflow_entity workflow_entity @relation(fields: [workflowId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_daa206a04983d47d0a9c34649ce")
 
   @@id([workflowId, projectId], map: "PK_5ba87620386b847201c9531c58f")
+  @@schema("public")
+}
+
+model site_keys {
+  id         Int       @id @default(autoincrement())
+  site_key   String    @unique @db.VarChar(255)
+  domain     String?   @db.VarChar(255)
+  status     String?   @default("active") @db.VarChar(50)
+  plan       String?   @default("free") @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([domain], map: "idx_site_keys_domain")
+  @@index([status], map: "idx_site_keys_status")
+  @@schema("public")
+}
+
+model smart_dashboard_insights {
+  id           Int       @id @default(autoincrement())
+  license_key  String    @db.VarChar(20)
+  insight_type String    @db.VarChar(50)
+  title        String    @db.VarChar(255)
+  content      String
+  severity     String?   @db.VarChar(20)
+  created_at   DateTime  @default(now())
+  expires_at   DateTime?
+  metadata     Json?
+
+  @@schema("public")
+}
+
+model smart_dashboard_requests {
+  id           Int       @id @default(autoincrement())
+  license_key  String    @db.VarChar(20)
+  request_type String    @db.VarChar(50)
+  query        String
+  response     String?
+  created_at   DateTime  @default(now())
+  processed_at DateTime?
+
   @@schema("public")
 }
 
@@ -556,6 +668,37 @@ model user_api_keys {
   user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_e131705cbbc8fb589889b02d457")
 
   @@unique([userId, label], map: "IDX_63d7bbae72c767cf162d459fcc")
+  @@schema("public")
+}
+
+model user_sessions {
+  id         String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  user_id    String    @db.VarChar(36)
+  token      String    @unique @db.VarChar(255)
+  ip_address String?   @db.VarChar(45)
+  user_agent String?
+  expires_at DateTime  @db.Timestamptz(6)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id], map: "idx_sessions_user")
+  @@schema("public")
+}
+
+model users {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(20)
+  email             String    @unique @db.VarChar(255)
+  password_hash     String    @db.VarChar(255)
+  name              String?   @db.VarChar(255)
+  role              String?   @default("customer") @db.VarChar(20)
+  last_login_at     DateTime? @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  email_verified    Boolean?  @default(false)
+  email_verified_at DateTime? @db.Timestamp(6)
+
+  @@index([email], map: "idx_users_email")
+  @@index([license_key], map: "idx_users_license")
   @@schema("public")
 }
 
@@ -647,150 +790,5 @@ model workflows_tags {
 
   @@id([workflowId, tagId], map: "pk_workflows_tags")
   @@index([workflowId], map: "idx_workflows_tags_workflow_id")
-  @@schema("public")
-}
-
-model users {
-  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key       String    @db.VarChar(20)
-  email             String    @unique @db.VarChar(255)
-  password_hash     String    @db.VarChar(255)
-  name              String?   @db.VarChar(255)
-  role              String?   @default("customer") @db.VarChar(20)
-  last_login_at     DateTime? @db.Timestamptz(6)
-  created_at        DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime? @default(now()) @updatedAt @db.Timestamptz(6)
-  email_verified    Boolean?  @default(false)
-  email_verified_at DateTime? @db.Timestamp(6)
-
-  @@index([email], map: "idx_users_email")
-  @@index([license_key], map: "idx_users_license")
-  @@schema("public")
-}
-
-model user_sessions {
-  id         String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  user_id    String    @db.VarChar(36)
-  token      String    @unique @db.VarChar(255)
-  ip_address String?   @db.VarChar(45)
-  user_agent String?
-  expires_at DateTime  @db.Timestamptz(6)
-  created_at DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@index([user_id], map: "idx_sessions_user")
-  @@schema("public")
-}
-
-model applied_discounts {
-  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key           String    @db.VarChar(20)
-  pricing_rule_id       String    @db.VarChar(36)
-  discount_amount_pence Int
-  applied_at            DateTime? @default(now()) @db.Timestamptz(6)
-  expires_at            DateTime? @db.Timestamptz(6)
-
-  @@schema("public")
-}
-
-model billing_history {
-  id                       String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key              String    @db.VarChar(20)
-  invoice_number           String    @unique @db.VarChar(50)
-  amount_pence             Int
-  currency                 String?   @default("GBP") @db.VarChar(3)
-  status                   String    @db.VarChar(20)
-  stripe_invoice_id        String?   @db.VarChar(255)
-  stripe_payment_intent_id String?   @db.VarChar(255)
-  billed_at                DateTime? @default(now()) @db.Timestamptz(6)
-  paid_at                  DateTime? @db.Timestamptz(6)
-
-  @@index([license_key], map: "idx_billing_license")
-  @@schema("public")
-}
-
-model chatbot_config {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name            String?   @default("Assistant") @db.VarChar(255)
-  welcome_message String?
-  primary_color   String?   @default("#667eea") @db.VarChar(7)
-  position        String?   @default("bottom-right") @db.VarChar(20)
-  avatar_url      String?
-  active          Boolean?  @default(true)
-  settings        Json?     @default("{}")
-  created_at      DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@schema("public")
-}
-
-model pricing_rule_products {
-  pricing_rule_id String @db.VarChar(36)
-  product_id      String @db.VarChar(36)
-
-  @@id([pricing_rule_id, product_id])
-  @@schema("public")
-}
-
-model pricing_rules {
-  id             String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  type           String    @db.VarChar(20)
-  name           String    @db.VarChar(255)
-  description    String?
-  min_products   Int?
-  promo_code     String?   @unique @db.VarChar(50)
-  valid_from     DateTime? @db.Timestamptz(6)
-  valid_until    DateTime? @db.Timestamptz(6)
-  usage_limit    Int?
-  used_count     Int?      @default(0)
-  discount_type  String    @db.VarChar(20)
-  discount_value Int
-  active         Boolean?  @default(true)
-  created_at     DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@schema("public")
-}
-
-model products {
-  id               String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  name             String    @unique @db.VarChar(100)
-  slug             String    @unique @db.VarChar(100)
-  description      String?
-  base_price_pence Int
-  currency         String?   @default("GBP") @db.VarChar(3)
-  features         Json?     @default("[]")
-  schema_tables    Json?     @default("[]")
-  setup_required   Boolean?  @default(true)
-  active           Boolean?  @default(true)
-  created_at       DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@schema("public")
-}
-
-model setup_agent_logs {
-  id             Int      @id @default(autoincrement())
-  session_id     String   @db.VarChar(255)
-  user_message   String?
-  agent_response String?
-  site_key       String?  @db.VarChar(255)
-  domain         String?  @db.VarChar(255)
-  timestamp      DateTime @db.Timestamp(6)
-
-  @@index([session_id], map: "idx_setup_agent_logs_session_id")
-  @@index([timestamp], map: "idx_setup_agent_logs_timestamp")
-  @@schema("public")
-}
-
-model site_keys {
-  id         Int       @id @default(autoincrement())
-  site_key   String    @unique @db.VarChar(255)
-  domain     String?   @db.VarChar(255)
-  status     String?   @default("active") @db.VarChar(50)
-  plan       String?   @default("free") @db.VarChar(50)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-
-  @@index([domain], map: "idx_site_keys_domain")
-  @@index([status], map: "idx_site_keys_status")
   @@schema("public")
 }
