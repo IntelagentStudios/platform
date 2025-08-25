@@ -40,7 +40,9 @@
       "Bash(tasklist:*)",
       "Bash(npx next dev:*)",
       "Bash(psql:*)",
-      "Bash(npm ci:*)"
+      "Bash(npm ci:*)",
+      "Bash(dir packagesdatabasenode_modules@prismaclient*.d.ts)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

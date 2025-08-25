@@ -37,14 +37,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if a user exists for this license
-    const user = await prisma.users.findUnique({
-      where: { license_key: licenseKey }
+    // Check if a user exists with the provided email
+    // Note: admin portal's user model doesn't have license_key field
+    const user = await prisma.user.findUnique({
+      where: { email: 'admin@intelagentstudios.com' }
     });
 
     if (user) {
       // Verify password if user exists
-      const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      const isValidPassword = await bcrypt.compare(password, user.password || '');
       if (!isValidPassword) {
         return NextResponse.json(
           { error: 'Invalid password' },
@@ -54,14 +55,13 @@ export async function POST(request: NextRequest) {
     } else {
       // First time setup - create admin user
       const passwordHash = await bcrypt.hash(password, 12);
-      await prisma.users.create({
+      await prisma.user.create({
         data: {
           email: 'admin@intelagentstudios.com',
-          password_hash: passwordHash,
-          license_key: licenseKey,
-          name: 'Master Admin',
-          email_verified: true,
-          email_verified_at: new Date()
+          password: passwordHash,
+          firstName: 'Master',
+          lastName: 'Admin',
+          role: 'admin'
         }
       });
     }
