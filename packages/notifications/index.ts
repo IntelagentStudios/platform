@@ -308,18 +308,22 @@ class NotificationService {
   }
 
   private async sendInApp(notification: Notification): Promise<void> {
-    // Store in database for in-app display
-    await prisma.notifications.create({
+    // TODO: Store in audit_logs since notifications table doesn't exist
+    await prisma.audit_logs.create({
       data: {
-        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         license_key: notification.licenseKey,
-        type: 'in-app',
-        subject: notification.subject,
-        message: notification.message,
-        priority: notification.priority,
-        metadata: notification.metadata || {},
-        status: 'unread',
-        created_at: new Date()
+        user_id: notification.licenseKey,
+        action: 'notification_sent',
+        resource_type: 'notification',
+        resource_id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        changes: {
+          type: 'in-app',
+          subject: notification.subject,
+          message: notification.message,
+          priority: notification.priority,
+          metadata: notification.metadata || {},
+          status: 'unread'
+        }
       }
     });
 
