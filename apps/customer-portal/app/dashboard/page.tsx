@@ -19,29 +19,39 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check authentication
-    fetch('/api/auth/simple')
-      .then(res => res.json())
-      .then(data => {
-        setIsAuthenticated(data.authenticated);
-        if (!data.authenticated) {
-          window.location.href = '/login';
-        }
-      });
-    
-    // Get user data
-    fetch('/api/auth/secure')
+    // Check authentication using JWT endpoint
+    fetch('/api/auth/me', {
+      credentials: 'include'
+    })
       .then(res => res.json())
       .then(data => {
         if (data.authenticated && data.user) {
+          setIsAuthenticated(true);
           setUser(data.user);
         } else {
-          // Try to get user from sessionStorage
-          const storedUser = sessionStorage.getItem('user');
-          if (storedUser) {
-            setUser(JSON.parse(storedUser));
-          }
+          // Fallback: try old auth for backward compatibility
+          fetch('/api/auth/simple')
+            .then(res => res.json())
+            .then(oldData => {
+              if (oldData.authenticated) {
+                setIsAuthenticated(true);
+                // Try to get user from sessionStorage for old auth
+                const storedUser = sessionStorage.getItem('user');
+                if (storedUser) {
+                  setUser(JSON.parse(storedUser));
+                }
+              } else {
+                // Not authenticated, redirect to login
+                setIsAuthenticated(false);
+                window.location.href = '/login';
+              }
+            });
         }
+      })
+      .catch(err => {
+        console.error('Auth check failed:', err);
+        setIsAuthenticated(false);
+        window.location.href = '/login';
       });
   }, []);
 
