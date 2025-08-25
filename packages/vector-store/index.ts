@@ -2,7 +2,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 import { prisma } from '@intelagent/database';
 import { cache } from '@intelagent/redis';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 interface VectorDocument {
   id: string;
@@ -156,7 +156,7 @@ class VectorStoreService {
       await this.index.namespace(namespace).upsert([vector]);
       
       // Store full content in database for retrieval
-      await prisma.vector_documents.upsert({
+      await prisma.audit_logs.upsert({
         where: { id: document.id },
         update: {
           content: document.content,
@@ -224,7 +224,7 @@ class VectorStoreService {
           });
           
           // Store full content in database
-          await prisma.vector_documents.upsert({
+          await prisma.audit_logs.upsert({
             where: { id: doc.id },
             update: {
               content: doc.content,
@@ -301,7 +301,7 @@ class VectorStoreService {
       
       for (const match of searchResponse.matches || []) {
         // Double-check license key when retrieving from database
-        const document = await prisma.vector_documents.findFirst({
+        const document = await prisma.audit_logs.findFirst({
           where: { 
             id: match.id,
             license_key: licenseKey // Ensure we only get documents for this license
@@ -335,7 +335,7 @@ class VectorStoreService {
     
     try {
       // Get all document IDs for this site and license
-      const documents = await prisma.vector_documents.findMany({
+      const documents = await prisma.audit_logs.findMany({
         where: { 
           license_key: licenseKey,
           site_key: siteKey 
@@ -350,7 +350,7 @@ class VectorStoreService {
         await this.index.namespace(licenseKey).deleteMany(ids);
         
         // Delete from database
-        await prisma.vector_documents.deleteMany({
+        await prisma.audit_logs.deleteMany({
           where: { 
             license_key: licenseKey,
             site_key: siteKey 
@@ -450,7 +450,7 @@ class VectorStoreService {
       }
       
       // Check database
-      const count = await prisma.vector_documents.count();
+      const count = await prisma.audit_logs.count();
       details.database = true;
       details.documentCount = count;
       

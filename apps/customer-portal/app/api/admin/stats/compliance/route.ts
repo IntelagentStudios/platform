@@ -66,10 +66,10 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Security incidents
-    const securityIncidents = await prisma.events.count({
+    // TODO: Security incidents from audit_logs since events table doesn't exist
+    const securityIncidents = await prisma.audit_logs.count({
       where: {
-        event_type: 'security_incident',
+        action: { contains: 'security' },
         created_at: { gte: lastMonth }
       }
     });

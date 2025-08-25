@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
       prisma.licenses.findMany({
         select: { products: true }
       }),
-      prisma.events.count({
+      // TODO: Use audit_logs since events table doesn't exist
+      prisma.audit_logs.count({
         where: {
           created_at: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours

@@ -18,13 +18,25 @@ export async function POST(request: NextRequest) {
 
     const { event, properties } = await request.json();
 
-    // Track the onboarding event
-    await prisma.events.create({
+    // TODO: Track the onboarding event in audit_logs since events table doesn't exist
+    // await prisma.events.create({
+    //   data: {
+    //     event_type: `onboarding_${event}`,
+    //     license_key: licenseKey,
+    //     event_data: properties || {},
+    //     created_at: new Date()
+    //   }
+    // });
+
+    // Track in audit_logs as fallback
+    await prisma.audit_logs.create({
       data: {
-        event_type: `onboarding_${event}`,
         license_key: licenseKey,
-        event_data: properties || {},
-        created_at: new Date()
+        user_id: licenseKey,
+        action: `onboarding_${event}`,
+        resource_type: 'onboarding',
+        resource_id: event,
+        changes: properties || {}
       }
     });
 
@@ -54,11 +66,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get onboarding analytics for this user
-    const analytics = await prisma.events.findMany({
+    // TODO: Get onboarding analytics from audit_logs since events table doesn't exist
+    // const analytics = await prisma.events.findMany({
+    //   where: {
+    //     license_key: licenseKey,
+    //     event_type: {
+    //       startsWith: 'onboarding_'
+    //     }
+    //   },
+    //   orderBy: {
+    //     created_at: 'desc'
+    //   }
+    // });
+
+    // Get from audit_logs as fallback
+    const auditLogs = await prisma.audit_logs.findMany({
       where: {
         license_key: licenseKey,
-        event_type: {
+        action: {
           startsWith: 'onboarding_'
         }
       },
@@ -67,11 +92,20 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Get onboarding metrics
-    const onboardingMetrics = await prisma.onboarding_metrics.findMany({
-      where: { license_key: licenseKey },
-      orderBy: { created_at: 'desc' }
-    });
+    // Convert audit logs to analytics format
+    const analytics = auditLogs.map(log => ({
+      event_type: log.action,
+      license_key: log.license_key,
+      event_data: log.changes || {},
+      created_at: log.created_at
+    }));
+
+    // TODO: Get onboarding metrics - table doesn't exist, using empty array
+    // const onboardingMetrics = await prisma.onboarding_metrics.findMany({
+    //   where: { license_key: licenseKey },
+    //   orderBy: { created_at: 'desc' }
+    // });
+    const onboardingMetrics: any[] = [];
 
     // Calculate metrics
     const metrics = calculateOnboardingMetrics(analytics, onboardingMetrics);
@@ -96,47 +130,63 @@ async function updateOnboardingMetrics(
   properties: any
 ) {
   try {
-    // Track specific metrics based on event type
-    await prisma.onboarding_metrics.create({
+    // TODO: Track specific metrics - onboarding_metrics table doesn't exist
+    // await prisma.onboarding_metrics.create({
+    //   data: {
+    //     license_key: licenseKey,
+    //     step_completed: event,
+    //     time_spent: properties?.duration || null,
+    //     properties: properties || {}
+    //   }
+    // });
+
+    // TODO: Also update analytics table - table doesn't exist, use audit_logs as fallback
+    // const now = new Date();
+    // const startOfDay = new Date(now);
+    // startOfDay.setHours(0, 0, 0, 0);
+    // const endOfDay = new Date(now);
+    // endOfDay.setHours(23, 59, 59, 999);
+
+    // await prisma.analytics.upsert({
+    //   where: {
+    //     license_key_metric_type_metric_name_period_start: {
+    //       license_key: licenseKey,
+    //       metric_type: 'onboarding',
+    //       metric_name: event,
+    //       period_start: startOfDay
+    //     }
+    //   },
+    //   update: {
+    //     metric_value: {
+    //       increment: 1
+    //     }
+    //   },
+    //   create: {
+    //     license_key: licenseKey,
+    //     metric_type: 'onboarding',
+    //     metric_name: event,
+    //     metric_value: 1,
+    //     dimension: properties?.step_name || event,
+    //     period_start: startOfDay,
+    //     period_end: endOfDay
+    //   }
+    // });
+
+    // Log completion in audit_logs for now
+    await prisma.audit_logs.create({
       data: {
         license_key: licenseKey,
-        step_completed: event,
-        time_spent: properties?.duration || null,
-        properties: properties || {}
+        user_id: licenseKey,
+        action: `onboarding_metric_${event}`,
+        resource_type: 'metrics',
+        resource_id: event,
+        changes: { 
+          time_spent: properties?.duration || null,
+          properties: properties || {}
+        }
       }
     });
 
-    // Also update analytics table
-    const now = new Date();
-    const startOfDay = new Date(now);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    await prisma.analytics.upsert({
-      where: {
-        license_key_metric_type_metric_name_period_start: {
-          license_key: licenseKey,
-          metric_type: 'onboarding',
-          metric_name: event,
-          period_start: startOfDay
-        }
-      },
-      update: {
-        metric_value: {
-          increment: 1
-        }
-      },
-      create: {
-        license_key: licenseKey,
-        metric_type: 'onboarding',
-        metric_name: event,
-        metric_value: 1,
-        dimension: properties?.step_name || event,
-        period_start: startOfDay,
-        period_end: endOfDay
-      }
-    });
   } catch (error) {
     console.error('Failed to update onboarding metrics:', error);
   }

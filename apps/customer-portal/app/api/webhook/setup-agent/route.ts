@@ -7,12 +7,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { site_key, domain, license_key, config } = body;
     
-    // Verify the site key exists
-    const setup = await prisma.product_setups.findFirst({
+    // TODO: Verify the site key exists - product_setups table doesn't exist
+    // Check in licenses table instead
+    const license = await prisma.licenses.findFirst({
       where: { site_key }
     });
     
-    if (!setup) {
+    if (!license) {
       return NextResponse.json(
         { error: 'Invalid site key' },
         { status: 404 }
@@ -32,17 +33,15 @@ export async function POST(request: NextRequest) {
     // 3. Initialize the chatbot's knowledge base
     // 4. Configure integrations
     
-    // For now, we'll just mark it as configured
-    await prisma.product_setups.update({
-      where: {
-        user_id_product: {
-          user_id: setup.user_id,
-          product: 'chatbot'
-        }
-      },
+    // TODO: For now, we'll log the configuration in audit_logs since product_setups doesn't exist
+    await prisma.audit_logs.create({
       data: {
-        setup_data: {
-          ...(setup.setup_data as any || {}),
+        license_key: license.license_key,
+        user_id: license.license_key,
+        action: 'n8n_agent_configured',
+        resource_type: 'setup_agent',
+        resource_id: site_key,
+        changes: {
           n8n_configured: true,
           n8n_configured_at: new Date().toISOString(),
           ...config

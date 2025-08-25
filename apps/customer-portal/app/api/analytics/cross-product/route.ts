@@ -61,30 +61,32 @@ export async function GET(request: NextRequest) {
         _count: true
       }),
 
-      // Usage metrics
-      prisma.usage_metrics.findMany({
-        where: {
-          license_key: licenseKey,
-          period_start: {
-            gte: startDate,
-            lte: endDate
-          }
-        },
-        orderBy: { period_start: 'asc' }
-      }),
+      // TODO: Usage metrics table doesn't exist - using empty array
+      Promise.resolve([]),
+      // prisma.usage_metrics.findMany({
+      //   where: {
+      //     license_key: licenseKey,
+      //     period_start: {
+      //       gte: startDate,
+      //       lte: endDate
+      //     }
+      //   },
+      //   orderBy: { period_start: 'asc' }
+      // }),
 
-      // AI insights
-      prisma.ai_insights.findMany({
-        where: {
-          license_key: licenseKey,
-          created_at: {
-            gte: startDate,
-            lte: endDate
-          }
-        },
-        orderBy: { created_at: 'desc' },
-        take: 10
-      }),
+      // TODO: AI insights table doesn't exist - using empty array
+      Promise.resolve([]),
+      // prisma.ai_insights.findMany({
+      //   where: {
+      //     license_key: licenseKey,
+      //     created_at: {
+      //       gte: startDate,
+      //       lte: endDate
+      //     }
+      //   },
+      //   orderBy: { created_at: 'desc' },
+      //   take: 10
+      // }),
 
       // License info
       prisma.licenses.findUnique({

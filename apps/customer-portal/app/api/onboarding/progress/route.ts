@@ -26,34 +26,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get existing onboarding data
-    const existing = await prisma.onboarding.findUnique({
-      where: { license_key: licenseKey }
+    // TODO: Get existing onboarding data from audit_logs since onboarding table doesn't exist
+    const existingLog = await prisma.audit_logs.findFirst({
+      where: {
+        license_key: licenseKey,
+        action: 'onboarding_progress'
+      },
+      orderBy: { created_at: 'desc' }
     });
 
     // Merge new data with existing data
-    const existingData = existing?.data as Record<string, any> || {};
+    const existingData = existingLog?.changes as Record<string, any> || {};
     const mergedData = {
       ...existingData,
       ...data,
       last_updated: new Date().toISOString()
     };
 
-    // Upsert onboarding progress
-    const onboarding = await prisma.onboarding.upsert({
-      where: { license_key: licenseKey },
-      update: {
-        current_step: step,
-        data: mergedData,
-        updated_at: new Date()
-      },
-      create: {
+    // Save onboarding progress in audit_logs
+    await prisma.audit_logs.create({
+      data: {
         license_key: licenseKey,
-        current_step: step,
-        completed: false,
-        data: mergedData
+        user_id: licenseKey,
+        action: 'onboarding_progress',
+        resource_type: 'onboarding',
+        resource_id: `step_${step}`,
+        changes: {
+          current_step: step,
+          completed: false,
+          data: mergedData
+        }
       }
     });
+
+    const onboarding = {
+      current_step: step,
+      data: mergedData
+    };
 
     // Track step completion analytics
     await trackStepProgress(licenseKey, step, data);
@@ -85,11 +94,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const onboarding = await prisma.onboarding.findUnique({
-      where: { license_key: licenseKey }
+    // TODO: Get onboarding data from audit_logs since onboarding table doesn't exist
+    const onboardingLog = await prisma.audit_logs.findFirst({
+      where: {
+        license_key: licenseKey,
+        action: 'onboarding_progress'
+      },
+      orderBy: { created_at: 'desc' }
     });
 
-    if (!onboarding) {
+    if (!onboardingLog) {
       return NextResponse.json({
         currentStep: 0,
         completed: false,
@@ -97,10 +111,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const progress = onboardingLog.changes as any;
     return NextResponse.json({
-      currentStep: onboarding.current_step,
-      completed: onboarding.completed,
-      data: onboarding.data || {}
+      currentStep: progress?.current_step || 0,
+      completed: progress?.completed || false,
+      data: progress?.data || {}
     });
 
   } catch (error: any) {
@@ -123,39 +138,19 @@ async function trackStepProgress(licenseKey: string, step: number, data: any) {
       'completion'
     ];
 
-    // Track step completion in analytics
-    await prisma.analytics.create({
+    // TODO: Track step completion in audit_logs since analytics/events tables don't exist
+    await prisma.audit_logs.create({
       data: {
         license_key: licenseKey,
-        metric_type: 'onboarding',
-        metric_name: 'step_completed',
-        metric_value: step,
-        dimension: stepNames[step] || 'unknown',
-        period_start: new Date(),
-        period_end: new Date()
-      }
-    });
-
-    // Track step metrics
-    await prisma.onboarding_metrics.create({
-      data: {
-        license_key: licenseKey,
-        step_completed: stepNames[step] || `step_${step}`,
-        properties: {
+        user_id: licenseKey,
+        action: 'onboarding_step_completed',
+        resource_type: 'onboarding',
+        resource_id: `step_${step}`,
+        changes: {
+          step: step,
+          step_name: stepNames[step] || 'unknown',
           has_data: !!data && Object.keys(data).length > 0,
           timestamp: new Date().toISOString()
-        }
-      }
-    });
-
-    // Log event
-    await prisma.events.create({
-      data: {
-        license_key: licenseKey,
-        event_type: 'onboarding.step_completed',
-        event_data: {
-          step: step,
-          step_name: stepNames[step] || 'unknown'
         }
       }
     });

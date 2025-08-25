@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if license is already linked to another user
-    const licenseInUse = await prisma.users.findUnique({
+    const licenseInUse = await prisma.users.findFirst({
       where: { license_key: licenseKey }
     });
     
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
     
     if (license) {
       // Check if license is already linked
-      const licenseInUse = await prisma.users.findUnique({
+      const licenseInUse = await prisma.users.findFirst({
         where: { license_key: license.license_key }
       });
       

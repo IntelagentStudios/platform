@@ -15,26 +15,22 @@ export async function GET() {
       )
     }
 
-    // Fetch existing insights from database
-    const insights = await prisma.smartDashboardInsight.findMany({
-      where: {
-        licenseKey: auth.license_key,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 20
-    })
+    // TODO: Implement smartDashboardInsight table or use alternative storage
+    // const insights = await prisma.smartDashboardInsight.findMany({
+    //   where: {
+    //     licenseKey: auth.license_key,
+    //     OR: [
+    //       { expiresAt: null },
+    //       { expiresAt: { gt: new Date() } }
+    //     ]
+    //   },
+    //   orderBy: { createdAt: 'desc' },
+    //   take: 20
+    // })
 
-    // If no insights exist, generate some based on current data
-    if (insights.length === 0) {
-      const generatedInsights = await generateInitialInsights(auth.license_key)
-      return NextResponse.json({ insights: generatedInsights })
-    }
-
-    return NextResponse.json({ insights })
+    // For now, always generate insights since smartDashboardInsight table doesn't exist
+    const generatedInsights = await generateInitialInsights(auth.license_key)
+    return NextResponse.json({ insights: generatedInsights })
   } catch (error) {
     console.error('Smart insights error:', error)
     return NextResponse.json(

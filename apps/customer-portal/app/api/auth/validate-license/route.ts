@@ -77,14 +77,16 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Log registration event (if events table exists)
+      // TODO: Log registration event in audit_logs since usage_events table doesn't exist
       try {
-        await prisma.usage_events.create({
+        await prisma.audit_logs.create({
           data: {
             license_key,
-            product_id: 'platform',
-            event_type: 'license_registered',
-            metadata: {
+            user_id: user.id,
+            action: 'license_registered',
+            resource_type: 'platform',
+            resource_id: license_key,
+            changes: {
               email,
               name,
               user_id: user.id
@@ -111,14 +113,16 @@ export async function POST(request: NextRequest) {
         orderBy: { created_at: 'asc' }
       });
 
-      // Log access event (if events table exists)
+      // TODO: Log access event in audit_logs since usage_events table doesn't exist
       try {
-        await prisma.usage_events.create({
+        await prisma.audit_logs.create({
           data: {
             license_key,
-            product_id: 'platform',
-            event_type: 'license_accessed',
-            metadata: {
+            user_id: user?.id || null,
+            action: 'license_accessed',
+            resource_type: 'platform',
+            resource_id: license_key,
+            changes: {
               user_id: user?.id
             }
           }

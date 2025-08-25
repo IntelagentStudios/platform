@@ -39,7 +39,8 @@
       "Bash(npm start)",
       "Bash(tasklist:*)",
       "Bash(npx next dev:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(npm ci:*)"
     ],
     "deny": [],
     "ask": []

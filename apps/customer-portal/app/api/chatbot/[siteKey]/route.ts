@@ -27,16 +27,23 @@ export async function POST(
       );
     }
     
-    // Validate site key
-    const productSetup = await prisma.product_setups.findUnique({
+    // TODO: Validate site key from licenses table since product_setups doesn't exist
+    const license = await prisma.licenses.findUnique({
       where: { site_key: siteKey },
       select: {
         domain: true,
-        is_active: true,
-        setup_completed: true,
-        setup_data: true
+        status: true,
+        products: true
       }
     });
+    
+    // Mock product setup data
+    const productSetup = license ? {
+      domain: license.domain,
+      is_active: license.status === 'active',
+      setup_completed: true,
+      setup_data: null
+    } : null;
     
     if (!productSetup) {
       return NextResponse.json(
@@ -144,15 +151,22 @@ export async function PUT(
     const body = await request.json();
     const { action = 'status' } = body;
     
-    // Validate site key
-    const productSetup = await prisma.product_setups.findUnique({
+    // TODO: Validate site key from licenses table since product_setups doesn't exist
+    const license = await prisma.licenses.findUnique({
       where: { site_key: siteKey },
       select: {
         domain: true,
-        user_id: true,
-        setup_completed: true
+        license_key: true,
+        status: true
       }
     });
+    
+    // Mock product setup data
+    const productSetup = license ? {
+      domain: license.domain,
+      user_id: license.license_key, // Use license_key as user_id fallback
+      setup_completed: true
+    } : null;
     
     if (!productSetup) {
       return NextResponse.json(
@@ -221,18 +235,25 @@ export async function GET(
   try {
     const { siteKey } = params;
     
-    // Get product setup
-    const productSetup = await prisma.product_setups.findUnique({
+    // TODO: Get product setup from licenses table since product_setups doesn't exist
+    const license = await prisma.licenses.findUnique({
       where: { site_key: siteKey },
       select: {
         domain: true,
-        is_active: true,
-        setup_completed: true,
-        setup_completed_at: true,
-        setup_data: true,
+        status: true,
         created_at: true
       }
     });
+    
+    // Mock product setup data
+    const productSetup = license ? {
+      domain: license.domain,
+      is_active: license.status === 'active',
+      setup_completed: true,
+      setup_completed_at: license.created_at,
+      setup_data: null,
+      created_at: license.created_at
+    } : null;
     
     if (!productSetup) {
       return NextResponse.json(
@@ -349,16 +370,16 @@ function detectIntent(message: string): string {
 // Helper function to track usage
 async function trackUsage(siteKey: string): Promise<void> {
   try {
-    // Get the license key from product setup
-    const setup = await prisma.product_setups.findUnique({
+    // TODO: Get the license key from licenses table since product_setups doesn't exist
+    const license = await prisma.licenses.findUnique({
       where: { site_key: siteKey },
-      select: { user_id: true }
+      select: { license_key: true }
     });
     
-    if (!setup) return;
+    if (!license) return;
     
-    const user = await prisma.users.findUnique({
-      where: { id: setup.user_id },
+    const user = await prisma.users.findFirst({
+      where: { license_key: license.license_key },
       select: { license_key: true }
     });
     
@@ -368,25 +389,18 @@ async function trackUsage(siteKey: string): Promise<void> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    await prisma.usage_metrics.upsert({
-      where: {
-        license_key_product_id_period_start: {
-          license_key: user.license_key,
-          product_id: 'chatbot',
+    // TODO: Track usage in audit_logs since usage_metrics table doesn't exist
+    await prisma.audit_logs.create({
+      data: {
+        license_key: user.license_key,
+        user_id: user.license_key,
+        action: 'chatbot_message_sent',
+        resource_type: 'chatbot',
+        resource_id: siteKey,
+        changes: {
+          messages: 1,
           period_start: today
         }
-      },
-      update: {
-        messages: { increment: 1 },
-        updated_at: new Date()
-      },
-      create: {
-        license_key: user.license_key,
-        product_id: 'chatbot',
-        period_start: today,
-        period_end: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-        messages: 1,
-        updated_at: new Date()
       }
     });
   } catch (error) {

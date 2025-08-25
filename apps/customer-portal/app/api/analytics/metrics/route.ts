@@ -35,24 +35,14 @@ export async function GET(request: NextRequest) {
       whereClause.metric_type = metricType;
     }
 
-    const metrics = await prisma.analytics.findMany({
-      where: whereClause,
-      orderBy: { period_start: 'desc' }
-    });
+    // TODO: Replace with audit_logs or implement analytics table
+    // const metrics = await prisma.analytics.findMany({
+    //   where: whereClause,
+    //   orderBy: { period_start: 'desc' }
+    // });
 
-    // Group metrics by type
-    const groupedMetrics = metrics.reduce((acc: any, metric) => {
-      if (!acc[metric.metric_type]) {
-        acc[metric.metric_type] = [];
-      }
-      acc[metric.metric_type].push({
-        name: metric.metric_name,
-        value: metric.metric_value,
-        dimension: metric.dimension,
-        date: metric.period_start
-      });
-      return acc;
-    }, {});
+    // For now, return empty metrics until analytics table is implemented
+    const groupedMetrics = {};
 
     return NextResponse.json({ 
       metrics: groupedMetrics,
@@ -104,35 +94,47 @@ export async function POST(request: NextRequest) {
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Upsert metric for today
-    const metric = await prisma.analytics.upsert({
-      where: {
-        license_key_metric_type_metric_name_period_start: {
-          license_key: licenseKey,
-          metric_type,
-          metric_name,
-          period_start: startOfDay
-        }
-      },
-      update: {
-        metric_value: {
-          increment: metric_value
-        }
-      },
-      create: {
+    // TODO: Implement analytics table or use audit_logs for tracking
+    // const metric = await prisma.analytics.upsert({
+    //   where: {
+    //     license_key_metric_type_metric_name_period_start: {
+    //       license_key: licenseKey,
+    //       metric_type,
+    //       metric_name,
+    //       period_start: startOfDay
+    //     }
+    //   },
+    //   update: {
+    //     metric_value: {
+    //       increment: metric_value
+    //     }
+    //   },
+    //   create: {
+    //     license_key: licenseKey,
+    //     metric_type,
+    //     metric_name,
+    //     metric_value,
+    //     dimension,
+    //     period_start: startOfDay,
+    //     period_end: endOfDay
+    //   }
+    // });
+
+    // For now, track in audit_logs as a fallback
+    await prisma.audit_logs.create({
+      data: {
         license_key: licenseKey,
-        metric_type,
-        metric_name,
-        metric_value,
-        dimension,
-        period_start: startOfDay,
-        period_end: endOfDay
+        user_id: licenseKey,
+        action: `metric_tracked_${metric_type}`,
+        resource_type: 'analytics',
+        resource_id: `${metric_name}`,
+        changes: { metric_value, dimension }
       }
     });
 
     return NextResponse.json({
       success: true,
-      metric
+      message: 'Metric tracked in audit logs (analytics table not implemented yet)'
     });
   } catch (error) {
     console.error('Failed to track metric:', error);

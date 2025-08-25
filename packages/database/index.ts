@@ -9,3 +9,9 @@ globalForPrisma.prisma = prisma;
 
 export { PrismaClient } from '@prisma/client';
 export * from '@prisma/client';
+
+// Export tenant manager if it exists
+export { getTenantManager, TenantManager, TenantConfig } from './src/tenant-manager';
+
+// Export admin DB helper
+export const getAdminDb = async () => prisma;

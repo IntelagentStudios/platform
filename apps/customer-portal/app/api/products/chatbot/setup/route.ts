@@ -23,30 +23,31 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Get existing chatbot setup
-    const setup = await prisma.product_setups.findUnique({
+    // TODO: Get existing chatbot setup from audit_logs since product_setups doesn't exist
+    const setupLog = await prisma.audit_logs.findFirst({
       where: {
-        user_id_product: {
-          user_id: userId,
-          product: 'chatbot'
-        }
-      }
+        user_id: userId,
+        action: 'chatbot_setup',
+        resource_type: 'chatbot'
+      },
+      orderBy: { created_at: 'desc' }
     });
     
-    if (!setup) {
+    if (!setupLog) {
       return NextResponse.json({
         setup_completed: false,
         message: 'No setup found'
       });
     }
     
+    const setupData = setupLog.changes as any;
     return NextResponse.json({
-      setup_completed: setup.setup_completed,
-      domain: setup.domain,
-      site_key: setup.site_key,
-      setup_data: setup.setup_data,
-      created_at: setup.created_at,
-      updated_at: setup.updated_at
+      setup_completed: setupData?.setup_completed || false,
+      domain: setupData?.domain,
+      site_key: setupData?.site_key,
+      setup_data: setupData?.setup_data || {},
+      created_at: setupLog.created_at,
+      updated_at: setupLog.created_at
     });
     
   } catch (error) {
@@ -82,10 +83,10 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if domain is already used by another license
-    const existingDomain = await prisma.product_setups.findFirst({
+    const existingDomain = await prisma.licenses.findFirst({
       where: {
         domain,
-        user_id: { not: userId }
+        license_key: { not: licenseKey }
       }
     });
     
@@ -99,33 +100,23 @@ export async function POST(request: NextRequest) {
     // Generate site key
     const siteKey = generateSiteKey(domain, licenseKey);
     
-    // Create or update product setup
-    const setup = await prisma.product_setups.upsert({
-      where: {
-        user_id_product: {
-          user_id: userId,
-          product: 'chatbot'
-        }
-      },
-      update: {
-        domain,
-        site_key: siteKey,
-        setup_data: setup_data || {},
-        setup_started_at: new Date(),
-        webhook_url: process.env.N8N_WEBHOOK_URL || null,
-        api_endpoint: `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/${siteKey}`,
-        is_active: true
-      },
-      create: {
+    // TODO: Create or update product setup in audit_logs since product_setups doesn't exist
+    await prisma.audit_logs.create({
+      data: {
+        license_key: licenseKey,
         user_id: userId,
-        product: 'chatbot',
-        domain,
-        site_key: siteKey,
-        setup_data: setup_data || {},
-        setup_started_at: new Date(),
-        webhook_url: process.env.N8N_WEBHOOK_URL || null,
-        api_endpoint: `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/${siteKey}`,
-        is_active: true
+        action: 'chatbot_setup',
+        resource_type: 'chatbot',
+        resource_id: siteKey,
+        changes: {
+          domain,
+          site_key: siteKey,
+          setup_data: setup_data || {},
+          setup_started_at: new Date(),
+          webhook_url: process.env.N8N_WEBHOOK_URL || null,
+          api_endpoint: `${process.env.NEXT_PUBLIC_API_URL}/api/chatbot/${siteKey}`,
+          is_active: true
+        }
       }
     });
     
@@ -189,23 +180,24 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { setup_completed } = body;
     
-    // Update setup completion status
-    const setup = await prisma.product_setups.update({
-      where: {
-        user_id_product: {
-          user_id: userId,
-          product: 'chatbot'
-        }
-      },
+    // TODO: Update setup completion status in audit_logs since product_setups doesn't exist
+    await prisma.audit_logs.create({
       data: {
-        setup_completed,
-        ...(setup_completed && { setup_completed_at: new Date() })
+        license_key: request.headers.get('x-license-key') || '',
+        user_id: userId,
+        action: 'chatbot_setup_completed',
+        resource_type: 'chatbot',
+        resource_id: userId,
+        changes: {
+          setup_completed,
+          ...(setup_completed && { setup_completed_at: new Date() })
+        }
       }
     });
     
     return NextResponse.json({
       success: true,
-      setup_completed: setup.setup_completed,
+      setup_completed,
       message: 'Setup status updated'
     });
     

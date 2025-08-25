@@ -57,11 +57,12 @@ export async function GET(request: NextRequest) {
       prisma.licenses.findMany({
         select: { products: true }
       }),
-      prisma.events.findMany({
+      // TODO: Use audit_logs since events table doesn't exist
+      prisma.audit_logs.findMany({
         take: 10,
         orderBy: { created_at: 'desc' },
         select: {
-          event_type: true,
+          action: true,
           license_key: true,
           created_at: true
         }
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
       activeProducts,
       productUsage: Object.fromEntries(productUsage),
       recentActivity: recentActivity.map(event => ({
-        type: event.event_type,
+        type: event.action,
         license: event.license_key,
         time: event.created_at
       }))

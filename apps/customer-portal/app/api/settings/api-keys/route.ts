@@ -146,13 +146,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Log API key creation
-    await prisma.events.create({
+    // TODO: Log API key creation in audit_logs since events table doesn't exist
+    await prisma.audit_logs.create({
       data: {
         license_key: session.license_key,
-        event_type: 'api_key.created',
-        event_data: {
-          key_id: newKey.id,
+        user_id: session.license_key,
+        action: 'api_key_created',
+        resource_type: 'api_key',
+        resource_id: newKey.id,
+        changes: {
           name: newKey.name,
           permissions
         }

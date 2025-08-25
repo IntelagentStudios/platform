@@ -18,26 +18,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check for existing recent insights
-    const recentInsights = await prisma.ai_insights.findMany({
-      where: {
-        license_key: licenseKey,
-        created_at: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-        }
-      },
-      orderBy: {
-        confidence: 'desc'
-      },
-      take: 10
-    });
+    // TODO: Check for existing recent insights from ai_insights table (table doesn't exist yet)
+    // const recentInsights = await prisma.ai_insights.findMany({
+    //   where: {
+    //     license_key: licenseKey,
+    //     created_at: {
+    //       gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+    //     }
+    //   },
+    //   orderBy: {
+    //     confidence: 'desc'
+    //   },
+    //   take: 10
+    // });
 
-    if (recentInsights.length > 0) {
-      return NextResponse.json({
-        insights: recentInsights,
-        generated: false
-      });
-    }
+    // if (recentInsights.length > 0) {
+    //   return NextResponse.json({
+    //     insights: recentInsights,
+    //     generated: false
+    //   });
+    // }
 
     // Generate new insights
     // TODO: Implement AI intelligence service

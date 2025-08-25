@@ -20,33 +20,36 @@ export async function GET(request: NextRequest) {
           where: {
             token: authToken.value,
             expires_at: { gt: new Date() }
-          },
-          include: {
-            user: {
-              include: {
-                license: true
-              }
-            }
           }
         });
         
         if (session) {
-          // Update last activity
-          await prisma.user_sessions.update({
-            where: { id: session.id },
-            data: { last_activity: new Date() }
+          // Get user details separately
+          const user = await prisma.users.findUnique({
+            where: { id: session.user_id }
           });
+          
+          if (!user) {
+            return NextResponse.json({ authenticated: false });
+          }
+          
+          // Get license details separately
+          const license = await prisma.licenses.findUnique({
+            where: { license_key: user.license_key }
+          });
+          
+          // Note: user_sessions table doesn't have last_activity field - skip update
           
           return NextResponse.json({
             authenticated: true,
             user: {
-              id: session.user.id,
-              email: session.user.email,
-              name: session.user.name,
-              role: session.user.role,
-              licenseKey: session.user.license_key,
-              products: session.user.license?.products || [],
-              emailVerified: session.user.email_verified
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              licenseKey: user.license_key,
+              products: license?.products || [],
+              emailVerified: user.email_verified
             }
           });
         }
@@ -60,14 +63,16 @@ export async function GET(request: NextRequest) {
     const oldAuth = cookies().get('auth');
     if (oldAuth && oldAuth.value === 'authenticated-user-harry') {
       // Find the user with the boss mode license
-      const user = await prisma.users.findUnique({
-        where: { license_key: 'INTL-AGNT-BOSS-MODE' },
-        include: {
-          license: true
-        }
+      const user = await prisma.users.findFirst({
+        where: { license_key: 'INTL-AGNT-BOSS-MODE' }
       });
       
       if (user) {
+        // Get license details separately
+        const license = await prisma.licenses.findUnique({
+          where: { license_key: user.license_key }
+        });
+        
         return NextResponse.json({
           authenticated: true,
           user: {
@@ -76,7 +81,7 @@ export async function GET(request: NextRequest) {
             name: user.name,
             role: user.role,
             licenseKey: user.license_key,
-            products: user.license?.products || [],
+            products: license?.products || [],
             emailVerified: user.email_verified
           },
           legacy: true // Indicate this is using the old auth

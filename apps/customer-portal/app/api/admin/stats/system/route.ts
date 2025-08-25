@@ -67,19 +67,20 @@ export async function GET(request: NextRequest) {
       ? 'operational' 
       : 'degraded';
 
-    // Get error metrics from last 24 hours
+    // TODO: Get error metrics from audit_logs since events table doesn't exist
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
     
     const [totalRequests, failedRequests] = await Promise.all([
-      prisma.events.count({
+      // Use audit_logs as fallback
+      prisma.audit_logs.count({
         where: {
           created_at: { gte: yesterday }
         }
       }),
-      prisma.events.count({
+      prisma.audit_logs.count({
         where: {
           created_at: { gte: yesterday },
-          event_type: 'error'
+          action: { contains: 'error' }
         }
       })
     ]);

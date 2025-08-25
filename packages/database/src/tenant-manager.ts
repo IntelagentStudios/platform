@@ -274,7 +274,7 @@ class TenantManager {
          WHERE schemaname = ${config.schemaName}) as schema_size
     `;
 
-    return stats[0] || null;
+    return (stats as any)[0] || null;
   }
 
   /**

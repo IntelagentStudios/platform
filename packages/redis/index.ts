@@ -298,7 +298,7 @@ class RedisManager {
       } catch (error) {
         stats[purpose] = {
           connected: false,
-          error: error.message
+          error: (error as Error).message
         };
       }
     }
@@ -484,7 +484,11 @@ export class RedisQueue {
   private queueName: string;
 
   constructor(queueName: string) {
-    this.client = RedisManager.getClient('queue');
+    const client = RedisManager.getClient('queue');
+    if (!client) {
+      throw new Error('Redis queue client not available');
+    }
+    this.client = client;
     this.queueName = `queue:${queueName}`;
   }
 
@@ -541,7 +545,11 @@ export class RedisPubSub {
   private handlers: Map<string, Set<Function>> = new Map();
 
   constructor() {
-    this.publisher = RedisManager.getClient('pubsub');
+    const publisher = RedisManager.getClient('pubsub');
+    if (!publisher) {
+      throw new Error('Redis pubsub client not available');
+    }
+    this.publisher = publisher;
     this.subscriber = this.publisher.duplicate();
     this.setupSubscriber();
   }
@@ -603,7 +611,11 @@ export class RedisSessionStore {
   private ttl: number;
 
   constructor(prefix: string = 'session:', ttl: number = 86400) {
-    this.client = RedisManager.getClient('session');
+    const client = RedisManager.getClient('session');
+    if (!client) {
+      throw new Error('Redis session client not available');
+    }
+    this.client = client;
     this.prefix = prefix;
     this.ttl = ttl;
   }

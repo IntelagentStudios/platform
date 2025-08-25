@@ -30,68 +30,69 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Save onboarding completion
-    await prisma.onboarding.upsert({
-      where: { license_key: licenseKey },
-      update: {
-        completed: true,
-        completed_at: new Date(),
-        data: data
-      },
-      create: {
+    // TODO: Save onboarding completion in audit_logs since onboarding table doesn't exist
+    await prisma.audit_logs.create({
+      data: {
         license_key: licenseKey,
-        completed: true,
-        completed_at: new Date(),
-        current_step: 6,
-        data: data
+        user_id: licenseKey,
+        action: 'onboarding_completed',
+        resource_type: 'onboarding',
+        resource_id: licenseKey,
+        changes: {
+          completed: true,
+          completed_at: new Date(),
+          current_step: 6,
+          data: data
+        }
       }
     });
 
-    // Save product configurations
+    // TODO: Save product configurations in audit_logs since product_configs table doesn't exist
     if (data.products) {
       for (const product of data.products) {
         if (product.configured) {
-          await prisma.product_configs.upsert({
-            where: {
-              license_key_product: {
-                license_key: licenseKey,
-                product: product.name
-              }
-            },
-            update: {
-              config: product.config,
-              enabled: true,
-              updated_at: new Date()
-            },
-            create: {
+          await prisma.audit_logs.create({
+            data: {
               license_key: licenseKey,
-              product: product.name,
-              config: product.config,
-              enabled: true
+              user_id: licenseKey,
+              action: 'product_configured',
+              resource_type: 'product_config',
+              resource_id: product.name,
+              changes: {
+                config: product.config,
+                enabled: true
+              }
             }
           });
         }
       }
     }
 
-    // Log completion event
-    await prisma.events.create({
+    // TODO: Log completion event in audit_logs since events table doesn't exist
+    await prisma.audit_logs.create({
       data: {
         license_key: licenseKey,
-        event_type: 'onboarding.completed',
-        event_data: {
+        user_id: licenseKey,
+        action: 'onboarding.completed',
+        resource_type: 'onboarding',
+        resource_id: licenseKey,
+        changes: {
           products_configured: data.products?.filter((p: any) => p.configured).map((p: any) => p.name),
           business_info: data.business
         }
       }
     });
 
-    // Track onboarding metrics
-    await prisma.onboarding_metrics.create({
+    // TODO: Track onboarding metrics in audit_logs since onboarding_metrics table doesn't exist
+    await prisma.audit_logs.create({
       data: {
         license_key: licenseKey,
-        step_completed: 'onboarding_complete',
-        properties: {
+        user_id: licenseKey,
+        action: 'onboarding_metrics_tracked',
+        resource_type: 'metrics',
+        resource_id: 'onboarding_complete',
+        changes: {
+          step_completed: 'onboarding_complete',
           total_products: data.products?.length || 0,
           configured_products: data.products?.filter((p: any) => p.configured).length || 0
         }
