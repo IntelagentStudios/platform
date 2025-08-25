@@ -89,6 +89,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Determine redirect based on role
+    let redirectTo = '/dashboard';
+    if (user.role === 'master_admin') {
+      redirectTo = '/admin';
+    }
+
     return NextResponse.json({
       success: true,
       user: {
@@ -99,7 +105,8 @@ export async function POST(request: NextRequest) {
         licenseKey: user.license_key,
         products: user.license?.products || [],
         emailVerified: user.email_verified
-      }
+      },
+      redirectTo
     });
 
   } catch (error) {

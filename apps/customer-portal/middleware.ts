@@ -22,11 +22,22 @@ export async function middleware(request: NextRequest) {
   
   // Check for JWT auth token first
   const authToken = request.cookies.get('auth_token');
+  let userRole = null;
   
   if (authToken) {
     try {
       // Verify JWT token
-      jwt.verify(authToken.value, JWT_SECRET);
+      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+      userRole = decoded.role;
+      
+      // Check admin route access
+      if (pathname.startsWith('/admin')) {
+        if (userRole !== 'master_admin') {
+          // Not admin, redirect to dashboard
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+      }
+      
       // Token is valid, allow access
       return NextResponse.next();
     } catch (error) {
@@ -38,7 +49,10 @@ export async function middleware(request: NextRequest) {
   const oldAuthCookie = request.cookies.get('auth');
   
   if (oldAuthCookie && oldAuthCookie.value === 'authenticated-user-harry') {
-    // Old auth is valid, allow access
+    // Old auth is valid, but restrict admin access
+    if (pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
     return NextResponse.next();
   }
   
