@@ -194,10 +194,21 @@ export default function DashboardPage() {
                       </div>
                       <button 
                         onClick={() => {
-                          if (product.name === 'Chatbot') {
-                            window.location.href = hasKey ? '/products/chatbot' : '/products/chatbot/setup-agent';
+                          // Route to setup page for configuration or management page if configured
+                          const productSlug = product.name.toLowerCase().replace(' ', '-');
+                          if (hasKey) {
+                            window.location.href = `/products/${productSlug}`;
                           } else {
-                            window.location.href = '/products';
+                            // Route to new universal setup pages
+                            if (product.name === 'Chatbot') {
+                              window.location.href = '/products/chatbot/setup-agent-frame';
+                            } else if (product.name === 'Sales Agent') {
+                              window.location.href = '/products/sales-agent/setup';
+                            } else if (product.name === 'Data Enrichment') {
+                              window.location.href = '/products/data-enrichment/setup';
+                            } else if (product.name === 'Setup Agent') {
+                              window.location.href = '/products/setup-agent/setup';
+                            }
                           }
                         }}
                         className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"

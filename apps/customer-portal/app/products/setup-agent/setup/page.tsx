@@ -4,29 +4,29 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProductConfigurator from '@/components/products/ProductConfigurator';
 
-export default function SetupSalesAgentPage() {
+export default function SetupSetupAgentPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     // Check authentication
-    console.log('[setup-sales-agent] Checking authentication...');
+    console.log('[setup-setup-agent] Checking authentication...');
     fetch('/api/auth/me')
       .then(res => res.json())
       .then(data => {
         if (data.authenticated && data.user) {
-          console.log(`[setup-sales-agent] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
+          console.log(`[setup-setup-agent] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
           setUser(data.user);
           setIsAuthenticated(true);
         } else {
-          console.log('[setup-sales-agent] Not authenticated, redirecting to login');
+          console.log('[setup-setup-agent] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
           router.push('/login');
         }
       })
       .catch((error) => {
-        console.error('[setup-sales-agent] Auth check failed:', error);
+        console.error('[setup-setup-agent] Auth check failed:', error);
         setIsAuthenticated(false);
         router.push('/login');
       });
@@ -56,9 +56,9 @@ export default function SetupSalesAgentPage() {
       padding: '20px'
     }}>
       <ProductConfigurator 
-        product="sales-agent"
+        product="setup-agent"
         onSuccess={(productKey, embedCode) => {
-          console.log('Sales Agent configured successfully:', productKey);
+          console.log('Setup Agent configured successfully:', productKey);
         }}
       />
     </div>

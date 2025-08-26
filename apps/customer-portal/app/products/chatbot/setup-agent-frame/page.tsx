@@ -2,31 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ProductConfigurator from '@/components/products/ProductConfigurator';
 
-export default function SetupAgentFramePage() {
+export default function SetupChatbotPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     // Check authentication
-    console.log('[setup-agent-frame-page] Checking authentication...');
+    console.log('[setup-chatbot] Checking authentication...');
     fetch('/api/auth/me')
       .then(res => res.json())
       .then(data => {
         if (data.authenticated && data.user) {
-          console.log(`[setup-agent-frame-page] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
+          console.log(`[setup-chatbot] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
           setUser(data.user);
           setIsAuthenticated(true);
         } else {
-          console.log('[setup-agent-frame-page] Not authenticated, redirecting to login');
+          console.log('[setup-chatbot] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
           router.push('/login');
         }
       })
       .catch((error) => {
-        console.error('[setup-agent-frame-page] Auth check failed:', error);
+        console.error('[setup-chatbot] Auth check failed:', error);
         setIsAuthenticated(false);
         router.push('/login');
       });
@@ -39,27 +39,27 @@ export default function SetupAgentFramePage() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        background: 'rgb(48, 54, 54)'
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
       }}>
-        <div style={{ color: 'rgb(229, 227, 220)' }}>Loading...</div>
+        <div style={{ color: 'white' }}>Loading...</div>
       </div>
     );
   }
 
   return (
     <div style={{
-      width: '100%',
-      height: '100vh',
-      overflow: 'hidden'
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
     }}>
-      <iframe
-        src="/api/products/chatbot/setup-agent-frame"
-        style={{
-          width: '100%',
-          height: '100%',
-          border: 'none'
+      <ProductConfigurator 
+        product="chatbot"
+        onSuccess={(productKey, embedCode) => {
+          console.log('Chatbot configured successfully:', productKey);
         }}
-        title="Setup Agent Chat"
       />
     </div>
   );
