@@ -251,8 +251,14 @@ export async function GET() {
     async function initializeChat() {
       const chatLog = document.getElementById("chat-log");
       
+      if (!chatLog) {
+        console.error('Chat log element not found');
+        return;
+      }
+      
       // Get license key for the session
       await getLicenseKey();
+      console.log('License key obtained:', licenseKey ? 'Yes' : 'No');
       
       // Show initial agent message
       chatLog.innerHTML = '<div class="agent-message"><strong>Setup Assistant:</strong> Welcome! I\'m here to help you set up your AI chatbot. To begin, could you please share your website\'s domain?</div>';
@@ -411,16 +417,35 @@ export async function GET() {
 
     // Initialize on load
     window.onload = function() {
+      console.log('Window loaded, initializing chat...');
       initializeChat();
       
       // Setup event listeners
-      document.getElementById("send-button").addEventListener("click", () => sendMessage());
-      document.getElementById("chat-input").addEventListener("keypress", function(event) {
-        if (event.key === "Enter" && !event.shiftKey) {
-          event.preventDefault();
+      const sendButton = document.getElementById("send-button");
+      const chatInput = document.getElementById("chat-input");
+      
+      if (sendButton) {
+        sendButton.addEventListener("click", function() {
+          console.log('Send button clicked');
           sendMessage();
-        }
-      });
+        });
+      } else {
+        console.error('Send button not found');
+      }
+      
+      if (chatInput) {
+        chatInput.addEventListener("keypress", function(event) {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            console.log('Enter key pressed');
+            sendMessage();
+          }
+        });
+        // Focus the input
+        chatInput.focus();
+      } else {
+        console.error('Chat input not found');
+      }
     };
   </script>
 </body>

@@ -1,36 +1,65 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SetupAgentFramePage() {
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    // Check authentication
+    console.log('[setup-agent-frame-page] Checking authentication...');
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated && data.user) {
+          console.log(`[setup-agent-frame-page] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
+          setUser(data.user);
+          setIsAuthenticated(true);
+        } else {
+          console.log('[setup-agent-frame-page] Not authenticated, redirecting to login');
+          setIsAuthenticated(false);
+          router.push('/login');
+        }
+      })
+      .catch((error) => {
+        console.error('[setup-agent-frame-page] Auth check failed:', error);
+        setIsAuthenticated(false);
+        router.push('/login');
+      });
+  }, [router]);
 
-  if (!mounted) {
-    return <div>Loading...</div>;
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'rgb(48, 54, 54)'
+      }}>
+        <div style={{ color: 'rgb(229, 227, 220)' }}>Loading...</div>
+      </div>
+    );
   }
 
-  // Get the N8N webhook URL - this should connect to your Setup Agent workflow
-  const WEBHOOK_URL = "https://1ntelagent.up.railway.app/webhook/setup";
-  
   return (
     <div style={{
       width: '100%',
       height: '100vh',
-      overflow: 'hidden',
-      background: 'rgb(48, 54, 54)'
+      overflow: 'hidden'
     }}>
       <iframe
-        src={`/api/products/chatbot/setup-agent-frame`}
+        src="/api/products/chatbot/setup-agent-frame"
         style={{
           width: '100%',
           height: '100%',
           border: 'none'
         }}
-        title="Setup Agent"
+        title="Setup Agent Chat"
       />
     </div>
   );
