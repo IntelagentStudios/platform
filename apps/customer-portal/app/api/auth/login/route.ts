@@ -113,6 +113,9 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     );
 
+    console.log('[Login] JWT token length:', sessionToken.length);
+    console.log('[Login] User ID:', user.id);
+
     // Store session in both database and Redis cache
     try {
       const expiresAt = new Date();
@@ -132,11 +135,17 @@ export async function POST(request: NextRequest) {
       };
 
       // Store in database (with upsert to handle concurrent logins)
-      await prisma.user_sessions.upsert({
-        where: { token: sessionToken },
+      console.log('[Login] Storing session in database...');
+      
+      // Truncate token if it's too long for the database field (temporary fix)
+      const dbToken = sessionToken.length > 255 ? sessionToken.substring(0, 255) : sessionToken;
+      console.log('[Login] Using token for DB storage, length:', dbToken.length);
+      
+      const createdSession = await prisma.user_sessions.upsert({
+        where: { token: dbToken },
         create: {
           user_id: user.id,
-          token: sessionToken,
+          token: dbToken,
           expires_at: expiresAt,
           ip_address: sessionData.ip_address,
           user_agent: sessionData.user_agent
@@ -147,6 +156,7 @@ export async function POST(request: NextRequest) {
           user_agent: sessionData.user_agent
         }
       });
+      console.log('[Login] Session stored successfully:', createdSession.id);
       
       // Cache session in Redis for fast access
       if (user.license_key) {

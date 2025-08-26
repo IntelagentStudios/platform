@@ -151,25 +151,33 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
     }
 
     // Verify session exists in database
+    // Note: We truncate the token to match what was stored (temporary fix for 255 char limit)
+    const dbToken = authToken.length > 255 ? authToken.substring(0, 255) : authToken;
+    console.log('[Auth Validator] Looking for session with truncated token, length:', dbToken.length);
+    
     const session = await prisma.user_sessions.findFirst({
       where: {
         user_id: user.id,
-        token: authToken,
+        token: dbToken,
         expires_at: { gt: new Date() }
       }
     });
 
     if (!session) {
+      console.log('[Auth Validator] Session not found for user:', user.id);
+      console.log('[Auth Validator] Token used for lookup (truncated):', dbToken.substring(0, 20) + '...');
       return {
         authenticated: false,
         error: 'Session not found or expired'
       };
     }
+    
+    console.log('[Auth Validator] Session found successfully');
 
     // Cache the session for future requests
     const sessionData = {
       user_id: user.id,
-      token: authToken,
+      token: dbToken,  // Use truncated token for consistency
       expires_at: session.expires_at,
       ip_address: session.ip_address || 'unknown',
       user_agent: session.user_agent || 'unknown',
@@ -181,7 +189,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
 
     await licenseCache.cacheUserSession(
       user.license_key,
-      authToken,
+      authToken,  // Use full token as cache key
       sessionData,
       Math.floor((session.expires_at.getTime() - Date.now()) / 1000) // TTL in seconds
     );
