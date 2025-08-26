@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductConfigurator, { PRODUCT_CONFIGS } from '@/components/products/ProductConfigurator';
 
-export default function ConfigureProductPage() {
+function ConfigureProductContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const product = searchParams.get('product') as keyof typeof PRODUCT_CONFIGS;
@@ -131,5 +131,23 @@ export default function ConfigureProductPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function ConfigureProductPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div style={{ color: 'white' }}>Loading...</div>
+      </div>
+    }>
+      <ConfigureProductContent />
+    </Suspense>
   );
 }
