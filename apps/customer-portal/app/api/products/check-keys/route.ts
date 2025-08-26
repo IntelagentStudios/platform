@@ -35,18 +35,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Also check for legacy site_key for backward compatibility with chatbot
-    if (userProducts.includes('chatbot') && !productStatus['chatbot']?.configured) {
-      if (authResult.license?.site_key) {
-        productStatus['chatbot'] = {
-          configured: true,
-          productKey: authResult.license.site_key,
-          canManage: true,
-          canConfigure: false,
-          isLegacy: true
-        };
-      }
-    }
+    // Legacy site_key support removed - all accounts should use product_keys table
     
     return NextResponse.json({
       success: true,
