@@ -234,10 +234,26 @@ For production:
 - Workflow files: `/Intelagent Chatbot/` directory
 - Admin Portal: http://localhost:3003/admin/products/chatbot-n8n
 
+## Known Issues & Fixes (August 2025)
+
+### License Detection in Setup Agent
+**Problem:** Product keys not generating when license provided in conversation
+**Solution:** Modified Product Key Generator to check both user messages AND agent responses for license keys
+
+### Validation Detection
+**Problem:** Agent validation success not triggering product key generation  
+**Solution:** Added multiple validation indicators including emoji support (✓, ✅)
+
+### Database Errors
+**Problem:** NULL product keys causing insertion errors
+**Solution:** Conditional SQL execution - only INSERT when valid product_key exists
+
+See `SETUP_AGENT_FIXES.md` for detailed fix documentation.
+
 ## Next Steps
 
 1. ✅ Import all workflows
-2. ✅ Configure webhooks
+2. ✅ Configure webhooks  
 3. ✅ Index your website
 4. ✅ Test the chatbot
 5. ✅ Deploy to production
