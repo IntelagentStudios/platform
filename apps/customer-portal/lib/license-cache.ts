@@ -1,16 +1,65 @@
 /**
- * License-based Redis caching utilities
+ * License-based caching utilities (simplified version)
  * Ensures cache isolation per license key (account boundary)
  */
 
-import { RedisCache } from '@intelagent/redis';
+// Simple in-memory cache implementation for now
+// This can be replaced with Redis when properly configured
+class SimpleCache {
+  private store: Map<string, { value: any; expires: number }> = new Map();
+  
+  async get<T>(key: string): Promise<T | null> {
+    const item = this.store.get(key);
+    if (!item) return null;
+    if (item.expires < Date.now()) {
+      this.store.delete(key);
+      return null;
+    }
+    return item.value;
+  }
+  
+  async set(key: string, value: any, ttl: number = 3600): Promise<void> {
+    this.store.set(key, {
+      value,
+      expires: Date.now() + (ttl * 1000)
+    });
+  }
+  
+  async delete(key: string): Promise<void> {
+    this.store.delete(key);
+  }
+  
+  async exists(key: string): Promise<boolean> {
+    const item = this.store.get(key);
+    if (!item) return false;
+    if (item.expires < Date.now()) {
+      this.store.delete(key);
+      return false;
+    }
+    return true;
+  }
+  
+  async increment(key: string, amount: number = 1): Promise<number> {
+    const current = await this.get<number>(key) || 0;
+    const newValue = current + amount;
+    await this.set(key, newValue);
+    return newValue;
+  }
+  
+  async expire(key: string, ttl: number): Promise<void> {
+    const item = this.store.get(key);
+    if (item) {
+      item.expires = Date.now() + (ttl * 1000);
+    }
+  }
+}
 
 export class LicenseCache {
-  private cache: RedisCache;
+  private cache: SimpleCache;
   private defaultTTL: number;
 
   constructor(ttl: number = 3600) {
-    this.cache = new RedisCache(ttl);
+    this.cache = new SimpleCache();
     this.defaultTTL = ttl;
   }
 
@@ -189,40 +238,3 @@ export class LicenseCache {
 
 // Export singleton instance
 export const licenseCache = new LicenseCache();
-
-// Usage examples:
-export const examples = {
-  // Cache API response for a license
-  async cacheApiResponse(licenseKey: string, endpoint: string, data: any) {
-    await licenseCache.set(licenseKey, 'api', endpoint, data, 300); // 5 min cache
-  },
-
-  // Get cached API response
-  async getCachedApiResponse(licenseKey: string, endpoint: string) {
-    return await licenseCache.get(licenseKey, 'api', endpoint);
-  },
-
-  // Cache chatbot stats
-  async cacheChatbotStats(licenseKey: string, siteKey: string, stats: any) {
-    await licenseCache.cacheProductData(
-      licenseKey,
-      'chatbot',
-      `stats:${siteKey}`,
-      stats,
-      600 // 10 minutes
-    );
-  },
-
-  // Check API rate limit
-  async checkApiLimit(licenseKey: string) {
-    const isPro = await licenseCache.get<boolean>(licenseKey, 'license', 'is_pro');
-    const limit = isPro ? 10000 : 1000; // Pro gets 10x more requests
-    
-    return await licenseCache.checkRateLimit(
-      licenseKey,
-      'api_calls',
-      limit,
-      3600 // 1 hour window
-    );
-  }
-};
