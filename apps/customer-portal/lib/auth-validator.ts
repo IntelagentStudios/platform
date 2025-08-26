@@ -150,27 +150,32 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       };
     }
 
-    // For now, skip session verification in database since we have token length issues
-    // The JWT token itself is sufficient for authentication
-    // TODO: Re-enable after fixing token field size in database
+    // Verify session exists in database
+    console.log('[Auth Validator] Looking for session in database...');
     
-    console.log('[Auth Validator] Skipping database session check (temporary)');
+    const session = await prisma.user_sessions.findFirst({
+      where: {
+        user_id: user.id,
+        token: authToken,
+        expires_at: { gt: new Date() }
+      }
+    });
+
+    if (!session) {
+      console.log('[Auth Validator] Session not found for user:', user.id);
+      console.log('[Auth Validator] Token preview:', authToken.substring(0, 20) + '...');
+      return {
+        authenticated: false,
+        error: 'Session not found or expired'
+      };
+    }
     
-    // Create a mock session for compatibility
-    const session = {
-      user_id: user.id,
-      token: authToken.substring(0, 255), // Truncate for consistency
-      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      ip_address: 'unknown',
-      user_agent: 'unknown'
-    };
-    
-    console.log('[Auth Validator] Using JWT-based authentication (session check bypassed)');
+    console.log('[Auth Validator] Session found successfully');
 
     // Cache the session for future requests
     const sessionData = {
       user_id: user.id,
-      token: dbToken,  // Use truncated token for consistency
+      token: authToken,  // Use full token now that DB supports it
       expires_at: session.expires_at,
       ip_address: session.ip_address || 'unknown',
       user_agent: session.user_agent || 'unknown',
@@ -289,10 +294,9 @@ export async function logout(authToken?: string): Promise<void> {
       // Token might be invalid, continue with database cleanup
     }
 
-    // Remove from database (use truncated token for lookup)
-    const dbToken = token.length > 255 ? token.substring(0, 255) : token;
+    // Remove from database
     await prisma.user_sessions.deleteMany({
-      where: { token: dbToken }
+      where: { token }
     });
 
   } catch (error) {

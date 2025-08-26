@@ -136,16 +136,13 @@ export async function POST(request: NextRequest) {
 
       // Store in database (with upsert to handle concurrent logins)
       console.log('[Login] Storing session in database...');
-      
-      // Truncate token if it's too long for the database field (temporary fix)
-      const dbToken = sessionToken.length > 255 ? sessionToken.substring(0, 255) : sessionToken;
-      console.log('[Login] Using token for DB storage, length:', dbToken.length);
+      console.log('[Login] Token length:', sessionToken.length);
       
       const createdSession = await prisma.user_sessions.upsert({
-        where: { token: dbToken },
+        where: { token: sessionToken },
         create: {
           user_id: user.id,
-          token: dbToken,
+          token: sessionToken,
           expires_at: expiresAt,
           ip_address: sessionData.ip_address,
           user_agent: sessionData.user_agent
