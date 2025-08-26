@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { licenseCache } from '@/packages/redis/license-cache';
+import { licenseCache } from '@/lib/license-cache';
 import { prisma } from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';

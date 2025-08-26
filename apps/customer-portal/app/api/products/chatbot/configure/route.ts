@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { createProductKey, getProductKey } from '@/lib/product-keys-service';
 import { prisma } from '@/lib/prisma';
-import { generateProductKey } from '@intelagent/shared/utils/product-keys';
+import { generateProductKey } from '@/lib/product-keys';
 
 /**
  * POST /api/products/chatbot/configure

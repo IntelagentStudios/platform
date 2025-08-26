@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-import { MASTER_ADMIN_KEY } from '@/types/license';
+// Master admin key constant
+const MASTER_ADMIN_KEY = 'INTL-ADMIN-KEY';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
