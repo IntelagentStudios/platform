@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [productConfigs, setProductConfigs] = useState<any>({});
 
   useEffect(() => {
+    console.log('[dashboard] Checking authentication...');
     // Check authentication using JWT endpoint
     fetch('/api/auth/me', {
       credentials: 'include'
@@ -27,25 +28,29 @@ export default function DashboardPage() {
       .then(res => res.json())
       .then(data => {
         if (data.authenticated && data.user) {
+          console.log(`[dashboard] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
           setIsAuthenticated(true);
           setUser(data.user);
           
           // Fetch product configurations
+          console.log('[dashboard] Fetching product configurations...');
           fetch('/api/products/check-keys', { credentials: 'include' })
             .then(res => res.json())
             .then(configData => {
               if (configData.success) {
+                console.log('[dashboard] Product configurations:', configData.configurations);
                 setProductConfigs(configData.configurations);
               }
             })
-            .catch(err => console.error('Failed to fetch product configurations:', err));
+            .catch(err => console.error('[dashboard] Failed to fetch product configurations:', err));
         } else {
+          console.log('[dashboard] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
           window.location.href = '/login';
         }
       })
       .catch(err => {
-        console.error('Auth check failed:', err);
+        console.error('[dashboard] Auth check failed:', err);
         setIsAuthenticated(false);
         window.location.href = '/login';
       });

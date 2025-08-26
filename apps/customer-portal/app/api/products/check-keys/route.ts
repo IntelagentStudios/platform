@@ -22,6 +22,9 @@ export async function GET(request: NextRequest) {
   const userProducts = authResult.license?.products || [];
   
   try {
+    console.log(`[check-keys] Checking product keys for license: ${licenseKey}`);
+    console.log(`[check-keys] User products: ${JSON.stringify(userProducts)}`);
+    
     // Check each product for active product keys AND configuration
     const productStatus: Record<string, any> = {};
     
@@ -31,6 +34,8 @@ export async function GET(request: NextRequest) {
       // Product key existence means it's configured
       // (Setup Agent creates the key when configuration is complete)
       const hasKey = !!productKey;
+      
+      console.log(`[check-keys] Product: ${product}, Has key: ${hasKey}, Key: ${productKey ? productKey.substring(0, 8) + '...' : 'none'}`);
       
       productStatus[product] = {
         configured: hasKey,  // Has key = configured
@@ -42,6 +47,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Legacy site_key support removed - all accounts should use product_keys table
+    
+    console.log(`[check-keys] Returning configurations:`, productStatus);
     
     return NextResponse.json({
       success: true,

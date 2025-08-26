@@ -140,6 +140,8 @@ export async function createProductKey(
   metadata?: Record<string, any>
 ): Promise<string | null> {
   try {
+    console.log(`[product-keys-service] Creating product key for license: ${licenseKey}, product: ${product}`);
+    
     // Check if key already exists for this product
     const existing = await prisma.product_keys.findFirst({
       where: {
@@ -150,11 +152,13 @@ export async function createProductKey(
     });
 
     if (existing) {
+      console.log(`[product-keys-service] Product key already exists: ${existing.product_key.substring(0, 8)}...`);
       return existing.product_key;
     }
 
     // Generate new key
     const { key } = generateProductKey(product);
+    console.log(`[product-keys-service] Generated new key: ${key.substring(0, 8)}...`);
 
     // Create in database
     const created = await prisma.product_keys.create({
@@ -167,9 +171,10 @@ export async function createProductKey(
       }
     });
 
+    console.log(`[product-keys-service] Product key created successfully: ${created.product_key.substring(0, 8)}...`);
     return created.product_key;
   } catch (error) {
-    console.error(`Error creating product key for ${product}:`, error);
+    console.error(`[product-keys-service] Error creating product key for ${product}:`, error);
     return null;
   }
 }
