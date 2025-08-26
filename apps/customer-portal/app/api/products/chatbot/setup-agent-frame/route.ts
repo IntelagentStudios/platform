@@ -325,7 +325,16 @@ export async function GET() {
 
       // Add user message
       chatLog.innerHTML += '<div class="user-message"><strong>You:</strong> ' + message + '</div>';
-      chatLog.innerHTML += '<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span></div>';
+      
+      // Check if this is a license key being provided
+      const isLicenseKey = message.match(/INTL-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/i);
+      
+      // Show appropriate loading message
+      if (isLicenseKey) {
+        chatLog.innerHTML += '<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span> Validating license and generating your embed code...</div>';
+      } else {
+        chatLog.innerHTML += '<div id="typing-indicator" class="agent-message"><strong>Agent:</strong> <span class="typing-indicator"><span></span><span></span><span></span></span></div>';
+      }
       
       // Scroll to bottom
       chatLog.scrollTo({
