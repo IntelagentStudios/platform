@@ -17,6 +17,7 @@ import {
 export default function DashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [productConfigs, setProductConfigs] = useState<any>({});
 
   useEffect(() => {
     // Check authentication using JWT endpoint
@@ -28,6 +29,16 @@ export default function DashboardPage() {
         if (data.authenticated && data.user) {
           setIsAuthenticated(true);
           setUser(data.user);
+          
+          // Fetch product configurations
+          fetch('/api/products/check-keys', { credentials: 'include' })
+            .then(res => res.json())
+            .then(configData => {
+              if (configData.success) {
+                setProductConfigs(configData.configurations);
+              }
+            })
+            .catch(err => console.error('Failed to fetch product configurations:', err));
         } else {
           setIsAuthenticated(false);
           window.location.href = '/login';
@@ -102,17 +113,6 @@ export default function DashboardPage() {
 
       {/* Content */}
       <div className="p-8">
-        {/* Success Alert */}
-        <div 
-          className="rounded-lg p-4 mb-6 flex items-center space-x-3"
-          style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}
-        >
-          <CheckCircle className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-          <span style={{ color: 'rgb(229, 227, 220)' }}>
-            You are successfully logged in to your Pro Platform dashboard
-          </span>
-        </div>
-
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
@@ -154,46 +154,51 @@ export default function DashboardPage() {
                 Your Products
               </h2>
               <div className="space-y-3">
-                {products.map((product, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-lg border"
-                    style={{ 
-                      backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                      borderColor: 'rgba(169, 189, 203, 0.2)'
-                    }}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}>
-                        <product.icon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      </div>
-                      <div>
-                        <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                          {product.name}
-                        </div>
-                        <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                          {product.status}
-                        </div>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        if (product.name === 'Chatbot') {
-                          window.location.href = '/products/chatbot/setup-agent';
-                        } else {
-                          window.location.href = '/products';
-                        }
-                      }}
-                      className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
+                {products.map((product, index) => {
+                  const productKey = product.name.toLowerCase().replace(' ', '-');
+                  const isConfigured = productConfigs[productKey]?.configured;
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-4 rounded-lg border"
                       style={{ 
-                        backgroundColor: 'rgb(169, 189, 203)',
-                        color: 'rgb(48, 54, 54)'
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                        borderColor: 'rgba(169, 189, 203, 0.2)'
                       }}
                     >
-                      Configure
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 rounded" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}>
+                          <product.icon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                        </div>
+                        <div>
+                          <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                            {product.name}
+                          </div>
+                          <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                            {isConfigured ? 'Active' : 'Ready to configure'}
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          if (product.name === 'Chatbot') {
+                            window.location.href = isConfigured ? '/products/chatbot' : '/products/chatbot/setup-agent';
+                          } else {
+                            window.location.href = '/products';
+                          }
+                        }}
+                        className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
+                        style={{ 
+                          backgroundColor: isConfigured ? '#4CAF50' : 'rgb(169, 189, 203)',
+                          color: isConfigured ? 'white' : 'rgb(48, 54, 54)'
+                        }}
+                      >
+                        {isConfigured ? 'Manage' : 'Configure'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

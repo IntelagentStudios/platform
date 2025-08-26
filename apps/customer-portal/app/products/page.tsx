@@ -42,10 +42,14 @@ export default function ProductsPage() {
           setUserProducts(data.user.products || ['chatbot']);
           
           // Fetch product configurations
-          fetch('/api/products/configuration')
+          fetch('/api/products/check-keys', { credentials: 'include' })
             .then(res => res.json())
-            .then(configs => setConfigurations(configs))
-            .catch(err => console.error('Failed to fetch configurations:', err));
+            .then(data => {
+              if (data.success) {
+                setConfigurations(data.configurations);
+              }
+            })
+            .catch(err => console.error('Failed to fetch product configurations:', err));
         } else {
           setIsAuthenticated(false);
           window.location.href = '/login';
