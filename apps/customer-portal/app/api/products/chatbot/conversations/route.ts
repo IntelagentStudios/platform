@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 import { MASTER_ADMIN_KEY } from '@/types/license';
+import { getProductKey, updateProductKeyUsage } from '@/lib/product-keys-service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
@@ -73,19 +74,18 @@ async function fetchConversations(licenseKey: string) {
         active_sites: allLicenses.filter(l => l.site_key).length
       };
     } else {
-      // Regular users: license_key → site_key → chatbot data
-      // Step 1: Get the license to find the site_key
+      // Regular users: license_key → product_key → chatbot data
+      // Step 1: Get the license information
       const license = await prisma.licenses.findUnique({
         where: { license_key: licenseKey },
         select: { 
-          site_key: true,
           products: true,
           domain: true,
           is_pro: true
         }
       });
 
-      // Step 2: Check if chatbot product is available and configured
+      // Step 2: Check if chatbot product is available
       if (!license) {
         return NextResponse.json({ 
           error: 'License not found',
@@ -101,7 +101,10 @@ async function fetchConversations(licenseKey: string) {
         }, { status: 403 });
       }
 
-      if (!license.site_key) {
+      // Step 3: Get product key for chatbot (handles both new product_keys and legacy site_key)
+      const chatbotKey = await getProductKey(licenseKey, 'chatbot');
+      
+      if (!chatbotKey) {
         return NextResponse.json({ 
           conversations: [],
           message: 'Chatbot not configured. Please complete setup first.',
@@ -109,19 +112,23 @@ async function fetchConversations(licenseKey: string) {
         });
       }
       
-      siteKeyUsed = license.site_key;
+      siteKeyUsed = chatbotKey;
       licenseInfo = {
         domain: license.domain,
         is_pro: license.is_pro,
-        products: license.products
+        products: license.products,
+        using_product_key: true
       };
 
-      // Step 3: Fetch chatbot logs using the site_key (product-specific routing)
+      // Step 4: Fetch chatbot logs using the product key
       logs = await prisma.chatbot_logs.findMany({
-        where: { site_key: license.site_key }, // Use site_key for chatbot data
+        where: { site_key: chatbotKey }, // Uses product key (or legacy site_key)
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
+      
+      // Update usage timestamp for the product key
+      await updateProductKeyUsage(chatbotKey);
     }
 
     // Group logs by conversation_id or session_id

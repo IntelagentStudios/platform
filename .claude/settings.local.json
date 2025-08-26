@@ -43,7 +43,8 @@
       "Bash(npm ci:*)",
       "Bash(dir packagesdatabasenode_modules@prismaclient*.d.ts)",
       "Bash(dir:*)",
-      "Bash(del fix-auth-checks.js)"
+      "Bash(del fix-auth-checks.js)",
+      "Bash(del \"C:\\Projects\\Intelagent Platform\\apps\\customer-portal\\app\\api\\auth\\friend-login\\route.ts\")"
     ],
     "deny": [],
     "ask": []
