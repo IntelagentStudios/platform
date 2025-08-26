@@ -157,31 +157,13 @@ export default function DashboardPage() {
                 {products.map((product, index) => {
                   const productKey = product.name.toLowerCase().replace(' ', '-');
                   const config = productConfigs[productKey];
-                  const isConfigured = config?.configured;
                   const hasKey = config?.hasProductKey;
-                  const needsSetup = config?.needsSetup;
                   
-                  let statusText = 'Not available';
-                  let statusColor = 'rgb(169, 189, 203)';
-                  let buttonText = 'Configure';
-                  let buttonColor = 'rgb(169, 189, 203)';
-                  
-                  if (isConfigured) {
-                    statusText = 'Active & Configured';
-                    statusColor = '#4CAF50';
-                    buttonText = 'Manage';
-                    buttonColor = '#4CAF50';
-                  } else if (needsSetup) {
-                    statusText = 'Needs configuration';
-                    statusColor = '#ff9800';
-                    buttonText = 'Setup';
-                    buttonColor = '#ff9800';
-                  } else if (hasKey) {
-                    statusText = 'Ready to configure';
-                    statusColor = 'rgb(169, 189, 203)';
-                    buttonText = 'Configure';
-                    buttonColor = 'rgb(169, 189, 203)';
-                  }
+                  // Simple logic: has key = configured, no key = needs configuration
+                  const statusText = hasKey ? 'Active' : 'Ready to configure';
+                  const statusColor = hasKey ? '#4CAF50' : 'rgb(169, 189, 203)';
+                  const buttonText = hasKey ? 'Manage' : 'Configure';
+                  const buttonColor = hasKey ? '#4CAF50' : 'rgb(169, 189, 203)';
                   
                   return (
                     <div 
@@ -208,7 +190,7 @@ export default function DashboardPage() {
                       <button 
                         onClick={() => {
                           if (product.name === 'Chatbot') {
-                            window.location.href = (isConfigured || needsSetup) ? '/products/chatbot/setup-agent' : '/products/chatbot/setup-agent';
+                            window.location.href = hasKey ? '/products/chatbot' : '/products/chatbot/setup-agent';
                           } else {
                             window.location.href = '/products';
                           }
@@ -216,7 +198,7 @@ export default function DashboardPage() {
                         className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
                         style={{ 
                           backgroundColor: buttonColor,
-                          color: buttonColor === '#4CAF50' || buttonColor === '#ff9800' ? 'white' : 'rgb(48, 54, 54)'
+                          color: buttonColor === '#4CAF50' ? 'white' : 'rgb(48, 54, 54)'
                         }}
                       >
                         {buttonText}

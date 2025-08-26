@@ -28,17 +28,16 @@ export async function GET(request: NextRequest) {
     for (const product of userProducts) {
       const productKey = await getProductKey(licenseKey, product as ProductType);
       
-      // For chatbot, product key existence means it's configured
+      // Product key existence means it's configured
       // (Setup Agent creates the key when configuration is complete)
-      let isFullyConfigured = !!productKey;
+      const hasKey = !!productKey;
       
       productStatus[product] = {
-        configured: isFullyConfigured,
-        hasProductKey: !!productKey,
+        configured: hasKey,  // Has key = configured
+        hasProductKey: hasKey,
         productKey: productKey,
-        canManage: !!productKey,
-        canConfigure: !productKey,
-        needsSetup: !!productKey && !isFullyConfigured
+        canManage: hasKey,   // Can manage if has key
+        canConfigure: !hasKey // Can configure if no key
       };
     }
 
