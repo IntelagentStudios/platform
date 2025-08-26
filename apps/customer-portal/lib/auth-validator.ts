@@ -109,17 +109,6 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       where: { 
         id: decoded.userId,
         email: decoded.email 
-      },
-      include: {
-        licenses: {
-          select: {
-            license_key: true,
-            products: true,
-            is_pro: true,
-            site_key: true,
-            status: true
-          }
-        }
       }
     });
 
@@ -130,8 +119,20 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       };
     }
 
+    // Fetch license information
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: user.license_key },
+      select: {
+        license_key: true,
+        products: true,
+        is_pro: true,
+        site_key: true,
+        status: true
+      }
+    });
+
     // Verify license is still active
-    if (user.licenses?.status !== 'active') {
+    if (!license || license.status !== 'active') {
       return {
         authenticated: false,
         error: 'License is not active'
@@ -162,9 +163,9 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       ip_address: session.ip_address || 'unknown',
       user_agent: session.user_agent || 'unknown',
       license_key: user.license_key,
-      products: user.licenses?.products || [],
-      is_pro: user.licenses?.is_pro || false,
-      site_key: user.licenses?.site_key
+      products: license.products || [],
+      is_pro: license.is_pro || false,
+      site_key: license.site_key
     };
 
     await licenseCache.cacheUserSession(
@@ -182,16 +183,16 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
         licenseKey: user.license_key,
         role: user.role,
         name: user.name,
-        products: user.licenses?.products,
-        is_pro: user.licenses?.is_pro,
-        site_key: user.licenses?.site_key
+        products: license.products,
+        is_pro: license.is_pro,
+        site_key: license.site_key
       },
       license: {
         key: user.license_key,
-        products: user.licenses?.products || [],
-        is_pro: user.licenses?.is_pro || false,
-        site_key: user.licenses?.site_key,
-        status: user.licenses?.status || 'active'
+        products: license.products || [],
+        is_pro: license.is_pro || false,
+        site_key: license.site_key,
+        status: license.status || 'active'
       }
     };
 

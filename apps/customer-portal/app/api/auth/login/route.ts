@@ -22,12 +22,9 @@ export async function POST(request: NextRequest) {
     // Normalize email for consistency
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Find user by email with license information
+    // Find user by email
     const user = await prisma.users.findUnique({
-      where: { email: normalizedEmail },
-      include: {
-        licenses: true
-      }
+      where: { email: normalizedEmail }
     });
 
     if (!user) {
@@ -85,8 +82,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify license exists and is active
-    const license = user.licenses;
+    // Fetch license information separately
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: user.license_key }
+    });
     if (!license) {
       return NextResponse.json(
         { error: 'No license associated with this account. Please contact support.' },
