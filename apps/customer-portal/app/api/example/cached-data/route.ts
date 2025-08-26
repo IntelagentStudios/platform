@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
 
     // Try to get cached data first
     const cacheKey = 'dashboard_stats';
-    let stats = await licenseCache.get(licenseKey, 'api', cacheKey);
+    const cachedStats = await licenseCache.get(licenseKey, 'api', cacheKey);
 
-    if (stats) {
+    if (cachedStats) {
       console.log(`Cache hit for license ${licenseKey}`);
       return NextResponse.json({
-        ...stats,
+        ...(cachedStats as any),
         _cache: {
           hit: true,
           key: `license:${licenseKey}:api:${cacheKey}`,
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build response
-    stats = {
+    const stats = {
       license: {
         key: license.license_key,
         products: license.products,
