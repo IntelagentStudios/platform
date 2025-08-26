@@ -2,6 +2,15 @@
 
 A unified, modular AI-powered business automation platform that consolidates multiple products under a single dashboard with consistent design and full compatibility.
 
+## 🆕 Latest Updates (January 2025)
+
+### Universal Product Configuration System v2.0
+- **Form-based configuration** - Replaced conversational setup with simple forms
+- **Universal product status** - Consistent detection across all licenses
+- **Enhanced security** - Password authentication, no license key exposure
+- **Product management pages** - Dedicated pages for each product with embed codes
+- See [Universal Configuration Documentation](./docs/UNIVERSAL_CONFIGURATION_SYSTEM.md) for details
+
 ## 🚀 Features
 
 ### Products

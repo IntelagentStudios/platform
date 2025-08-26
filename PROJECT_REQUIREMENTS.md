@@ -30,25 +30,29 @@ A unified enterprise platform where clients purchase products on Squarespace, re
    - ✅ Advanced search and filtering
    - ✅ Auto-refresh with live updates
    - ✅ Conversation analytics
-   - ✅ Setup agent integration
-   - ✅ Site key generation (format: key_[16_chars])
+   - ✅ Product key generation (format: chat_[16_chars])
+   - ✅ Universal configuration system
    - ✅ Embed code generation for websites
 
 2. **Sales Agent** 
-   - Automated sales outreach (coming soon)
-   - Lead generation and qualification
-   - CRM integration
+   - ✅ Automated sales outreach configuration
+   - ✅ Product key generation (format: sale_[16_chars])
+   - ✅ Industry-specific setup
+   - Lead generation and qualification (coming soon)
+   - CRM integration (coming soon)
 
 3. **Data Enrichment Tool** 
+   - ✅ API configuration interface
+   - ✅ Product key generation (format: data_[16_chars])
+   - ✅ Data source selection
    - Business data enrichment service (coming soon)
-   - API access for bulk processing
-   - Real-time enrichment
+   - API access for bulk processing (coming soon)
 
 4. **Setup Agent** 
-   - ✅ Universal form-filling agent
-   - ✅ Iframe-based implementation
-   - ✅ Conversational onboarding
-   - ✅ Product-specific configurations
+   - ✅ Universal form-based configuration
+   - ✅ Product key generation (format: agnt_[16_chars])
+   - ✅ Company-specific customization
+   - ✅ Onboarding flow configuration
    - To be productized as standalone offering
 
 ### Product Tiers
@@ -179,20 +183,41 @@ A unified enterprise platform where clients purchase products on Squarespace, re
   - Deployment controls
   - Compliance management
 
-## 🤖 Setup Agent System
+## 🔧 Universal Product Configuration System (v2.0 - January 2025)
 
-### Current Implementation
-- ✅ Live iframe integration in dashboard
-- ✅ Product-specific setup flows
-- ✅ N8n workflow orchestration
-- ✅ Conversational interface
-- ✅ Form data validation
-- ✅ Configuration persistence
+### Architecture
+- ✅ **Form-based configuration** - Simple, direct setup process
+- ✅ **Universal component** - Single ProductConfigurator handles all products
+- ✅ **Password authentication** - Enhanced security, no license key exposure
+- ✅ **Product key generation** - Unique prefixes per product (chat_, sale_, data_, agnt_)
+- ✅ **Configuration persistence** - Stored in product_keys table with metadata
 
-### Planned Enhancements
-- Multi-step wizard with progress tracking
-- Resume capability for incomplete setups
-- Custom branding options
+### Key Features
+- ✅ **Universal status detection** - Works identically for all licenses
+- ✅ **No legacy dependencies** - Removed site_key fallbacks
+- ✅ **Product access control** - Only shows products in user's license
+- ✅ **Duplicate prevention** - Checks for existing configurations
+- ✅ **Instant embed codes** - Generated immediately after configuration
+
+### Product-Specific Fields
+- **Chatbot**: Domain configuration
+- **Sales Agent**: Domain, Industry, Target Audience
+- **Data Enrichment**: API Endpoint, Data Sources, Refresh Rate
+- **Setup Agent**: Company Name, Onboarding Steps
+
+### Management Pages
+- ✅ Individual management page per product
+- ✅ Shows product key and embed code
+- ✅ Copy-to-clipboard functionality
+- ✅ Reconfigure option
+- ✅ Analytics integration
+
+## 🤖 Legacy Setup Agent System (Deprecated)
+
+### Previous Implementation
+- Live iframe integration (replaced with forms)
+- N8n workflow orchestration (removed dependency)
+- Conversational interface (replaced with direct forms)
 - API webhook integration
 - Template library for common setups
 - Standalone product packaging
