@@ -124,51 +124,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * GET /api/products/keys/[product]
- * Get specific product key
- */
-export async function getSpecificProductKey(
-  request: NextRequest,
-  product: ProductType
-) {
-  const authResult = await validateAuth(request);
-  
-  if (!authResult.authenticated || !authResult.user) {
-    return NextResponse.json(
-      { error: 'Not authenticated' },
-      { status: 401 }
-    );
-  }
-
-  const { licenseKey } = authResult.user;
-  
-  try {
-    const productKey = await getProductKey(licenseKey, product);
-    
-    if (!productKey) {
-      return NextResponse.json({
-        success: false,
-        product,
-        product_key: null,
-        message: `No active key found for ${product}`
-      });
-    }
-    
-    return NextResponse.json({
-      success: true,
-      product,
-      product_key: productKey,
-      display_name: getProductDisplayName(product)
-    });
-  } catch (error) {
-    console.error(`Error fetching ${product} key:`, error);
-    return NextResponse.json(
-      { error: `Failed to fetch ${product} key` },
-      { status: 500 }
-    );
-  }
-}
 
 // Helper function for product display names
 function getProductDisplayName(product: ProductType): string {
