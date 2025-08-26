@@ -261,7 +261,7 @@ export async function GET() {
       console.log('License key obtained:', licenseKey ? 'Yes' : 'No');
       
       // Show initial agent message
-      chatLog.innerHTML = '<div class="agent-message"><strong>Setup Assistant:</strong> Welcome! I\'m here to help you set up your AI chatbot. To begin, could you please share your website\'s domain?</div>';
+      chatLog.innerHTML = '<div class="agent-message"><strong>Setup Assistant:</strong> Welcome! I am here to help you set up your AI chatbot. To begin, could you please share your website domain?</div>';
       
       // Send initial message to n8n to start conversation
       if (licenseKey) {
@@ -407,7 +407,7 @@ export async function GET() {
           typingIndicator.remove();
         }
         
-        chatLog.innerHTML += '<div class="agent-message"><strong>Agent:</strong> <span class="error-message">I apologize, but I\'m having trouble connecting to our setup service. Please try again later or contact support@intelagentstudios.com</span></div>';
+        chatLog.innerHTML += '<div class="agent-message"><strong>Agent:</strong> <span class="error-message">I apologize, but I am having trouble connecting to our setup service. Please try again later or contact support@intelagentstudios.com</span></div>';
       } finally {
         input.disabled = false;
         button.disabled = false;
