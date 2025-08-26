@@ -293,8 +293,7 @@ export async function logout(authToken?: string): Promise<void> {
 export async function getActiveSessions(licenseKey: string): Promise<any[]> {
   try {
     const users = await prisma.users.findMany({
-      where: { license_key: licenseKey },
-      select: { id: true }
+      where: { license_key: licenseKey }
     });
 
     const userIds = users.map(u => u.id);
@@ -304,19 +303,24 @@ export async function getActiveSessions(licenseKey: string): Promise<any[]> {
         user_id: { in: userIds },
         expires_at: { gt: new Date() }
       },
-      include: {
-        users: {
-          select: {
-            email: true,
-            name: true,
-            role: true
-          }
-        }
-      },
       orderBy: { created_at: 'desc' }
     });
 
-    return sessions;
+    // Enrich sessions with user data
+    const usersById = Object.fromEntries(
+      users.map(u => [u.id, u])
+    );
+
+    const enrichedSessions = sessions.map(session => ({
+      ...session,
+      user: usersById[session.user_id] ? {
+        email: usersById[session.user_id].email,
+        name: usersById[session.user_id].name,
+        role: usersById[session.user_id].role
+      } : null
+    }));
+
+    return enrichedSessions;
   } catch (error) {
     console.error('Get active sessions error:', error);
     return [];
