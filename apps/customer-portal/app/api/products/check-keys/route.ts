@@ -28,18 +28,9 @@ export async function GET(request: NextRequest) {
     for (const product of userProducts) {
       const productKey = await getProductKey(licenseKey, product as ProductType);
       
-      // For chatbot, also check if there's actual configuration
+      // For chatbot, product key existence means it's configured
+      // (Setup Agent creates the key when configuration is complete)
       let isFullyConfigured = !!productKey;
-      if (product === 'chatbot' && productKey) {
-        // Check if chatbot has actual site configuration
-        const chatbotConfig = await prisma.chatbot_configs.findFirst({
-          where: { 
-            site_key: productKey,
-            status: 'active'
-          }
-        });
-        isFullyConfigured = !!chatbotConfig;
-      }
       
       productStatus[product] = {
         configured: isFullyConfigured,
