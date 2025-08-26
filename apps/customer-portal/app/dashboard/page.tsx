@@ -156,7 +156,32 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {products.map((product, index) => {
                   const productKey = product.name.toLowerCase().replace(' ', '-');
-                  const isConfigured = productConfigs[productKey]?.configured;
+                  const config = productConfigs[productKey];
+                  const isConfigured = config?.configured;
+                  const hasKey = config?.hasProductKey;
+                  const needsSetup = config?.needsSetup;
+                  
+                  let statusText = 'Not available';
+                  let statusColor = 'rgb(169, 189, 203)';
+                  let buttonText = 'Configure';
+                  let buttonColor = 'rgb(169, 189, 203)';
+                  
+                  if (isConfigured) {
+                    statusText = 'Active & Configured';
+                    statusColor = '#4CAF50';
+                    buttonText = 'Manage';
+                    buttonColor = '#4CAF50';
+                  } else if (needsSetup) {
+                    statusText = 'Needs configuration';
+                    statusColor = '#ff9800';
+                    buttonText = 'Setup';
+                    buttonColor = '#ff9800';
+                  } else if (hasKey) {
+                    statusText = 'Ready to configure';
+                    statusColor = 'rgb(169, 189, 203)';
+                    buttonText = 'Configure';
+                    buttonColor = 'rgb(169, 189, 203)';
+                  }
                   
                   return (
                     <div 
@@ -175,26 +200,26 @@ export default function DashboardPage() {
                           <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
                             {product.name}
                           </div>
-                          <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                            {isConfigured ? 'Active' : 'Ready to configure'}
+                          <div className="text-sm" style={{ color: statusColor }}>
+                            {statusText}
                           </div>
                         </div>
                       </div>
                       <button 
                         onClick={() => {
                           if (product.name === 'Chatbot') {
-                            window.location.href = isConfigured ? '/products/chatbot' : '/products/chatbot/setup-agent';
+                            window.location.href = (isConfigured || needsSetup) ? '/products/chatbot/setup-agent' : '/products/chatbot/setup-agent';
                           } else {
                             window.location.href = '/products';
                           }
                         }}
                         className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
                         style={{ 
-                          backgroundColor: isConfigured ? '#4CAF50' : 'rgb(169, 189, 203)',
-                          color: isConfigured ? 'white' : 'rgb(48, 54, 54)'
+                          backgroundColor: buttonColor,
+                          color: buttonColor === '#4CAF50' || buttonColor === '#ff9800' ? 'white' : 'rgb(48, 54, 54)'
                         }}
                       >
-                        {isConfigured ? 'Manage' : 'Configure'}
+                        {buttonText}
                       </button>
                     </div>
                   );

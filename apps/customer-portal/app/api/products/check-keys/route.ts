@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { getProductKey } from '@/lib/product-keys-service';
 import { ProductType } from '@/lib/product-keys';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/products/check-keys
@@ -21,17 +22,32 @@ export async function GET(request: NextRequest) {
   const userProducts = authResult.license?.products || [];
   
   try {
-    // Check each product for active product keys
+    // Check each product for active product keys AND configuration
     const productStatus: Record<string, any> = {};
     
     for (const product of userProducts) {
       const productKey = await getProductKey(licenseKey, product as ProductType);
       
+      // For chatbot, also check if there's actual configuration
+      let isFullyConfigured = !!productKey;
+      if (product === 'chatbot' && productKey) {
+        // Check if chatbot has actual site configuration
+        const chatbotConfig = await prisma.chatbot_configs.findFirst({
+          where: { 
+            site_key: productKey,
+            status: 'active'
+          }
+        });
+        isFullyConfigured = !!chatbotConfig;
+      }
+      
       productStatus[product] = {
-        configured: !!productKey,
+        configured: isFullyConfigured,
+        hasProductKey: !!productKey,
         productKey: productKey,
         canManage: !!productKey,
-        canConfigure: !productKey
+        canConfigure: !productKey,
+        needsSetup: !!productKey && !isFullyConfigured
       };
     }
 
