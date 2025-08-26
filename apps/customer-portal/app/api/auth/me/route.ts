@@ -6,19 +6,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[Auth/Me] Checking authentication...');
-    console.log('[Auth/Me] Cookies:', request.cookies.getAll().map(c => c.name));
-    
     // Use the centralized auth validator for consistency and performance
     const authResult = await validateAuth(request);
-    console.log('[Auth/Me] Auth result:', { 
-      authenticated: authResult.authenticated, 
-      error: authResult.error,
-      hasUser: !!authResult.user 
-    });
     
     if (!authResult.authenticated) {
-      console.log('[Auth/Me] Not authenticated, returning 401');
       return NextResponse.json(
         { authenticated: false, error: authResult.error || 'Not authenticated' },
         { status: 401 }

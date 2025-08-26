@@ -20,48 +20,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check authentication using JWT endpoint
-    console.log('Dashboard: Checking authentication...');
     fetch('/api/auth/me', {
       credentials: 'include'
     })
-      .then(res => {
-        console.log('Dashboard: Auth response status:', res.status);
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
-        console.log('Dashboard: Auth response data:', data);
         if (data.authenticated && data.user) {
-          console.log('Dashboard: User authenticated successfully');
           setIsAuthenticated(true);
           setUser(data.user);
         } else {
-          console.log('Dashboard: Auth failed, error:', data.error);
-          // For now, let's not redirect immediately to debug the issue
-          // Just show not authenticated
           setIsAuthenticated(false);
-          
-          // Try to get user from sessionStorage as fallback
-          const storedUser = sessionStorage.getItem('user');
-          if (storedUser) {
-            console.log('Dashboard: Found user in sessionStorage, using that');
-            setUser(JSON.parse(storedUser));
-            setIsAuthenticated(true);
-          } else {
-            // Delay redirect to allow debugging
-            setTimeout(() => {
-              console.log('Dashboard: Redirecting to login after 2 seconds...');
-              window.location.href = '/login';
-            }, 2000);
-          }
+          window.location.href = '/login';
         }
       })
       .catch(err => {
-        console.error('Dashboard: Auth check failed with error:', err);
+        console.error('Auth check failed:', err);
         setIsAuthenticated(false);
-        // Delay redirect for debugging
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
+        window.location.href = '/login';
       });
   }, []);
 

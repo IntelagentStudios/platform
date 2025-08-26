@@ -26,18 +26,11 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
-      console.log('Login response:', data); // Debug log
 
       if (data.success) {
         setMessage('Login successful! Redirecting...');
         
-        // Store user data in sessionStorage for dashboard
-        if (data.user) {
-          sessionStorage.setItem('user', JSON.stringify(data.user));
-        }
-        
         const redirectUrl = data.redirectTo || '/dashboard';
-        console.log('Redirecting to:', redirectUrl); // Debug log
         
         // Use Next.js router for client-side navigation
         router.push(redirectUrl);
