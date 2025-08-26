@@ -42,37 +42,7 @@ export async function getProductKey(
       return productKeyRecord.product_key;
     }
 
-    // For chatbot, fall back to legacy site_key
-    if (product === 'chatbot') {
-      const license = await prisma.licenses.findUnique({
-        where: { license_key: licenseKey },
-        select: { site_key: true }
-      });
-
-      if (license?.site_key) {
-        // Migrate the legacy key to product_keys table for future use
-        try {
-          await prisma.product_keys.create({
-            data: {
-              license_key: licenseKey,
-              product: 'chatbot',
-              product_key: license.site_key,
-              status: 'active',
-              metadata: {
-                migrated_from: 'licenses.site_key',
-                migration_date: new Date().toISOString(),
-                auto_migrated: true
-              }
-            }
-          });
-        } catch (e) {
-          // Key might already exist, ignore error
-        }
-
-        return license.site_key;
-      }
-    }
-
+    // No fallback to legacy site_key - require proper product key configuration
     return null;
   } catch (error) {
     console.error(`Error getting product key for ${product}:`, error);
@@ -87,7 +57,7 @@ export async function getAllProductKeys(
   licenseKey: string
 ): Promise<ProductKeyRecord[]> {
   try {
-    // Get from product_keys table
+    // Get from product_keys table only - no legacy fallback
     const productKeys = await prisma.product_keys.findMany({
       where: {
         license_key: licenseKey,
@@ -97,32 +67,6 @@ export async function getAllProductKeys(
         created_at: 'asc'
       }
     });
-
-    // Check for legacy site_key and add if not in product_keys
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey },
-      select: { site_key: true }
-    });
-
-    if (license?.site_key) {
-      const hasChatbotKey = productKeys.some(pk => pk.product === 'chatbot');
-      
-      if (!hasChatbotKey) {
-        // Add legacy site_key as chatbot key
-        productKeys.push({
-          id: 'legacy-site-key',
-          license_key: licenseKey,
-          product: 'chatbot',
-          product_key: license.site_key,
-          created_at: new Date(),
-          last_used_at: null,
-          status: 'active',
-          metadata: {
-            source: 'legacy_site_key'
-          }
-        });
-      }
-    }
 
     return productKeys;
   } catch (error) {
@@ -203,19 +147,7 @@ export async function getLicenseFromProductKey(
       };
     }
 
-    // Check legacy site_key
-    const license = await prisma.licenses.findFirst({
-      where: { site_key: productKey },
-      select: { license_key: true }
-    });
-
-    if (license) {
-      return {
-        licenseKey: license.license_key,
-        product: 'chatbot'
-      };
-    }
-
+    // No legacy site_key check - only use product_keys table
     return null;
   } catch (error) {
     console.error('Error getting license from product key:', error);

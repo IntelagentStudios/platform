@@ -37,12 +37,19 @@ export default function DashboardPage() {
           fetch('/api/products/check-keys', { credentials: 'include' })
             .then(res => res.json())
             .then(configData => {
+              console.log('[dashboard] Raw config data:', configData);
               if (configData.success) {
                 console.log('[dashboard] Product configurations:', configData.configurations);
-                setProductConfigs(configData.configurations);
+                setProductConfigs(configData.configurations || {});
+              } else {
+                console.log('[dashboard] No configurations found');
+                setProductConfigs({});
               }
             })
-            .catch(err => console.error('[dashboard] Failed to fetch product configurations:', err));
+            .catch(err => {
+              console.error('[dashboard] Failed to fetch product configurations:', err);
+              setProductConfigs({});
+            });
         } else {
           console.log('[dashboard] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
@@ -164,6 +171,8 @@ export default function DashboardPage() {
                   const config = productConfigs[productKey];
                   const hasKey = config?.hasProductKey;
                   
+                  console.log(`[dashboard] Product: ${product.name}, productKey: ${productKey}, config:`, config, 'hasKey:', hasKey);
+                  
                   // Simple logic: has key = configured, no key = needs configuration
                   const statusText = hasKey ? 'Active' : 'Ready to configure';
                   const statusColor = hasKey ? '#4CAF50' : 'rgb(169, 189, 203)';
@@ -197,7 +206,16 @@ export default function DashboardPage() {
                           // Route to setup page for configuration or management page if configured
                           const productSlug = product.name.toLowerCase().replace(' ', '-');
                           if (hasKey) {
-                            window.location.href = `/products/${productSlug}`;
+                            // Route to manage pages for configured products
+                            if (product.name === 'Chatbot') {
+                              window.location.href = '/products/chatbot/manage';
+                            } else if (product.name === 'Sales Agent') {
+                              window.location.href = '/products/sales-agent/manage';
+                            } else if (product.name === 'Data Enrichment') {
+                              window.location.href = '/products/data-enrichment/manage';
+                            } else if (product.name === 'Setup Agent') {
+                              window.location.href = '/products/setup-agent';
+                            }
                           } else {
                             // Route to new universal setup pages
                             if (product.name === 'Chatbot') {
