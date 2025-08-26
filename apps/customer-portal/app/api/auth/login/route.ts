@@ -26,15 +26,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.users.findUnique({
       where: { email: normalizedEmail },
       include: {
-        licenses: {
-          select: {
-            license_key: true,
-            products: true,
-            is_pro: true,
-            site_key: true,
-            status: true
-          }
-        }
+        licenses: true
       }
     });
 
