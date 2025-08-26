@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
-import { licenseCache } from '@/packages/redis/license-cache';
+import { licenseCache } from '@intelagent/redis/license-cache';
 
 export const dynamic = 'force-dynamic';
 

@@ -5,7 +5,7 @@ import {
   createProductKey, 
   getProductKey 
 } from '@/lib/product-keys-service';
-import { ProductType } from '@/packages/shared/src/utils/product-keys';
+import { ProductType } from '@intelagent/shared/utils/product-keys';
 
 /**
  * GET /api/products/keys

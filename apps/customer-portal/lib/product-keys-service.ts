@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { generateProductKey, ProductType, parseProductKey } from '@/packages/shared/src/utils/product-keys';
+import { generateProductKey, ProductType, parseProductKey } from '@intelagent/shared/utils/product-keys';
 
 export interface ProductKeyRecord {
   id: string;
