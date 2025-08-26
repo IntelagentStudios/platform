@@ -41,12 +41,17 @@ export interface AuthResult {
  */
 export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
   try {
+    console.log('[Auth Validator] Starting validation...');
+    
     // Get auth token from cookies
     const authToken = request 
       ? request.cookies.get('auth_token')?.value
       : cookies().get('auth_token')?.value;
     
+    console.log('[Auth Validator] Auth token found:', !!authToken);
+    
     if (!authToken) {
+      console.log('[Auth Validator] No token found, returning unauthenticated');
       return {
         authenticated: false,
         error: 'No authentication token found'
@@ -57,7 +62,13 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
     let decoded: AuthUser;
     try {
       decoded = jwt.verify(authToken, JWT_SECRET) as AuthUser;
+      console.log('[Auth Validator] JWT decoded successfully:', { 
+        userId: decoded.userId,
+        email: decoded.email,
+        licenseKey: decoded.licenseKey 
+      });
     } catch (jwtError) {
+      console.log('[Auth Validator] JWT verification failed:', jwtError);
       return {
         authenticated: false,
         error: 'Invalid or expired token'
