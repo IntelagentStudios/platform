@@ -75,6 +75,27 @@ async function fetchConversations(licenseKey: string) {
         active_sites: allLicenses.filter(l => l.site_key).length
       };
     } else {
+      // Auto-migrate: Create product key if it doesn't exist
+      if (licenseKey === 'INTL-AGNT-BOSS-MODE') {
+        await prisma.product_keys.upsert({
+          where: {
+            product_key: 'chat_9b3f7e8a2c5d1f0e'
+          },
+          update: {
+            status: 'active'
+          },
+          create: {
+            product_key: 'chat_9b3f7e8a2c5d1f0e',
+            license_key: 'INTL-AGNT-BOSS-MODE',
+            product: 'chatbot',
+            status: 'active',
+            metadata: {
+              domain: 'intelagentstudios.com'
+            }
+          }
+        });
+      }
+
       // Regular users: license_key → product_key → chatbot data
       // Step 1: Get the license information
       const license = await prisma.licenses.findUnique({
