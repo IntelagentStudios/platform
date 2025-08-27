@@ -170,21 +170,28 @@ export async function GET(request: NextRequest) {
           content: true,
           timestamp: true,
           conversation_id: true,
-          site_key: true
+          product_key: true
         }
       })
 
-      // Get license info for each unique site_key
+      // Get license info for each unique product_key
       const uniqueProductKeys = [...new Set(recentLogs.map(s => s.product_key).filter(Boolean))] as string[]
-      const licenses = uniqueProductKeys.length > 0 ? await prisma.licenses.findMany({
-        where: { site_key: { in: uniqueProductKeys } },
-        select: {
-          product_key: true,
-          domain: true,
-          customer_name: true,
-          license_key: true
+      const productKeysWithLicenses = uniqueProductKeys.length > 0 ? await prisma.product_keys.findMany({
+        where: { product_key: { in: uniqueProductKeys } },
+        include: {
+          licenses: {
+            select: {
+              domain: true,
+              customer_name: true,
+              license_key: true
+            }
+          }
         }
       }) : []
+      const licenses = productKeysWithLicenses.map(pk => ({
+        ...pk.licenses,
+        product_key: pk.product_key
+      }))
       const licenseMap = new Map(licenses.map(l => [l.product_key, l]))
 
       // Group by session
@@ -263,17 +270,24 @@ export async function GET(request: NextRequest) {
         take: limit * 5
       })
 
-      // Get license info for each unique site_key
+      // Get license info for each unique product_key
       const uniqueProductKeys = [...new Set(sessionDetails.map(s => s.product_key).filter(Boolean))] as string[]
-      const licenses = uniqueProductKeys.length > 0 ? await prisma.licenses.findMany({
-        where: { site_key: { in: uniqueProductKeys } },
-        select: {
-          product_key: true,
-          license_key: true,
-          domain: true,
-          customer_name: true
+      const productKeysWithLicenses = uniqueProductKeys.length > 0 ? await prisma.product_keys.findMany({
+        where: { product_key: { in: uniqueProductKeys } },
+        include: {
+          licenses: {
+            select: {
+              domain: true,
+              customer_name: true,
+              license_key: true
+            }
+          }
         }
       }) : []
+      const licenses = productKeysWithLicenses.map(pk => ({
+        ...pk.licenses,
+        product_key: pk.product_key
+      }))
       const licenseMap = new Map(licenses.map(l => [l.product_key, l]))
 
       // Group sessions
