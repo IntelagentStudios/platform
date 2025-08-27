@@ -691,67 +691,6 @@ Examples:
 
         {activeTab === 'settings' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full" 
-                        style={{ 
-                          width: `${stats?.weekConversations ? (stats.weekConversations / Math.max(stats.monthConversations, 1)) * 100 : 0}%`,
-                          backgroundColor: 'rgb(169, 189, 203)' 
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      {stats?.weekConversations || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>This Month</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full" 
-                        style={{ 
-                          width: '100%',
-                          backgroundColor: 'rgb(169, 189, 203)' 
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      {stats?.monthConversations || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {stats?.domains && stats.domains.length > 0 && (
-              <div 
-                className="rounded-lg p-6 border"
-                style={{ 
-                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                  borderColor: 'rgba(169, 189, 203, 0.15)'
-                }}
-              >
-                <h3 className="text-lg font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Active Domains
-                </h3>
-                <div className="space-y-2">
-                  {stats.domains.map((domain, idx) => (
-                    <div key={idx} className="flex items-center space-x-2">
-                      <Globe className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                      <span style={{ color: 'rgba(229, 227, 220, 0.8)' }}>{domain}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div 
               className="rounded-lg p-6 border"
               style={{ 
@@ -819,58 +758,38 @@ Examples:
               }}
             >
               <div className="flex items-center space-x-2 mb-4">
-                <Settings className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                <Code className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
                 <h3 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Custom Knowledge Base
+                  Embed Code
                 </h3>
               </div>
               <p className="text-sm mb-4" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                Add custom information, instructions, or temporary data to enhance your chatbot's responses.
-                This knowledge will be included alongside website content when the chatbot responds.
+                Add this code to your website to enable the chatbot.
               </p>
-              <textarea
-                value={customKnowledge}
-                onChange={(e) => setCustomKnowledge(e.target.value)}
-                placeholder="Enter custom information, FAQs, product details, or specific instructions for your chatbot...
-                
-Examples:
-• Our office hours are Monday-Friday 9am-5pm EST
-• We offer free shipping on orders over $50
-• Our support email is support@example.com
-• Always be friendly and professional
-• Mention our current promotion: 20% off all products"
-                className="w-full h-48 p-4 rounded-lg resize-none"
-                style={{
-                  backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                  border: '1px solid rgba(169, 189, 203, 0.2)',
-                  color: 'rgb(229, 227, 220)',
-                  fontSize: '14px'
+              <pre 
+                className="p-4 rounded overflow-x-auto text-sm"
+                style={{ 
+                  backgroundColor: 'rgba(48, 54, 54, 0.8)',
+                  color: 'rgb(169, 189, 203)',
+                  border: '1px solid rgba(169, 189, 203, 0.2)'
                 }}
-                maxLength={50000}
-              />
-              <div className="flex items-center justify-between mt-4">
-                <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
-                  {customKnowledge.length}/50,000 characters
-                </span>
-                <div className="flex items-center space-x-2">
-                  {knowledgeSaved && (
-                    <span className="text-sm" style={{ color: '#4CAF50' }}>
-                      ✓ Saved successfully
-                    </span>
-                  )}
-                  <button
-                    onClick={saveCustomKnowledge}
-                    disabled={savingKnowledge || !customKnowledge.trim()}
-                    className="px-4 py-2 rounded-lg font-medium disabled:opacity-50"
-                    style={{
-                      backgroundColor: customKnowledge.trim() ? 'rgb(169, 189, 203)' : 'rgba(169, 189, 203, 0.3)',
-                      color: 'rgb(48, 54, 54)'
-                    }}
-                  >
-                    {savingKnowledge ? 'Saving...' : 'Save Knowledge'}
-                  </button>
-                </div>
-              </div>
+              >
+                {getEmbedCode()}
+              </pre>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(getEmbedCode());
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="mt-4 px-4 py-2 rounded-lg font-medium"
+                style={{
+                  backgroundColor: 'rgb(169, 189, 203)',
+                  color: 'rgb(48, 54, 54)'
+                }}
+              >
+                {copied ? '✓ Copied!' : 'Copy Code'}
+              </button>
             </div>
 
             <div 
@@ -912,7 +831,7 @@ Examples:
           </div>
         )}
 
-        {activeTab === 'embed' && (
+        {false && activeTab === 'embed' && (
           <div 
             className="rounded-lg p-6 border"
             style={{ 
