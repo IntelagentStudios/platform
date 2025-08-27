@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Get recent conversation sessions
     const recentSessions = await prisma.chatbot_logs.groupBy({
-      by: ['session_id', 'domain', 'site_key'],
+      by: ['session_id', 'domain', 'product_key'],
       where: {
         ...whereClause,
         timestamp: { gte: thirtyDaysAgo },
@@ -113,11 +113,18 @@ export async function GET(request: NextRequest) {
     for (const session of recentSessions) {
       // Get customer name for the session if we have a site key
       let license = null
-      if (session.site_key) {
-        license = await prisma.licenses.findUnique({
-          where: { site_key: session.site_key },
-          select: { customer_name: true, domain: true }
+      if (session.product_key) {
+        // Get license from product_key
+        const productKeyRecord = await prisma.product_keys.findUnique({
+          where: { product_key: session.product_key },
+          select: { license_key: true }
         })
+        if (productKeyRecord) {
+          license = await prisma.licenses.findUnique({
+            where: { license_key: productKeyRecord.license_key },
+            select: { customer_name: true, domain: true }
+          })
+        }
       }
 
       activities.push({
