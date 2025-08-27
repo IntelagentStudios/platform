@@ -49,6 +49,7 @@ export default function ChatbotManagePage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
   const [siteKey, setSiteKey] = useState<string | null>(null);
+  const [productKey, setProductKey] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
@@ -80,9 +81,18 @@ export default function ChatbotManagePage() {
       if (data.authenticated && data.user) {
         setIsAuthenticated(true);
         setUser(data.user);
-        setSiteKey(data.user.site_key);
+        setSiteKey(data.user.site_key); // Keep for legacy support
         
-        if (data.user.site_key) {
+        // Check for product configuration
+        const configRes = await fetch('/api/products/configuration', { credentials: 'include' });
+        const configData = await configRes.json();
+        
+        if (configData.chatbot?.configured) {
+          setProductKey(configData.chatbot.product_key);
+          setSiteKey(configData.chatbot.site_key || configData.chatbot.product_key);
+          await fetchConversations();
+        } else if (data.user.site_key) {
+          // Fallback to site_key if no product key
           await fetchConversations();
         } else {
           setLoading(false);
@@ -203,8 +213,10 @@ export default function ChatbotManagePage() {
   };
 
   const copySiteKey = () => {
-    if (siteKey) {
-      navigator.clipboard.writeText(siteKey);
+    // Prefer product key over site key
+    const keyToCopy = productKey || siteKey;
+    if (keyToCopy) {
+      navigator.clipboard.writeText(keyToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -262,14 +274,15 @@ export default function ChatbotManagePage() {
   };
 
   const getEmbedCode = () => {
-    if (!siteKey) return '';
+    const key = productKey || siteKey;
+    if (!key) return '';
     
     return `<!-- Intelagent Chatbot -->
 <script>
   (function() {
     var script = document.createElement('script');
     script.src = 'https://chat.intelagentstudios.com/widget.js';
-    script.setAttribute('data-site-key', '${siteKey}');
+    script.setAttribute('data-product-key', '${key}');
     script.async = true;
     document.head.appendChild(script);
   })();
@@ -300,7 +313,7 @@ export default function ChatbotManagePage() {
     );
   }
 
-  if (!siteKey) {
+  if (!siteKey && !productKey) {
     return (
       <DashboardLayout>
         <div className="p-8">
@@ -753,12 +766,12 @@ export default function ChatbotManagePage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                    Site Key
+                    Product Key
                   </label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
-                      value={siteKey || ''}
+                      value={productKey || siteKey || ''}
                       readOnly
                       className="flex-1 px-3 py-2 rounded-lg font-mono text-sm"
                       style={{ 

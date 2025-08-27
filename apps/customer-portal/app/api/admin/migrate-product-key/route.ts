@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
         product_key: 'chat_9b3f7e8a2c5d1f0e'
       },
       update: {
-        status: 'active',
-        updated_at: new Date()
+        status: 'active'
       },
       create: {
         product_key: 'chat_9b3f7e8a2c5d1f0e',

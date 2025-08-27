@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
       chatbot: {
         configured: false,
         site_key: null,
+        product_key: null,
         domain: null,
         created_at: null,
         embed_code: null
@@ -75,11 +76,46 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    // Check if chatbot is configured via licenses table
-    if (license?.site_key) {
+    // Check for product keys (new system)
+    const productKeys = await prisma.product_keys.findMany({
+      where: {
+        license_key: licenseKey,
+        status: 'active'
+      }
+    });
+
+    // Check each product for configuration
+    for (const pk of productKeys) {
+      if (pk.product === 'chatbot') {
+        configurations.chatbot = {
+          configured: true,
+          site_key: license?.site_key, // Keep for backwards compatibility
+          product_key: pk.product_key,
+          domain: (pk.metadata as any)?.domain || license?.domain || '',
+          created_at: pk.created_at?.toISOString() || null,
+          embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${pk.product_key}"></script>`
+        };
+      } else if (pk.product === 'sales_agent') {
+        configurations.sales_agent = {
+          configured: true
+        };
+      } else if (pk.product === 'data_enrichment') {
+        configurations.data_enrichment = {
+          configured: true
+        };
+      } else if (pk.product === 'setup_agent') {
+        configurations.setup_agent = {
+          configured: true
+        };
+      }
+    }
+
+    // Fall back to checking site_key if no product key found for chatbot
+    if (!configurations.chatbot.configured && license?.site_key) {
       configurations.chatbot = {
         configured: true,
         site_key: license.site_key,
+        product_key: null,
         domain: license.domain || '',
         created_at: license.created_at?.toISOString() || null,
         embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-site-key="${license.site_key}"></script>`
@@ -88,8 +124,10 @@ export async function GET(request: NextRequest) {
     
     // Log for debugging
     console.log('License found:', !!license);
+    console.log('Product keys found:', productKeys.length);
     console.log('Site key:', license?.site_key);
     console.log('Chatbot configured:', configurations.chatbot.configured);
+    console.log('Chatbot product key:', configurations.chatbot.product_key);
 
     // Override with product_configs if available
     productConfigs.forEach(config => {
@@ -110,8 +148,10 @@ export async function GET(request: NextRequest) {
       ...configurations,
       _debug: {
         license_key_used: licenseKey,
+        product_keys_found: productKeys.length,
         site_key_found: license?.site_key || 'none',
-        domain_found: license?.domain || 'none',
+        product_key_found: configurations.chatbot?.product_key || 'none',
+        domain_found: configurations.chatbot?.domain || license?.domain || 'none',
         chatbot_configured: configurations.chatbot?.configured || false
       }
     });
