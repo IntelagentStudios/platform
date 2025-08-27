@@ -21,19 +21,29 @@ export async function GET(request: NextRequest) {
     const product = searchParams.get('product')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    // For non-master users, get their site_key and products first
-    let userSiteKey: string | null = null
+    // For non-master users, get their product_key and products first
+    let userProductKey: string | null = null
     let userProducts: string[] = []
     {
       const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.license_key },
-        select: { site_key: true, products: true }
+        select: { products: true }
       })
-      userSiteKey = userLicense?.site_key || null
       userProducts = userLicense?.products || []
       
-      // If user has no site_key, return empty results
-      if (!userSiteKey) {
+      // Get user's chatbot product key
+      const productKeyRecord = await prisma.product_keys.findFirst({
+        where: { 
+          license_key: auth.license_key, 
+          product: 'chatbot', 
+          status: 'active' 
+        },
+        select: { product_key: true }
+      })
+      userProductKey = productKeyRecord?.product_key || null
+      
+      // If user has no product_key, return empty results
+      if (!userProductKey) {
         return NextResponse.json({ sessions: [] })
       }
     }
@@ -43,10 +53,10 @@ export async function GET(request: NextRequest) {
       session_id: { not: null }
     }
     
-    // Filter by site_key for non-master users
+    // Filter by product_key for non-master users
     {
-      // We already checked userSiteKey exists above
-      whereClause.site_key = userSiteKey
+      // We already checked userProductKey exists above
+      whereClause.product_key = userProductKey
     }
 
     // Filter by domain if specified
@@ -85,31 +95,38 @@ export async function GET(request: NextRequest) {
         select: {
           session_id: true,
           domain: true,
-          site_key: true,
+          product_key: true,
           timestamp: true
         },
         orderBy: { timestamp: 'desc' },
         take: limit * 5 // Get more to group properly
       })
 
-      // Get license info for each unique site_key
-      const uniqueSiteKeys = [...new Set(domainSessions.map(s => s.site_key).filter(Boolean))] as string[]
-      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
-        where: { site_key: { in: uniqueSiteKeys } },
-        select: {
-          site_key: true,
-          domain: true,
-          customer_name: true,
-          license_key: true
+      // Get license info for each unique product_key
+      const uniqueProductKeys = [...new Set(domainSessions.map(s => s.product_key).filter(Boolean))] as string[]
+      const productKeysWithLicenses = uniqueProductKeys.length > 0 ? await prisma.product_keys.findMany({
+        where: { product_key: { in: uniqueProductKeys } },
+        include: {
+          licenses: {
+            select: {
+              domain: true,
+              customer_name: true,
+              license_key: true
+            }
+          }
         }
       }) : []
-      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+      const licenses = productKeysWithLicenses.map(pk => ({
+        ...pk.licenses,
+        product_key: pk.product_key
+      }))
+      const licenseMap = new Map(licenses.map(l => [l.product_key, l]))
 
       // Group by session
       const sessionMap = new Map()
       domainSessions.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          const license = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
@@ -158,24 +175,24 @@ export async function GET(request: NextRequest) {
       })
 
       // Get license info for each unique site_key
-      const uniqueSiteKeys = [...new Set(recentLogs.map(s => s.site_key).filter(Boolean))] as string[]
-      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
-        where: { site_key: { in: uniqueSiteKeys } },
+      const uniqueProductKeys = [...new Set(recentLogs.map(s => s.product_key).filter(Boolean))] as string[]
+      const licenses = uniqueProductKeys.length > 0 ? await prisma.licenses.findMany({
+        where: { site_key: { in: uniqueProductKeys } },
         select: {
-          site_key: true,
+          product_key: true,
           domain: true,
           customer_name: true,
           license_key: true
         }
       }) : []
-      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+      const licenseMap = new Map(licenses.map(l => [l.product_key, l]))
 
       // Group by session
       const sessionMap = new Map()
       
       recentLogs.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          const license = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
@@ -239,7 +256,7 @@ export async function GET(request: NextRequest) {
         select: {
           session_id: true,
           domain: true,
-          site_key: true,
+          product_key: true,
           timestamp: true
         },
         orderBy: { timestamp: 'desc' },
@@ -247,23 +264,23 @@ export async function GET(request: NextRequest) {
       })
 
       // Get license info for each unique site_key
-      const uniqueSiteKeys = [...new Set(sessionDetails.map(s => s.site_key).filter(Boolean))] as string[]
-      const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
-        where: { site_key: { in: uniqueSiteKeys } },
+      const uniqueProductKeys = [...new Set(sessionDetails.map(s => s.product_key).filter(Boolean))] as string[]
+      const licenses = uniqueProductKeys.length > 0 ? await prisma.licenses.findMany({
+        where: { site_key: { in: uniqueProductKeys } },
         select: {
-          site_key: true,
+          product_key: true,
           license_key: true,
           domain: true,
           customer_name: true
         }
       }) : []
-      const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+      const licenseMap = new Map(licenses.map(l => [l.product_key, l]))
 
       // Group sessions
       const sessionMap = new Map()
       sessionDetails.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.site_key ? licenseMap.get(log.site_key) : null
+          const license = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
