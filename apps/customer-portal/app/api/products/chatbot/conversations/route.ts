@@ -144,7 +144,7 @@ async function fetchConversations(licenseKey: string) {
 
       // Step 4: Fetch chatbot logs using the product key
       logs = await prisma.chatbot_logs.findMany({
-        where: { site_key: chatbotKey }, // Uses product key (or legacy site_key)
+        where: { product_key: chatbotKey }, // Uses product key
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
@@ -164,7 +164,7 @@ async function fetchConversations(licenseKey: string) {
           id: conversationId,
           session_id: log.session_id,
           domain: log.domain,
-          site_key: log.site_key, // Include for debugging
+          product_key: log.product_key, // Include for debugging
           messages: [],
           first_message_at: log.timestamp || log.created_at,
           last_message_at: log.timestamp || log.created_at
@@ -224,7 +224,7 @@ async function fetchConversations(licenseKey: string) {
     return NextResponse.json({
       conversations,
       stats,
-      site_key: siteKeyUsed,
+      product_key: siteKeyUsed,
       license_key: isMasterAdmin ? 'MASTER_ADMIN' : licenseKey,
       license_info: licenseInfo,
       is_admin: isMasterAdmin,
