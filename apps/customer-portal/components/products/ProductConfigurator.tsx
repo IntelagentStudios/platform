@@ -323,30 +323,54 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
   return (
     <div style={{
       background: 'white',
-      borderRadius: '12px',
-      padding: '40px',
-      maxWidth: '600px',
+      borderRadius: '20px',
+      padding: '48px',
+      maxWidth: '720px',
       width: '100%',
-      boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
+      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }} />
       {!success ? (
         <>
-          <h1 style={{
-            fontSize: '28px',
-            marginBottom: '10px',
-            color: '#1a202c',
-            textAlign: 'center'
-          }}>
-            Configure {config.name}
-          </h1>
-          <p style={{
-            fontSize: '16px',
-            color: '#718096',
-            marginBottom: '30px',
-            textAlign: 'center'
-          }}>
-            {config.description}
-          </p>
+          <div style={{ textAlign: 'center', marginBottom: '40px', marginTop: '20px' }}>
+            <div style={{
+              display: 'inline-block',
+              padding: '6px 14px',
+              background: 'rgba(102, 126, 234, 0.08)',
+              borderRadius: '100px',
+              marginBottom: '16px',
+              border: '1px solid rgba(102, 126, 234, 0.2)'
+            }}>
+              <span style={{ fontSize: '13px', color: '#667eea', fontWeight: '600', letterSpacing: '0.05em' }}>
+                🚀 QUICK SETUP
+              </span>
+            </div>
+            <h1 style={{
+              fontSize: '32px',
+              marginBottom: '12px',
+              color: '#1a202c',
+              fontWeight: '700'
+            }}>
+              Configure {config.name}
+            </h1>
+            <p style={{
+              fontSize: '16px',
+              color: '#718096',
+              lineHeight: '1.6'
+            }}>
+              {config.description}
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit}>
             {config.fields.map((field) => (
@@ -432,18 +456,32 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '14px',
+                padding: '16px',
                 background: loading ? '#a0aec0' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
                 fontSize: '16px',
                 fontWeight: '600',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'transform 0.2s'
+                transition: 'all 0.3s',
+                boxShadow: loading ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.4)',
+                transform: loading ? 'none' : 'translateY(0)'
+              }}
+              onMouseOver={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                }
               }}
             >
-              {loading ? 'Configuring...' : `Configure ${config.name}`}
+              {loading ? '⌛ Configuring...' : `✨ Configure ${config.name}`}
             </button>
           </form>
         </>
@@ -451,19 +489,34 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
         <>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <div style={{
-              width: '60px',
-              height: '60px',
+              width: '80px',
+              height: '80px',
               background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 20px',
-              fontSize: '30px',
-              color: 'white'
+              margin: '0 auto 24px',
+              fontSize: '40px',
+              color: 'white',
+              boxShadow: '0 10px 30px rgba(72, 187, 120, 0.3)',
+              animation: 'pulse 2s infinite'
             }}>
               ✓
             </div>
+            <style jsx>{`
+              @keyframes pulse {
+                0% {
+                  box-shadow: 0 10px 30px rgba(72, 187, 120, 0.3);
+                }
+                50% {
+                  box-shadow: 0 10px 40px rgba(72, 187, 120, 0.5);
+                }
+                100% {
+                  box-shadow: 0 10px 30px rgba(72, 187, 120, 0.3);
+                }
+              }
+            `}</style>
             <h1 style={{
               fontSize: '28px',
               marginBottom: '10px',
@@ -502,7 +555,7 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
             </div>
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '30px' }}>
             <label style={{
               display: 'block',
               fontSize: '14px',
@@ -515,13 +568,14 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
             <div style={{
               position: 'relative',
               padding: '16px',
-              background: '#2d3748',
-              borderRadius: '8px',
+              background: '#1a202c',
+              borderRadius: '12px',
               fontFamily: 'monospace',
               fontSize: '13px',
               color: '#68d391',
               whiteSpace: 'pre-wrap',
-              wordBreak: 'break-all'
+              wordBreak: 'break-all',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               {embedCode}
               <button
@@ -531,37 +585,316 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                   top: '12px',
                   right: '12px',
                   padding: '8px 12px',
-                  background: copied ? '#48bb78' : '#4a5568',
+                  background: copied ? '#48bb78' : 'rgba(255, 255, 255, 0.1)',
                   color: 'white',
                   fontSize: '12px',
                   border: 'none',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
-                  transition: 'background 0.2s'
+                  transition: 'all 0.2s',
+                  backdropFilter: 'blur(10px)'
                 }}
               >
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? '✓ Copied!' : '📋 Copy'}
               </button>
             </div>
           </div>
 
-          <button
-            onClick={reset}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: 'white',
-              color: '#667eea',
+          <div style={{ 
+            marginBottom: '30px',
+            padding: '20px',
+            background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h3 style={{
               fontSize: '16px',
               fontWeight: '600',
-              border: '2px solid #667eea',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'background 0.2s'
-            }}
-          >
-            Configure Another {config.name}
-          </button>
+              color: '#2d3748',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              📚 Installation Instructions
+            </h3>
+            
+            <details style={{ marginBottom: '12px' }}>
+              <summary style={{
+                cursor: 'pointer',
+                padding: '10px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#4a5568',
+                userSelect: 'none',
+                transition: 'all 0.2s'
+              }}>
+                🌐 HTML/Static Website
+              </summary>
+              <div style={{
+                padding: '12px',
+                marginTop: '8px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#718096',
+                lineHeight: '1.6'
+              }}>
+                Add the script tag just before the closing <code style={{ background: '#f7fafc', padding: '2px 4px', borderRadius: '3px' }}>&lt;/body&gt;</code> tag in your HTML file:
+                <pre style={{
+                  marginTop: '8px',
+                  padding: '12px',
+                  background: '#f7fafc',
+                  borderRadius: '6px',
+                  overflowX: 'auto',
+                  fontSize: '12px'
+                }}>
+{`<body>
+  <!-- Your website content -->
+  
+  <!-- Add before closing body tag -->
+  ${embedCode}
+</body>`}
+                </pre>
+              </div>
+            </details>
+
+            <details style={{ marginBottom: '12px' }}>
+              <summary style={{
+                cursor: 'pointer',
+                padding: '10px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#4a5568',
+                userSelect: 'none',
+                transition: 'all 0.2s'
+              }}>
+                ⚡ React/Next.js
+              </summary>
+              <div style={{
+                padding: '12px',
+                marginTop: '8px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#718096',
+                lineHeight: '1.6'
+              }}>
+                Add to your main layout or _app.js/_document.js file:
+                <pre style={{
+                  marginTop: '8px',
+                  padding: '12px',
+                  background: '#f7fafc',
+                  borderRadius: '6px',
+                  overflowX: 'auto',
+                  fontSize: '12px'
+                }}>
+{`// In _app.js or layout component
+import Script from 'next/script'
+
+export default function App({ Component, pageProps }) {
+  return (
+    <>
+      <Component {...pageProps} />
+      <Script 
+        src="https://dashboard.intelagentstudios.com/chatbot-widget.js" 
+        data-product-key="${productKey}"
+        strategy="lazyOnload"
+      />
+    </>
+  )
+}`}
+                </pre>
+              </div>
+            </details>
+
+            <details style={{ marginBottom: '12px' }}>
+              <summary style={{
+                cursor: 'pointer',
+                padding: '10px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#4a5568',
+                userSelect: 'none',
+                transition: 'all 0.2s'
+              }}>
+                🔷 WordPress
+              </summary>
+              <div style={{
+                padding: '12px',
+                marginTop: '8px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#718096',
+                lineHeight: '1.6'
+              }}>
+                <ol style={{ marginLeft: '20px' }}>
+                  <li>Go to <strong>Appearance → Theme Editor</strong></li>
+                  <li>Select <strong>footer.php</strong></li>
+                  <li>Add the script before <code style={{ background: '#f7fafc', padding: '2px 4px', borderRadius: '3px' }}>&lt;/body&gt;</code></li>
+                </ol>
+                <div style={{
+                  marginTop: '12px',
+                  padding: '8px',
+                  background: '#fef5e7',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: '#9a7d0a'
+                }}>
+                  💡 <strong>Tip:</strong> You can also use a plugin like "Insert Headers and Footers" to add the code without editing theme files.
+                </div>
+              </div>
+            </details>
+
+            <details style={{ marginBottom: '12px' }}>
+              <summary style={{
+                cursor: 'pointer',
+                padding: '10px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#4a5568',
+                userSelect: 'none',
+                transition: 'all 0.2s'
+              }}>
+                🛍️ Shopify
+              </summary>
+              <div style={{
+                padding: '12px',
+                marginTop: '8px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#718096',
+                lineHeight: '1.6'
+              }}>
+                <ol style={{ marginLeft: '20px' }}>
+                  <li>Go to <strong>Online Store → Themes</strong></li>
+                  <li>Click <strong>Actions → Edit code</strong></li>
+                  <li>Find <strong>theme.liquid</strong> under Layout</li>
+                  <li>Add the script before <code style={{ background: '#f7fafc', padding: '2px 4px', borderRadius: '3px' }}>&lt;/body&gt;</code></li>
+                  <li>Save your changes</li>
+                </ol>
+              </div>
+            </details>
+
+            <details>
+              <summary style={{
+                cursor: 'pointer',
+                padding: '10px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#4a5568',
+                userSelect: 'none',
+                transition: 'all 0.2s'
+              }}>
+                🌈 Other Platforms
+              </summary>
+              <div style={{
+                padding: '12px',
+                marginTop: '8px',
+                background: 'white',
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: '#718096',
+                lineHeight: '1.6'
+              }}>
+                <p><strong>General steps for most platforms:</strong></p>
+                <ol style={{ marginLeft: '20px', marginTop: '8px' }}>
+                  <li>Access your website's HTML editor or template files</li>
+                  <li>Locate the footer section or main layout file</li>
+                  <li>Add the script tag before the closing body tag</li>
+                  <li>Save and publish your changes</li>
+                </ol>
+                <div style={{
+                  marginTop: '12px',
+                  padding: '8px',
+                  background: '#e8f5e9',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: '#2e7d32'
+                }}>
+                  💬 Need help? Contact our support team for platform-specific guidance.
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div style={{ 
+            display: 'flex', 
+            gap: '12px',
+            marginTop: '20px'
+          }}>
+            <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                flex: 1,
+                padding: '14px 20px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+              }}
+            >
+              🚀 Continue to Dashboard
+            </button>
+            <button
+              onClick={reset}
+              style={{
+                flex: 1,
+                padding: '14px 20px',
+                background: 'white',
+                color: '#667eea',
+                fontSize: '16px',
+                fontWeight: '600',
+                border: '2px solid #e2e8f0',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = '#667eea';
+                e.currentTarget.style.background = '#f7fafc';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.background = 'white';
+              }}
+            >
+              ➕ Configure Another
+            </button>
+          </div>
         </>
       )}
     </div>
