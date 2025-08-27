@@ -136,6 +136,7 @@ export async function GET(request: NextRequest) {
         configurations.chatbot = {
           configured: true,
           site_key: configData.site_key || license?.site_key,
+          product_key: configData.product_key || null,
           domain: configData.domain || license?.domain,
           created_at: config.created_at.toISOString(),
           embed_code: configData.embed_code || configurations.chatbot.embed_code
