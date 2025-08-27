@@ -469,7 +469,7 @@ export default function ChatbotManagePage() {
       <div className="px-8 pt-6">
         <div className="border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
           <div className="flex space-x-8">
-            {['conversations', 'analytics', 'settings', 'embed'].map((tab) => (
+            {['conversations', 'custom instructions', 'settings'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -625,8 +625,8 @@ export default function ChatbotManagePage() {
           </div>
         )}
 
-        {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {activeTab === 'custom instructions' && (
+          <div className="max-w-4xl">
             <div 
               className="rounded-lg p-6 border"
               style={{ 
@@ -635,60 +635,62 @@ export default function ChatbotManagePage() {
               }}
             >
               <h3 className="text-lg font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                Conversation Metrics
+                Custom Instructions
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Average Messages per Conversation</span>
-                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                    {stats?.avgMessagesPerConversation || 0}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Total Conversations</span>
-                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                    {stats?.totalConversations || 0}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Active Domains</span>
-                  <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                    {stats?.domains?.length || 0}
-                  </span>
+              <p className="text-sm mb-4" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                Provide custom instructions, information, or context to personalize your chatbot's behavior.
+                These instructions are used by the AI to enhance responses with your specific requirements.
+              </p>
+              <textarea
+                value={customKnowledge}
+                onChange={(e) => setCustomKnowledge(e.target.value)}
+                placeholder="Enter custom instructions for your chatbot...
+
+Examples:
+• Business hours: Monday-Friday 9am-5pm EST, closed weekends
+• Current promotion: 20% off all products with code SAVE20
+• Always mention our free consultation offer
+• Prioritize upselling our premium support package
+• Use a friendly but professional tone
+• Direct technical questions to support@example.com"
+                className="w-full h-64 p-4 rounded-lg resize-none"
+                style={{
+                  backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                  border: '1px solid rgba(169, 189, 203, 0.2)',
+                  color: 'rgb(229, 227, 220)',
+                  fontSize: '14px'
+                }}
+                maxLength={50000}
+              />
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  {customKnowledge.length}/50,000 characters
+                </span>
+                <div className="flex items-center space-x-2">
+                  {knowledgeSaved && (
+                    <span className="text-sm" style={{ color: '#4CAF50' }}>
+                      ✓ Saved successfully
+                    </span>
+                  )}
+                  <button
+                    onClick={saveCustomKnowledge}
+                    disabled={savingKnowledge || !customKnowledge.trim()}
+                    className="px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    style={{
+                      backgroundColor: customKnowledge.trim() ? 'rgb(169, 189, 203)' : 'rgba(169, 189, 203, 0.3)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
+                  >
+                    {savingKnowledge ? 'Saving...' : 'Save Instructions'}
+                  </button>
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            <div 
-              className="rounded-lg p-6 border"
-              style={{ 
-                backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                borderColor: 'rgba(169, 189, 203, 0.15)'
-              }}
-            >
-              <h3 className="text-lg font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                Activity Trend
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Today</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full" 
-                        style={{ 
-                          width: `${stats?.todayConversations ? (stats.todayConversations / Math.max(stats.monthConversations, 1)) * 100 : 0}%`,
-                          backgroundColor: 'rgb(169, 189, 203)' 
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      {stats?.todayConversations || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>This Week</span>
+        {activeTab === 'settings' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
                   <div className="flex items-center space-x-2">
                     <div className="w-32 bg-gray-700 rounded-full h-2">
                       <div 
