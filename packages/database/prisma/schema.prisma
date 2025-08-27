@@ -374,6 +374,7 @@ model licenses {
   subtotal_pence      Int?           @default(0)
   discount_pence      Int?           @default(0)
   product_keys        product_keys[]
+  custom_knowledge    custom_knowledge[]
   pro_addon_pence     Int?           @default(0)
   total_pence         Int?           @default(0)
   activated_at        DateTime?      @db.Timestamptz(6)
@@ -795,19 +796,41 @@ model workflows_tags {
 }
 
 model product_keys {
-  id           String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key  String    @db.VarChar(20)
-  product      String    @db.VarChar(50)
-  product_key  String    @unique @db.VarChar(255)
-  created_at   DateTime? @default(now()) @db.Timestamptz(6)
-  last_used_at DateTime? @db.Timestamptz(6)
-  status       String?   @default("active") @db.VarChar(20)
-  metadata     Json?     @default("{}")
-  licenses     licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  id               String             @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key      String             @db.VarChar(20)
+  product          String             @db.VarChar(50)
+  product_key      String             @unique @db.VarChar(255)
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  last_used_at     DateTime?          @db.Timestamptz(6)
+  status           String?            @default("active") @db.VarChar(20)
+  metadata         Json?              @default("{}")
+  licenses         licenses           @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  custom_knowledge custom_knowledge[]
 
   @@index([license_key], map: "idx_product_keys_license")
   @@index([product], map: "idx_product_keys_product")
   @@index([status], map: "idx_product_keys_status")
   @@index([product_key], map: "idx_product_keys_product_key")
+  @@schema("public")
+}
+
+model custom_knowledge {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  product_key   String       @db.VarChar(255)
+  license_key   String       @db.VarChar(20)
+  knowledge_type String      @default("general") @db.VarChar(50)
+  content       String       @db.Text
+  is_active     Boolean      @default(true)
+  expires_at    DateTime?    @db.Timestamptz(6)
+  created_at    DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?    @default(now()) @db.Timestamptz(6)
+  created_by    String?      @db.VarChar(255)
+  product_keys  product_keys @relation(fields: [product_key], references: [product_key], onDelete: Cascade)
+  licenses      licenses     @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+
+  @@unique([product_key, knowledge_type])
+  @@index([product_key], map: "idx_custom_knowledge_product_key")
+  @@index([license_key], map: "idx_custom_knowledge_license_key")
+  @@index([is_active], map: "idx_custom_knowledge_active")
   @@schema("public")
 }

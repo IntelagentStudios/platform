@@ -60,6 +60,9 @@ export default function ChatbotManagePage() {
   const [dateFilter, setDateFilter] = useState('all');
   const [domainFilter, setDomainFilter] = useState('all');
   const [groupBy, setGroupBy] = useState('time'); // time, domain, session
+  const [customKnowledge, setCustomKnowledge] = useState('');
+  const [savingKnowledge, setSavingKnowledge] = useState(false);
+  const [knowledgeSaved, setKnowledgeSaved] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -105,6 +108,9 @@ export default function ChatbotManagePage() {
         setConversations(data.conversations);
         calculateStats(data.conversations);
       }
+      
+      // Also load custom knowledge
+      loadCustomKnowledge();
       
       setLoading(false);
       setRefreshing(false);
@@ -201,6 +207,57 @@ export default function ChatbotManagePage() {
       navigator.clipboard.writeText(siteKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const loadCustomKnowledge = async () => {
+    try {
+      const res = await fetch('/api/products/chatbot/custom-knowledge', {
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.knowledge && data.knowledge.length > 0) {
+          // Get the general knowledge entry
+          const general = data.knowledge.find(k => k.knowledge_type === 'general');
+          if (general) {
+            setCustomKnowledge(general.content);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading custom knowledge:', error);
+    }
+  };
+
+  const saveCustomKnowledge = async () => {
+    setSavingKnowledge(true);
+    setKnowledgeSaved(false);
+    
+    try {
+      const res = await fetch('/api/products/chatbot/custom-knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: customKnowledge,
+          knowledge_type: 'general'
+        })
+      });
+      
+      if (res.ok) {
+        setKnowledgeSaved(true);
+        setTimeout(() => setKnowledgeSaved(false), 3000);
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to save custom knowledge');
+      }
+    } catch (error) {
+      console.error('Error saving custom knowledge:', error);
+      alert('Failed to save custom knowledge');
+    } finally {
+      setSavingKnowledge(false);
     }
   };
 
@@ -735,6 +792,68 @@ export default function ChatbotManagePage() {
                     <Activity className="h-4 w-4" style={{ color: '#4CAF50' }} />
                     <span style={{ color: '#4CAF50' }}>Active</span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-lg p-6 border"
+              style={{ 
+                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.15)'
+              }}
+            >
+              <div className="flex items-center space-x-2 mb-4">
+                <Settings className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                <h3 className="text-lg font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Custom Knowledge Base
+                </h3>
+              </div>
+              <p className="text-sm mb-4" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                Add custom information, instructions, or temporary data to enhance your chatbot's responses.
+                This knowledge will be included alongside website content when the chatbot responds.
+              </p>
+              <textarea
+                value={customKnowledge}
+                onChange={(e) => setCustomKnowledge(e.target.value)}
+                placeholder="Enter custom information, FAQs, product details, or specific instructions for your chatbot...
+                
+Examples:
+• Our office hours are Monday-Friday 9am-5pm EST
+• We offer free shipping on orders over $50
+• Our support email is support@example.com
+• Always be friendly and professional
+• Mention our current promotion: 20% off all products"
+                className="w-full h-48 p-4 rounded-lg resize-none"
+                style={{
+                  backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                  border: '1px solid rgba(169, 189, 203, 0.2)',
+                  color: 'rgb(229, 227, 220)',
+                  fontSize: '14px'
+                }}
+                maxLength={50000}
+              />
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  {customKnowledge.length}/50,000 characters
+                </span>
+                <div className="flex items-center space-x-2">
+                  {knowledgeSaved && (
+                    <span className="text-sm" style={{ color: '#4CAF50' }}>
+                      ✓ Saved successfully
+                    </span>
+                  )}
+                  <button
+                    onClick={saveCustomKnowledge}
+                    disabled={savingKnowledge || !customKnowledge.trim()}
+                    className="px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    style={{
+                      backgroundColor: customKnowledge.trim() ? 'rgb(169, 189, 203)' : 'rgba(169, 189, 203, 0.3)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
+                  >
+                    {savingKnowledge ? 'Saving...' : 'Save Knowledge'}
+                  </button>
                 </div>
               </div>
             </div>
