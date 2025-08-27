@@ -27,8 +27,7 @@ export async function GET() {
         plan: true,
         domain: true,
         created_at: true,
-        used_at: true,
-        site_key: true
+        used_at: true
       }
     })
 
@@ -36,8 +35,18 @@ export async function GET() {
       return NextResponse.json({ error: 'License not found' }, { status: 404 })
     }
 
+    // Get product_key for chatbot
+    const productKey = await prisma.product_keys.findFirst({
+      where: { 
+        license_key: auth.license_key,
+        product: 'chatbot',
+        status: 'active'
+      },
+      select: { product_key: true }
+    })
+
     // Build where clause for user's conversations
-    const userWhereClause = license.site_key ? { site_key: license.site_key } : { license_key: auth.license_key }
+    const userWhereClause = productKey ? { product_key: productKey.product_key } : { product_key: '' }
 
     // Get user's conversations
     const userConversations = await prisma.chatbot_logs.groupBy({

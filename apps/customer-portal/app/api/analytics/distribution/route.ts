@@ -142,30 +142,31 @@ export async function GET() {
           }
         }
 
-        // Get site keys for these licenses
-        const licensesWithSiteKey = await prisma.licenses.findMany({
+        // Get product keys for these licenses
+        const productKeysForChatbot = await prisma.product_keys.findMany({
           where: { 
             license_key: { in: licensesWithProduct },
-            site_key: { not: null }
+            product: 'chatbot',
+            status: 'active'
           },
-          select: { site_key: true }
+          select: { product_key: true }
         })
 
-        const site_keys = licensesWithSiteKey.map(l => l.site_key).filter(Boolean) as string[]
+        const product_keys = productKeysForChatbot.map(pk => pk.product_key).filter(Boolean) as string[]
 
-        // Get conversation count for these site keys
-        const conversations = site_keys.length > 0 ? await prisma.chatbot_logs.groupBy({
+        // Get conversation count for these product keys
+        const conversations = product_keys.length > 0 ? await prisma.chatbot_logs.groupBy({
           by: ['session_id'],
           where: {
-            site_key: { in: site_keys }
+            product_key: { in: product_keys }
           }
         }) : []
 
         // Get active domains
-        const domains = site_keys.length > 0 ? await prisma.chatbot_logs.groupBy({
+        const domains = product_keys.length > 0 ? await prisma.chatbot_logs.groupBy({
           by: ['domain'],
           where: {
-            site_key: { in: site_keys },
+            product_key: { in: product_keys },
             domain: { not: null },
             timestamp: {
               gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days

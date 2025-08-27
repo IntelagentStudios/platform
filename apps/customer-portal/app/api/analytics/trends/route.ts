@@ -46,15 +46,22 @@ export async function POST(request: NextRequest) {
       timestamp: { gte: startDate }
     }
 
-    // For customer portal users, filter by their site_key
-    const userLicense = await prisma.licenses.findUnique({
-      where: { license_key: auth.license_key },
-      select: { site_key: true }
+    // For customer portal users, filter by their product_key
+    // Get product_key for chatbot
+    const productKey = await prisma.product_keys.findFirst({
+      where: { 
+        license_key: auth.license_key,
+        product: 'chatbot',
+        status: 'active'
+      },
+      select: { product_key: true }
     })
-    if (userLicense?.site_key) {
-      whereClause.site_key = userLicense.site_key
+    
+    if (productKey) {
+      whereClause.product_key = productKey.product_key
     } else {
-      whereClause.license_key = auth.license_key
+      // No chatbot configured, return empty data
+      whereClause.product_key = ''
     }
 
     // Get conversation logs
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
       select: {
         timestamp: true,
         session_id: true,
-        site_key: true
+        product_key: true
       },
       orderBy: { timestamp: 'asc' }
     })
@@ -96,11 +103,11 @@ export async function POST(request: NextRequest) {
       sessionsByDate.get(dateKey)!.add(log.session_id!)
 
       // Track unique site keys per date (as proxy for licenses)
-      if (log.site_key) {
+      if (log.product_key) {
         if (!licensesByDate.has(dateKey)) {
           licensesByDate.set(dateKey, new Set())
         }
-        licensesByDate.get(dateKey)!.add(log.site_key)
+        licensesByDate.get(dateKey)!.add(log.product_key)
       }
     })
 

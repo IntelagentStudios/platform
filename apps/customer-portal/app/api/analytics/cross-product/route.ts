@@ -48,24 +48,34 @@ export async function GET(request: NextRequest) {
       aiInsights,
       licenseInfo
     ] = await Promise.all([
-      // Chatbot logs - simplified query to avoid circular type reference
-      prisma.chatbot_logs.findMany({
-        where: {
-          site_key: (await prisma.licenses.findUnique({ 
-            where: { license_key: licenseKey },
-            select: { site_key: true }
-          }))?.site_key || '',
-          created_at: {
-            gte: startDate,
-            lte: endDate
-          }
-        },
+      // Chatbot logs - get product_key for chatbot
+      (async () => {
+        const productKey = await prisma.product_keys.findFirst({
+          where: { 
+            license_key: licenseKey,
+            product: 'chatbot',
+            status: 'active'
+          },
+          select: { product_key: true }
+        });
+        
+        if (!productKey) return [];
+        
+        return prisma.chatbot_logs.findMany({
+          where: {
+            product_key: productKey.product_key,
+            created_at: {
+              gte: startDate,
+              lte: endDate
+            }
+          },
         select: {
           created_at: true,
           id: true
         },
-        orderBy: { created_at: 'asc' }
-      }).then(logs => {
+          orderBy: { created_at: 'asc' }
+        });
+      })().then(logs => {
         // Group by date manually
         const grouped = logs.reduce((acc: any[], log) => {
           const date = log.created_at;
@@ -244,29 +254,42 @@ async function getProductAnalytics(
   const analytics: any = {};
 
   if (products.includes('all') || products.includes('chatbot')) {
-    // Get site_key for this license
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey },
-      select: { site_key: true }
+    // Get product_key for chatbot
+    const productKey = await prisma.product_keys.findFirst({
+      where: { 
+        license_key: licenseKey,
+        product: 'chatbot',
+        status: 'active'
+      },
+      select: { product_key: true }
     });
     
-    const [sessions, intents, avgResponseTime] = await Promise.all([
-      // Get unique sessions
-      prisma.chatbot_logs.findMany({
-        where: {
-          site_key: license?.site_key || '',
-          created_at: { gte: startDate, lte: endDate }
-        },
-        select: { session_id: true },
-        distinct: ['session_id']
-      }),
+    if (!productKey) {
+      analytics.chatbot = { 
+        sessions: 0, 
+        messages: 0, 
+        topIntents: [],
+        avgResponseTime: 0,
+        noData: true 
+      };
+    } else {
+      const [sessions, intents, avgResponseTime] = await Promise.all([
+        // Get unique sessions
+        prisma.chatbot_logs.findMany({
+          where: {
+            product_key: productKey.product_key,
+            created_at: { gte: startDate, lte: endDate }
+          },
+          select: { session_id: true },
+          distinct: ['session_id']
+        }),
 
-      // Get top intents
-      prisma.chatbot_logs.findMany({
-        where: {
-          site_key: license?.site_key || '',
-          created_at: { gte: startDate, lte: endDate },
-          intent_detected: { not: null }
+        // Get top intents
+        prisma.chatbot_logs.findMany({
+          where: {
+            product_key: productKey.product_key,
+            created_at: { gte: startDate, lte: endDate },
+            intent_detected: { not: null }
         },
         select: { intent_detected: true }
       }).then(logs => {
@@ -284,14 +307,15 @@ async function getProductAnalytics(
 
       // Simulated response time
       Promise.resolve(1.2)
-    ]);
+      ]);
 
-    analytics.chatbot = {
-      totalSessions: sessions.length,
-      topIntents: intents,
-      avgResponseTime,
-      satisfactionRate: 0.85 // Would calculate from sentiment
-    };
+      analytics.chatbot = {
+        totalSessions: sessions.length,
+        topIntents: intents,
+        avgResponseTime,
+        satisfactionRate: 0.85 // Would calculate from sentiment
+      };
+    }
   }
 
   if (products.includes('all') || products.includes('sales-agent')) {

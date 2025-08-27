@@ -381,15 +381,15 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                 color: '#4a5568',
                 marginBottom: '8px'
               }}>
-                Password
+                License Key
               </label>
               <input
-                type="password"
+                type="text"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value.toUpperCase())}
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                pattern="[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}"
                 required
-                minLength={8}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -397,7 +397,9 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                   border: '2px solid #e2e8f0',
                   borderRadius: '8px',
                   transition: 'border-color 0.2s',
-                  outline: 'none'
+                  outline: 'none',
+                  fontFamily: 'monospace',
+                  letterSpacing: '1px'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
                 onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
@@ -407,7 +409,7 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                 color: '#a0aec0',
                 marginTop: '4px'
               }}>
-                Your account password for authentication
+                Your Intelagent license key for authentication
               </p>
             </div>
 

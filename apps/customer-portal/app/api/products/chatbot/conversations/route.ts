@@ -41,11 +41,11 @@ export async function GET(request: NextRequest) {
 /**
  * Correct data access pattern:
  * 1. Use license_key as primary filter (from JWT)
- * 2. Get site_key from license for chatbot-specific queries
- * 3. Query chatbot_logs using site_key
+ * 2. Get product_key from product_keys table for chatbot
+ * 3. Query chatbot_logs using product_key
  * 
  * This ensures data is scoped to the account (license_key)
- * while using product-specific routing (site_key)
+ * while using product-specific routing (product_key)
  */
 async function fetchConversations(licenseKey: string) {
   try {
@@ -66,13 +66,17 @@ async function fetchConversations(licenseKey: string) {
       
       // Get all licenses for admin stats
       const allLicenses = await prisma.licenses.findMany({
-        where: { site_key: { not: null } },
-        select: { license_key: true, site_key: true, domain: true }
+        select: { license_key: true, domain: true }
+      });
+      
+      // Count active product keys
+      const activeProductKeys = await prisma.product_keys.count({
+        where: { product: 'chatbot', status: 'active' }
       });
       
       licenseInfo = {
         total_accounts: allLicenses.length,
-        active_sites: allLicenses.filter(l => l.site_key).length
+        active_sites: activeProductKeys
       };
     } else {
       // Auto-migrate: Create product key if it doesn't exist
@@ -123,7 +127,7 @@ async function fetchConversations(licenseKey: string) {
         }, { status: 403 });
       }
 
-      // Step 3: Get product key for chatbot (handles both new product_keys and legacy site_key)
+      // Step 3: Get product key for chatbot
       const chatbotKey = await getProductKey(licenseKey, 'chatbot');
       
       if (!chatbotKey) {
@@ -217,8 +221,8 @@ async function fetchConversations(licenseKey: string) {
       total_messages: logs.length,
       unique_sessions: new Set(logs.map(l => l.session_id).filter(Boolean)).size,
       domains: [...new Set(logs.map(l => l.domain).filter(Boolean))],
-      unique_site_keys: isMasterAdmin ? 
-        [...new Set(logs.map(l => l.site_key).filter(Boolean))].length : 1
+      unique_product_keys: isMasterAdmin ? 
+        [...new Set(logs.map(l => l.product_key).filter(Boolean))].length : 1
     };
 
     return NextResponse.json({
@@ -230,7 +234,7 @@ async function fetchConversations(licenseKey: string) {
       is_admin: isMasterAdmin,
       data_access_pattern: isMasterAdmin ? 
         'GLOBAL_ACCESS' : 
-        'LICENSE_KEY → SITE_KEY → CHATBOT_DATA'
+        'LICENSE_KEY → PRODUCT_KEY → CHATBOT_DATA'
     });
   } catch (error) {
     console.error('Failed to fetch conversations:', error);

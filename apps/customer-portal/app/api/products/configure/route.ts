@@ -43,12 +43,15 @@ function getEmbedCode(product: string, productKey: string, config: any): string 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { product, password, configuration } = body;
+    const { product, password, licenseKey: providedLicenseKey, configuration } = body;
+
+    // Accept both 'password' and 'licenseKey' for backwards compatibility
+    const licenseKeyInput = providedLicenseKey || password;
 
     // Validate input
-    if (!product || !password || !configuration) {
+    if (!product || !licenseKeyInput || !configuration) {
       return NextResponse.json(
-        { error: 'Product, password, and configuration are required' },
+        { error: 'Product, license key, and configuration are required' },
         { status: 400 }
       );
     }
@@ -61,29 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from session/cookie
-    const cookieStore = cookies();
-    const authToken = cookieStore.get('auth-token');
+    // Validate license key format
+    const licenseKeyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    const license_key = licenseKeyInput.toUpperCase();
     
-    if (!authToken) {
+    if (!licenseKeyPattern.test(license_key)) {
       return NextResponse.json(
-        { error: 'Please log in to configure products' },
-        { status: 401 }
-      );
-    }
-
-    let license_key: string;
-    let userEmail: string;
-
-    try {
-      // Decode auth token to get license key
-      const decoded = JSON.parse(Buffer.from(authToken.value, 'base64').toString());
-      license_key = decoded.license_key;
-      userEmail = decoded.email;
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Invalid authentication token' },
-        { status: 401 }
+        { error: 'Invalid license key format. Expected: XXXX-XXXX-XXXX-XXXX' },
+        { status: 400 }
       );
     }
 
@@ -121,30 +109,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user password
-    const user = await prisma.users.findUnique({
-      where: { email: license.email || userEmail },
-      select: {
-        id: true,
-        email: true,
-        password_hash: true
-      }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User account not found' },
-        { status: 404 }
-      );
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password_hash);
-    if (!validPassword) {
-      return NextResponse.json(
-        { error: 'Invalid password' },
-        { status: 401 }
-      );
-    }
+    // License key is the authentication - no need for password verification
+    // The license key proves ownership
 
     // Check for existing configuration
     let existingKey = null;

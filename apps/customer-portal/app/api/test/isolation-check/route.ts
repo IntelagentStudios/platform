@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
  * 
  * Verifies the correct data isolation pattern:
  * 1. license_key is the PRIMARY filter (account boundary)
- * 2. site_key is SECONDARY filter (chatbot product only)
+ * 2. product_key is SECONDARY filter (chatbot product only)
  * 3. Other products use license_key directly
  */
 export async function GET(request: NextRequest) {
@@ -62,18 +62,26 @@ export async function GET(request: NextRequest) {
     // Check if master admin
     const isMasterAdmin = licenseKey === MASTER_ADMIN_KEY;
 
-    // === CHATBOT DATA ACCESS (license → site_key → data) ===
+    // === CHATBOT DATA ACCESS (license → product_key → data) ===
+    const productKey = await prisma.product_keys.findFirst({
+      where: { 
+        license_key: licenseKey,
+        product: 'chatbot',
+        status: 'active'
+      }
+    });
+    
     let chatbotAccess = {
       has_product: license.products.includes('chatbot'),
-      site_key: license.site_key,
+      product_key: productKey?.product_key || null,
       conversation_count: 0,
-      access_pattern: 'LICENSE_KEY → SITE_KEY → CHATBOT_DATA'
+      access_pattern: 'LICENSE_KEY → PRODUCT_KEY → CHATBOT_DATA'
     };
 
-    if (chatbotAccess.has_product && license.site_key) {
-      // Chatbot uses site_key for data access
+    if (chatbotAccess.has_product && productKey) {
+      // Chatbot uses product_key for data access
       chatbotAccess.conversation_count = await prisma.chatbot_logs.count({
-        where: { site_key: license.site_key }
+        where: { product_key: productKey.product_key }
       });
     }
 
@@ -106,29 +114,30 @@ export async function GET(request: NextRequest) {
       details: {} as any
     };
 
-    if (!isMasterAdmin && license.site_key) {
+    if (!isMasterAdmin && productKey) {
       // Test 1: Verify chatbot data isolation
       const myChatbotData = await prisma.chatbot_logs.findMany({
-        where: { site_key: license.site_key },
-        select: { site_key: true },
+        where: { product_key: productKey.product_key },
+        select: { product_key: true },
         take: 100
       });
 
-      const chatbotDataClean = myChatbotData.every(log => log.site_key === license.site_key);
+      const chatbotDataClean = myChatbotData.every(log => log.product_key === productKey.product_key);
 
       // Test 2: Check we can't see other licenses' data
-      const otherSiteKeys = await prisma.licenses.findMany({
+      const otherProductKeys = await prisma.product_keys.findMany({
         where: {
-          site_key: { not: null },
+          product: 'chatbot',
+          status: 'active',
           license_key: { not: licenseKey }
         },
-        select: { site_key: true },
+        select: { product_key: true },
         take: 1
       });
 
-      if (otherSiteKeys.length > 0 && otherSiteKeys[0].site_key) {
+      if (otherProductKeys.length > 0 && otherProductKeys[0].product_key) {
         const otherData = await prisma.chatbot_logs.findMany({
-          where: { site_key: otherSiteKeys[0].site_key },
+          where: { product_key: otherProductKeys[0].product_key },
           take: 1
         });
         
@@ -139,13 +148,13 @@ export async function GET(request: NextRequest) {
 
       if (!chatbotDataClean) {
         isolationTest.passed = false;
-        isolationTest.message = 'DATA LEAK DETECTED - Chatbot data contains other site_keys!';
+        isolationTest.message = 'DATA LEAK DETECTED - Chatbot data contains other product_keys!';
       }
 
       isolationTest.details.chatbot_isolation = {
         all_data_belongs_to_license: chatbotDataClean,
         data_points_checked: myChatbotData.length,
-        site_key_used: license.site_key
+        product_key_used: productKey?.product_key || null
       };
     }
 
@@ -153,8 +162,8 @@ export async function GET(request: NextRequest) {
     const systemStats = isMasterAdmin ? {
       total_licenses: await prisma.licenses.count(),
       total_conversations: await prisma.chatbot_logs.count(),
-      licenses_with_chatbot: await prisma.licenses.count({
-        where: { site_key: { not: null } }
+      licenses_with_chatbot: await prisma.product_keys.count({
+        where: { product: 'chatbot', status: 'active' }
       })
     } : {
       note: 'System stats only visible to master admin'
@@ -166,7 +175,7 @@ export async function GET(request: NextRequest) {
         primary_key: 'license_key',
         description: 'license_key is the account boundary, products use secondary keys',
         patterns: {
-          chatbot: 'license_key → site_key → chatbot_logs',
+          chatbot: 'license_key → product_key → chatbot_logs',
           sales: 'license_key → sales_data (direct)',
           enrichment: 'license_key → enrichment_data (direct)',
           setup: 'license_key → agent_configs (direct)'

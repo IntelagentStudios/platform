@@ -27,20 +27,51 @@ export async function POST(
       );
     }
     
-    // TODO: Validate site key from licenses table since product_setups doesn't exist
-    const license = await prisma.licenses.findUnique({
-      where: { site_key: siteKey },
-      select: {
-        domain: true,
+    // Check if siteKey is actually a product_key (new system)
+    let productKey: string | null = null;
+    let license: any = null;
+    
+    // First check if it's a product_key
+    const productKeyRecord = await prisma.product_keys.findUnique({
+      where: { product_key: siteKey },
+      select: { 
+        license_key: true,
         status: true,
-        products: true
+        metadata: true
       }
     });
+    
+    if (productKeyRecord) {
+      productKey = siteKey;
+      license = await prisma.licenses.findUnique({
+        where: { license_key: productKeyRecord.license_key },
+        select: {
+          domain: true,
+          status: true,
+          products: true
+        }
+      });
+    } else {
+      // Legacy: Check if it's a site_key
+      license = await prisma.licenses.findUnique({
+        where: { site_key: siteKey },
+        select: {
+          domain: true,
+          status: true,
+          products: true,
+          site_key: true
+        }
+      });
+      if (license) {
+        // For legacy, use site_key as product_key
+        productKey = siteKey;
+      }
+    }
     
     // Mock product setup data
     const productSetup = license ? {
       domain: license.domain,
-      is_active: license.status === 'active',
+      is_active: license.status === 'active' || productKeyRecord?.status === 'active',
       setup_completed: true,
       setup_data: null
     } : null;
@@ -64,7 +95,7 @@ export async function POST(
     const chatLog = await prisma.chatbot_logs.create({
       data: {
         conversation_id: conversationId,
-        site_key: siteKey,
+        product_key: productKey || siteKey, // Use product_key if available
         session_id: sessionId,
         customer_message: message,
         created_at: new Date()
@@ -151,15 +182,39 @@ export async function PUT(
     const body = await request.json();
     const { action = 'status' } = body;
     
-    // TODO: Validate site key from licenses table since product_setups doesn't exist
-    const license = await prisma.licenses.findUnique({
-      where: { site_key: siteKey },
-      select: {
-        domain: true,
-        license_key: true,
-        status: true
-      }
+    // Check if siteKey is a product_key or legacy site_key
+    let productKey: string | null = null;
+    let license: any = null;
+    
+    // First check if it's a product_key
+    const productKeyRecord = await prisma.product_keys.findUnique({
+      where: { product_key: siteKey }
     });
+    
+    if (productKeyRecord) {
+      productKey = siteKey;
+      license = await prisma.licenses.findUnique({
+        where: { license_key: productKeyRecord.license_key },
+        select: {
+          domain: true,
+          license_key: true,
+          status: true
+        }
+      });
+    } else {
+      // Legacy: Check if it's a site_key
+      license = await prisma.licenses.findUnique({
+        where: { site_key: siteKey },
+        select: {
+          domain: true,
+          license_key: true,
+          status: true
+        }
+      });
+      if (license) {
+        productKey = siteKey; // Use siteKey as productKey for legacy
+      }
+    }
     
     // Mock product setup data
     const productSetup = license ? {
@@ -235,15 +290,39 @@ export async function GET(
   try {
     const { siteKey } = params;
     
-    // TODO: Get product setup from licenses table since product_setups doesn't exist
-    const license = await prisma.licenses.findUnique({
-      where: { site_key: siteKey },
-      select: {
-        domain: true,
-        status: true,
-        created_at: true
-      }
+    // Check if siteKey is a product_key or legacy site_key
+    let productKey: string | null = null;
+    let license: any = null;
+    
+    // First check if it's a product_key
+    const productKeyRecord = await prisma.product_keys.findUnique({
+      where: { product_key: siteKey }
     });
+    
+    if (productKeyRecord) {
+      productKey = siteKey;
+      license = await prisma.licenses.findUnique({
+        where: { license_key: productKeyRecord.license_key },
+        select: {
+          domain: true,
+          status: true,
+          created_at: true
+        }
+      });
+    } else {
+      // Legacy: Check if it's a site_key
+      license = await prisma.licenses.findUnique({
+        where: { site_key: siteKey },
+        select: {
+          domain: true,
+          status: true,
+          created_at: true
+        }
+      });
+      if (license) {
+        productKey = siteKey;
+      }
+    }
     
     // Mock product setup data
     const productSetup = license ? {
@@ -277,7 +356,7 @@ export async function GET(
     const usage = await prisma.chatbot_logs.groupBy({
       by: ['intent_detected'],
       where: {
-        site_key: siteKey,
+        product_key: productKey || siteKey,
         created_at: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
         }
@@ -370,11 +449,26 @@ function detectIntent(message: string): string {
 // Helper function to track usage
 async function trackUsage(siteKey: string): Promise<void> {
   try {
-    // TODO: Get the license key from licenses table since product_setups doesn't exist
-    const license = await prisma.licenses.findUnique({
-      where: { site_key: siteKey },
-      select: { license_key: true }
+    // Check if siteKey is a product_key or legacy site_key
+    let license: any = null;
+    
+    // First check if it's a product_key
+    const productKeyRecord = await prisma.product_keys.findUnique({
+      where: { product_key: siteKey }
     });
+    
+    if (productKeyRecord) {
+      license = await prisma.licenses.findUnique({
+        where: { license_key: productKeyRecord.license_key },
+        select: { license_key: true }
+      });
+    } else {
+      // Legacy: Check if it's a site_key
+      license = await prisma.licenses.findUnique({
+        where: { site_key: siteKey },
+        select: { license_key: true }
+      });
+    }
     
     if (!license) return;
     

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Generate product key
 function generateProductKey(): string {
@@ -13,15 +14,139 @@ function generateProductKey(): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { domain, password } = body;
+    // Accept both 'password' and 'licenseKey' for backwards compatibility
+    const { domain, password, licenseKey: providedLicenseKey } = body;
+    const licenseKeyInput = providedLicenseKey || password;
 
     // Validate input
-    if (!domain || !password) {
+    if (!domain || !licenseKeyInput) {
       return NextResponse.json(
-        { error: 'Domain and password are required' },
+        { error: 'Domain and license key are required' },
         { status: 400 }
       );
     }
+
+    // Validate license key format
+    const licenseKeyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    const licenseKey = licenseKeyInput.toUpperCase();
+    
+    if (!licenseKeyPattern.test(licenseKey)) {
+      return NextResponse.json(
+        { error: 'Invalid license key format. Expected: XXXX-XXXX-XXXX-XXXX' },
+        { status: 400 }
+      );
+    }
+    
+    // Verify the license exists
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: licenseKey },
+      select: {
+        license_key: true,
+        email: true,
+        customer_name: true,
+        status: true,
+        products: true
+      }
+    });
+
+    if (!license) {
+      return NextResponse.json(
+        { error: 'Invalid license key' },
+        { status: 401 }
+      );
+    }
+
+    if (license.status !== 'active') {
+      return NextResponse.json(
+        { error: 'License is not active' },
+        { status: 403 }
+      );
+    }
+
+    // Check if chatbot product is available
+    if (!license.products.includes('chatbot')) {
+      return NextResponse.json(
+        { error: 'Chatbot product not activated for this license' },
+        { status: 403 }
+      );
+    }
+
+    // Create or get product key
+    let productKey = await prisma.product_keys.findFirst({
+      where: {
+        license_key: licenseKey,
+        product: 'chatbot',
+        status: 'active'
+      }
+    });
+
+    if (!productKey) {
+      // Create a new product key
+      productKey = await prisma.product_keys.create({
+        data: {
+          product_key: `chat_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 5)}`,
+          license_key: licenseKey,
+          product: 'chatbot',
+          status: 'active',
+          metadata: {
+            domain: domain.toLowerCase(),
+            configured_at: new Date().toISOString()
+          }
+        }
+      });
+    } else {
+      // Update the domain in metadata
+      await prisma.product_keys.update({
+        where: { product_key: productKey.product_key },
+        data: {
+          metadata: {
+            domain: domain.toLowerCase(),
+            configured_at: new Date().toISOString()
+          }
+        }
+      });
+    }
+
+    // Generate JWT token
+    const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    const token = jwt.sign(
+      {
+        licenseKey: licenseKey,
+        email: license.email,
+        name: license.customer_name,
+        domain: domain.toLowerCase(),
+        productKey: productKey.product_key,
+        role: 'customer'
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Return success with configuration
+    const response = NextResponse.json({
+      success: true,
+      product_key: productKey.product_key,
+      embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey.product_key}"></script>`,
+      domain: domain,
+      message: 'Chatbot configured successfully'
+    });
+
+    // Set auth cookies
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60
+    });
+
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60
+    });
+
+    return response;
 
     // Validate domain format
     const domainPattern = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;

@@ -91,7 +91,7 @@ export default function ConfigureChatbot() {
               marginBottom: '30px',
               textAlign: 'center'
             }}>
-              Enter your website domain and password to configure your chatbot
+              Enter your website domain and license key to configure your chatbot
             </p>
 
             <form onSubmit={handleSubmit}>
@@ -141,13 +141,14 @@ export default function ConfigureChatbot() {
                   color: '#4a5568',
                   marginBottom: '8px'
                 }}>
-                  Password
+                  License Key
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  onChange={(e) => setPassword(e.target.value.toUpperCase())}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  pattern="[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}"
                   required
                   minLength={8}
                   style={{
@@ -167,7 +168,7 @@ export default function ConfigureChatbot() {
                   color: '#a0aec0',
                   marginTop: '4px'
                 }}>
-                  Your account password for authentication
+                  Your Intelagent license key (e.g., INTL-XXXX-XXXX-XXXX)
                 </p>
               </div>
 

@@ -144,13 +144,12 @@ model chatbot_logs {
   timestamp        DateTime? @db.Timestamp(6)
   intent_detected  String?   @db.VarChar(255)
   conversation_id  String?   @db.VarChar(255)
-  site_key         String?   @db.VarChar(255)
+  product_key      String?   @db.VarChar(255)
   domain           String?   @db.VarChar(255)
   user_id          String?   @db.VarChar(255)
   role             String?   @db.VarChar(50)
   content          String?
   created_at       DateTime? @db.Timestamp(6)
-  licenses         licenses? @relation(fields: [site_key], references: [site_key])
 
   @@schema("public")
 }
@@ -380,7 +379,6 @@ model licenses {
   activated_at        DateTime?      @db.Timestamptz(6)
   suspended_at        DateTime?      @db.Timestamptz(6)
   cancelled_at        DateTime?      @db.Timestamptz(6)
-  chatbot_logs        chatbot_logs[]
 
   @@index([domain], map: "idx_licenses_domain")
   @@index([email], map: "idx_licenses_email")
