@@ -40,12 +40,7 @@ export async function GET(
         subscription_status: true,
         last_payment_date: true,
         next_billing_date: true,
-        subscription_id: true,
-        _count: {
-          select: {
-            chatbot_logs: true
-          }
-        }
+        subscription_id: true
       }
     })
 
@@ -58,6 +53,27 @@ export async function GET(
 
     // Use the domain directly from the license
     let actualDomain = license.domain
+
+    // Count chatbot_logs through product_keys
+    let conversationCount = 0
+    if (license.products?.includes('chatbot')) {
+      // Find the product_key for this license's chatbot
+      const productKey = await prisma.product_keys.findFirst({
+        where: {
+          license_key: license.license_key,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      })
+
+      if (productKey) {
+        // Count chatbot_logs for this product_key
+        conversationCount = await prisma.chatbot_logs.count({
+          where: { product_key: productKey.product_key }
+        })
+      }
+    }
 
     return NextResponse.json({
       license_key: license.license_key,
@@ -73,7 +89,7 @@ export async function GET(
       subscription_status: license.subscription_status,
       lastPaymentDate: license.last_payment_date,
       nextBillingDate: license.next_billing_date,
-      conversationCount: license._count.chatbot_logs
+      conversationCount
     })
   } catch (error) {
     console.error('Licence API error:', error)

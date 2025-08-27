@@ -29,19 +29,38 @@ export async function GET() {
       }
     })
 
-    // Get recent chatbot activities
-    const recentSessions = await prisma.chatbot_logs.groupBy({
-      by: ['session_id', 'site_key'],
-      _max: {
-        timestamp: true
-      },
-      orderBy: {
-        _max: {
-          timestamp: 'desc'
-        }
-      },
-      take: 10
+    // Get user's license to check for chatbot product
+    const userLicense = await prisma.licenses.findUnique({
+      where: { license_key: auth.license_key },
+      select: { products: true }
     })
+
+    let recentSessions: Array<any> = []
+    
+    // Only get chatbot activities if user has chatbot product
+    if (userLicense?.products && userLicense.products.includes('chatbot')) {
+      const productKey = await prisma.product_keys.findFirst({
+        where: {
+          license_key: auth.license_key,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
+      
+      if (productKey?.product_key) {
+        const sessions = await prisma.chatbot_logs.groupBy({
+          by: ['session_id'],
+          where: {
+            product_key: productKey.product_key
+          },
+          _max: {
+            timestamp: true
+          }
+        })
+        recentSessions = sessions as any[]
+      }
+    }
 
     // Format activities
     const activities = []
@@ -79,17 +98,9 @@ export async function GET() {
     // Add session activities
     for (const session of recentSessions) {
       if (session._max.timestamp) {
-        let license = null
-        if (session.site_key) {
-          license = await prisma.licenses.findUnique({
-            where: { site_key: session.site_key },
-            select: { domain: true, customer_name: true }
-          })
-        }
-
         activities.push({
           type: 'new_session',
-          description: `New conversation from ${license?.customer_name || license?.domain || 'Unknown'}`,
+          description: `New conversation from ${userLicense ? 'your domain' : 'Unknown'}`,
           timestamp: session._max.timestamp,
           status: 'activity'
         })

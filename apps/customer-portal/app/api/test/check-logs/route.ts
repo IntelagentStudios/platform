@@ -14,7 +14,7 @@ export async function GET() {
         id: true,
         session_id: true,
         domain: true,
-        site_key: true,
+        product_key: true,
         customer_message: true,
         chatbot_response: true,
         timestamp: true,
@@ -26,42 +26,46 @@ export async function GET() {
       }
     })
 
-    // Get license info for each unique site_key
-    const uniqueSiteKeys = [...new Set(recentLogs.map(s => s.site_key).filter(Boolean))] as string[]
-    const licenses = uniqueSiteKeys.length > 0 ? await prisma.licenses.findMany({
-      where: { site_key: { in: uniqueSiteKeys } },
-      select: {
-        site_key: true,
-        license_key: true,
-        domain: true,
-        customer_name: true,
-        products: true
+    // Get license info for each unique product_key
+    const uniqueProductKeys = [...new Set(recentLogs.map(s => s.product_key).filter(Boolean))] as string[]
+    // Get product_keys info to map to licenses
+    const productKeys = uniqueProductKeys.length > 0 ? await prisma.product_keys.findMany({
+      where: { product_key: { in: uniqueProductKeys } },
+      include: {
+        licenses: {
+          select: {
+            license_key: true,
+            domain: true,
+            customer_name: true,
+            products: true
+          }
+        }
       }
     }) : []
-    const licenseMap = new Map(licenses.map(l => [l.site_key, l]))
+    const licenseMap = new Map(productKeys.map(pk => [pk.product_key, pk.licenses]))
 
     // Add license info to logs
     const logsWithLicense = recentLogs.map(log => ({
       ...log,
-      license: log.site_key ? licenseMap.get(log.site_key) : null
+      license: log.product_key ? licenseMap.get(log.product_key) : null
     }))
 
     // Check for NULL values in critical fields
     const nullChecks = {
       totalLogs: logsWithLicense.length,
       logsWithNullDomain: logsWithLicense.filter(log => !log.domain && !log.license?.domain).length,
-      logsWithNullSiteKey: logsWithLicense.filter(log => !log.site_key).length,
+      logsWithNullProductKey: logsWithLicense.filter(log => !log.product_key).length,
       logsWithNullSession: logsWithLicense.filter(log => !log.session_id).length,
       logsWithContent: logsWithLicense.filter(log => log.customer_message || log.chatbot_response || log.content).length,
       logsWithLicense: logsWithLicense.filter(log => log.license).length
     }
 
-    // Get unique domains, site_keys and products
+    // Get unique domains, product_keys and products
     const uniqueDomains = Array.from(new Set(
       logsWithLicense.map(log => log.domain || log.license?.domain).filter(Boolean)
     ))
-    const uniqueSiteKeysFromLogs = Array.from(new Set(
-      logsWithLicense.map(log => log.site_key).filter(Boolean)
+    const uniqueProductKeysFromLogs = Array.from(new Set(
+      logsWithLicense.map(log => log.product_key).filter(Boolean)
     ))
     const allProducts = new Set<string>()
     logsWithLicense.forEach(log => {
@@ -75,7 +79,7 @@ export async function GET() {
       id: log.id,
       session_id: log.session_id || 'NULL',
       domain: log.domain || log.license?.domain || 'NULL',
-      site_key: log.site_key || 'NULL',
+      product_key: log.product_key || 'NULL',
       license_key: log.license?.license_key || 'Not linked',
       customer_name: log.license?.customer_name || 'Unknown',
       products: log.license?.products || [],
@@ -88,24 +92,29 @@ export async function GET() {
     // Test JOIN functionality
     const testJoin = await prisma.chatbot_logs.findFirst({
       where: {
-        site_key: { not: null }
+        product_key: { not: null }
       }
     })
     
-    const testLicense = testJoin?.site_key ? await prisma.licenses.findUnique({
-      where: { site_key: testJoin.site_key }
-    }) : null
+    let testLicense = null
+    if (testJoin?.product_key) {
+      const productKeyRecord = await prisma.product_keys.findUnique({
+        where: { product_key: testJoin.product_key },
+        include: { licenses: true }
+      })
+      testLicense = productKeyRecord?.licenses
+    }
 
     return NextResponse.json({
       summary: {
         ...nullChecks,
         uniqueDomains,
-        uniqueSiteKeys: uniqueSiteKeysFromLogs,
+        uniqueProductKeys: uniqueProductKeysFromLogs,
         uniqueProducts: Array.from(allProducts),
         mostRecentLog: formattedLogs[0] ? {
           timestamp: formattedLogs[0].timestamp,
           domain: formattedLogs[0].domain,
-          site_key: formattedLogs[0].site_key,
+          product_key: formattedLogs[0].product_key,
           hasContent: formattedLogs[0].message !== 'No content',
           isLinkedToLicense: formattedLogs[0].license_key !== 'Not linked'
         } : null

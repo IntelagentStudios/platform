@@ -18,7 +18,7 @@ export async function GET() {
     // Get data for the last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     
-    // Get the user's site_key from their license_key
+    // Check if user has chatbot product and get product_key
     let whereClause: any = {
       timestamp: { gte: thirtyDaysAgo }
     }
@@ -26,13 +26,32 @@ export async function GET() {
     if (auth.license_key) {
       const userLicense = await prisma.licenses.findUnique({
         where: { license_key: auth.license_key },
-        select: { site_key: true }
+        select: { products: true }
       })
       
-      if (userLicense?.site_key) {
-        whereClause.site_key = userLicense?.site_key
+      if (userLicense?.products && userLicense.products.includes('chatbot')) {
+        const productKey = await prisma.product_keys.findFirst({
+          where: {
+            license_key: auth.license_key,
+            product: 'chatbot',
+            status: 'active'
+          },
+          select: { product_key: true }
+        });
+        
+        if (productKey?.product_key) {
+          whereClause.product_key = productKey.product_key
+        } else {
+          // No product_key found, return empty data
+          return NextResponse.json({
+            totalConversations: 0,
+            activeUsers: 0,
+            responseRate: 0,
+            averageResponseTime: 'N/A'
+          })
+        }
       } else {
-        // No site_key found, return empty data
+        // No chatbot product, return empty data
         return NextResponse.json({
           totalConversations: 0,
           activeUsers: 0,

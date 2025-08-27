@@ -16,13 +16,17 @@ export async function GET(request: NextRequest) {
 
   try {
     if (product === 'chatbot') {
-      // Get the user's site_key
-      const license = await prisma.licenses.findUnique({
-        where: { license_key: licenseKey },
-        select: { site_key: true }
+      // Get the user's product key for chatbot
+      const productKeyRecord = await prisma.product_keys.findFirst({
+        where: {
+          license_key: licenseKey,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
       });
 
-      if (!license?.site_key) {
+      if (!productKeyRecord?.product_key) {
         return NextResponse.json({
           totalConversations: 0,
           activeUsers: 0,
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest) {
 
       // Fetch real data from chatbot_logs
       const logs = await prisma.chatbot_logs.findMany({
-        where: { site_key: license.site_key },
+        where: { product_key: productKeyRecord.product_key },
         orderBy: { timestamp: 'desc' }
       });
 

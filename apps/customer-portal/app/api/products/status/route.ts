@@ -125,19 +125,33 @@ async function getProductUsage(licenseKey: string, productId: string) {
 
   switch (productId) {
     case 'chatbot':
-      // Get the license to find the site_key
+      // Check if user has chatbot in products
       const license = await prisma.licenses.findUnique({
         where: { license_key: licenseKey },
-        select: { site_key: true }
+        select: { products: true }
       });
       
-      if (!license?.site_key) {
+      if (!license?.products || !license.products.includes('chatbot')) {
+        return { current: 0, limit: 10000, unit: 'conversations' };
+      }
+      
+      // Get the product_key for chatbot
+      const productKey = await prisma.product_keys.findFirst({
+        where: {
+          license_key: licenseKey,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
+      
+      if (!productKey?.product_key) {
         return { current: 0, limit: 10000, unit: 'conversations' };
       }
       
       const chatbotLogs = await prisma.chatbot_logs.count({
         where: {
-          site_key: license.site_key,
+          product_key: productKey.product_key,
           created_at: { gte: startOfMonth }
         }
       });

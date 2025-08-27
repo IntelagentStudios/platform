@@ -42,15 +42,28 @@ export async function POST(request: Request) {
     const userLicense = await prisma.licenses.findUnique({
       where: { license_key: auth.license_key },
       select: {
-        site_key: true,
         products: true,
         plan: true,
         domain: true
       }
     })
 
+    // Get product_key for chatbot if user has it
+    let productKey = null;
+    if (userLicense?.products && userLicense.products.includes('chatbot')) {
+      const key = await prisma.product_keys.findFirst({
+        where: {
+          license_key: auth.license_key,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
+      productKey = key?.product_key;
+    }
+
     // Fetch relevant data based on the query
-    const data = await fetchRelevantData(query, userLicense?.site_key, product)
+    const data = await fetchRelevantData(query, productKey, product)
 
     // Build context for LLM
     const systemPrompt = `You are an intelligent dashboard assistant. You help users understand their data and provide actionable insights.
@@ -147,7 +160,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function fetchRelevantData(query: string, site_key: string | null | undefined, product: string | null) {
+async function fetchRelevantData(query: string, product_key: string | null | undefined, product: string | null) {
   const queryLower = query.toLowerCase()
   const data: any = {
     summary: {},
@@ -159,7 +172,7 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
   if (queryLower.includes('conversation') || queryLower.includes('chat')) {
     const conversations = await prisma.chatbot_logs.groupBy({
       by: ['session_id'],
-      where: site_key ? { site_key: site_key } : {},
+      where: product_key ? { product_key: product_key } : {},
       _count: true,
       take: 100,
       orderBy: {
@@ -176,7 +189,7 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     const stats = await prisma.chatbot_logs.aggregate({
       where: {
-        ...(site_key ? { site_key: site_key } : {}),
+        ...(product_key ? { product_key: product_key } : {}),
         timestamp: { gte: thirtyDaysAgo }
       },
       _count: true
@@ -188,7 +201,7 @@ async function fetchRelevantData(query: string, site_key: string | null | undefi
     // Fetch trend data - simplified to avoid groupBy issues
     const logs = await prisma.chatbot_logs.findMany({
       where: {
-        ...(site_key ? { site_key: site_key } : {}),
+        ...(product_key ? { product_key: product_key } : {}),
         timestamp: { 
           gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) 
         }

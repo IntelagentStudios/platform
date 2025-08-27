@@ -24,19 +24,31 @@ export async function POST(request: Request) {
       },
     }
 
-    if (!auth.license_key) {
-      // Get the user's site_key from their license_key
-      const userLicense = await prisma.licenses.findUnique({
-        where: { license_key: auth.license_key },
-        select: { site_key: true }
-      })
+    // Check if user has chatbot product and get product_key
+    const userLicense = await prisma.licenses.findUnique({
+      where: { license_key: auth.license_key },
+      select: { products: true }
+    })
+    
+    if (userLicense?.products && userLicense.products.includes('chatbot')) {
+      const productKey = await prisma.product_keys.findFirst({
+        where: {
+          license_key: auth.license_key,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
       
-      if (userLicense?.site_key) {
-        whereClause.site_key = userLicense?.site_key
+      if (productKey?.product_key) {
+        whereClause.product_key = productKey.product_key
       } else {
-        // No site_key found, return empty data
+        // No product_key found, return empty data
         return NextResponse.json([])
       }
+    } else {
+      // No chatbot product, return empty data
+      return NextResponse.json([])
     }
 
     const conversations = await prisma.chatbot_logs.findMany({

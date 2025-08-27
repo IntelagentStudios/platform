@@ -24,13 +24,27 @@ export async function GET(
       )
     }
 
-    // Get the license's site_key
+    // Get the license's product key for chatbot
     const license = await prisma.licenses.findUnique({
       where: { license_key: params.licenseKey },
-      select: { site_key: true }
+      select: { products: true }
     })
 
-    if (!license || !license?.site_key) {
+    // Get chatbot product key if user has chatbot product
+    let productKey: string | null = null
+    if (license?.products?.includes('chatbot')) {
+      const productKeyRecord = await prisma.product_keys.findFirst({
+        where: {
+          license_key: params.licenseKey,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      })
+      productKey = productKeyRecord?.product_key || null
+    }
+
+    if (!productKey) {
       return NextResponse.json({
         totalConversations: 0,
         totalSessions: 0,
@@ -41,12 +55,12 @@ export async function GET(
       })
     }
 
-    // Get conversation and session stats using site_key
+    // Get conversation and session stats using product_key
     const [totalConversations, sessions, recentActivity] = await Promise.all([
       // Total conversations
       prisma.chatbot_logs.count({
         where: { 
-          site_key: license?.site_key,
+          product_key: productKey,
           role: 'user'
         }
       }),
@@ -55,7 +69,7 @@ export async function GET(
       prisma.chatbot_logs.groupBy({
         by: ['session_id'],
         where: {
-          site_key: license?.site_key,
+          product_key: productKey,
           session_id: { not: null }
         },
         _count: {
@@ -71,7 +85,7 @@ export async function GET(
 
       // Recent activity
       prisma.chatbot_logs.findFirst({
-        where: { site_key: license?.site_key },
+        where: { product_key: productKey },
         orderBy: { timestamp: 'desc' },
         select: { timestamp: true }
       })
@@ -113,7 +127,7 @@ export async function GET(
     const hourlyActivity = await prisma.chatbot_logs.groupBy({
       by: ['timestamp'],
       where: {
-        site_key: license?.site_key,
+        product_key: productKey,
         timestamp: { not: null }
       },
       _count: true

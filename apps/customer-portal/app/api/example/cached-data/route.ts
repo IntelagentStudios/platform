@@ -75,7 +75,6 @@ export async function GET(request: NextRequest) {
         license_key: true,
         products: true,
         is_pro: true,
-        site_key: true,
         domain: true
       }
     });
@@ -86,40 +85,54 @@ export async function GET(request: NextRequest) {
 
     // Get chatbot stats if they have the product
     let chatbotStats = null;
-    if (license.products.includes('chatbot') && license.site_key) {
-      // Try cached chatbot stats first
-      chatbotStats = await licenseCache.getProductData(
-        licenseKey,
-        'chatbot',
-        `stats:${license.site_key}`
-      );
-
-      if (!chatbotStats) {
-        // Fetch from database
-        const conversationCount = await prisma.chatbot_logs.count({
-          where: { site_key: license.site_key }
-        });
-
-        const uniqueSessions = await prisma.chatbot_logs.groupBy({
-          by: ['session_id'],
-          where: { site_key: license.site_key },
-          _count: true
-        });
-
-        chatbotStats = {
-          conversations: conversationCount,
-          uniqueSessions: uniqueSessions.length,
-          lastUpdated: new Date().toISOString()
-        };
-
-        // Cache for 10 minutes
-        await licenseCache.cacheProductData(
+    if (license.products.includes('chatbot')) {
+      // Get product key for chatbot
+      const productKeyRecord = await prisma.product_keys.findFirst({
+        where: {
+          license_key: licenseKey,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
+      
+      const productKey = productKeyRecord?.product_key;
+      
+      if (productKey) {
+        // Try cached chatbot stats first
+        chatbotStats = await licenseCache.getProductData(
           licenseKey,
           'chatbot',
-          `stats:${license.site_key}`,
-          chatbotStats,
-          600
+          `stats:${productKey}`
         );
+
+        if (!chatbotStats) {
+          // Fetch from database
+          const conversationCount = await prisma.chatbot_logs.count({
+            where: { product_key: productKey }
+          });
+
+          const uniqueSessions = await prisma.chatbot_logs.groupBy({
+            by: ['session_id'],
+            where: { product_key: productKey },
+            _count: true
+          });
+
+          chatbotStats = {
+            conversations: conversationCount,
+            uniqueSessions: uniqueSessions.length,
+            lastUpdated: new Date().toISOString()
+          };
+
+          // Cache for 10 minutes
+          await licenseCache.cacheProductData(
+            licenseKey,
+            'chatbot',
+            `stats:${productKey}`,
+            chatbotStats,
+            600
+          );
+        }
       }
     }
 

@@ -43,10 +43,24 @@ export async function GET() {
 async function generateInitialInsights(license_key: string) {
   const license = await prisma.licenses.findUnique({
     where: { license_key: license_key },
-    select: { site_key: true, products: true, plan: true }
+    select: { products: true, plan: true }
   })
 
-  if (!license?.site_key) {
+  // Get chatbot product key if user has chatbot product
+  let productKey: string | null = null
+  if (license?.products?.includes('chatbot')) {
+    const productKeyRecord = await prisma.product_keys.findFirst({
+      where: {
+        license_key: license_key,
+        product: 'chatbot',
+        status: 'active'
+      },
+      select: { product_key: true }
+    })
+    productKey = productKeyRecord?.product_key || null
+  }
+
+  if (!productKey) {
     return []
   }
 
@@ -55,7 +69,7 @@ async function generateInitialInsights(license_key: string) {
   // Check conversation volume
   const conversations = await prisma.chatbot_logs.groupBy({
     by: ['session_id'],
-    where: { site_key: license.site_key },
+    where: { product_key: productKey },
     _count: true
   })
 
@@ -73,7 +87,7 @@ async function generateInitialInsights(license_key: string) {
   // Check for recent activity
   const recentActivity = await prisma.chatbot_logs.count({
     where: {
-      site_key: license.site_key,
+      product_key: productKey,
       timestamp: {
         gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
       }

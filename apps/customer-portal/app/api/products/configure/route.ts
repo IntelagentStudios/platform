@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             ...configuration,
             configured_via: 'quick_setup',
             configured_at: new Date().toISOString(),
-            configured_by: user.email
+            configured_by: license.email || license.customer_name || license.license_key
           }
         }
       });
