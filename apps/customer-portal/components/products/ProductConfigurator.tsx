@@ -16,7 +16,7 @@ export const PRODUCT_CONFIGS = {
         placeholder: 'example.com',
         required: true,
         pattern: '[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,}',
-        help: 'The website where your chatbot will be installed'
+        help: 'Enter your website domain (e.g., mysite.com) - the chatbot will only work on this domain'
       }
     ],
     embedFormat: (key: string) => 
@@ -372,6 +372,38 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
             </p>
           </div>
 
+          <div style={{
+            padding: '16px',
+            background: 'linear-gradient(135deg, #f0f4ff 0%, #f5f0ff 100%)',
+            borderRadius: '12px',
+            marginBottom: '30px',
+            border: '1px solid rgba(102, 126, 234, 0.1)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <span style={{ fontSize: '20px', marginTop: '2px' }}>💡</span>
+              <div>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#2d3748',
+                  marginBottom: '6px'
+                }}>
+                  Why do we need this information?
+                </h3>
+                <p style={{
+                  fontSize: '13px',
+                  color: '#4a5568',
+                  lineHeight: '1.6',
+                  margin: 0
+                }}>
+                  <strong>Your domain</strong> tells us where to activate your chatbot and ensures it only works on your website for security.
+                  <br />
+                  <strong>Your license key</strong> verifies your subscription and links the chatbot to your account for analytics and management.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit}>
             {config.fields.map((field) => (
               <div key={field.name} style={{ marginBottom: '20px' }}>
@@ -433,7 +465,7 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                 color: '#a0aec0',
                 marginTop: '4px'
               }}>
-                Your Intelagent license key for authentication
+                Enter the license key from your purchase confirmation email
               </p>
             </div>
 
