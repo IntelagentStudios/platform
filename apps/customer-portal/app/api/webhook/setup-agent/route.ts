@@ -5,24 +5,38 @@ import { prisma } from '@intelagent/database';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { site_key, domain, license_key, config } = body;
+    const { site_key, product_key, domain, license_key, config } = body;
     
-    // TODO: Verify the site key exists - product_setups table doesn't exist
-    // Check in licenses table instead
-    const license = await prisma.licenses.findFirst({
-      where: { site_key }
-    });
+    // Support both product_key (new) and site_key (legacy)
+    const key = product_key || site_key;
+    
+    if (!key) {
+      return NextResponse.json(
+        { error: 'Missing product_key or site_key' },
+        { status: 400 }
+      );
+    }
+    
+    // Try to find by product_key first
+    let license = null;
+    if (key) {
+      const productKeyRecord = await prisma.product_keys.findUnique({
+        where: { product_key: key },
+        include: { licenses: true }
+      });
+      license = productKeyRecord?.licenses;
+    }
     
     if (!license) {
       return NextResponse.json(
-        { error: 'Invalid site key' },
+        { error: 'Invalid product key' },
         { status: 404 }
       );
     }
     
     // Log the setup request (you can expand this to store agent configuration)
     console.log('N8N Agent Setup Request:', {
-      site_key,
+      product_key: key,
       domain,
       config
     });
@@ -40,7 +54,7 @@ export async function POST(request: NextRequest) {
         user_id: license.license_key,
         action: 'n8n_agent_configured',
         resource_type: 'setup_agent',
-        resource_id: site_key,
+        resource_id: key,
         changes: {
           n8n_configured: true,
           n8n_configured_at: new Date().toISOString(),
@@ -52,7 +66,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Agent configured successfully',
-      site_key
+      product_key: key
     });
     
   } catch (error) {
