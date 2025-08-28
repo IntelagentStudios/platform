@@ -24,7 +24,7 @@ function generateProductKey(product: string): string {
 function getEmbedCode(product: string, productKey: string, config: any): string {
   switch (product) {
     case 'chatbot':
-      return `<script src="https://dashboard.intelagentstudios.com/chatbot.js" data-product-key="${productKey}"></script>`;
+      return `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`;
     
     case 'sales-agent':
       return `<script src="https://dashboard.intelagentstudios.com/sales-agent.js" data-product-key="${productKey}"></script>`;
@@ -44,14 +44,28 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { product, password, licenseKey: providedLicenseKey, configuration } = body;
+    
+    console.log('[CONFIGURE] Request received:', {
+      product,
+      hasPassword: !!password,
+      hasLicenseKey: !!providedLicenseKey,
+      configuration
+    });
 
     // Accept both 'password' and 'licenseKey' for backwards compatibility
     const licenseKeyInput = providedLicenseKey || password;
 
     // Validate input
-    if (!product || !licenseKeyInput || !configuration) {
+    if (!product || !licenseKeyInput) {
       return NextResponse.json(
-        { error: 'Product, license key, and configuration are required' },
+        { error: 'Product and license key are required' },
+        { status: 400 }
+      );
+    }
+    
+    if (!configuration || !configuration.domain) {
+      return NextResponse.json(
+        { error: 'Domain is required for chatbot configuration' },
         { status: 400 }
       );
     }
@@ -113,39 +127,18 @@ export async function POST(request: NextRequest) {
     // The license key proves ownership
 
     // Check for existing configuration
-    let existingKey = null;
-    
-    // For domain-based products, check if domain already configured
-    if (configuration.domain) {
-      existingKey = await prisma.product_keys.findFirst({
-        where: {
-          license_key: license_key,
-          product: product,
-          status: 'active',
-          metadata: {
-            path: ['domain'],
-            equals: configuration.domain
-          }
-        },
-        select: {
-          product_key: true,
-          metadata: true
-        }
-      });
-    } else {
-      // For non-domain products, check if any active key exists
-      existingKey = await prisma.product_keys.findFirst({
-        where: {
-          license_key: license_key,
-          product: product,
-          status: 'active'
-        },
-        select: {
-          product_key: true,
-          metadata: true
-        }
-      });
-    }
+    // Simply check if any active key exists for this license and product
+    const existingKey = await prisma.product_keys.findFirst({
+      where: {
+        license_key: license_key,
+        product: product,
+        status: 'active'
+      },
+      select: {
+        product_key: true,
+        metadata: true
+      }
+    });
 
     let product_key: string;
     let is_new = false;
@@ -153,7 +146,8 @@ export async function POST(request: NextRequest) {
     if (existingKey) {
       // Use existing key
       product_key = existingKey.product_key;
-      console.log(`Using existing ${product} key for license ${license_key}: ${product_key}`);
+      console.log(`[CONFIGURE] Using existing ${product} key for license ${license_key}: ${product_key}`);
+      console.log(`[CONFIGURE] Existing metadata:`, existingKey.metadata);
     } else {
       // Generate new product key
       product_key = generateProductKey(product);
@@ -175,7 +169,25 @@ export async function POST(request: NextRequest) {
         }
       });
       
-      console.log(`Generated new ${product} key for license ${license_key}: ${product_key}`);
+      console.log(`[CONFIGURE] Generated new ${product} key for license ${license_key}: ${product_key}`);
+    }
+
+    // Update the product key metadata with the new domain if it's different
+    if (existingKey && configuration.domain) {
+      const existingDomain = (existingKey.metadata as any)?.domain;
+      if (existingDomain !== configuration.domain) {
+        console.log(`[CONFIGURE] Updating domain from ${existingDomain} to ${configuration.domain}`);
+        await prisma.product_keys.update({
+          where: { product_key: product_key },
+          data: {
+            metadata: {
+              ...((existingKey.metadata as any) || {}),
+              domain: configuration.domain,
+              updated_at: new Date().toISOString()
+            }
+          }
+        });
+      }
     }
 
     // Log the configuration attempt
