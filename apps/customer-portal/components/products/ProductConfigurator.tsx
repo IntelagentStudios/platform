@@ -868,7 +868,13 @@ export default function App({ Component, pageProps }) {
             marginTop: '20px'
           }}>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => {
+                if (product === 'chatbot') {
+                  router.push('/products/chatbot/conversations');
+                } else {
+                  router.push('/products');
+                }
+              }}
               style={{
                 flex: 1,
                 padding: '14px 20px',

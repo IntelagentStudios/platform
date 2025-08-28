@@ -10,15 +10,28 @@ export default function SetupChatbotPage() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check authentication
+    // Check authentication and existing configuration
     console.log('[setup-chatbot] Checking authentication...');
     fetch('/api/auth/me')
       .then(res => res.json())
-      .then(data => {
+      .then(async (data) => {
         if (data.authenticated && data.user) {
           console.log(`[setup-chatbot] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
           setUser(data.user);
           setIsAuthenticated(true);
+          
+          // Check if already configured
+          try {
+            const configRes = await fetch('/api/products/configuration');
+            const configData = await configRes.json();
+            
+            if (configData.chatbot?.configured) {
+              console.log('[setup-chatbot] Chatbot already configured, redirecting to conversations');
+              router.push('/products/chatbot/conversations');
+            }
+          } catch (error) {
+            console.error('[setup-chatbot] Config check failed:', error);
+          }
         } else {
           console.log('[setup-chatbot] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
