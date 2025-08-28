@@ -57,16 +57,8 @@ export async function GET(request: NextRequest) {
           session_id: true
         }
       }),
-      // Calculate monthly revenue (simplified - you'd need actual payment data)
-      prisma.licenses.aggregate({
-        where: {
-          status: 'active',
-          created_at: {
-            gte: new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-          }
-        },
-        _count: true
-      })
+      // For now, return 0 revenue since we don't have payment data
+      Promise.resolve({ _count: 0 })
     ]);
     
     // Get product distribution
@@ -115,7 +107,7 @@ export async function GET(request: NextRequest) {
           distribution: productDistribution
         },
         revenue: {
-          monthly: monthlyRevenue._count * 300, // Assuming $300 per license
+          monthly: 0, // No payment data yet - will integrate with Stripe later
           currency: 'GBP'
         },
         systemHealth: {
