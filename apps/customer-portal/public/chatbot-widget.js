@@ -68,7 +68,7 @@
     }
     .intelagent-chat-box {
       position: fixed;
-      bottom: 110px;
+      bottom: 120px;
       right: 28px;
       width: 380px;
       max-height: 600px;
@@ -322,7 +322,7 @@
       .intelagent-chat-box {
         width: calc(100vw - 32px);
         right: 16px;
-        bottom: 90px;
+        bottom: 100px;
         max-height: 70vh;
       }
       .intelagent-chat-button {

@@ -209,6 +209,15 @@ async function fetchConversations(licenseKey: string) {
 
     // Convert map to array and sort by most recent
     const conversations = Array.from(conversationsMap.values())
+      .map(conv => {
+        // Sort messages within each conversation from oldest to newest
+        conv.messages.sort((a, b) => {
+          const timeA = new Date(a.timestamp).getTime();
+          const timeB = new Date(b.timestamp).getTime();
+          return timeA - timeB; // Ascending order (oldest first)
+        });
+        return conv;
+      })
       .sort((a, b) => {
         const dateA = new Date(b.last_message_at).getTime();
         const dateB = new Date(a.last_message_at).getTime();

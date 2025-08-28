@@ -28,11 +28,12 @@ A unified enterprise platform where clients purchase products on Squarespace, re
    - ✅ AI-powered customer support
    - ✅ Real-time conversation tracking
    - ✅ Advanced search and filtering
-   - ✅ Auto-refresh with live updates
+   - ✅ Manual refresh with refresh button (replaced auto-refresh)
    - ✅ Conversation analytics
    - ✅ Product key generation (format: chat_[16_chars])
    - ✅ Universal configuration system
    - ✅ Embed code generation for websites
+   - ✅ Installation instructions for multiple platforms (HTML, React, WordPress, Shopify)
 
 2. **Sales Agent** 
    - ✅ Automated sales outreach configuration
@@ -200,7 +201,7 @@ A unified enterprise platform where clients purchase products on Squarespace, re
 - ✅ **Instant embed codes** - Generated immediately after configuration
 
 ### Product-Specific Fields
-- **Chatbot**: Domain configuration
+- **Chatbot**: Domain configuration, License key authentication
 - **Sales Agent**: Domain, Industry, Target Audience
 - **Data Enrichment**: API Endpoint, Data Sources, Refresh Rate
 - **Setup Agent**: Company Name, Onboarding Steps
@@ -452,7 +453,7 @@ git push origin main  # Auto-deploys to Railway
 - Priority support for Pro tier
 - Live chat for Enterprise
 
-## 🔄 Recent Updates (August 25, 2024)
+## 🔄 Recent Updates (August 28, 2024)
 
 ### Major Features Added
 1. **Multi-user Authentication System**
@@ -497,6 +498,20 @@ git push origin main  # Auto-deploys to Railway
    - Active session tracking
    - In-memory fallback when Redis unavailable
 
+8. **Enhanced Chatbot Setup Experience** (August 28, 2024)
+   - Added comprehensive installation instructions for multiple platforms
+   - Platform-specific guides for HTML, React/Next.js, WordPress, Shopify
+   - Explanatory info box for data collection (domain and license key)
+   - Improved UI with gradient backgrounds and better styling
+   - Continue to Dashboard button after successful setup
+
+9. **Manual Refresh Implementation** (August 28, 2024)
+   - Replaced auto-refresh with manual refresh buttons across platform
+   - Removed problematic auto-polling (was causing performance issues)
+   - Fixed infinite loading bug on conversations page
+   - Added refresh indicators and loading states
+   - Improved user control over data updates
+
 ## ✅ Definition of Done
 
 A feature is complete when:
@@ -511,7 +526,7 @@ A feature is complete when:
 
 ---
 
-**Last Updated**: August 25, 2024
-**Version**: 2.0
+**Last Updated**: August 28, 2024
+**Version**: 2.1
 **Owner**: Intelagent Studios
 **Platform URL**: dashboard.intelagentstudios.com
