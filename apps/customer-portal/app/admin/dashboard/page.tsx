@@ -64,15 +64,15 @@ export default function AdminDashboardPage() {
   
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const router = useRouter();
 
   useEffect(() => {
     checkAdminAuth();
     if (isAuthorized) {
       fetchAllStats();
-      // Set up real-time monitoring
-      const interval = setInterval(fetchSystemStatus, 30000); // Every 30 seconds
-      return () => clearInterval(interval);
+      // Removed auto-refresh - now using manual refresh button
     }
   }, [isAuthorized]);
 
@@ -90,6 +90,7 @@ export default function AdminDashboardPage() {
   };
 
   const fetchAllStats = async () => {
+    setIsRefreshing(true);
     try {
       const [businessStats, financialStats, systemStats, complianceStats] = await Promise.all([
         fetch('/api/admin/stats/business').then(r => r.json()),
