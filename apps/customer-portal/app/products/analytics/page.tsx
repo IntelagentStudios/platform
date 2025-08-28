@@ -187,7 +187,7 @@ function ProductAnalyticsContent() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => router.push('/products/manage')}
+              onClick={() => router.push('/products')}
               className="p-2 rounded-lg transition hover:opacity-80"
               style={{ 
                 backgroundColor: 'rgba(169, 189, 203, 0.1)',

@@ -177,9 +177,14 @@ export default function ProductsPage() {
 
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
-      router.push('/products/chatbot/manage');
+      router.push('/products/chatbot/conversations');
+    } else if (productId === 'sales-agent') {
+      router.push('/products/sales-agent/manage');
+    } else if (productId === 'data-enrichment') {
+      router.push('/products/data-enrichment/manage');
     } else {
-      router.push('/products/manage');
+      // For unknown products, stay on products page
+      router.push('/products');
     }
   };
 
