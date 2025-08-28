@@ -41,6 +41,8 @@ export default function ChatbotConversationsPage() {
       .then(data => {
         if (data.authenticated && data.user) {
           setIsAuthenticated(true);
+          // Load conversations after authentication
+          fetchConversations();
         } else {
           setIsAuthenticated(false);
           window.location.href = '/login';
