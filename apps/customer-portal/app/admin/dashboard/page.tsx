@@ -37,7 +37,7 @@ import dynamic from 'next/dynamic';
 const LicenseManagementTab = dynamic(
   () => import('@/components/admin/LicenseManagementTab'),
   { 
-    loading: () => <div className="text-purple-600">Loading license management...</div>,
+    loading: () => <div style={{ color: 'rgb(48, 54, 54)' }}>Loading license management...</div>,
     ssr: false 
   }
 );
@@ -130,246 +130,251 @@ export default function AdminDashboardPage() {
 
   if (!isAuthorized) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-gray-600">Checking authorization...</div>
+      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'rgb(229, 227, 220)' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
+             style={{ borderColor: 'rgb(48, 54, 54)' }}></div>
       </div>
     );
   }
 
   if (!overviewData) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-gray-600">Loading dashboard...</div>
+      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'rgb(229, 227, 220)' }}>
+        <div style={{ color: 'rgb(48, 54, 54)' }}>Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              Master Admin Dashboard
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Complete platform oversight and control
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-500">
-              Last updated: {lastRefresh.toLocaleTimeString()}
+    <div className="min-h-screen" style={{ backgroundColor: 'rgb(229, 227, 220)' }}>
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                Master Admin Dashboard
+              </h2>
+              <p className="mt-1" style={{ color: 'rgba(48, 54, 54, 0.8)' }}>
+                Complete platform oversight and control
+              </p>
             </div>
-            <Button
-              onClick={fetchOverviewData}
-              disabled={isRefreshing}
-              className="bg-white hover:bg-gray-50 text-purple-600 border-2 border-purple-600"
-            >
-              {isRefreshing ? (
-                <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Refreshing...</>
-              ) : (
-                <><RefreshCw className="h-4 w-4 mr-2" /> Refresh</>
-              )}
-            </Button>
-            <Button 
-              onClick={() => setShowAI(!showAI)}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              <Brain className="h-4 w-4 mr-2" />
-              AI Assistant
-            </Button>
+            <div className="flex items-center gap-3">
+              <div className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </div>
+              <button
+                onClick={fetchOverviewData}
+                disabled={isRefreshing}
+                className="px-4 py-2 rounded-lg border transition-colors"
+                style={{ 
+                  backgroundColor: 'transparent',
+                  borderColor: 'rgb(48, 54, 54)',
+                  color: 'rgb(48, 54, 54)'
+                }}
+              >
+                {isRefreshing ? (
+                  <><RefreshCw className="inline h-4 w-4 mr-2 animate-spin" /> Refreshing...</>
+                ) : (
+                  <><RefreshCw className="inline h-4 w-4 mr-2" /> Refresh</>
+                )}
+              </button>
+              <button 
+                onClick={() => setShowAI(!showAI)}
+                className="px-4 py-2 rounded-lg transition-colors"
+                style={{ 
+                  backgroundColor: 'rgb(48, 54, 54)',
+                  color: 'rgb(229, 227, 220)'
+                }}
+              >
+                <Brain className="inline h-4 w-4 mr-2" />
+                AI Assistant
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* AI Assistant Interface */}
-        {showAI && (
-          <Card className="border-2 border-purple-600 bg-white shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-800">
-                <Brain className="h-5 w-5 text-purple-600" />
-                Business Intelligence Assistant
-              </CardTitle>
-              <CardDescription className="text-gray-600">
+          {/* AI Assistant Interface */}
+          {showAI && (
+            <div className="rounded-lg p-6 border" style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.2)'
+            }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Brain className="h-5 w-5" style={{ color: 'rgb(48, 54, 54)' }} />
+                <h3 className="text-lg font-semibold" style={{ color: 'rgb(48, 54, 54)' }}>
+                  Business Intelligence Assistant
+                </h3>
+              </div>
+              <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.8)' }}>
                 Ask questions about your platform operations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
               <div className="space-y-4">
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     placeholder="What insights do you need?"
-                    className="flex-1 px-4 py-2 rounded-lg border-2 border-purple-300 bg-white text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:outline-none"
+                    className="flex-1 px-4 py-2 rounded-lg border"
+                    style={{
+                      backgroundColor: 'white',
+                      borderColor: 'rgba(48, 54, 54, 0.3)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
                   />
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">Ask AI</Button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50">Revenue forecast</Button>
-                  <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50">User analytics</Button>
-                  <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50">Growth opportunities</Button>
-                  <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50">System optimization</Button>
+                  <button className="px-4 py-2 rounded-lg" style={{ 
+                    backgroundColor: 'rgb(48, 54, 54)',
+                    color: 'rgb(229, 227, 220)'
+                  }}>Ask AI</button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {/* Main Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid grid-cols-6 w-full bg-white border-2 border-purple-200">
-            <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger 
-              value="licenses" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              Licenses
-            </TabsTrigger>
-            <TabsTrigger 
-              value="financial" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              Financial
-            </TabsTrigger>
-            <TabsTrigger 
-              value="operations" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              Operations
-            </TabsTrigger>
-            <TabsTrigger 
-              value="system" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              System
-            </TabsTrigger>
-            <TabsTrigger 
-              value="compliance" 
-              className="data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=inactive]:text-purple-600"
-            >
-              Compliance
-            </TabsTrigger>
-          </TabsList>
+          {/* Main Tabs */}
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid grid-cols-6 w-full p-1 rounded-lg" style={{ 
+              backgroundColor: 'rgba(48, 54, 54, 0.1)'
+            }}>
+              {['overview', 'licenses', 'financial', 'operations', 'system', 'compliance'].map((tab) => (
+                <TabsTrigger 
+                  key={tab}
+                  value={tab}
+                  className="capitalize rounded-md transition-colors data-[state=active]:shadow-sm"
+                  style={{
+                    color: 'rgb(48, 54, 54)'
+                  }}
+                >
+                  {tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4">
-            {/* Key Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-white border-2 border-purple-200 hover:border-purple-400 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Monthly Revenue</CardTitle>
-                  <PoundSterling className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-4">
+              {/* Key Metrics */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Monthly Revenue</span>
+                    <PoundSterling className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+                  </div>
+                  <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
                     {overviewData.revenue.monthly === 0 ? (
-                      <span className="text-gray-400">No revenue yet</span>
+                      <span style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No revenue yet</span>
                     ) : (
                       `£${overviewData.revenue.monthly.toLocaleString()}`
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                     {overviewData.licenses.active > 0 
                       ? `${overviewData.licenses.active} active licenses`
                       : 'Start with your first license'}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
 
-              <Card className="bg-white border-2 border-purple-200 hover:border-purple-400 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total Licenses</CardTitle>
-                  <Key className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{overviewData.licenses.total}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    <span className="text-green-600">{overviewData.licenses.active} active</span>,{' '}
-                    <span className="text-blue-600">{overviewData.licenses.trial} trial</span>,{' '}
-                    <span className="text-gray-400">{overviewData.licenses.expired} expired</span>
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Licenses</span>
+                    <Key className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                    {overviewData.licenses.total}
+                  </div>
+                  <div className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                    <span style={{ color: '#4CAF50' }}>{overviewData.licenses.active} active</span>,{' '}
+                    <span style={{ color: '#2196F3' }}>{overviewData.licenses.trial} trial</span>,{' '}
+                    <span style={{ color: 'rgba(48, 54, 54, 0.4)' }}>{overviewData.licenses.expired} expired</span>
+                  </div>
+                </div>
 
-              <Card className="bg-white border-2 border-purple-200 hover:border-purple-400 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total Users</CardTitle>
-                  <UserCheck className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{overviewData.users.total}</div>
-                  <p className="text-xs text-gray-500 mt-1">
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Users</span>
+                    <UserCheck className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+                  </div>
+                  <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                    {overviewData.users.total}
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                     {overviewData.users.verified} verified, {overviewData.users.unverified} pending
                   </p>
-                </CardContent>
-              </Card>
+                </div>
 
-              <Card className="bg-white border-2 border-purple-200 hover:border-purple-400 transition-colors">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">System Health</CardTitle>
-                  <Server className="h-4 w-4 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>System Health</span>
+                    <Server className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+                  </div>
+                  <div className="text-2xl font-bold flex items-center gap-2" style={{ color: 'rgb(48, 54, 54)' }}>
+                    <CheckCircle className="h-5 w-5" style={{ color: '#4CAF50' }} />
                     Operational
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                     {overviewData.systemHealth.uptime}% uptime • {overviewData.systemHealth.responseTime}ms avg
                   </p>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
 
-            {/* Activity and Product Usage */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Recent Activity */}
-              <Card className="bg-white border-2 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-800">Recent Activity</CardTitle>
-                  <CardDescription className="text-gray-600">
+              {/* Activity and Product Usage */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Recent Activity */}
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                    Recent Activity
+                  </h3>
+                  <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                     Last {overviewData.recentActivity.length} platform events
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
                   <div className="space-y-3">
                     {overviewData.recentActivity.slice(0, 5).map((activity, index) => (
                       <div key={index} className="flex items-start gap-3">
-                        <div className="p-2 rounded-full border-2 border-purple-200 bg-white">
-                          <MessageSquare className="h-4 w-4 text-purple-600" />
+                        <div className="p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
+                          <MessageSquare className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Chatbot Interaction</p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                            Chatbot Interaction
+                          </p>
+                          <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                             Conversation: {activity.conversationId.slice(0, 8)}...
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.4)' }}>
                             {new Date(activity.timestamp).toLocaleString()}
                           </p>
                         </div>
                       </div>
                     ))}
                     {overviewData.recentActivity.length === 0 && (
-                      <p className="text-sm text-gray-500">No recent activity</p>
+                      <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent activity</p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Product Distribution */}
-              <Card className="bg-white border-2 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-800">Product Distribution</CardTitle>
-                  <CardDescription className="text-gray-600">
+                {/* Product Distribution */}
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                    Product Distribution
+                  </h3>
+                  <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                     Active products across {overviewData.productKeys.total} keys
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
                   <div className="space-y-3">
                     {overviewData.productKeys.distribution.map((product, index) => {
                       const percentage = overviewData.productKeys.total > 0 
@@ -378,188 +383,225 @@ export default function AdminDashboardPage() {
                       return (
                         <div key={index} className="space-y-1">
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-900 capitalize">{product.product}</span>
-                            <span className="text-gray-600">{product._count} keys</span>
+                            <span className="capitalize" style={{ color: 'rgb(48, 54, 54)' }}>
+                              {product.product}
+                            </span>
+                            <span style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                              {product._count} keys
+                            </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full rounded-full h-2" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
                             <div 
-                              className="bg-purple-600 h-2 rounded-full transition-all" 
-                              style={{ width: `${percentage}%` }}
+                              className="h-2 rounded-full transition-all" 
+                              style={{ 
+                                width: `${percentage}%`,
+                                backgroundColor: 'rgb(48, 54, 54)'
+                              }}
                             />
                           </div>
                         </div>
                       );
                     })}
                     {overviewData.productKeys.distribution.length === 0 && (
-                      <p className="text-sm text-gray-500">No product keys issued yet</p>
+                      <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
+                        No product keys issued yet
+                      </p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
 
-            {/* Recent Users */}
-            <Card className="bg-white border-2 border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-gray-800">Recent User Signups</CardTitle>
-                <CardDescription className="text-gray-600">
+              {/* Recent Users */}
+              <div className="rounded-lg p-6 border" style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: 'rgba(48, 54, 54, 0.15)'
+              }}>
+                <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                  Recent User Signups
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
                   Latest users joining the platform
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
                 <div className="space-y-2">
                   {overviewData.recentUsers.map((user, index) => (
-                    <div key={index} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0">
+                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-0" 
+                         style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                          {user.email}
+                        </p>
+                        <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
                           {new Date(user.created_at).toLocaleDateString()} • 
                           {user.license_key ? ' Has license' : ' No license'}
                         </p>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={user.email_verified 
-                          ? 'border-green-500 text-green-700' 
-                          : 'border-yellow-500 text-yellow-700'}
+                      <span 
+                        className="px-2 py-1 rounded text-xs"
+                        style={{ 
+                          backgroundColor: user.email_verified ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 193, 7, 0.1)',
+                          color: user.email_verified ? '#4CAF50' : '#FF9800'
+                        }}
                       >
                         {user.email_verified ? 'Verified' : 'Pending'}
-                      </Badge>
+                      </span>
                     </div>
                   ))}
                   {overviewData.recentUsers.length === 0 && (
-                    <p className="text-sm text-gray-500">No recent signups</p>
+                    <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent signups</p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </TabsContent>
 
-          {/* License Management Tab */}
-          <TabsContent value="licenses" className="space-y-4">
-            <LicenseManagementTab />
-          </TabsContent>
+            {/* License Management Tab */}
+            <TabsContent value="licenses" className="space-y-4">
+              <LicenseManagementTab />
+            </TabsContent>
 
-          {/* Financial Tab - Keep placeholder for now */}
-          <TabsContent value="financial" className="space-y-4">
-            <Card className="bg-white border-2 border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-gray-800">Financial Overview</CardTitle>
-                <CardDescription className="text-gray-600">Revenue metrics and billing status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
+            {/* Financial Tab */}
+            <TabsContent value="financial" className="space-y-4">
+              <div className="rounded-lg p-6 border" style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: 'rgba(48, 54, 54, 0.15)'
+              }}>
+                <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                  Financial Overview
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  Revenue metrics and billing status
+                </p>
+                <div className="text-center py-8" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
                   Financial analytics coming soon
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </TabsContent>
 
-          {/* Operations Tab */}
-          <TabsContent value="operations" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card className="bg-white border-2 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-800">License Management</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Users className="h-4 w-4 mr-2" />
-                    View All Licenses
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Shield className="h-4 w-4 mr-2" />
-                    Generate License Keys
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Package className="h-4 w-4 mr-2" />
-                    Manage Products
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configure Pricing
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-2 border-purple-200">
-                <CardHeader>
-                  <CardTitle className="text-gray-800">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Generate Reports
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Send Announcement
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Database className="h-4 w-4 mr-2" />
-                    Database Backup
-                  </Button>
-                  <Button className="w-full justify-start bg-white text-purple-700 border-2 border-purple-300 hover:bg-purple-50" variant="outline">
-                    <Zap className="h-4 w-4 mr-2" />
-                    Run Diagnostics
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* System Tab */}
-          <TabsContent value="system" className="space-y-4">
-            <Card className="bg-white border-2 border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-gray-800">System Status</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Active in last 24h: {overviewData.systemHealth.activeInLast24h} events
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="p-4 border-2 border-purple-200 rounded-lg bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">API Gateway</span>
-                      <Badge variant="outline" className="border-green-500 text-green-700">Operational</Badge>
-                    </div>
-                    <p className="text-xs text-gray-600">Response time: {overviewData.systemHealth.responseTime}ms</p>
-                  </div>
-                  <div className="p-4 border-2 border-purple-200 rounded-lg bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Database</span>
-                      <Badge variant="outline" className="border-green-500 text-green-700">Operational</Badge>
-                    </div>
-                    <p className="text-xs text-gray-600">Connections: Healthy</p>
-                  </div>
-                  <div className="p-4 border-2 border-purple-200 rounded-lg bg-white">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Services</span>
-                      <Badge variant="outline" className="border-green-500 text-green-700">All Running</Badge>
-                    </div>
-                    <p className="text-xs text-gray-600">Uptime: {overviewData.systemHealth.uptime}%</p>
+            {/* Operations Tab */}
+            <TabsContent value="operations" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(48, 54, 54)' }}>
+                    License Management
+                  </h3>
+                  <div className="space-y-2">
+                    {[
+                      { icon: Users, text: 'View All Licenses' },
+                      { icon: Shield, text: 'Generate License Keys' },
+                      { icon: Package, text: 'Manage Products' },
+                      { icon: Settings, text: 'Configure Pricing' }
+                    ].map((item, index) => (
+                      <button 
+                        key={index}
+                        className="w-full text-left px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          borderColor: 'rgba(48, 54, 54, 0.2)',
+                          color: 'rgb(48, 54, 54)'
+                        }}
+                      >
+                        <item.icon className="inline h-4 w-4 mr-2" />
+                        {item.text}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* Compliance Tab */}
-          <TabsContent value="compliance" className="space-y-4">
-            <Card className="bg-white border-2 border-purple-200">
-              <CardHeader>
-                <CardTitle className="text-gray-800">Compliance & Security</CardTitle>
-                <CardDescription className="text-gray-600">Platform compliance status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
+                <div className="rounded-lg p-6 border" style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderColor: 'rgba(48, 54, 54, 0.15)'
+                }}>
+                  <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(48, 54, 54)' }}>
+                    Quick Actions
+                  </h3>
+                  <div className="space-y-2">
+                    {[
+                      { icon: FileText, text: 'Generate Reports' },
+                      { icon: MessageSquare, text: 'Send Announcement' },
+                      { icon: Database, text: 'Database Backup' },
+                      { icon: Zap, text: 'Run Diagnostics' }
+                    ].map((item, index) => (
+                      <button 
+                        key={index}
+                        className="w-full text-left px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          borderColor: 'rgba(48, 54, 54, 0.2)',
+                          color: 'rgb(48, 54, 54)'
+                        }}
+                      >
+                        <item.icon className="inline h-4 w-4 mr-2" />
+                        {item.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* System Tab */}
+            <TabsContent value="system" className="space-y-4">
+              <div className="rounded-lg p-6 border" style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: 'rgba(48, 54, 54, 0.15)'
+              }}>
+                <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                  System Status
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  Active in last 24h: {overviewData.systemHealth.activeInLast24h} events
+                </p>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {[
+                    { name: 'API Gateway', status: 'Operational', detail: `Response time: ${overviewData.systemHealth.responseTime}ms` },
+                    { name: 'Database', status: 'Operational', detail: 'Connections: Healthy' },
+                    { name: 'Services', status: 'All Running', detail: `Uptime: ${overviewData.systemHealth.uptime}%` }
+                  ].map((service, index) => (
+                    <div key={index} className="p-4 rounded-lg border" style={{ 
+                      backgroundColor: 'rgba(48, 54, 54, 0.05)',
+                      borderColor: 'rgba(48, 54, 54, 0.1)'
+                    }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                          {service.name}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded" style={{ 
+                          backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                          color: '#4CAF50'
+                        }}>
+                          {service.status}
+                        </span>
+                      </div>
+                      <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                        {service.detail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Compliance Tab */}
+            <TabsContent value="compliance" className="space-y-4">
+              <div className="rounded-lg p-6 border" style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: 'rgba(48, 54, 54, 0.15)'
+              }}>
+                <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                  Compliance & Security
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  Platform compliance status
+                </p>
+                <div className="text-center py-8" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
                   Compliance dashboard coming soon
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
