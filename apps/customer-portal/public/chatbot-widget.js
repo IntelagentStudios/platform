@@ -1,14 +1,16 @@
 (function() {
-  // Get the site key from the script tag
+  // Get the product key from the script tag (supports both old and new attribute names)
   const script = document.currentScript;
-  const siteKey = script.getAttribute('data-site-key') || script.getAttribute('data-site');
+  const productKey = script.getAttribute('data-product-key') || 
+                     script.getAttribute('data-site-key') || 
+                     script.getAttribute('data-site');
   
-  if (!siteKey) {
-    console.error('IntelagentChat: No site key provided');
+  if (!productKey) {
+    console.error('IntelagentChat: No product key provided. Use data-product-key attribute.');
     return;
   }
   
-  console.log('IntelagentChat: Initializing with site key:', siteKey);
+  console.log('IntelagentChat: Initializing with product key:', productKey);
 
   // Check if widget already exists
   if (document.getElementById('intelagent-chat-widget-loader')) {
@@ -333,10 +335,31 @@
 <body>
   <script>
     // Your entire widget code goes here
-    const siteKey = '${siteKey}';
-    const sessionId = localStorage.getItem('intelagent_session_id') || 'sess_' + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem('intelagent_session_id', sessionId);
+    const productKey = '${productKey}';
     
+    // Generate a new session ID if no active conversation or if last message was > 30 minutes ago
+    function getOrCreateSessionId() {
+      const lastActivity = localStorage.getItem('intelagent_last_activity');
+      const existingSessionId = localStorage.getItem('intelagent_session_id');
+      const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+      
+      if (!existingSessionId || !lastActivity || 
+          (Date.now() - parseInt(lastActivity)) > thirtyMinutes) {
+        // Generate new session ID
+        const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('intelagent_session_id', newSessionId);
+        localStorage.setItem('intelagent_last_activity', Date.now().toString());
+        // Clear old chat history for new session
+        localStorage.removeItem('intelagent_chat_history');
+        return newSessionId;
+      }
+      
+      // Update last activity time
+      localStorage.setItem('intelagent_last_activity', Date.now().toString());
+      return existingSessionId;
+    }
+    
+    let sessionId = getOrCreateSessionId();
     const webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
 
     // Load chat history from localStorage
@@ -348,12 +371,18 @@
     // Save chat history to localStorage
     function saveChatHistory(messages) {
       localStorage.setItem('intelagent_chat_history', JSON.stringify(messages));
+      // Update last activity whenever we save chat
+      localStorage.setItem('intelagent_last_activity', Date.now().toString());
     }
 
-    // Clear chat history
-    function clearChatHistory() {
+    // Clear chat history and start new conversation
+    function startNewConversation() {
       localStorage.removeItem('intelagent_chat_history');
+      localStorage.removeItem('intelagent_session_id');
+      localStorage.removeItem('intelagent_last_activity');
       chatHistory = [];
+      sessionId = getOrCreateSessionId();
+      renderMessages();
     }
 
     let chatHistory = loadChatHistory();
@@ -370,7 +399,10 @@
     chatBox.innerHTML = \`
       <div class="intelagent-chat-header">
         <span>Chat Assistant</span>
-        <button class="intelagent-close-button" aria-label="Close chat">×</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="intelagent-close-button intelagent-new-button" aria-label="New conversation" title="Start new conversation" style="font-size: 18px;">🔄</button>
+          <button class="intelagent-close-button" aria-label="Close chat">×</button>
+        </div>
       </div>
       <div class="intelagent-chat-messages" id="intelagent-messages"></div>
       <div class="intelagent-chat-input">
@@ -434,9 +466,17 @@
 
     chatButton.addEventListener('click', toggleChat);
     
-    // Close button functionality
-    const closeButton = chatBox.querySelector('.intelagent-close-button');
+    // Close button functionality (the second button with close-button class)
+    const closeButton = chatBox.querySelectorAll('.intelagent-close-button')[1];
     closeButton.addEventListener('click', toggleChat);
+    
+    // New conversation button functionality
+    const newConvButton = chatBox.querySelector('.intelagent-new-button');
+    newConvButton.addEventListener('click', function() {
+      if (confirm('Start a new conversation? Current chat history will be saved.')) {
+        startNewConversation();
+      }
+    });
 
     // Typing indicator functions
     function showTypingIndicator() {
@@ -536,8 +576,12 @@
           body: JSON.stringify({
             message: message,
             session_id: sessionId,
-            site_key: siteKey,
-            chat_history: historyString
+            product_key: productKey, // Now using product_key instead of site_key
+            site_key: productKey, // Keep for backward compatibility
+            chat_history: historyString,
+            domain: window.location.hostname,
+            timestamp: new Date().toISOString(),
+            conversation_id: sessionId // Use session ID as conversation ID
           })
         });
 
