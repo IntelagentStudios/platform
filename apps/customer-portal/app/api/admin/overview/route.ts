@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
           timestamp: true,
           product_key: true,
           conversation_id: true,
-          metadata: true
+          session_id: true
         }
       }),
       // Calculate monthly revenue (simplified - you'd need actual payment data)
