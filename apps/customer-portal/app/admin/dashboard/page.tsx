@@ -25,7 +25,8 @@ import {
   CreditCard,
   Lock,
   Settings,
-  MessageSquare
+  MessageSquare,
+  RefreshCw
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -103,8 +104,11 @@ export default function AdminDashboardPage() {
         ...systemStats,
         ...complianceStats
       });
+      setLastRefresh(new Date());
     } catch (error) {
       console.error('Failed to fetch admin stats:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -132,13 +136,29 @@ export default function AdminDashboardPage() {
             Complete business management and monitoring
           </p>
         </div>
-        <Button 
-          onClick={() => setShowAI(!showAI)}
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-        >
-          <Brain className="h-4 w-4 mr-2" />
-          AI Pro Assistant
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            Last updated: {lastRefresh.toLocaleTimeString()}
+          </div>
+          <Button
+            onClick={fetchAllStats}
+            disabled={isRefreshing}
+            className="bg-gray-600 hover:bg-gray-700"
+          >
+            {isRefreshing ? (
+              <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Refreshing...</>
+            ) : (
+              <><RefreshCw className="h-4 w-4 mr-2" /> Refresh</>
+            )}
+          </Button>
+          <Button 
+            onClick={() => setShowAI(!showAI)}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          >
+            <Brain className="h-4 w-4 mr-2" />
+            AI Pro Assistant
+          </Button>
+        </div>
       </div>
 
       {/* AI Pro Interface */}

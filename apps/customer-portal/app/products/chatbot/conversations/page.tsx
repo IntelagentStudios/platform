@@ -24,8 +24,8 @@ export default function ChatbotConversationsPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [dateFilter, setDateFilter] = useState('all'); // all, today, week, month
   const [domainFilter, setDomainFilter] = useState('all');
@@ -53,19 +53,11 @@ export default function ChatbotConversationsPage() {
       });
   }, []);
 
-  // Auto-refresh conversations
-  useEffect(() => {
-    if (!isAuthenticated || !autoRefresh) return;
-    
-    const interval = setInterval(() => {
-      fetchConversations(false); // Don't show loading spinner for auto-refresh
-    }, 10000); // Refresh every 10 seconds
-    
-    return () => clearInterval(interval);
-  }, [isAuthenticated, autoRefresh]);
+  // Removed auto-refresh - now using manual refresh button only
 
   const fetchConversations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
+    setIsRefreshing(true);
     try {
       const response = await fetch('/api/products/chatbot/conversations');
       const data = await response.json();
@@ -97,6 +89,7 @@ export default function ChatbotConversationsPage() {
       console.error('Failed to fetch conversations:', error);
     } finally {
       if (showLoading) setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -225,42 +218,34 @@ export default function ChatbotConversationsPage() {
           </div>
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoRefresh}
-                  onChange={(e) => setAutoRefresh(e.target.checked)}
-                  className="rounded"
-                  style={{ accentColor: 'rgb(169, 189, 203)' }}
-                />
-                <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                  Auto-refresh
-                </span>
-              </label>
-              {autoRefresh && (
-                <span className="text-xs px-2 py-1 rounded" 
-                      style={{ 
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        color: 'rgb(76, 175, 80)'
-                      }}>
-                  Live
-                </span>
-              )}
+              <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                Last updated: {lastRefresh.toLocaleTimeString()}
+              </span>
             </div>
             <button
-              onClick={() => fetchConversations()}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition hover:opacity-80"
+              onClick={() => fetchConversations(false)}
+              disabled={isRefreshing}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm transition"
               style={{ 
-                backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                color: 'rgb(169, 189, 203)'
+                backgroundColor: isRefreshing ? 'rgba(169, 189, 203, 0.1)' : 'rgba(169, 189, 203, 0.2)',
+                color: 'rgb(169, 189, 203)',
+                cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                opacity: isRefreshing ? 0.7 : 1
+              }}
+              onMouseOver={(e) => {
+                if (!isRefreshing) {
+                  e.currentTarget.style.backgroundColor = 'rgba(169, 189, 203, 0.3)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isRefreshing) {
+                  e.currentTarget.style.backgroundColor = 'rgba(169, 189, 203, 0.2)';
+                }
               }}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
-            <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-              Last: {lastRefresh.toLocaleTimeString()}
-            </span>
           </div>
         </div>
       </header>
