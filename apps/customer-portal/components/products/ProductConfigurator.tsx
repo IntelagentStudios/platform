@@ -465,7 +465,7 @@ export default function ProductConfigurator({ product, onSuccess }: ProductConfi
                 color: '#a0aec0',
                 marginTop: '4px'
               }}>
-                Enter the license key from your purchase confirmation email
+                Enter the license key from your purchase confirmation email (e.g., INTL-XXXX-XXXX-XXXX)
               </p>
             </div>
 

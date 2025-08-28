@@ -453,7 +453,7 @@ git push origin main  # Auto-deploys to Railway
 - Priority support for Pro tier
 - Live chat for Enterprise
 
-## 🔄 Recent Updates (August 28, 2024)
+## 🔄 Recent Updates (August 28, 2024 - Session 2)
 
 ### Major Features Added
 1. **Multi-user Authentication System**
@@ -511,6 +511,22 @@ git push origin main  # Auto-deploys to Railway
    - Fixed infinite loading bug on conversations page
    - Added refresh indicators and loading states
    - Improved user control over data updates
+
+10. **Conversation Session Management** (August 28, 2024 - Session 2)
+   - Implemented unique session ID generation for each conversation
+   - Added 30-minute timeout for automatic new session creation
+   - Added manual "New Conversation" button (🔄) in chatbot widget
+   - Fixed issue where all conversations shared same session_id
+   - Sessions now properly separated in database and UI
+   - Format: `sess_timestamp_randomstring` for better tracking
+
+11. **UI/UX Improvements** (August 28, 2024 - Session 2)
+   - Messages now display chronologically (oldest first) for better readability
+   - Increased spacing between chatbot widget button and chat box (110px → 120px)
+   - Fixed navigation flow to eliminate confusing redirects
+   - Removed "No Products Configured" error page
+   - Back buttons now correctly redirect to /products page
+   - Chatbot manage button goes directly to conversations
 
 ## ✅ Definition of Done
 
