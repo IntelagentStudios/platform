@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
           product_key: true,
           status: true,
           created_at: true,
-          last_used: true,
+          last_used_at: true,
           metadata: true
         }
       });
