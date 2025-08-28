@@ -29,6 +29,16 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+// Lazy load the License Management component to avoid affecting initial load
+const LicenseManagementTab = dynamic(
+  () => import('@/components/admin/LicenseManagementTab'),
+  { 
+    loading: () => <div>Loading license management...</div>,
+    ssr: false 
+  }
+);
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState({
@@ -197,8 +207,9 @@ export default function AdminDashboardPage() {
 
       {/* Business Overview Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="licenses">Licenses</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="operations">Operations</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
@@ -334,6 +345,11 @@ export default function AdminDashboardPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* License Management Tab */}
+        <TabsContent value="licenses" className="space-y-4">
+          <LicenseManagementTab />
         </TabsContent>
 
         {/* Financial Tab */}
