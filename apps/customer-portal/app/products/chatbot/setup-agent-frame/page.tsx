@@ -20,18 +20,7 @@ export default function SetupChatbotPage() {
           setUser(data.user);
           setIsAuthenticated(true);
           
-          // Check if already configured
-          try {
-            const configRes = await fetch('/api/products/configuration');
-            const configData = await configRes.json();
-            
-            if (configData.chatbot?.configured) {
-              console.log('[setup-chatbot] Chatbot already configured, redirecting to conversations');
-              router.push('/products/chatbot/conversations');
-            }
-          } catch (error) {
-            console.error('[setup-chatbot] Config check failed:', error);
-          }
+          // Removed auto-redirect to allow reconfiguration
         } else {
           console.log('[setup-chatbot] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
