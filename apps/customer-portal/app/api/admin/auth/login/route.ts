@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 // Master admin credentials (in production, store these securely)
 const MASTER_ADMINS = [
   {
-    email: process.env.MASTER_ADMIN_EMAIL || 'admin@intelagentstudios.com',
-    password: process.env.MASTER_ADMIN_PASSWORD || '$2a$10$XQxOZF8WGpKFzV.0tcXnYOQKGxH6hZPVPpJ.vqRlXhRFYXhKGH5ey' // Default: AdminPass123!
+    email: process.env.MASTER_ADMIN_EMAIL || 'harry@intelagentstudios.com',
+    password: process.env.MASTER_ADMIN_PASSWORD || '$2b$10$5oMNvmtIbt.CvjjWj.ksau5tSqCbruD6pEVxxAi1N4v4KQ5mrmeb2' // Glendruid15!
   }
 ];
 
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
     // Verify password
     let isValidPassword = false;
     
-    // Check if the stored password is already hashed
-    if (admin.password.startsWith('$2a$')) {
+    // Check if the stored password is already hashed (supports both $2a$ and $2b$ prefixes)
+    if (admin.password.startsWith('$2a$') || admin.password.startsWith('$2b$')) {
       isValidPassword = await bcrypt.compare(password, admin.password);
     } else {
       // For plain text passwords (development only)

@@ -7,23 +7,24 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     // Add proper admin auth check here
     
-    // Fetch all licenses with related data
+    // Fetch all licenses
     const licenses = await prisma.licenses.findMany({
-      orderBy: { created_at: 'desc' },
-      include: {
-        users: {
-          select: {
-            id: true,
-            email: true,
-            email_verified: true,
-            created_at: true
-          }
-        }
-      }
+      orderBy: { created_at: 'desc' }
     });
     
     // Enhance with product keys and usage stats
     const enhancedLicenses = await Promise.all(licenses.map(async (license) => {
+      // Get user data
+      const user = await prisma.users.findFirst({
+        where: { license_key: license.license_key },
+        select: {
+          id: true,
+          email: true,
+          email_verified: true,
+          created_at: true
+        }
+      });
+      
       // Get product keys
       const productKeys = await prisma.product_keys.findMany({
         where: { license_key: license.license_key },
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
       
       return {
         ...license,
-        user: license.users,
+        user: user,
         product_keys: productKeys,
         usage_stats: {
           total_conversations: conversationCount,
