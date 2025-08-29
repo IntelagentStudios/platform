@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Plus, RefreshCw, Check, Settings, Key, XCircle } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Check, Settings, Key, XCircle, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function ConsolidatePage() {
+  const router = useRouter();
   const [licenses, setLicenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -102,9 +104,11 @@ export default function ConsolidatePage() {
   };
 
   const deleteProductKeys = async (licenseKey: string) => {
+    console.log('Deleting product keys for:', licenseKey);
     if (!confirm(`Delete all product keys for license ${licenseKey}?`)) return;
     
     setLoading(true);
+    setMessage('Deleting product keys...');
     try {
       const response = await fetch('/api/admin/consolidate-licenses', {
         method: 'POST',
@@ -115,13 +119,15 @@ export default function ConsolidatePage() {
         })
       });
       const data = await response.json();
+      console.log('Delete response:', data);
       if (data.success) {
         setMessage(`✅ ${data.message}`);
-        loadLicenses();
+        await loadLicenses();
       } else {
-        setMessage(`❌ Failed to delete product keys`);
+        setMessage(`❌ Failed to delete product keys: ${data.message || 'Unknown error'}`);
       }
     } catch (error) {
+      console.error('Delete error:', error);
       setMessage(`❌ Failed to delete product keys: ${error}`);
     }
     setLoading(false);
@@ -182,9 +188,23 @@ export default function ConsolidatePage() {
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           borderColor: 'rgba(48, 54, 54, 0.2)'
         }}>
-          <h3 className="font-semibold mb-2" style={{ color: 'rgb(48, 54, 54)' }}>
-            Selected License: {selectedLicense}
-          </h3>
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="font-semibold" style={{ color: 'rgb(48, 54, 54)' }}>
+              Selected License: {selectedLicense}
+            </h3>
+            <button
+              onClick={() => router.push('/products/chatbot/configure')}
+              className="px-3 py-1 rounded-lg border transition-colors hover:bg-white flex items-center gap-2 text-sm"
+              style={{ 
+                backgroundColor: 'transparent',
+                borderColor: 'rgb(48, 54, 54)',
+                color: 'rgb(48, 54, 54)'
+              }}
+            >
+              <ExternalLink className="h-3 w-3" />
+              Configure Chatbot
+            </button>
+          </div>
           {(() => {
             const license = licenses.find(l => l.license_key === selectedLicense);
             if (license?.product_keys?.length > 0) {
@@ -281,8 +301,9 @@ export default function ConsolidatePage() {
                               {license.product_key_count > 0 && (
                                 <button
                                   onClick={() => deleteProductKeys(license.license_key)}
-                                  className="p-1 rounded hover:bg-orange-50 text-orange-600"
+                                  className="p-1 rounded hover:bg-red-50 text-red-600"
                                   title="Delete all product keys"
+                                  disabled={loading}
                                 >
                                   <XCircle className="h-4 w-4" />
                                 </button>
