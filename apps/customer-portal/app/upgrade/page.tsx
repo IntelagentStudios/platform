@@ -506,7 +506,7 @@ function UpgradePageContent() {
                   </div>
                   
                   <div className="space-y-1">
-                    {product.features.slice(0, 3).map((feature, index) => {
+                    {product.features?.slice(0, 3).map((feature, index) => {
                       const included = feature.tier ? 
                         PLAN_PRICING[selectedTier].multiplier >= PLAN_PRICING[feature.tier].multiplier :
                         feature.included;

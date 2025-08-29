@@ -447,7 +447,7 @@ export default function AdminDashboardPage() {
                     Chatbot Interaction
                   </p>
                   <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-                    Conversation: {activity.conversationId.slice(0, 8)}...
+                    Conversation: {activity.conversationId?.slice(0, 8) || 'N/A'}...
                   </p>
                   <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.4)' }}>
                     {new Date(activity.timestamp).toLocaleString()}

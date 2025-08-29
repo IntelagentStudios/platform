@@ -670,6 +670,56 @@ Examples:
                 }}
                 maxLength={50000}
               />
+              
+              {/* Document Upload Section */}
+              <div className="mt-6 p-4 rounded-lg" style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                border: '1px dashed rgba(169, 189, 203, 0.3)'
+              }}>
+                <h4 className="text-sm font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Upload Documents
+                </h4>
+                <p className="text-xs mb-3" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Upload PDF, TXT, or DOCX files to add knowledge to your chatbot
+                </p>
+                <input
+                  type="file"
+                  id="document-upload"
+                  accept=".pdf,.txt,.doc,.docx"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    if (files.length > 0) {
+                      alert(`Selected ${files.length} file(s). Document upload feature coming soon!`);
+                    }
+                  }}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="document-upload"
+                  className="inline-flex items-center px-4 py-2 rounded-lg cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(229, 227, 220)',
+                    border: '1px solid rgba(169, 189, 203, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(169, 189, 203, 0.3)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(169, 189, 203, 0.2)';
+                  }}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Choose Files
+                </label>
+                <span className="ml-3 text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  Max 10MB per file
+                </span>
+              </div>
+              
               <div className="flex items-center justify-between mt-4">
                 <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
                   {customKnowledge.length}/50,000 characters

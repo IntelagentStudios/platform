@@ -330,7 +330,7 @@ export default function ProductsPage() {
                     </div>
                     
                     <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                      {product.features.slice(0, 4).map((feature, idx) => (
+                      {product.features?.slice(0, 4).map((feature, idx) => (
                         <div key={idx} className="flex items-center space-x-2">
                           <CheckCircle className="h-3 w-3 flex-shrink-0" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                           <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>{feature}</span>
@@ -469,7 +469,7 @@ export default function ProductsPage() {
                   </p>
                   
                   <div className="space-y-1 mb-3">
-                    {product.features.slice(0, 2).map((feature, idx) => (
+                    {product.features?.slice(0, 2).map((feature, idx) => (
                       <div key={idx} className="flex items-center space-x-1">
                         <CheckCircle className="h-3 w-3 flex-shrink-0" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                         <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>{feature}</span>
