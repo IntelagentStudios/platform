@@ -434,10 +434,10 @@ export default function AdminDashboardPage() {
             Recent Activity
           </h3>
           <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            Last {overviewData.recentActivity.length} platform events
+            Last {overviewData.recentActivity?.length || 0} platform events
           </p>
           <div className="space-y-3">
-            {overviewData.recentActivity.slice(0, 5).map((activity, index) => (
+            {overviewData.recentActivity?.slice(0, 5).map((activity, index) => (
               <div key={index} className="flex items-start gap-3">
                 <div className="p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
                   <MessageSquare className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
@@ -455,7 +455,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             ))}
-            {overviewData.recentActivity.length === 0 && (
+            {(!overviewData.recentActivity || overviewData.recentActivity.length === 0) && (
               <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent activity</p>
             )}
           </div>
@@ -473,7 +473,7 @@ export default function AdminDashboardPage() {
             Active products across {overviewData.productKeys.total} keys
           </p>
           <div className="space-y-3">
-            {overviewData.productKeys.distribution.map((product, index) => {
+            {overviewData.productKeys?.distribution?.map((product, index) => {
               const percentage = overviewData.productKeys.total > 0 
                 ? (product._count / overviewData.productKeys.total) * 100 
                 : 0;
@@ -499,7 +499,7 @@ export default function AdminDashboardPage() {
                 </div>
               );
             })}
-            {overviewData.productKeys.distribution.length === 0 && (
+            {(!overviewData.productKeys?.distribution || overviewData.productKeys.distribution.length === 0) && (
               <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
                 No product keys issued yet
               </p>
@@ -520,7 +520,7 @@ export default function AdminDashboardPage() {
           Latest users joining the platform
         </p>
         <div className="space-y-2">
-          {overviewData.recentUsers.map((user, index) => (
+          {overviewData.recentUsers?.map((user, index) => (
             <div key={index} className="flex items-center justify-between py-2 border-b last:border-0" 
                  style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}>
               <div>
@@ -543,7 +543,7 @@ export default function AdminDashboardPage() {
               </span>
             </div>
           ))}
-          {overviewData.recentUsers.length === 0 && (
+          {(!overviewData.recentUsers || overviewData.recentUsers.length === 0) && (
             <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent signups</p>
           )}
         </div>
