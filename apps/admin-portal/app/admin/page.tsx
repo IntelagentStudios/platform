@@ -92,8 +92,8 @@ export default function AdminDashboard() {
     );
   }
 
-  const healthyServices = status?.services.filter(s => s.status === 'healthy').length || 0;
-  const totalServices = status?.services.length || 0;
+  const healthyServices = status?.services?.filter(s => s.status === 'healthy').length || 0;
+  const totalServices = status?.services?.length || 0;
   const systemHealth = status?.healthy ? 'Operational' : 'Issues Detected';
   const criticalAlerts = status?.alerts.filter(a => a.type === 'critical').length || 0;
 
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
           </span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {status?.services.map((service: any) => (
+          {status?.services?.map((service: any) => (
             <div 
               key={service.name} 
               className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-accent/10 transition-colors"
@@ -454,7 +454,7 @@ export default function AdminDashboard() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Alerts</h3>
           <div className="space-y-2">
-            {status.alerts.slice(0, 5).map((alert: any, index: number) => (
+            {status.alerts?.slice(0, 5).map((alert: any, index: number) => (
               <div key={index} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <AlertTriangle className={`w-5 h-5 mt-0.5 ${
                   alert.type === 'critical' ? 'text-red-400' : 'text-secondary'

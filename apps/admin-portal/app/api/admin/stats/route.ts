@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
     const activeDate = new Date(new Date().setDate(new Date().getDate() - 30));
 
     const [totalUsers, newUsers, totalLicenses, activeLicenses] = await Promise.all([
-      prisma.users.count(),
-      prisma.users.count({
-        where: { created_at: { gte: todayStart } }
+      prisma.user.count(),
+      prisma.user.count({
+        where: { createdAt: { gte: todayStart } }
       }),
       prisma.licenses.count(),
       prisma.licenses.count({
