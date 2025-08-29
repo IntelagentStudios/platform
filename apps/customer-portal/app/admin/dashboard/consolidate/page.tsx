@@ -124,7 +124,11 @@ export default function ConsolidatePage() {
         setMessage(`✅ ${data.message}`);
         await loadLicenses();
       } else {
-        setMessage(`❌ Failed to delete product keys: ${data.message || 'Unknown error'}`);
+        console.error('Delete failed with details:', data);
+        setMessage(`❌ ${data.message || 'Failed to delete product keys'}`);
+        if (data.details) {
+          console.error('Error details:', data.details);
+        }
       }
     } catch (error) {
       console.error('Delete error:', error);

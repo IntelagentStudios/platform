@@ -92,15 +92,47 @@ export async function POST(request: NextRequest) {
       case 'delete_product_keys': {
         const { licenseKey } = data;
         
-        // Delete all product keys for this license
-        const deleted = await prisma.product_keys.deleteMany({
-          where: { license_key: licenseKey }
-        });
-        
-        return NextResponse.json({ 
-          success: true, 
-          message: `Deleted ${deleted.count} product keys for license ${licenseKey}` 
-        });
+        try {
+          console.log(`Attempting to delete product keys for license: ${licenseKey}`);
+          
+          // First, let's check what product keys exist
+          const existingKeys = await prisma.product_keys.findMany({
+            where: { license_key: licenseKey }
+          });
+          
+          console.log(`Found ${existingKeys.length} product keys to delete:`, existingKeys.map(k => k.product_key));
+          
+          // Delete related custom_knowledge entries first (if they have foreign key constraints)
+          for (const key of existingKeys) {
+            try {
+              await prisma.custom_knowledge.deleteMany({
+                where: { product_key: key.product_key }
+              });
+            } catch (knowledgeErr) {
+              console.log(`No custom knowledge to delete for ${key.product_key} or error:`, knowledgeErr);
+            }
+          }
+          
+          // Now delete all product keys for this license
+          const deleted = await prisma.product_keys.deleteMany({
+            where: { license_key: licenseKey }
+          });
+          
+          console.log(`Successfully deleted ${deleted.count} product keys`);
+          
+          return NextResponse.json({ 
+            success: true, 
+            message: `Deleted ${deleted.count} product keys for license ${licenseKey}` 
+          });
+        } catch (error: any) {
+          console.error('Error deleting product keys:', error);
+          return NextResponse.json({ 
+            success: false,
+            error: error.message,
+            message: `Failed to delete product keys: ${error.message}`,
+            details: error.toString()
+          }, { status: 400 });
+        }
       }
       
       case 'delete_license': {
