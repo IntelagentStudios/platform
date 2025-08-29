@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function ConfigureChatbot() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function ConfigureChatbot() {
   const [embedCode, setEmbedCode] = useState('');
   const [productKey, setProductKey] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState('general');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +60,59 @@ export default function ConfigureChatbot() {
     setDomain('');
     setPassword('');
     setError('');
+    setShowInstructions(false);
+    setSelectedPlatform('general');
+  };
+
+  const platformInstructions = {
+    general: {
+      name: 'General HTML',
+      steps: [
+        'Copy the embed code above',
+        'Open your website\'s HTML file',
+        'Paste the code just before the closing </body> tag',
+        'Save and publish your changes'
+      ]
+    },
+    wordpress: {
+      name: 'WordPress',
+      steps: [
+        'Copy the embed code above',
+        'Go to Appearance → Theme Editor',
+        'Select footer.php',
+        'Paste the code before the </body> tag',
+        'Click "Update File"'
+      ]
+    },
+    squarespace: {
+      name: 'Squarespace',
+      steps: [
+        'Copy the embed code above',
+        'Go to Settings → Advanced → Code Injection',
+        'Paste the code in the Footer section',
+        'Click "Save"'
+      ]
+    },
+    wix: {
+      name: 'Wix',
+      steps: [
+        'Copy the embed code above',
+        'Go to Settings → Custom Code',
+        'Click "Add Custom Code"',
+        'Paste the code and select "Body - End"',
+        'Click "Apply"'
+      ]
+    },
+    shopify: {
+      name: 'Shopify',
+      steps: [
+        'Copy the embed code above',
+        'Go to Online Store → Themes',
+        'Click "Actions" → "Edit code"',
+        'Open theme.liquid',
+        'Paste before </body> tag and save'
+      ]
+    }
   };
 
   return (
@@ -254,14 +310,14 @@ export default function ConfigureChatbot() {
                 <div style={{
                   width: '60px',
                   height: '60px',
-                  backgroundColor: 'rgb(34, 197, 94)',
+                  backgroundColor: 'rgba(169, 189, 203, 0.8)',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 20px',
                   fontSize: '30px',
-                  color: 'white'
+                  color: 'rgb(48, 54, 54)'
                 }}>
                   ✓
                 </div>
@@ -317,6 +373,7 @@ export default function ConfigureChatbot() {
                 <div style={{
                   position: 'relative',
                   padding: '16px',
+                  paddingTop: '48px',
                   backgroundColor: 'rgba(38, 44, 44, 0.95)',
                   borderRadius: '8px',
                   fontFamily: 'monospace',
@@ -326,7 +383,6 @@ export default function ConfigureChatbot() {
                   wordBreak: 'break-all',
                   border: '1px solid rgba(169, 189, 203, 0.2)'
                 }}>
-                  {embedCode}
                   <button
                     onClick={copyToClipboard}
                     style={{
@@ -334,7 +390,7 @@ export default function ConfigureChatbot() {
                       top: '12px',
                       right: '12px',
                       padding: '8px 12px',
-                      backgroundColor: copied ? 'rgb(34, 197, 94)' : 'rgba(169, 189, 203, 0.2)',
+                      backgroundColor: copied ? 'rgba(169, 189, 203, 0.8)' : 'rgba(169, 189, 203, 0.2)',
                       color: 'white',
                       fontSize: '12px',
                       border: 'none',
@@ -345,37 +401,76 @@ export default function ConfigureChatbot() {
                   >
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
+                  {embedCode}
                 </div>
               </div>
 
-              <div style={{
-                padding: '16px',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                border: '1px solid rgba(34, 197, 94, 0.3)',
-                borderRadius: '8px',
-                marginBottom: '20px'
-              }}>
-                <h3 style={{
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: 'rgb(229, 227, 220)',
-                  marginBottom: '8px'
-                }}>
+              <div style={{ marginBottom: '20px' }}>
+                <button
+                  onClick={() => setShowInstructions(!showInstructions)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                    color: 'rgb(229, 227, 220)',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(48, 54, 54, 0.7)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(48, 54, 54, 0.5)'}
+                >
                   Installation Instructions
-                </h3>
-                <ol style={{
-                  margin: '0',
-                  paddingLeft: '20px',
-                  color: 'rgba(229, 227, 220, 0.8)',
-                  fontSize: '14px',
-                  lineHeight: '1.6'
-                }}>
-                  <li>Copy the embed code above</li>
-                  <li>Open your website's HTML file or editor</li>
-                  <li>Paste the code just before the closing &lt;/body&gt; tag</li>
-                  <li>Save and publish your changes</li>
-                  <li>Your chatbot will appear immediately!</li>
-                </ol>
+                  {showInstructions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
+                
+                {showInstructions && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '16px',
+                    backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(169, 189, 203, 0.1)'
+                  }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <select
+                        value={selectedPlatform}
+                        onChange={(e) => setSelectedPlatform(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          color: 'rgb(229, 227, 220)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {Object.entries(platformInstructions).map(([key, platform]) => (
+                          <option key={key} value={key}>{platform.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <ol style={{
+                      margin: '0',
+                      paddingLeft: '20px',
+                      color: 'rgba(229, 227, 220, 0.8)',
+                      fontSize: '13px',
+                      lineHeight: '1.8'
+                    }}>
+                      {platformInstructions[selectedPlatform].steps.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>

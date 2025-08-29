@@ -356,11 +356,19 @@ export default function ChatbotManagePage() {
           </div>
           <button
             onClick={fetchConversations}
-            className="p-2 rounded-lg transition hover:opacity-80"
+            className="p-2 rounded-lg transition"
             style={{ 
-              backgroundColor: 'rgba(169, 189, 203, 0.1)',
-              border: '1px solid rgba(169, 189, 203, 0.2)',
-              color: 'rgb(229, 227, 220)'
+              backgroundColor: 'black',
+              border: '1px solid black',
+              color: 'white'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = 'white';
+              e.currentTarget.style.color = 'black';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'black';
+              e.currentTarget.style.color = 'white';
             }}
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />

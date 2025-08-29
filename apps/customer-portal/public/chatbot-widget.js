@@ -210,32 +210,32 @@
     }
     .intelagent-chat-input textarea {
       flex-grow: 1;
-      padding: 10px 14px;
-      border: 1px solid rgba(204, 204, 204, 0.4);
-      border-radius: 12px;
-      font-size: 16px;
+      padding: 8px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      font-size: 14px;
       outline: none;
       font-family: 'Inter', sans-serif;
-      background: rgba(255, 255, 255, 0.7);
+      background: white;
       resize: none;
-      min-height: 40px;
-      height: 40px;
-      max-height: 100px;
+      min-height: 32px;
+      height: 32px;
+      max-height: 60px;
       overflow-y: auto;
-      line-height: 1.4;
+      line-height: 1.3;
       transition: border-color 0.2s, background 0.2s;
     }
     .intelagent-chat-input textarea:focus {
-      border-color: rgba(100, 100, 100, 0.6);
-      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 0, 0, 0.4);
+      background: white;
     }
     .intelagent-send-button {
-      background: rgba(59, 59, 59, 0.9);
+      background: black;
       color: white;
-      border: none;
+      border: 1px solid black;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -244,8 +244,12 @@
       flex-shrink: 0;
     }
     .intelagent-send-button:hover {
-      background: rgba(41, 41, 41, 0.95);
+      background: white;
+      color: black;
       transform: scale(1.05);
+    }
+    .intelagent-send-button:hover svg {
+      fill: black;
     }
     .intelagent-send-button:disabled {
       opacity: 0.5;
