@@ -125,17 +125,15 @@ export default function AdminDashboardPage() {
     setAiResponse('');
     
     try {
-      console.log('Sending AI request to webhook...');
-      // Use the existing chatbot webhook with admin context
-      const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent', {
+      console.log('Sending AI request...');
+      // Use our proxy endpoint to avoid CORS issues
+      const response = await fetch('/api/admin/ai-assistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
         body: JSON.stringify({
           query: message,
-          productKey: 'admin-dashboard',
           customKnowledge: `You are an AI assistant for the Intelagent Platform master admin dashboard. 
             Current platform statistics:
             - Total licenses: ${overviewData?.licenses.total || 0}
@@ -144,7 +142,12 @@ export default function AdminDashboardPage() {
             - System uptime: ${overviewData?.systemHealth.uptime || 0}%
             
             You are helping the platform administrator manage and monitor the entire system.
-            Provide insights, analytics, and helpful suggestions for platform management.`
+            Provide insights, analytics, and helpful suggestions for platform management.`,
+          stats: {
+            totalLicenses: overviewData?.licenses.total || 0,
+            activeLicenses: overviewData?.licenses.active || 0,
+            totalUsers: overviewData?.users.total || 0
+          }
         })
       });
 
