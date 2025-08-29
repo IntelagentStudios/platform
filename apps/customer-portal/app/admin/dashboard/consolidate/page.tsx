@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Plus, RefreshCw, Check, Settings, Key } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Check, Settings, Key, XCircle } from 'lucide-react';
 
 export default function ConsolidatePage() {
   const [licenses, setLicenses] = useState<any[]>([]);
@@ -74,7 +74,7 @@ export default function ConsolidatePage() {
   };
 
   const deleteLicense = async (licenseKey: string) => {
-    if (!confirm(`Delete license ${licenseKey}?`)) return;
+    if (!confirm(`Delete license ${licenseKey}? This will also delete all associated product keys.`)) return;
     
     setLoading(true);
     try {
@@ -88,11 +88,41 @@ export default function ConsolidatePage() {
       });
       const data = await response.json();
       if (data.success) {
-        setMessage(`✅ Deleted license ${licenseKey}`);
+        setMessage(`✅ ${data.message}`);
         loadLicenses();
+      } else {
+        setMessage(`❌ ${data.message || 'Failed to delete license'}`);
+        console.error('Delete failed:', data);
       }
     } catch (error) {
-      setMessage('Failed to delete license');
+      console.error('Delete error:', error);
+      setMessage(`❌ Failed to delete license: ${error}`);
+    }
+    setLoading(false);
+  };
+
+  const deleteProductKeys = async (licenseKey: string) => {
+    if (!confirm(`Delete all product keys for license ${licenseKey}?`)) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/consolidate-licenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'delete_product_keys',
+          data: { licenseKey }
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage(`✅ ${data.message}`);
+        loadLicenses();
+      } else {
+        setMessage(`❌ Failed to delete product keys`);
+      }
+    } catch (error) {
+      setMessage(`❌ Failed to delete product keys: ${error}`);
     }
     setLoading(false);
   };
@@ -147,6 +177,48 @@ export default function ConsolidatePage() {
         </ol>
       </div>
 
+      {selectedLicense && (
+        <div className="rounded-lg border p-4" style={{ 
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderColor: 'rgba(48, 54, 54, 0.2)'
+        }}>
+          <h3 className="font-semibold mb-2" style={{ color: 'rgb(48, 54, 54)' }}>
+            Selected License: {selectedLicense}
+          </h3>
+          {(() => {
+            const license = licenses.find(l => l.license_key === selectedLicense);
+            if (license?.product_keys?.length > 0) {
+              return (
+                <div className="space-y-2">
+                  <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.8)' }}>
+                    Product Keys ({license.product_keys.length}):
+                  </p>
+                  <div className="space-y-1">
+                    {license.product_keys.map((pk: any) => (
+                      <div key={pk.key} className="flex items-center gap-2 text-sm font-mono">
+                        <span style={{ color: 'rgb(48, 54, 54)' }}>{pk.key}</span>
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ 
+                          backgroundColor: 'rgba(48, 54, 54, 0.1)',
+                          color: 'rgba(48, 54, 54, 0.7)'
+                        }}>
+                          {pk.product}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  No product keys yet. Click the key icon to generate one.
+                </p>
+              );
+            }
+          })()}
+        </div>
+      )}
+
       {licenses.length > 0 && (
         <div className="rounded-lg border" style={{ 
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -198,13 +270,24 @@ export default function ConsolidatePage() {
                             </button>
                           )}
                           {selectedLicense === license.license_key && (
-                            <button
-                              onClick={() => createProductKey(license.license_key)}
-                              className="p-1 rounded hover:bg-green-50 text-green-600"
-                              title="Generate product key"
-                            >
-                              <Key className="h-4 w-4" />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => createProductKey(license.license_key)}
+                                className="p-1 rounded hover:bg-green-50 text-green-600"
+                                title="Generate product key"
+                              >
+                                <Key className="h-4 w-4" />
+                              </button>
+                              {license.product_key_count > 0 && (
+                                <button
+                                  onClick={() => deleteProductKeys(license.license_key)}
+                                  className="p-1 rounded hover:bg-orange-50 text-orange-600"
+                                  title="Delete all product keys"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </button>
+                              )}
+                            </>
                           )}
                         </>
                       )}

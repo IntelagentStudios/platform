@@ -89,28 +89,74 @@ export async function POST(request: NextRequest) {
         });
       }
       
-      case 'delete_license': {
+      case 'delete_product_keys': {
         const { licenseKey } = data;
         
-        // First delete associated product keys
-        await prisma.product_keys.deleteMany({
-          where: { license_key: licenseKey }
-        });
-        
-        // Update any users using this license to null
-        await prisma.users.updateMany({
-          where: { license_key: licenseKey },
-          data: { license_key: null }
-        });
-        
-        // Delete the license
-        await prisma.licenses.delete({
+        // Delete all product keys for this license
+        const deleted = await prisma.product_keys.deleteMany({
           where: { license_key: licenseKey }
         });
         
         return NextResponse.json({ 
           success: true, 
-          message: `License ${licenseKey} deleted` 
+          message: `Deleted ${deleted.count} product keys for license ${licenseKey}` 
+        });
+      }
+      
+      case 'delete_license': {
+        const { licenseKey } = data;
+        
+        try {
+          // First delete associated product keys
+          const deletedKeys = await prisma.product_keys.deleteMany({
+            where: { license_key: licenseKey }
+          });
+          console.log(`Deleted ${deletedKeys.count} product keys for ${licenseKey}`);
+          
+          // Check if any users are using this license
+          const usersWithLicense = await prisma.users.findMany({
+            where: { license_key: licenseKey }
+          });
+          
+          if (usersWithLicense.length > 0) {
+            console.log(`Found ${usersWithLicense.length} users with license ${licenseKey}, setting to null`);
+            // Don't delete user accounts, just remove their license association
+            await prisma.users.updateMany({
+              where: { license_key: licenseKey },
+              data: { license_key: 'NEEDS_LICENSE' } // Set to placeholder instead of null
+            });
+          }
+          
+          // Delete the license
+          await prisma.licenses.delete({
+            where: { license_key: licenseKey }
+          });
+          
+          return NextResponse.json({ 
+            success: true, 
+            message: `License ${licenseKey} and ${deletedKeys.count} product keys deleted` 
+          });
+        } catch (error: any) {
+          console.error('Error deleting license:', error);
+          return NextResponse.json({ 
+            success: false,
+            error: error.message,
+            message: `Failed to delete license ${licenseKey}: ${error.message}` 
+          }, { status: 400 });
+        }
+      }
+      
+      case 'list_product_keys': {
+        const { licenseKey } = data;
+        
+        const productKeys = await prisma.product_keys.findMany({
+          where: { license_key: licenseKey },
+          orderBy: { created_at: 'desc' }
+        });
+        
+        return NextResponse.json({ 
+          success: true, 
+          productKeys
         });
       }
       
@@ -124,7 +170,7 @@ export async function POST(request: NextRequest) {
           const user = await prisma.users.findFirst({
             where: { license_key: license.license_key }
           });
-          const productKeys = await prisma.product_keys.count({
+          const productKeys = await prisma.product_keys.findMany({
             where: { license_key: license.license_key }
           });
           
@@ -134,7 +180,12 @@ export async function POST(request: NextRequest) {
             name: user?.name || 'Unknown',
             status: license.status,
             user_email: user?.email,
-            product_key_count: productKeys,
+            product_key_count: productKeys.length,
+            product_keys: productKeys.map(pk => ({
+              key: pk.product_key,
+              product: pk.product,
+              status: pk.status
+            })),
             created_at: license.created_at
           };
         }));
