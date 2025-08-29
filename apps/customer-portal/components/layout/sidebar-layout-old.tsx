@@ -150,7 +150,9 @@ export default function SidebarLayout({
           sidebarOpen ? "ml-64" : "ml-0"
         )}
       >
-        {children}
+        <div className="p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

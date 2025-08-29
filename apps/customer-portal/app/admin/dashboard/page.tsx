@@ -117,29 +117,32 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleAiSubmit = async () => {
-    if (!aiMessage.trim()) return;
+  const handleAiSubmit = async (messageOverride?: string) => {
+    const message = messageOverride || aiMessage;
+    if (!message.trim()) return;
     
     setIsAiLoading(true);
     setAiResponse('');
     
     try {
-      // Send to n8n webhook for admin AI assistant
-      const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/admin-assistant', {
+      // Use the existing chatbot webhook with admin context
+      const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: aiMessage,
-          context: 'admin_dashboard',
-          customKnowledge: `You are an AI assistant for the Intelagent Platform admin dashboard. 
+          query: message,
+          productKey: 'admin-dashboard',
+          customKnowledge: `You are an AI assistant for the Intelagent Platform master admin dashboard. 
             Current platform statistics:
             - Total licenses: ${overviewData?.licenses.total || 0}
             - Active licenses: ${overviewData?.licenses.active || 0}
             - Total users: ${overviewData?.users.total || 0}
             - System uptime: ${overviewData?.systemHealth.uptime || 0}%
-            Help the admin with platform management, analytics, and insights.`
+            
+            You are helping the platform administrator manage and monitor the entire system.
+            Provide insights, analytics, and helpful suggestions for platform management.`
         })
       });
 
@@ -148,7 +151,7 @@ export default function AdminDashboardPage() {
       }
 
       const data = await response.json();
-      setAiResponse(data.response || 'I can help you manage your platform. What would you like to know?');
+      setAiResponse(data.response || data.message || 'I can help you manage your platform. What would you like to know?');
     } catch (error) {
       console.error('AI request failed:', error);
       setAiResponse('I\'m having trouble connecting right now. Please try again later.');
@@ -270,8 +273,9 @@ export default function AdminDashboardPage() {
             <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => {
-                  setAiMessage('What are the key metrics for this month?');
-                  handleAiSubmit();
+                  const msg = 'What are the key metrics for this month?';
+                  setAiMessage(msg);
+                  handleAiSubmit(msg);
                 }}
                 className="px-3 py-1 text-sm rounded-lg border transition-colors hover:bg-gray-50"
                 style={{ 
@@ -283,8 +287,9 @@ export default function AdminDashboardPage() {
               </button>
               <button 
                 onClick={() => {
-                  setAiMessage('Which users need attention?');
-                  handleAiSubmit();
+                  const msg = 'Which users need attention?';
+                  setAiMessage(msg);
+                  handleAiSubmit(msg);
                 }}
                 className="px-3 py-1 text-sm rounded-lg border transition-colors hover:bg-gray-50"
                 style={{ 
@@ -296,8 +301,9 @@ export default function AdminDashboardPage() {
               </button>
               <button 
                 onClick={() => {
-                  setAiMessage('What are the growth opportunities?');
-                  handleAiSubmit();
+                  const msg = 'What are the growth opportunities?';
+                  setAiMessage(msg);
+                  handleAiSubmit(msg);
                 }}
                 className="px-3 py-1 text-sm rounded-lg border transition-colors hover:bg-gray-50"
                 style={{ 
