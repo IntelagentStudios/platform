@@ -153,12 +153,12 @@ export default function ConfigureChatbot() {
                     color: 'rgb(229, 227, 220)',
                     marginBottom: '8px'
                   }}>
-                    License Key (Optional)
+                    Password (Optional)
                   </label>
                   <input
-                    type="text"
+                    type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value.toUpperCase())}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Leave blank to use your account license"
                     style={{
                       width: '100%',
@@ -185,7 +185,7 @@ export default function ConfigureChatbot() {
                     color: 'rgba(229, 227, 220, 0.5)',
                     marginTop: '4px'
                   }}>
-                    Will use your account license (INTL-AGNT-BOSS-MODE) if left blank
+                    Since you're logged in, you can leave this blank to use your account (INTL-AGNT-BOSS-MODE)
                   </p>
                 </div>
 
