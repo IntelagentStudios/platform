@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -35,12 +36,9 @@ export async function POST(request: NextRequest) {
             license_key: 'INTL-MASTER-2025',
             email: 'harry@intelagentstudios.com',
             status: 'active',
-            type: 'pro_platform',
-            metadata: {
-              consolidated: true,
-              created_by: 'admin_consolidation',
-              previous_licenses: ['INTL-AGNT-BOSS-MODE', '7559-1F5D-842B-A27B', '59BB-5046-A795-2713']
-            }
+            plan: 'pro_platform',
+            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent'],
+            created_at: new Date()
           }
         });
         
@@ -48,15 +46,15 @@ export async function POST(request: NextRequest) {
         await prisma.users.upsert({
           where: { email: 'harry@intelagentstudios.com' },
           update: { 
-            license_key: 'INTL-MASTER-2025',
-            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent']
+            license_key: 'INTL-MASTER-2025'
           },
           create: {
+            id: randomUUID(),
             email: 'harry@intelagentstudios.com',
             name: 'Harry Southgate',
             license_key: 'INTL-MASTER-2025',
-            email_verified: true,
-            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent']
+            password_hash: '$2b$10$dummy.hash.for.initial.setup', // User will need to reset password
+            email_verified: true
           }
         });
         
@@ -76,11 +74,7 @@ export async function POST(request: NextRequest) {
             product_key: productKey || 'key_ya4c9x7shyz3djpn',
             license_key: licenseKey,
             product: product,
-            status: 'active',
-            metadata: {
-              purpose: 'website_embed',
-              domain: 'intelagentstudios.com'
-            }
+            status: 'active'
           }
         });
         

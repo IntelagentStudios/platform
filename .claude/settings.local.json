@@ -45,7 +45,11 @@
       "Bash(dir:*)",
       "Bash(del fix-auth-checks.js)",
       "Bash(del \"C:\\Projects\\Intelagent Platform\\apps\\customer-portal\\app\\api\\auth\\friend-login\\route.ts\")",
-      "Bash(npx prettier:*)"
+      "Bash(npx prettier:*)",
+      "Bash(for file in isolation-check/route.ts debug-conversations/route.ts debug-user/route.ts)",
+      "Bash(do mv \"$file\" \"$file.backup\")",
+      "Bash(del \"apps\\customer-portal\\app\\api\\test\\*.backup\")",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
