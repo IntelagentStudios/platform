@@ -125,11 +125,13 @@ export default function AdminDashboardPage() {
     setAiResponse('');
     
     try {
+      console.log('Sending AI request to webhook...');
       // Use the existing chatbot webhook with admin context
       const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           query: message,
@@ -146,15 +148,29 @@ export default function AdminDashboardPage() {
         })
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        const errorText = await response.text();
+        console.error('Webhook error response:', errorText);
+        throw new Error(`Webhook returned ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
-      setAiResponse(data.response || data.message || 'I can help you manage your platform. What would you like to know?');
+      console.log('AI response data:', data);
+      
+      // Try different possible response fields
+      const aiText = data.response || data.message || data.output || data.text || 
+                     (typeof data === 'string' ? data : 'I can help you manage your platform. What would you like to know?');
+      setAiResponse(aiText);
     } catch (error) {
       console.error('AI request failed:', error);
-      setAiResponse('I\'m having trouble connecting right now. Please try again later.');
+      // More informative error message
+      if (error instanceof Error) {
+        setAiResponse(`Connection error: ${error.message}. The AI service might be temporarily unavailable.`);
+      } else {
+        setAiResponse('I\'m having trouble connecting to the AI service. Please check the console for details.');
+      }
     } finally {
       setIsAiLoading(false);
     }
