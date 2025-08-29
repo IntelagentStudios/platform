@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
+import { generateProductKey } from '@/lib/product-keys';
 
 export const dynamic = 'force-dynamic';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -29,16 +30,16 @@ export async function POST(request: NextRequest) {
     const { action, data } = await request.json();
     
     switch (action) {
-      case 'create_master_license': {
-        // Create a new consolidated master license for Harry
-        const newLicense = await prisma.licenses.create({
+      case 'configure_existing': {
+        const { licenseKey } = data;
+        
+        // Update the selected license to be fully configured
+        const updatedLicense = await prisma.licenses.update({
+          where: { license_key: licenseKey },
           data: {
-            license_key: 'INTL-MASTER-2025',
-            email: 'harry@intelagentstudios.com',
             status: 'active',
             plan: 'pro_platform',
-            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent'],
-            created_at: new Date()
+            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent']
           }
         });
         
@@ -46,13 +47,13 @@ export async function POST(request: NextRequest) {
         await prisma.users.upsert({
           where: { email: 'harry@intelagentstudios.com' },
           update: { 
-            license_key: 'INTL-MASTER-2025'
+            license_key: licenseKey
           },
           create: {
             id: randomUUID(),
             email: 'harry@intelagentstudios.com',
             name: 'Harry Southgate',
-            license_key: 'INTL-MASTER-2025',
+            license_key: licenseKey,
             password_hash: '$2b$10$dummy.hash.for.initial.setup', // User will need to reset password
             email_verified: true
           }
@@ -60,20 +61,23 @@ export async function POST(request: NextRequest) {
         
         return NextResponse.json({ 
           success: true, 
-          license: newLicense,
-          message: 'Master license created successfully' 
+          license: updatedLicense,
+          message: `License ${licenseKey} configured as primary license` 
         });
       }
       
       case 'create_product_key': {
         const { licenseKey, product, productKey } = data;
         
+        // Generate a new product key if not provided
+        const generatedKey = productKey || generateProductKey(product || 'chatbot').key;
+        
         // Create the specific product key for the website embed
         const newProductKey = await prisma.product_keys.create({
           data: {
-            product_key: productKey || 'key_ya4c9x7shyz3djpn',
+            product_key: generatedKey,
             license_key: licenseKey,
-            product: product,
+            product: product || 'chatbot',
             status: 'active'
           }
         });
