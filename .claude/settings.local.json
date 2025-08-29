@@ -49,7 +49,9 @@
       "Bash(for file in isolation-check/route.ts debug-conversations/route.ts debug-user/route.ts)",
       "Bash(do mv \"$file\" \"$file.backup\")",
       "Bash(del \"apps\\customer-portal\\app\\api\\test\\*.backup\")",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(del \"apps\\customer-portal\\app\\api\\products\\chatbot\\authenticate-james\\route.ts\")"
     ],
     "deny": [],
     "ask": []

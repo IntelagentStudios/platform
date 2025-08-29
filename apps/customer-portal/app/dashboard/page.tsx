@@ -77,7 +77,7 @@ export default function DashboardPage() {
   }
 
   // Get user's products from their profile
-  const userProducts = user?.products || ['chatbot'];
+  const userProducts = (user?.products && Array.isArray(user.products)) ? user.products : ['chatbot'];
   
   const stats = [
     { label: 'Total Revenue', value: '-', change: '-', icon: DollarSign },
@@ -89,15 +89,17 @@ export default function DashboardPage() {
   // Define all possible products
   const allProductsMap = {
     'chatbot': { name: 'Chatbot', status: 'Ready', icon: Zap },
-    'sales-agent': { name: 'Sales Agent', status: 'Ready', icon: Users },
+    'sales-outreach-agent': { name: 'Sales Outreach Agent', status: 'Ready', icon: Users },
     'data-enrichment': { name: 'Data Enrichment', status: 'Ready', icon: BarChart3 },
-    'setup-agent': { name: 'Setup Agent', status: 'Ready', icon: Settings }
+    'onboarding-agent': { name: 'Onboarding Agent', status: 'Ready', icon: Settings }
   };
   
   // Filter to only show user's products
-  const products = userProducts.map(productId => 
-    allProductsMap[productId] || { name: productId, status: 'Ready', icon: Package }
-  ).filter(Boolean);
+  const products = userProducts && Array.isArray(userProducts) 
+    ? userProducts.map(productId => 
+        allProductsMap[productId] || { name: productId, status: 'Ready', icon: Package }
+      ).filter(Boolean)
+    : [];
 
   return (
     <DashboardLayout>
@@ -210,22 +212,22 @@ export default function DashboardPage() {
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/manage';
                             } else if (product.name === 'Sales Agent') {
-                              window.location.href = '/products/sales-agent/manage';
+                              window.location.href = '/products/sales-outreach-agent/manage';
                             } else if (product.name === 'Data Enrichment') {
                               window.location.href = '/products/data-enrichment/manage';
                             } else if (product.name === 'Setup Agent') {
-                              window.location.href = '/products/setup-agent';
+                              window.location.href = '/products/onboarding-agent';
                             }
                           } else {
                             // Route to new universal setup pages
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/configure';
                             } else if (product.name === 'Sales Agent') {
-                              window.location.href = '/products/sales-agent/setup';
+                              window.location.href = '/products/sales-outreach-agent/setup';
                             } else if (product.name === 'Data Enrichment') {
                               window.location.href = '/products/data-enrichment/setup';
                             } else if (product.name === 'Setup Agent') {
-                              window.location.href = '/products/setup-agent/setup';
+                              window.location.href = '/products/onboarding-agent/setup';
                             }
                           }
                         }}

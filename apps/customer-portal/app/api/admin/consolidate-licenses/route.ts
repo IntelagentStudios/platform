@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
           data: {
             status: 'active',
             plan: 'pro_platform',
-            products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent']
+            products: ['chatbot', 'sales-outreach-agent', 'data-enrichment', 'onboarding-agent']
           }
         });
         

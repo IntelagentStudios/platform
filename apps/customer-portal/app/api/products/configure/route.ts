@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 
 // Product key prefixes
 const PRODUCT_PREFIXES: Record<string, string> = {
   'chatbot': 'chat',
-  'sales-agent': 'sale',
+  'sales-outreach-agent': 'sale',
   'data-enrichment': 'data',
-  'setup-agent': 'agnt'
+  'onboarding-agent': 'agnt'
 };
 
 // Generate product key based on product type
@@ -26,14 +29,14 @@ function getEmbedCode(product: string, productKey: string, config: any): string 
     case 'chatbot':
       return `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`;
     
-    case 'sales-agent':
-      return `<script src="https://dashboard.intelagentstudios.com/sales-agent.js" data-product-key="${productKey}"></script>`;
+    case 'sales-outreach-agent':
+      return `<script src="https://dashboard.intelagentstudios.com/sales-outreach-agent.js" data-product-key="${productKey}"></script>`;
     
     case 'data-enrichment':
       return `API Key: ${productKey}\nEndpoint: https://api.intelagentstudios.com/v1/enrich\nMethod: POST`;
     
-    case 'setup-agent':
-      return `<script src="https://dashboard.intelagentstudios.com/setup-assistant.js" data-product-key="${productKey}"></script>`;
+    case 'onboarding-agent':
+      return `<script src="https://dashboard.intelagentstudios.com/onboarding-assistant.js" data-product-key="${productKey}"></script>`;
     
     default:
       return `Product Key: ${productKey}`;
@@ -43,29 +46,25 @@ function getEmbedCode(product: string, productKey: string, config: any): string 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { product, password, licenseKey: providedLicenseKey, configuration } = body;
+    const { product, password, configuration } = body;
     
     console.log('[CONFIGURE] Request received:', {
       product,
       hasPassword: !!password,
-      hasLicenseKey: !!providedLicenseKey,
       configuration
     });
 
-    // Accept both 'password' and 'licenseKey' for backwards compatibility
-    const licenseKeyInput = providedLicenseKey || password;
-
-    // Validate input
-    if (!product || !licenseKeyInput) {
+    // Validate inputs
+    if (!product || !password) {
       return NextResponse.json(
-        { error: 'Product and license key are required' },
+        { error: 'Product and password are required' },
         { status: 400 }
       );
     }
     
     if (!configuration || !configuration.domain) {
       return NextResponse.json(
-        { error: 'Domain is required for chatbot configuration' },
+        { error: 'Domain is required for configuration' },
         { status: 400 }
       );
     }
@@ -78,26 +77,81 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate license key format
-    const licenseKeyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-    const license_key = licenseKeyInput.toUpperCase();
+    let licenseKey: string | null = null;
+    let userEmail: string | null = null;
+
+    // Check if user is logged in and verify password
+    const cookieStore = cookies();
+    const authToken = cookieStore.get('auth_token') || cookieStore.get('auth-token');
     
-    if (!licenseKeyPattern.test(license_key)) {
+    if (authToken) {
+      try {
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+        
+        if (decoded.email) {
+          // Get user and verify password
+          const user = await prisma.users.findUnique({
+            where: { email: decoded.email },
+            select: { 
+              email: true,
+              password_hash: true,
+              license_key: true
+            }
+          });
+          
+          if (user && user.password_hash) {
+            const isValidPassword = await bcrypt.compare(password, user.password_hash);
+            if (isValidPassword && user.license_key) {
+              licenseKey = user.license_key;
+              userEmail = user.email;
+            } else if (!isValidPassword) {
+              return NextResponse.json(
+                { error: 'Incorrect password' },
+                { status: 401 }
+              );
+            } else if (!user.license_key) {
+              return NextResponse.json(
+                { error: 'No license key associated with your account' },
+                { status: 400 }
+              );
+            }
+          } else {
+            return NextResponse.json(
+              { error: 'User account not found' },
+              { status: 404 }
+            );
+          }
+        }
+      } catch (error) {
+        console.log('Token verification failed:', error);
+        return NextResponse.json(
+          { error: 'Session expired. Please log in again.' },
+          { status: 401 }
+        );
+      }
+    } else {
       return NextResponse.json(
-        { error: 'Invalid license key format. Expected: XXXX-XXXX-XXXX-XXXX' },
-        { status: 400 }
+        { error: 'You must be logged in to configure products' },
+        { status: 401 }
       );
     }
 
-    // Verify license exists and is active
+    if (!licenseKey) {
+      return NextResponse.json(
+        { error: 'Unable to retrieve license key' },
+        { status: 400 }
+      );
+    }
+    
+    // Verify the license exists and is active
     const license = await prisma.licenses.findUnique({
-      where: { license_key },
+      where: { license_key: licenseKey },
       select: {
         license_key: true,
-        status: true,
-        products: true,
         email: true,
-        customer_name: true
+        customer_name: true,
+        status: true,
+        products: true
       }
     });
 
@@ -110,109 +164,92 @@ export async function POST(request: NextRequest) {
 
     if (license.status !== 'active') {
       return NextResponse.json(
-        { error: 'License is not active' },
+        { error: 'Your license is not active' },
         { status: 403 }
       );
     }
 
-    // Check if license has this product
-    if (!license.products || !license.products.includes(product)) {
-      return NextResponse.json(
-        { error: `License does not include ${product} product` },
-        { status: 403 }
-      );
+    // Check if product is available in license
+    if (!license.products.includes(product)) {
+      // For chatbot, add it automatically if not present
+      if (product === 'chatbot') {
+        await prisma.licenses.update({
+          where: { license_key: licenseKey },
+          data: {
+            products: {
+              push: 'chatbot'
+            }
+          }
+        });
+      } else {
+        return NextResponse.json(
+          { error: `Your license does not include ${product}` },
+          { status: 403 }
+        );
+      }
     }
 
-    // License key is the authentication - no need for password verification
-    // The license key proves ownership
-
-    // Check for existing configuration
-    // Simply check if any active key exists for this license and product
-    const existingKey = await prisma.product_keys.findFirst({
+    // Check for existing product key
+    let productKey = await prisma.product_keys.findFirst({
       where: {
-        license_key: license_key,
+        license_key: licenseKey,
         product: product,
         status: 'active'
-      },
-      select: {
-        product_key: true,
-        metadata: true
       }
     });
 
-    let product_key: string;
-    let is_new = false;
+    let isNew = false;
 
-    if (existingKey) {
-      // Use existing key
-      product_key = existingKey.product_key;
-      console.log(`[CONFIGURE] Using existing ${product} key for license ${license_key}: ${product_key}`);
-      console.log(`[CONFIGURE] Existing metadata:`, existingKey.metadata);
-    } else {
-      // Generate new product key
-      product_key = generateProductKey(product);
-      is_new = true;
-      
-      // Store in database
-      await prisma.product_keys.create({
+    if (!productKey) {
+      // Create a new product key
+      isNew = true;
+      productKey = await prisma.product_keys.create({
         data: {
-          license_key: license_key,
+          product_key: generateProductKey(product),
+          license_key: licenseKey,
           product: product,
-          product_key: product_key,
           status: 'active',
           metadata: {
             ...configuration,
-            configured_via: 'quick_setup',
             configured_at: new Date().toISOString(),
-            configured_by: license.email || license.customer_name || license.license_key
+            configured_by: userEmail
           }
         }
       });
-      
-      console.log(`[CONFIGURE] Generated new ${product} key for license ${license_key}: ${product_key}`);
-    }
-
-    // Update the product key metadata with the new domain if it's different
-    if (existingKey && configuration.domain) {
-      const existingDomain = (existingKey.metadata as any)?.domain;
+      console.log(`[CONFIGURE] Generated new ${product} key: ${productKey.product_key}`);
+    } else {
+      // Update the existing product key's metadata
+      const existingDomain = (productKey.metadata as any)?.domain;
       if (existingDomain !== configuration.domain) {
         console.log(`[CONFIGURE] Updating domain from ${existingDomain} to ${configuration.domain}`);
         await prisma.product_keys.update({
-          where: { product_key: product_key },
+          where: { product_key: productKey.product_key },
           data: {
             metadata: {
-              ...((existingKey.metadata as any) || {}),
-              domain: configuration.domain,
-              updated_at: new Date().toISOString()
+              ...((productKey.metadata as any) || {}),
+              ...configuration,
+              updated_at: new Date().toISOString(),
+              configured_by: userEmail
             }
           }
         });
       }
+      console.log(`[CONFIGURE] Using existing ${product} key: ${productKey.product_key}`);
     }
 
-    // Log the configuration attempt
-    await prisma.setup_agent_logs.create({
-      data: {
-        session_id: `config_${product}_${Date.now()}`,
-        user_message: `Configuration: ${JSON.stringify(configuration)}`,
-        agent_response: `Product key ${is_new ? 'generated' : 'retrieved'}: ${product_key}`,
-        domain: configuration.domain || null,
-        timestamp: new Date()
-      }
-    });
-
     // Generate appropriate embed/integration code
-    const embed_code = getEmbedCode(product, product_key, configuration);
+    const embedCode = getEmbedCode(product, productKey.product_key, configuration);
 
+    // Return success with configuration
     return NextResponse.json({
       success: true,
-      product_key: product_key,
-      embed_code: embed_code,
-      configuration: configuration,
-      is_new: is_new,
-      message: is_new 
-        ? `New ${product} configuration created successfully`
-        : `Using your existing ${product} configuration`
+      product_key: productKey.product_key,
+      embed_code: embedCode,
+      domain: configuration.domain,
+      is_new: isNew,
+      message: isNew 
+        ? `${product} configured successfully`
+        : `${product} configuration updated`
     });
 
   } catch (error: any) {
@@ -227,7 +264,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Configuration failed. Please try again or contact support.' },
+      { error: error.message || 'Failed to configure product' },
       { status: 500 }
     );
   }

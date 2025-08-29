@@ -87,8 +87,8 @@ export default function ProductsPage() {
       price: 'Included'
     },
     {
-      id: 'sales-agent',
-      name: 'Sales Agent',
+      id: 'sales-outreach-agent',
+      name: 'Sales Outreach Agent',
       description: 'Intelligent sales assistant that converts leads',
       icon: Users,
       features: ['Lead Scoring', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
@@ -105,8 +105,8 @@ export default function ProductsPage() {
       price: 'Coming Soon'
     },
     {
-      id: 'setup-agent',
-      name: 'Setup Agent',
+      id: 'onboarding-agent',
+      name: 'Onboarding Agent',
       description: 'Automated setup and configuration assistant',
       icon: SettingsIcon,
       features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Custom Scripts'],
@@ -166,10 +166,10 @@ export default function ProductsPage() {
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/products/chatbot/configure');
-    } else if (productId === 'sales-agent') {
-      router.push('/products/sales-agent/setup');
-    } else if (productId === 'setup-agent') {
-      router.push('/products/setup-agent');
+    } else if (productId === 'sales-outreach-agent') {
+      router.push('/products/sales-outreach-agent/setup');
+    } else if (productId === 'onboarding-agent') {
+      router.push('/products/onboarding-agent');
     } else {
       router.push(`/products/${productId}/setup`);
     }
@@ -178,8 +178,8 @@ export default function ProductsPage() {
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/products/chatbot/conversations');
-    } else if (productId === 'sales-agent') {
-      router.push('/products/sales-agent/manage');
+    } else if (productId === 'sales-outreach-agent') {
+      router.push('/products/sales-outreach-agent/manage');
     } else if (productId === 'data-enrichment') {
       router.push('/products/data-enrichment/manage');
     } else {

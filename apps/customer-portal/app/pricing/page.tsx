@@ -9,7 +9,7 @@ export default function PricingPage() {
   const products = [
     {
       name: 'Additional Chatbot',
-      price: '£49',
+      price: '£199',
       period: '/month',
       description: 'Add another AI chatbot to your account',
       features: [
@@ -21,10 +21,10 @@ export default function PricingPage() {
       ]
     },
     {
-      name: 'Sales Agent Add-on',
-      price: '£79',
+      name: 'Sales Outreach Agent',
+      price: '£399',
       period: '/month',
-      description: 'Intelligent sales assistant',
+      description: 'Automated sales outreach system',
       features: [
         'Lead qualification',
         'Email automation',
@@ -34,16 +34,16 @@ export default function PricingPage() {
       ]
     },
     {
-      name: 'Data Enrichment',
-      price: '£99',
-      period: '/month',
-      description: 'Enhanced customer insights',
+      name: 'Onboarding Agent',
+      price: 'Coming Soon',
+      period: '',
+      description: 'Automated customer onboarding',
       features: [
-        'Contact enrichment',
-        'Company data',
-        'Social profiles',
-        'Intent signals',
-        'API access'
+        'Auto configuration',
+        'Integration setup',
+        'Workflow builder',
+        'Custom scripts',
+        'Progress tracking'
       ]
     }
   ];
@@ -109,18 +109,20 @@ export default function PricingPage() {
                 </h3>
                 <div style={{ marginBottom: '16px' }}>
                   <span style={{
-                    fontSize: '36px',
+                    fontSize: product.price === 'Coming Soon' ? '24px' : '36px',
                     fontWeight: 'bold',
                     color: 'rgb(169, 189, 203)'
                   }}>
                     {product.price}
                   </span>
-                  <span style={{
-                    fontSize: '16px',
-                    color: 'rgba(229, 227, 220, 0.6)'
-                  }}>
-                    {product.period}
-                  </span>
+                  {product.period && (
+                    <span style={{
+                      fontSize: '16px',
+                      color: 'rgba(229, 227, 220, 0.6)'
+                    }}>
+                      {product.period}
+                    </span>
+                  )}
                 </div>
                 <p style={{
                   fontSize: '14px',

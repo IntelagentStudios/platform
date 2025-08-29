@@ -18,7 +18,8 @@ import {
   Globe,
   HardDrive,
   Cpu,
-  MemoryStick
+  MemoryStick,
+  DollarSign
 } from 'lucide-react';
 
 interface SystemStatus {
@@ -35,18 +36,30 @@ interface Stats {
   queues: { total: number; processing: number; failed: number };
 }
 
+interface LicenseStats {
+  total_licenses: number;
+  active_licenses: number;
+  suspended_licenses: number;
+  products_distribution: Record<string, number>;
+  plan_distribution: Record<string, number>;
+  total_revenue: number;
+  mrr: number;
+}
+
 export default function AdminDashboard() {
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [licenseStats, setLicenseStats] = useState<LicenseStats | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusRes, statsRes] = await Promise.all([
+        const [statusRes, statsRes, licenseRes] = await Promise.all([
           fetch('/api/admin/system/status'),
-          fetch('/api/admin/stats')
+          fetch('/api/admin/stats'),
+          fetch('/api/admin/licenses/stats')
         ]);
 
         if (statusRes.ok) {
@@ -54,6 +67,9 @@ export default function AdminDashboard() {
         }
         if (statsRes.ok) {
           setStats(await statsRes.json());
+        }
+        if (licenseRes.ok) {
+          setLicenseStats(await licenseRes.json());
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -128,7 +144,82 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Key Metrics Grid - Clickable Cards */}
+      {/* License & Revenue Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/licenses')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Active Licenses</p>
+              <p className="text-2xl font-bold">
+                {licenseStats?.active_licenses || 0}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                of {licenseStats?.total_licenses || 0} total
+              </p>
+            </div>
+            <Shield className="w-8 h-8 text-primary" />
+          </div>
+        </Card>
+
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/revenue')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+              <p className="text-2xl font-bold">
+                £{licenseStats?.mrr?.toLocaleString() || '0'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                MRR
+              </p>
+            </div>
+            <DollarSign className="w-8 h-8 text-green-500" />
+          </div>
+        </Card>
+
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/products')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Chatbots Active</p>
+              <p className="text-2xl font-bold">
+                {licenseStats?.products_distribution?.['chatbot'] || 0}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Configured
+              </p>
+            </div>
+            <Zap className="w-8 h-8 text-blue-500" />
+          </div>
+        </Card>
+
+        <Card 
+          className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"
+          onClick={() => router.push('/admin/products')}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Products</p>
+              <p className="text-2xl font-bold">
+                {Object.values(licenseStats?.products_distribution || {}).reduce((a, b) => a + b, 0)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Deployed
+              </p>
+            </div>
+            <Globe className="w-8 h-8 text-purple-500" />
+          </div>
+        </Card>
+      </div>
+
+      {/* System Metrics Grid - Clickable Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card 
           className="p-4 cursor-pointer hover:shadow-lg transition-shadow hover:border-primary"

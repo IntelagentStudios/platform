@@ -14,20 +14,18 @@ export async function GET(request: NextRequest) {
     }
     
     // Get real stats from database
-    const [totalUsers, todayStart, activeDate] = [
-      await prisma.user.count(),
-      new Date(new Date().setHours(0, 0, 0, 0)),
-      new Date(new Date().setDate(new Date().getDate() - 30))
-    ];
+    const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+    const activeDate = new Date(new Date().setDate(new Date().getDate() - 30));
 
-    const [newUsers, activeUsers, totalLicenses] = await Promise.all([
-      prisma.user.count({
-        where: { createdAt: { gte: todayStart } }
+    const [totalUsers, newUsers, totalLicenses, activeLicenses] = await Promise.all([
+      prisma.users.count(),
+      prisma.users.count({
+        where: { created_at: { gte: todayStart } }
       }),
-      prisma.user.count({
-        where: { lastActiveAt: { gte: activeDate } }
-      }),
-      prisma.licenses.count()
+      prisma.licenses.count(),
+      prisma.licenses.count({
+        where: { status: 'active' }
+      })
     ]);
 
     // Get database connection stats (simplified)
@@ -42,7 +40,7 @@ export async function GET(request: NextRequest) {
     const stats = {
       users: {
         total: totalUsers,
-        active: activeUsers,
+        active: activeLicenses, // Using active licenses as proxy for active users
         new: newUsers,
       },
       requests: {
