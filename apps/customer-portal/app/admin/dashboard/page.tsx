@@ -253,7 +253,7 @@ export default function AdminDashboardPage() {
                 }}
               />
               <button 
-                onClick={handleAiSubmit}
+                onClick={() => handleAiSubmit()}
                 disabled={isAiLoading}
                 className="px-4 py-2 rounded-lg transition-colors hover:opacity-90"
                 style={{ 
