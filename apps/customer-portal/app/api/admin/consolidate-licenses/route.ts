@@ -102,14 +102,31 @@ export async function POST(request: NextRequest) {
           
           console.log(`Found ${existingKeys.length} product keys to delete:`, existingKeys.map(k => k.product_key));
           
-          // Delete related custom_knowledge entries first (if they have foreign key constraints)
+          let deletedLogs = 0;
+          let deletedKnowledge = 0;
+          
+          // Delete all related data for each product key
           for (const key of existingKeys) {
+            // Delete chatbot logs first (they have foreign key constraint)
             try {
-              await prisma.custom_knowledge.deleteMany({
+              const logsDeleted = await prisma.chatbot_logs.deleteMany({
                 where: { product_key: key.product_key }
               });
+              deletedLogs += logsDeleted.count;
+              console.log(`Deleted ${logsDeleted.count} chatbot logs for ${key.product_key}`);
+            } catch (logErr) {
+              console.log(`Error deleting chatbot logs for ${key.product_key}:`, logErr);
+            }
+            
+            // Delete custom knowledge
+            try {
+              const knowledgeDeleted = await prisma.custom_knowledge.deleteMany({
+                where: { product_key: key.product_key }
+              });
+              deletedKnowledge += knowledgeDeleted.count;
+              console.log(`Deleted ${knowledgeDeleted.count} custom knowledge entries for ${key.product_key}`);
             } catch (knowledgeErr) {
-              console.log(`No custom knowledge to delete for ${key.product_key} or error:`, knowledgeErr);
+              console.log(`Error deleting custom knowledge for ${key.product_key}:`, knowledgeErr);
             }
           }
           
@@ -118,11 +135,11 @@ export async function POST(request: NextRequest) {
             where: { license_key: licenseKey }
           });
           
-          console.log(`Successfully deleted ${deleted.count} product keys`);
+          console.log(`Successfully deleted ${deleted.count} product keys, ${deletedLogs} chat logs, ${deletedKnowledge} knowledge entries`);
           
           return NextResponse.json({ 
             success: true, 
-            message: `Deleted ${deleted.count} product keys for license ${licenseKey}` 
+            message: `Deleted ${deleted.count} product keys (and ${deletedLogs} chat logs, ${deletedKnowledge} knowledge entries) for license ${licenseKey}` 
           });
         } catch (error: any) {
           console.error('Error deleting product keys:', error);
