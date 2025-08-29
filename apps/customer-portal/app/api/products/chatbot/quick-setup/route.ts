@@ -17,20 +17,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { domain, password, licenseKey: providedLicenseKey } = body;
+    const { domain, password } = body;
 
-    // Validate domain is provided
-    if (!domain) {
+    // Validate inputs
+    if (!domain || !password) {
       return NextResponse.json(
-        { error: 'Domain is required' },
+        { error: 'Domain and password are required' },
         { status: 400 }
       );
     }
 
-    let licenseKey: string;
-    let isAuthenticated = false;
+    let licenseKey: string | null = null;
+    let userEmail: string | null = null;
 
-    // Check if user is already logged in
+    // Check if user is logged in and verify password
     const cookieStore = cookies();
     const authToken = cookieStore.get('auth_token') || cookieStore.get('auth-token');
     
@@ -38,68 +38,64 @@ export async function POST(request: NextRequest) {
       try {
         const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         
-        // If logged in and no password/license provided, use their existing license
-        if (!password && !providedLicenseKey && decoded.licenseKey) {
-          licenseKey = decoded.licenseKey;
-          isAuthenticated = true;
-        } else if (password) {
-          // If password provided, verify it against the user's account
-          if (decoded.email) {
-            const user = await prisma.users.findUnique({
-              where: { email: decoded.email },
-              select: { 
-                password_hash: true,
-                license_key: true
-              }
-            });
-            
-            if (user && user.password_hash) {
-              const isValidPassword = await bcrypt.compare(password, user.password_hash);
-              if (isValidPassword && user.license_key) {
-                licenseKey = user.license_key;
-                isAuthenticated = true;
-              } else if (!isValidPassword) {
-                return NextResponse.json(
-                  { error: 'Invalid password' },
-                  { status: 401 }
-                );
-              }
+        if (decoded.email) {
+          // Get user and verify password
+          const user = await prisma.users.findUnique({
+            where: { email: decoded.email },
+            select: { 
+              email: true,
+              password_hash: true,
+              license_key: true
             }
+          });
+          
+          if (user && user.password_hash) {
+            const isValidPassword = await bcrypt.compare(password, user.password_hash);
+            if (isValidPassword && user.license_key) {
+              licenseKey = user.license_key;
+              userEmail = user.email;
+            } else if (!isValidPassword) {
+              return NextResponse.json(
+                { error: 'Incorrect password' },
+                { status: 401 }
+              );
+            } else if (!user.license_key) {
+              return NextResponse.json(
+                { error: 'No license key associated with your account' },
+                { status: 400 }
+              );
+            }
+          } else {
+            return NextResponse.json(
+              { error: 'User account not found' },
+              { status: 404 }
+            );
           }
         }
       } catch (error) {
         console.log('Token verification failed:', error);
+        return NextResponse.json(
+          { error: 'Session expired. Please log in again.' },
+          { status: 401 }
+        );
       }
+    } else {
+      return NextResponse.json(
+        { error: 'You must be logged in to configure a chatbot' },
+        { status: 401 }
+      );
     }
 
-    // If not authenticated yet, try to use provided license key
-    if (!isAuthenticated) {
-      const licenseKeyInput = providedLicenseKey || password;
-      
-      if (!licenseKeyInput) {
-        return NextResponse.json(
-          { error: 'Please provide your password or license key' },
-          { status: 400 }
-        );
-      }
-
-      // Check if it looks like a license key
-      const licenseKeyPattern = /^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$|^INTL-[A-Z0-9-]+$/;
-      const upperInput = licenseKeyInput.toUpperCase();
-      
-      if (licenseKeyPattern.test(upperInput)) {
-        licenseKey = upperInput;
-      } else {
-        return NextResponse.json(
-          { error: 'Invalid license key format. Expected format like: INTL-XXXX-XXXX-XXXX' },
-          { status: 400 }
-        );
-      }
+    if (!licenseKey) {
+      return NextResponse.json(
+        { error: 'Unable to retrieve license key' },
+        { status: 400 }
+      );
     }
     
-    // Verify the license exists
+    // Verify the license exists and is active
     const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey! },
+      where: { license_key: licenseKey },
       select: {
         license_key: true,
         email: true,
@@ -111,14 +107,14 @@ export async function POST(request: NextRequest) {
 
     if (!license) {
       return NextResponse.json(
-        { error: 'Invalid license key' },
-        { status: 401 }
+        { error: 'License not found' },
+        { status: 404 }
       );
     }
 
     if (license.status !== 'active') {
       return NextResponse.json(
-        { error: 'License is not active' },
+        { error: 'Your license is not active' },
         { status: 403 }
       );
     }
@@ -155,7 +151,8 @@ export async function POST(request: NextRequest) {
           status: 'active',
           metadata: {
             domain: domain.toLowerCase(),
-            configured_at: new Date().toISOString()
+            configured_at: new Date().toISOString(),
+            configured_by: userEmail
           }
         }
       });
@@ -166,56 +163,21 @@ export async function POST(request: NextRequest) {
         data: {
           metadata: {
             domain: domain.toLowerCase(),
-            configured_at: new Date().toISOString()
+            configured_at: new Date().toISOString(),
+            configured_by: userEmail
           }
         }
       });
     }
 
-    // Generate JWT token if not already authenticated
-    let token = authToken?.value;
-    if (!isAuthenticated || !token) {
-      token = jwt.sign(
-        {
-          licenseKey: licenseKey,
-          email: license.email,
-          name: license.customer_name,
-          domain: domain.toLowerCase(),
-          productKey: productKey.product_key,
-          role: 'customer'
-        },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-    }
-
     // Return success with configuration
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       product_key: productKey.product_key,
       embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey.product_key}"></script>`,
       domain: domain,
       message: 'Chatbot configured successfully'
     });
-
-    // Set auth cookies if new token was generated
-    if (!isAuthenticated) {
-      response.cookies.set('auth_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60
-      });
-
-      response.cookies.set('auth-token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60
-      });
-    }
-
-    return response;
 
   } catch (error: any) {
     console.error('Quick setup error:', error);
