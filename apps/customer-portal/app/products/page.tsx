@@ -165,7 +165,7 @@ export default function ProductsPage() {
 
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
-      router.push('/products/chatbot/setup-agent');
+      router.push('/products/chatbot/configure');
     } else if (productId === 'sales-agent') {
       router.push('/products/sales-agent/setup');
     } else if (productId === 'setup-agent') {

@@ -219,7 +219,7 @@ export default function DashboardPage() {
                           } else {
                             // Route to new universal setup pages
                             if (product.name === 'Chatbot') {
-                              window.location.href = '/products/chatbot/setup-agent-frame';
+                              window.location.href = '/products/chatbot/configure';
                             } else if (product.name === 'Sales Agent') {
                               window.location.href = '/products/sales-agent/setup';
                             } else if (product.name === 'Data Enrichment') {
