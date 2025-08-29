@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
           data: {
             license_key: 'INTL-MASTER-2025',
             email: 'harry@intelagentstudios.com',
-            name: 'Harry Southgate',
             status: 'active',
             type: 'pro_platform',
             metadata: {
@@ -134,7 +133,7 @@ export async function POST(request: NextRequest) {
           return {
             license_key: license.license_key,
             email: license.email,
-            name: license.name,
+            name: user?.name || 'Unknown',
             status: license.status,
             user_email: user?.email,
             product_key_count: productKeys,
