@@ -494,7 +494,10 @@ export default function ConfigureChatbot() {
                   Manage Chatbot
                 </button>
                 <button
-                  onClick={reset}
+                  onClick={() => {
+                    alert('To configure additional chatbots, please purchase another chatbot license from our pricing page.');
+                    router.push('/pricing');
+                  }}
                   style={{
                     flex: 1,
                     padding: '14px',
@@ -516,7 +519,7 @@ export default function ConfigureChatbot() {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
-                  Configure Another
+                  Purchase Another
                 </button>
               </div>
             </>

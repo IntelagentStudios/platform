@@ -117,6 +117,26 @@
       background: rgba(0, 0, 0, 0.05);
       color: #333;
     }
+    .intelagent-new-button {
+      background: black;
+      border: 1px solid black;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      font-weight: bold;
+    }
+    .intelagent-new-button:hover {
+      background: white;
+      color: black;
+    }
     .intelagent-chat-messages {
       flex-grow: 1;
       padding: 24px;
@@ -404,7 +424,7 @@
       <div class="intelagent-chat-header">
         <span>Chat Assistant</span>
         <div style="display: flex; gap: 8px;">
-          <button class="intelagent-close-button intelagent-new-button" aria-label="New conversation" title="Start new conversation" style="font-size: 18px;">🔄</button>
+          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">↻</button>
           <button class="intelagent-close-button" aria-label="Close chat">×</button>
         </div>
       </div>
