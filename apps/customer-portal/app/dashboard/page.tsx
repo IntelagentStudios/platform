@@ -86,12 +86,11 @@ export default function DashboardPage() {
     { label: 'Products', value: userProducts.length.toString(), change: 'Active', icon: Package }
   ];
 
-  // Define all possible products
+  // Define only available products (exclude data-enrichment as it doesn't exist yet)
   const allProductsMap = {
     'chatbot': { name: 'Chatbot', status: 'Ready', icon: Zap },
-    'sales-outreach-agent': { name: 'Sales Outreach Agent', status: 'Ready', icon: Users },
-    'data-enrichment': { name: 'Data Enrichment', status: 'Ready', icon: BarChart3 },
-    'onboarding-agent': { name: 'Onboarding Agent', status: 'Ready', icon: Settings }
+    'sales-outreach-agent': { name: 'Sales Outreach Agent', status: 'Purchase Required', icon: Users },
+    'onboarding-agent': { name: 'Onboarding Agent', status: 'Coming Soon', icon: Settings }
   };
   
   // Filter to only show user's products
@@ -175,11 +174,27 @@ export default function DashboardPage() {
                   
                   console.log(`[dashboard] Product: ${product.name}, productKey: ${productKey}, config:`, config, 'hasKey:', hasKey);
                   
-                  // Simple logic: has key = configured, no key = needs configuration
-                  const statusText = hasKey ? 'Active' : 'Ready to configure';
-                  const statusColor = hasKey ? '#4CAF50' : 'rgb(169, 189, 203)';
-                  const buttonText = hasKey ? 'Manage' : 'Configure';
-                  const buttonColor = hasKey ? '#4CAF50' : 'rgb(169, 189, 203)';
+                  // Logic based on product ownership and status
+                  const isOwned = userProducts.includes(product.name.toLowerCase().replace(/\s+/g, '-'));
+                  const isPurchaseRequired = product.status === 'Purchase Required';
+                  const isComingSoon = product.status === 'Coming Soon';
+                  
+                  const statusText = hasKey ? 'Active' : 
+                                    isComingSoon ? 'Coming Soon' :
+                                    isPurchaseRequired && !isOwned ? 'Purchase Required' :
+                                    'Ready to configure';
+                  const statusColor = hasKey ? '#4CAF50' : 
+                                     isComingSoon ? '#FF9800' :
+                                     isPurchaseRequired && !isOwned ? '#2196F3' :
+                                     'rgb(169, 189, 203)';
+                  const buttonText = hasKey ? 'Manage' : 
+                                    isComingSoon ? 'Coming Soon' :
+                                    isPurchaseRequired && !isOwned ? 'Purchase' :
+                                    'Configure';
+                  const buttonColor = hasKey ? '#4CAF50' : 
+                                     isComingSoon ? '#999' :
+                                     isPurchaseRequired && !isOwned ? '#2196F3' :
+                                     'rgb(169, 189, 203)';
                   
                   return (
                     <div 
@@ -205,32 +220,38 @@ export default function DashboardPage() {
                       </div>
                       <button 
                         onClick={() => {
+                          if (isComingSoon) {
+                            return; // Do nothing for coming soon
+                          }
+                          
+                          if (isPurchaseRequired && !isOwned) {
+                            // Route to pricing page for purchase
+                            window.location.href = '/pricing';
+                            return;
+                          }
+                          
                           // Route to setup page for configuration or management page if configured
-                          const productSlug = product.name.toLowerCase().replace(' ', '-');
                           if (hasKey) {
                             // Route to manage pages for configured products
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/manage';
-                            } else if (product.name === 'Sales Agent') {
+                            } else if (product.name === 'Sales Outreach Agent') {
                               window.location.href = '/products/sales-outreach-agent/manage';
-                            } else if (product.name === 'Data Enrichment') {
-                              window.location.href = '/products/data-enrichment/manage';
-                            } else if (product.name === 'Setup Agent') {
-                              window.location.href = '/products/onboarding-agent';
+                            } else if (product.name === 'Onboarding Agent') {
+                              window.location.href = '/products/onboarding-agent/manage';
                             }
                           } else {
-                            // Route to new universal setup pages
+                            // Route to setup pages
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/configure';
-                            } else if (product.name === 'Sales Agent') {
+                            } else if (product.name === 'Sales Outreach Agent') {
                               window.location.href = '/products/sales-outreach-agent/setup';
-                            } else if (product.name === 'Data Enrichment') {
-                              window.location.href = '/products/data-enrichment/setup';
-                            } else if (product.name === 'Setup Agent') {
+                            } else if (product.name === 'Onboarding Agent') {
                               window.location.href = '/products/onboarding-agent/setup';
                             }
                           }
                         }}
+                        disabled={isComingSoon}
                         className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
                         style={{ 
                           backgroundColor: buttonColor,

@@ -89,29 +89,22 @@ export default function ProductsPage() {
     {
       id: 'sales-outreach-agent',
       name: 'Sales Outreach Agent',
-      description: 'Intelligent sales assistant that converts leads',
+      description: 'Automated sales outreach system',
       icon: Users,
-      features: ['Lead Scoring', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
-      status: 'available',
-      price: 'Included'
+      features: ['Lead Qualification', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
+      status: 'purchase_required',
+      price: '£399/month'
     },
     {
-      id: 'data-enrichment',
-      name: 'Data Enrichment',
-      description: 'Enhance your customer data with AI insights',
-      icon: BarChart3,
-      features: ['Contact Enrichment', 'Company Data', 'Social Profiles', 'Intent Signals'],
-      status: 'coming_soon',
-      price: 'Coming Soon'
     },
     {
       id: 'onboarding-agent',
       name: 'Onboarding Agent',
-      description: 'Automated setup and configuration assistant',
+      description: 'Automated customer onboarding',
       icon: SettingsIcon,
-      features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Custom Scripts'],
-      status: 'available',
-      price: 'Included'
+      features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Progress Tracking'],
+      status: 'coming_soon',
+      price: 'Coming Soon'
     }
   ];
 
@@ -155,13 +148,16 @@ export default function ProductsPage() {
     }
   ];
 
-  // Filter products based on user's license
-  const userAllProducts = allProducts.filter(p => userProducts.includes(p.id));
-  
-  // Separate products by configuration status (only from user's products)
-  const configuredProducts = userAllProducts.filter(p => configurations[p.id]?.configured);
-  const availableProducts = userAllProducts.filter(p => !configurations[p.id]?.configured && p.status === 'available');
-  const comingSoonProducts = []; // Don't show coming soon for now
+  // Separate products by status
+  // Show all products that are either owned or purchasable
+  const configuredProducts = allProducts.filter(p => 
+    userProducts.includes(p.id) && configurations[p.id]?.configured
+  );
+  const availableProducts = allProducts.filter(p => 
+    (userProducts.includes(p.id) && !configurations[p.id]?.configured && p.status === 'available') ||
+    (!userProducts.includes(p.id) && p.status === 'purchase_required')
+  );
+  const comingSoonProducts = allProducts.filter(p => p.status === 'coming_soon');
 
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
