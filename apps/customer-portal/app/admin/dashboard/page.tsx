@@ -521,20 +521,21 @@ export default function AdminDashboardPage() {
         </p>
         <div className="space-y-2">
           {overviewData.recentUsers?.map((user, index) => {
-            // Fix the date display - if it shows a future year, correct it
             const createdDate = new Date(user.created_at);
-            const currentYear = new Date().getFullYear();
-            if (createdDate.getFullYear() > currentYear) {
-              createdDate.setFullYear(currentYear);
-            }
             
-            // Determine user status based on email and verification
+            // Determine user status and type
             const isAdmin = user.email?.includes('intelagentstudios.com');
-            const status = user.email_verified ? 'Active' : 
-                          isAdmin ? 'Admin' : 
-                          'Pending Verification';
+            const hasLicense = !!user.license_key;
+            
+            // Status logic: 
+            // - If verified: "Verified" (green)
+            // - If has license but not verified: "Active" (blue) - they're using the platform
+            // - If no license and not verified: "Pending" (orange)
+            const status = user.email_verified ? 'Verified' : 
+                          hasLicense ? 'Active' : 
+                          'Pending';
             const statusColor = user.email_verified ? '#4CAF50' : 
-                               isAdmin ? '#2196F3' : 
+                               hasLicense ? '#2196F3' : 
                                '#FF9800';
             
             return (
