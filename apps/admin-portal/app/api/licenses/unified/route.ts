@@ -178,7 +178,13 @@ export async function GET(request: NextRequest) {
     const plan = searchParams.get('plan');
     const search = searchParams.get('search');
 
-    let where: any = {};
+    let where: any = {
+      // Always exclude admin and test accounts from the display
+      AND: [
+        { email: { not: 'admin@intelagentstudios.com' } },
+        { NOT: { email: { contains: 'test', mode: 'insensitive' } } }
+      ]
+    };
 
     if (status) where.status = status;
     if (plan) where.plan = plan;

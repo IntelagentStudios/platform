@@ -13,7 +13,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get license statistics
+    // Get license statistics (excluding admin and test accounts)
+    const baseFilter = {
+      AND: [
+        { email: { not: 'admin@intelagentstudios.com' } },
+        { NOT: { email: { contains: 'test' } } }
+      ]
+    };
+
     const [
       totalLicenses,
       activeLicenses,
@@ -23,16 +30,24 @@ export async function GET(request: NextRequest) {
       revenueStats
     ] = await Promise.all([
       // Total licenses
-      prisma.licenses.count(),
+      prisma.licenses.count({
+        where: baseFilter
+      }),
       
       // Active licenses
       prisma.licenses.count({
-        where: { status: 'active' }
+        where: {
+          ...baseFilter,
+          status: 'active'
+        }
       }),
       
       // Suspended licenses
       prisma.licenses.count({
-        where: { status: { in: ['suspended', 'expired', 'revoked'] } }
+        where: {
+          ...baseFilter,
+          status: { in: ['suspended', 'expired', 'revoked'] }
+        }
       }),
       
       // Products distribution
@@ -42,12 +57,15 @@ export async function GET(request: NextRequest) {
           COUNT(*) as count
         FROM licenses,
         LATERAL unnest(products) AS product
+        WHERE email != 'admin@intelagentstudios.com'
+          AND email NOT LIKE '%test%'
         GROUP BY product
       `,
       
       // Plan distribution
       prisma.licenses.groupBy({
         by: ['plan'],
+        where: baseFilter,
         _count: true
       }),
       
