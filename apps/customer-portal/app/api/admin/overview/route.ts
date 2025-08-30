@@ -38,12 +38,42 @@ export async function GET(request: NextRequest) {
       recentActivity,
       monthlyRevenue
     ] = await Promise.all([
-      prisma.licenses.count(),
-      prisma.licenses.count({ where: { status: 'active' } }),
+      prisma.licenses.count({
+        where: {
+          AND: [
+            { email: { notContains: 'test' } },
+            { email: { not: 'admin@intelagentstudios.com' } }
+          ]
+        }
+      }),
+      prisma.licenses.count({ 
+        where: { 
+          AND: [
+            { status: 'active' },
+            { email: { notContains: 'test' } },
+            { email: { not: 'admin@intelagentstudios.com' } }
+          ]
+        } 
+      }),
       prisma.licenses.count({ where: { status: 'trial' } }),
       prisma.licenses.count({ where: { status: 'expired' } }),
-      prisma.users.count(),
-      prisma.users.count({ where: { email_verified: true } }),
+      prisma.users.count({
+        where: {
+          AND: [
+            { email: { notContains: 'test' } },
+            { email: { not: 'admin@intelagentstudios.com' } }
+          ]
+        }
+      }),
+      prisma.users.count({ 
+        where: { 
+          AND: [
+            { email_verified: true },
+            { email: { notContains: 'test' } },
+            { email: { not: 'admin@intelagentstudios.com' } }
+          ]
+        } 
+      }),
       prisma.product_keys.count(),
       prisma.product_keys.count({ where: { status: 'active' } }),
       // Recent activity (last 10 logs)
@@ -67,8 +97,14 @@ export async function GET(request: NextRequest) {
       _count: true
     });
     
-    // Get recent user signups
+    // Get recent user signups (exclude admin and test accounts)
     const recentUsers = await prisma.users.findMany({
+      where: {
+        AND: [
+          { email: { not: 'admin@intelagentstudios.com' } },
+          { email: { notContains: 'test' } }
+        ]
+      },
       take: 5,
       orderBy: { created_at: 'desc' },
       select: {

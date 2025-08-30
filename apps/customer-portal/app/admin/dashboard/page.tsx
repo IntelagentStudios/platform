@@ -514,28 +514,29 @@ export default function AdminDashboardPage() {
         borderColor: 'rgba(48, 54, 54, 0.15)'
       }}>
         <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
-          Recent User Signups
+          Recent Platform Users
         </h3>
         <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-          Latest users joining the platform
+          Active business users (excluding admin/test)
         </p>
         <div className="space-y-2">
           {overviewData.recentUsers?.map((user, index) => {
             const createdDate = new Date(user.created_at);
             
-            // Determine user status and type
-            const isAdmin = user.email?.includes('intelagentstudios.com');
+            // Determine user status based on license
             const hasLicense = !!user.license_key;
+            const isBusinessUser = user.email?.includes('intelagentstudios.com') || 
+                                   user.email?.includes('steppedin.uk');
             
-            // Status logic: 
-            // - If verified: "Verified" (green)
-            // - If has license but not verified: "Active" (blue) - they're using the platform
-            // - If no license and not verified: "Pending" (orange)
-            const status = user.email_verified ? 'Verified' : 
-                          hasLicense ? 'Active' : 
-                          'Pending';
-            const statusColor = user.email_verified ? '#4CAF50' : 
-                               hasLicense ? '#2196F3' : 
+            // Status logic based on license validation: 
+            // - If has license: "Licensed" (green) - validated user
+            // - If business user without individual license: "Business" (blue)
+            // - Otherwise: "Trial" (orange) - evaluating the platform
+            const status = hasLicense ? 'Licensed' : 
+                          isBusinessUser ? 'Business' : 
+                          'Trial';
+            const statusColor = hasLicense ? '#4CAF50' : 
+                               isBusinessUser ? '#2196F3' : 
                                '#FF9800';
             
             return (
