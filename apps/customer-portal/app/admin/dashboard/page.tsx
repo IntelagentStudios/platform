@@ -520,29 +520,59 @@ export default function AdminDashboardPage() {
           Latest users joining the platform
         </p>
         <div className="space-y-2">
-          {overviewData.recentUsers?.map((user, index) => (
-            <div key={index} className="flex items-center justify-between py-2 border-b last:border-0" 
-                 style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}>
-              <div>
-                <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
-                  {user.email}
-                </p>
-                <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
-                  {new Date(user.created_at).toLocaleDateString()} • 
-                  {user.license_key ? ' Has license' : ' No license'}
-                </p>
+          {overviewData.recentUsers?.map((user, index) => {
+            // Fix the date display - if it shows a future year, correct it
+            const createdDate = new Date(user.created_at);
+            const currentYear = new Date().getFullYear();
+            if (createdDate.getFullYear() > currentYear) {
+              createdDate.setFullYear(currentYear);
+            }
+            
+            // Determine user status based on email and verification
+            const isAdmin = user.email?.includes('intelagentstudios.com');
+            const status = user.email_verified ? 'Active' : 
+                          isAdmin ? 'Admin' : 
+                          'Pending Verification';
+            const statusColor = user.email_verified ? '#4CAF50' : 
+                               isAdmin ? '#2196F3' : 
+                               '#FF9800';
+            
+            return (
+              <div key={index} className="flex items-center justify-between py-3 border-b last:border-0" 
+                   style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}>
+                <div className="flex-1">
+                  <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                    {user.email}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
+                    Joined {createdDate.toLocaleDateString('en-GB', { 
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                    {user.license_key && (
+                      <span className="ml-2 px-2 py-0.5 rounded text-xs" 
+                            style={{ 
+                              backgroundColor: 'rgba(48, 54, 54, 0.1)',
+                              color: 'rgba(48, 54, 54, 0.7)'
+                            }}>
+                        Licensed
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                  style={{ 
+                    backgroundColor: `${statusColor}20`,
+                    color: statusColor
+                  }}
+                >
+                  {status}
+                </span>
               </div>
-              <span 
-                className="px-2 py-1 rounded text-xs"
-                style={{ 
-                  backgroundColor: user.email_verified ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                  color: user.email_verified ? '#4CAF50' : '#FF9800'
-                }}
-              >
-                {user.email_verified ? 'Verified' : 'Pending'}
-              </span>
-            </div>
-          ))}
+            );
+          })}
           {(!overviewData.recentUsers || overviewData.recentUsers.length === 0) && (
             <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent signups</p>
           )}
