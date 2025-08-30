@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       prisma.licenses.count({
         where: {
           AND: [
-            { email: { notContains: 'test' } },
+            { NOT: { email: { contains: 'test' } } },
             { email: { not: 'admin@intelagentstudios.com' } }
           ]
         }
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         where: { 
           AND: [
             { status: 'active' },
-            { email: { notContains: 'test' } },
+            { NOT: { email: { contains: 'test' } } },
             { email: { not: 'admin@intelagentstudios.com' } }
           ]
         } 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       prisma.users.count({
         where: {
           AND: [
-            { email: { notContains: 'test' } },
+            { NOT: { email: { contains: 'test' } } },
             { email: { not: 'admin@intelagentstudios.com' } }
           ]
         }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         where: { 
           AND: [
             { email_verified: true },
-            { email: { notContains: 'test' } },
+            { NOT: { email: { contains: 'test' } } },
             { email: { not: 'admin@intelagentstudios.com' } }
           ]
         } 
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       where: {
         AND: [
           { email: { not: 'admin@intelagentstudios.com' } },
-          { email: { notContains: 'test' } }
+          { NOT: { email: { contains: 'test' } } }
         ]
       },
       take: 5,
