@@ -41,12 +41,14 @@ COPY services/*/package*.json ./services/
 RUN npm cache clean --force
 # Install ALL dependencies (we need them for Prisma and build)
 # Use --legacy-peer-deps to avoid version conflicts
-RUN npm install --legacy-peer-deps
+# Use --ignore-scripts to skip postinstall scripts that require schema files
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy all source code
 COPY . .
 
 # Re-run npm install to ensure workspace links are set up correctly after copying source
+# Now with source files, postinstall scripts can run properly
 RUN npm install --legacy-peer-deps
 
 # Generate Prisma Client in the database package
