@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
-import { prisma } from '@/lib/prisma';
+import { SkillsRegistry, SkillFactory } from '@intelagent/skills-orchestrator';
 
 // Skills system is feature-flagged - can be disabled instantly if needed
 const SKILLS_ENABLED = process.env.SKILLS_ENABLED !== 'false';
@@ -35,43 +35,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get skills from database
-    const skills = await prisma.skills.findMany({
-      where: {
-        active: true
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        category: true,
-        version: true,
-        author: true,
-        configuration: true,
-        created_at: true
-      },
-      orderBy: {
-        category: 'asc'
-      }
-    });
+    // Get skills from registry
+    const registry = SkillsRegistry.getInstance();
+    const allSkills = registry.getEnabledSkills();
+    
+    // Transform to API response format
+    const skills = allSkills.map(skill => ({
+      id: skill.definition.id,
+      name: skill.definition.name,
+      description: skill.definition.description,
+      category: skill.definition.category,
+      version: '1.0.0',
+      author: 'Intelagent',
+      configuration: {},
+      created_at: new Date(),
+      tags: skill.definition.tags,
+      isPremium: skill.definition.isPremium || false
+    }));
 
-    // Get user's skill execution history (last 10)
-    const recentExecutions = await prisma.skill_executions.findMany({
-      where: {
-        user_id: authResult.user?.id
-      },
-      take: 10,
-      orderBy: {
-        started_at: 'desc'
-      },
-      select: {
-        id: true,
-        skill_id: true,
-        status: true,
-        started_at: true,
-        completed_at: true
-      }
-    });
+    // Mock recent executions for now
+    const recentExecutions = [];
 
     return NextResponse.json({
       skills,
@@ -123,61 +106,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if skill exists and is active
-    const skill = await prisma.skills.findFirst({
-      where: {
-        id: skillId,
-        active: true
-      }
-    });
+    // Check if skill exists in registry
+    const registry = SkillsRegistry.getInstance();
+    const skill = registry.getSkill(skillId);
 
-    if (!skill) {
+    if (!skill || !registry.isSkillEnabled(skillId)) {
       return NextResponse.json(
         { error: 'Skill not found or inactive' },
         { status: 404 }
       );
     }
 
-    // Create execution record
-    const execution = await prisma.skill_executions.create({
-      data: {
-        skill_id: skillId,
-        user_id: authResult.user?.id || 'anonymous',
-        tenant_id: authResult.user?.tenant_id || 'default',
-        input_params: params || {},
-        status: 'pending',
-        started_at: new Date()
-      }
-    });
+    // Generate execution ID
+    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // For now, we'll simulate skill execution
     // In production, this would call the actual skill orchestrator
     const mockResult = {
       success: true,
       data: {
-        message: `Skill '${skill.name}' executed successfully`,
+        message: `Skill '${skill.definition.name}' executed successfully`,
         skillId,
         params,
         timestamp: new Date().toISOString()
       }
     };
 
-    // Update execution record
-    await prisma.skill_executions.update({
-      where: { id: execution.id },
-      data: {
-        status: 'completed',
-        output_result: mockResult,
-        completed_at: new Date()
-      }
-    });
-
     return NextResponse.json({
-      executionId: execution.id,
+      executionId,
       result: mockResult,
       skill: {
-        id: skill.id,
-        name: skill.name
+        id: skill.definition.id,
+        name: skill.definition.name
       }
     });
 

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { validateAuth } from '@/lib/auth-validator';
-import { SkillFactory } from '@intelagent/skills-orchestrator/src/skills/SkillFactory';
+import { SkillFactory } from '@intelagent/skills-orchestrator';
 
 // Product-Skill Mappings
 const PRODUCT_SKILLS = {
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
       }).filter(Boolean) : [];
 
       // Get usage statistics
-      const stats = await getProductStats(productId, authResult.user?.tenant_id);
+      const stats = await getProductStats(productId, 'default');
 
       return NextResponse.json({
         ...product,
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
         } : null;
       }).filter(Boolean) : undefined;
 
-      const stats = await getProductStats(product.id, authResult.user?.tenant_id);
+      const stats = await getProductStats(product.id, 'default');
 
       return {
         ...product,
@@ -246,46 +246,12 @@ export async function GET(request: NextRequest) {
 }
 
 async function getProductStats(productId: string, tenantId?: string) {
-  try {
-    // Get skill execution stats for this product's skills
-    const skillIds = PRODUCT_SKILLS[productId as keyof typeof PRODUCT_SKILLS] || [];
-    
-    if (skillIds.length === 0) {
-      return {
-        totalExecutions: 0,
-        successRate: 100,
-        activeUsers: 0
-      };
-    }
-
-    const executions = await prisma.skill_executions.findMany({
-      where: {
-        skill_id: { in: skillIds },
-        ...(tenantId && { tenant_id: tenantId })
-      },
-      select: {
-        status: true,
-        user_id: true
-      }
-    });
-
-    const totalExecutions = executions.length;
-    const successCount = executions.filter(e => e.status === 'completed').length;
-    const uniqueUsers = new Set(executions.map(e => e.user_id)).size;
-
-    return {
-      totalExecutions,
-      successRate: totalExecutions > 0 ? (successCount / totalExecutions * 100) : 100,
-      activeUsers: uniqueUsers
-    };
-  } catch (error) {
-    console.error('Error getting product stats:', error);
-    return {
-      totalExecutions: 0,
-      successRate: 100,
-      activeUsers: 0
-    };
-  }
+  // Stats functionality disabled until skill_executions table is created
+  return {
+    totalExecutions: 0,
+    successRate: 100,
+    activeUsers: 0
+  };
 }
 
 export async function POST(request: NextRequest) {

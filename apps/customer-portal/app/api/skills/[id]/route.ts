@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
-import { prisma } from '@/lib/prisma';
+import { SkillsRegistry, SkillFactory } from '@intelagent/skills-orchestrator';
 
 const SKILLS_ENABLED = process.env.SKILLS_ENABLED !== 'false';
 
@@ -34,52 +34,42 @@ export async function GET(
       );
     }
 
-    const skill = await prisma.skills.findUnique({
-      where: { id: params.id },
-      include: {
-        _count: {
-          select: { skill_executions: true }
-        }
-      }
-    });
-
-    if (!skill) {
+    // Get skill from registry/factory
+    const registry = SkillsRegistry.getInstance();
+    const registrySkill = registry.getSkill(params.id);
+    
+    if (!registrySkill) {
       return NextResponse.json(
         { error: 'Skill not found' },
         { status: 404 }
       );
     }
 
-    // Get execution statistics for this skill
-    const executions = await prisma.skill_executions.findMany({
-      where: {
-        skill_id: params.id,
-        user_id: authResult.user?.id
-      },
-      orderBy: { started_at: 'desc' },
-      take: 20,
-      select: {
-        id: true,
-        status: true,
-        started_at: true,
-        completed_at: true,
-        input_params: true,
-        output_result: true
-      }
-    });
+    // Get skill statistics from registry
+    const registryStats = registry.getSkillStats(params.id);
 
-    const stats = {
-      totalExecutions: skill._count.skill_executions,
-      userExecutions: executions.length,
-      successRate: executions.length > 0
-        ? (executions.filter(e => e.status === 'completed').length / executions.length) * 100
-        : 0
-    };
-
+    // Return skill information without database data
     return NextResponse.json({
-      skill,
-      executions,
-      stats
+      skill: {
+        id: registrySkill.definition.id,
+        name: registrySkill.definition.name,
+        description: registrySkill.definition.description,
+        category: registrySkill.definition.category,
+        tags: registrySkill.definition.tags,
+        isPremium: registrySkill.definition.isPremium || false,
+        requiredParams: registrySkill.definition.requiredParams || [],
+        optionalParams: registrySkill.definition.optionalParams || [],
+        version: '1.0.0',
+        author: 'Intelagent',
+        active: true
+      },
+      executions: [], // No execution history yet
+      stats: {
+        totalExecutions: registryStats?.totalExecutions || 0,
+        userExecutions: 0,
+        successRate: registryStats?.successRate || 0,
+        avgDuration: registryStats?.avgDuration || 0
+      }
     });
 
   } catch (error) {

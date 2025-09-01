@@ -9,6 +9,10 @@ export { SkillRegistry } from './registry';
 export { SkillExecutor } from './executor';
 export { SkillResult, SkillParams, SkillCategory } from './types';
 
+// Export skills management
+export { SkillFactory, SkillDefinition } from './skills/SkillFactory';
+export { SkillsRegistry } from './skills/registry';
+
 // Export individual skills
 export { WeatherSkill } from './skills/impl/WeatherSkill';
 export { CalculatorSkill } from './skills/impl/CalculatorSkill';
