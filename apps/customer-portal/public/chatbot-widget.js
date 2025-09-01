@@ -443,8 +443,8 @@
       <div class="intelagent-chat-header">
         <span>Chat Assistant</span>
         <div style="display: flex; gap: 6px;">
-          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">⟳</button>
-          <button class="intelagent-close-button" aria-label="Close chat">✕</button>
+          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">↺</button>
+          <button class="intelagent-close-button" aria-label="Close chat">⨯</button>
         </div>
       </div>
       <div class="intelagent-chat-messages" id="intelagent-messages"></div>
