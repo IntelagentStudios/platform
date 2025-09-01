@@ -269,7 +269,9 @@ export default function MonitoringDashboard() {
                       </span>
                       
                       {flow.contains_pii && (
-                        <Shield className="h-3 w-3 text-orange-500" title="Contains PII" />
+                        <span title="Contains PII">
+                          <Shield className="h-3 w-3 text-orange-500" />
+                        </span>
                       )}
                       
                       <span className="text-xs text-gray-500">
