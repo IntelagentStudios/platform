@@ -17,6 +17,7 @@
     "@intelagent/notifications": "*",
     "@intelagent/redis": "*",
     "@intelagent/security": "*",
+    "@intelagent/skills-orchestrator": "*",
     "@intelagent/vector-store": "*",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-avatar": "^1.1.1",

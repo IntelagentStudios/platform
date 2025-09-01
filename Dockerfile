@@ -23,6 +23,9 @@ RUN npm install --legacy-peer-deps
 # Copy all source code
 COPY . .
 
+# Re-run npm install to ensure workspace links are set up correctly after copying source
+RUN npm install --legacy-peer-deps
+
 # Generate Prisma Client in the database package
 RUN cd packages/database && npx prisma generate
 
