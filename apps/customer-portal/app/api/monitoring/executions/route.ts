@@ -154,9 +154,17 @@ export async function POST(request: NextRequest) {
     } = data;
 
     // Create execution record
+    const licenseKey = authResult.user?.licenseKey;
+    if (!licenseKey) {
+      return NextResponse.json(
+        { error: 'License key not found' },
+        { status: 400 }
+      );
+    }
+
     const execution = await prisma.executions.create({
       data: {
-        license_key: authResult.user?.licenseKey!,
+        license_key: licenseKey,
         user_id: authResult.user?.userId,
         product_key,
         execution_type,
@@ -186,7 +194,7 @@ export async function POST(request: NextRequest) {
       await prisma.data_flows.create({
         data: {
           execution_id: execution.id,
-          license_key: authResult.user?.licenseKey!,
+          license_key: licenseKey,
           source_service: 'api',
           target_service: execution_type,
           data_type: 'user_input',
@@ -305,10 +313,18 @@ export async function PATCH(request: NextRequest) {
 
     // Track data flows if provided
     if (data_flows && Array.isArray(data_flows)) {
+      const licenseKey = authResult.user?.licenseKey;
+      if (!licenseKey) {
+        return NextResponse.json(
+          { error: 'License key not found' },
+          { status: 400 }
+        );
+      }
+
       await prisma.data_flows.createMany({
         data: data_flows.map((flow: any) => ({
           execution_id,
-          license_key: authResult.user?.licenseKey!,
+          license_key: licenseKey,
           source_service: flow.source,
           target_service: flow.target,
           data_type: flow.type,

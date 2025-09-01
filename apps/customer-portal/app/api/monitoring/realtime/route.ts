@@ -22,7 +22,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const licenseKey = authResult.user?.licenseKey!;
+    const licenseKey = authResult.user?.licenseKey;
+    if (!licenseKey) {
+      return NextResponse.json(
+        { error: 'License key not found' },
+        { status: 400 }
+      );
+    }
 
     // Get currently running executions
     const runningExecutions = await prisma.executions.findMany({
@@ -222,10 +228,18 @@ export async function POST(request: NextRequest) {
         break;
 
       case 'data_transfer':
+        const userLicenseKey = authResult.user?.licenseKey;
+        if (!userLicenseKey) {
+          return NextResponse.json(
+            { error: 'License key not found' },
+            { status: 400 }
+          );
+        }
+
         await prisma.data_flows.create({
           data: {
             execution_id,
-            license_key: authResult.user?.licenseKey!,
+            license_key: userLicenseKey,
             source_service: data.source,
             target_service: data.target,
             data_type: data.type,
