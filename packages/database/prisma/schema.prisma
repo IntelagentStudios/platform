@@ -374,6 +374,9 @@ model licenses {
   discount_pence      Int?           @default(0)
   product_keys        product_keys[]
   custom_knowledge    custom_knowledge[]
+  executions          executions[]
+  data_flows          data_flows[]
+  skill_executions    skill_executions[]
   pro_addon_pence     Int?           @default(0)
   total_pence         Int?           @default(0)
   activated_at        DateTime?      @db.Timestamptz(6)
@@ -830,5 +833,183 @@ model custom_knowledge {
   @@index([product_key], map: "idx_custom_knowledge_product_key")
   @@index([license_key], map: "idx_custom_knowledge_license_key")
   @@index([is_active], map: "idx_custom_knowledge_active")
+  @@schema("public")
+}
+
+// ==========================================
+// EXECUTION MONITORING TABLES
+// ==========================================
+
+model executions {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  license_key       String    @db.VarChar(20)
+  product_key       String?   @db.VarChar(255)
+  user_id           String?   @db.VarChar(255)
+  execution_type    String    @db.VarChar(50) // 'skill', 'workflow', 'api', 'chatbot', 'enrichment'
+  execution_name    String    @db.VarChar(255)
+  status            String    @db.VarChar(20) // 'pending', 'running', 'completed', 'failed', 'cancelled'
+  
+  // Request tracking
+  request_id        String?   @unique @db.VarChar(255)
+  parent_execution_id String? @db.VarChar(36)
+  session_id        String?   @db.VarChar(255)
+  
+  // Timing
+  started_at        DateTime  @default(now()) @db.Timestamptz(6)
+  completed_at      DateTime? @db.Timestamptz(6)
+  duration_ms       Int?
+  
+  // Data tracking
+  input_data        Json?
+  output_data       Json?
+  error_data        Json?
+  metadata          Json?     @default("{}")
+  
+  // Billing & Usage
+  tokens_used       Int?      @default(0)
+  api_calls_made    Int?      @default(0)
+  data_processed_kb Float?    @default(0)
+  cost_usd          Float?    @default(0)
+  
+  // Performance metrics
+  cpu_time_ms       Int?
+  memory_used_mb    Float?
+  
+  // Relationships
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  execution_events  execution_events[]
+  execution_metrics execution_metrics[]
+  data_flows        data_flows[]
+  
+  @@index([license_key], map: "idx_executions_license")
+  @@index([user_id], map: "idx_executions_user")
+  @@index([execution_type], map: "idx_executions_type")
+  @@index([status], map: "idx_executions_status")
+  @@index([started_at], map: "idx_executions_started")
+  @@index([session_id], map: "idx_executions_session")
+  @@index([parent_execution_id], map: "idx_executions_parent")
+  @@schema("public")
+}
+
+model execution_events {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  execution_id  String    @db.VarChar(36)
+  event_type    String    @db.VarChar(50) // 'start', 'progress', 'error', 'warning', 'complete', 'data_transfer'
+  event_name    String    @db.VarChar(255)
+  event_data    Json?
+  severity      String?   @db.VarChar(20) // 'info', 'warning', 'error', 'critical'
+  timestamp     DateTime  @default(now()) @db.Timestamptz(6)
+  
+  executions    executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
+  
+  @@index([execution_id], map: "idx_execution_events_execution")
+  @@index([event_type], map: "idx_execution_events_type")
+  @@index([timestamp], map: "idx_execution_events_timestamp")
+  @@schema("public")
+}
+
+model execution_metrics {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  execution_id  String    @db.VarChar(36)
+  metric_name   String    @db.VarChar(100)
+  metric_value  Float
+  metric_unit   String?   @db.VarChar(50)
+  recorded_at   DateTime  @default(now()) @db.Timestamptz(6)
+  
+  executions    executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
+  
+  @@index([execution_id], map: "idx_execution_metrics_execution")
+  @@index([metric_name], map: "idx_execution_metrics_name")
+  @@index([recorded_at], map: "idx_execution_metrics_recorded")
+  @@schema("public")
+}
+
+model data_flows {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  execution_id    String    @db.VarChar(36)
+  license_key     String    @db.VarChar(20)
+  
+  // Flow tracking
+  source_service  String    @db.VarChar(100)
+  target_service  String    @db.VarChar(100)
+  data_type       String    @db.VarChar(100) // 'user_input', 'api_response', 'db_query', 'llm_prompt', 'llm_response'
+  
+  // Data details
+  data_size_bytes Int?
+  data_hash       String?   @db.VarChar(255) // For integrity checking
+  data_sample     Json?     // Sample of the data for inspection
+  
+  // Security & Compliance
+  contains_pii    Boolean   @default(false)
+  encryption_used Boolean   @default(true)
+  data_classification String? @db.VarChar(50) // 'public', 'internal', 'confidential', 'restricted'
+  
+  // Timing
+  transferred_at  DateTime  @default(now()) @db.Timestamptz(6)
+  
+  executions      executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
+  licenses        licenses   @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([execution_id], map: "idx_data_flows_execution")
+  @@index([license_key], map: "idx_data_flows_license")
+  @@index([source_service], map: "idx_data_flows_source")
+  @@index([target_service], map: "idx_data_flows_target")
+  @@index([transferred_at], map: "idx_data_flows_transferred")
+  @@schema("public")
+}
+
+// Skills system tables
+model skills {
+  id              String    @id @db.VarChar(100)
+  name            String    @db.VarChar(255)
+  description     String    @db.Text
+  category        String    @db.VarChar(50)
+  version         String    @db.VarChar(20)
+  author          String    @db.VarChar(100)
+  active          Boolean   @default(true)
+  is_premium      Boolean   @default(false)
+  configuration   Json      @default("{}")
+  required_params Json?
+  optional_params Json?
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
+  
+  skill_executions skill_executions[]
+  
+  @@index([category], map: "idx_skills_category")
+  @@index([active], map: "idx_skills_active")
+  @@schema("public")
+}
+
+model skill_executions {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  skill_id        String    @db.VarChar(100)
+  license_key     String    @db.VarChar(20)
+  user_id         String?   @db.VarChar(255)
+  tenant_id       String?   @db.VarChar(100)
+  
+  // Execution details
+  status          String    @db.VarChar(20) // 'pending', 'running', 'completed', 'failed'
+  input_params    Json?
+  output_result   Json?
+  error_message   String?   @db.Text
+  
+  // Timing
+  started_at      DateTime  @default(now()) @db.Timestamptz(6)
+  completed_at    DateTime? @db.Timestamptz(6)
+  execution_time_ms Int?
+  
+  // Usage tracking
+  tokens_used     Int?      @default(0)
+  api_calls_made  Int?      @default(0)
+  
+  skills          skills    @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+  licenses        licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([skill_id], map: "idx_skill_executions_skill")
+  @@index([license_key], map: "idx_skill_executions_license")
+  @@index([user_id], map: "idx_skill_executions_user")
+  @@index([status], map: "idx_skill_executions_status")
+  @@index([started_at], map: "idx_skill_executions_started")
   @@schema("public")
 }
