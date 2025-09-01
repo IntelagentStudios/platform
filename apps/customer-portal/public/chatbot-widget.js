@@ -58,13 +58,13 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .intelagent-chat-button:hover {
-      transform: scale(1.08);
+      transform: scale(1.05);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
     }
     .intelagent-chat-button svg {
       width: 30px;
       height: 30px;
-      fill: #333;
+      fill: #666;
     }
     .intelagent-chat-box {
       position: fixed;
@@ -83,7 +83,18 @@
       overflow: hidden;
       z-index: 999999;
       font-family: 'Inter', sans-serif;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      animation: smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes smoothSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
     .intelagent-chat-header {
       background-color: rgba(255, 255, 255, 0.75);
@@ -118,10 +129,10 @@
       color: #333;
     }
     .intelagent-new-button {
-      background: black;
-      border: 1px solid black;
-      color: white;
-      font-size: 18px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 20px;
       cursor: pointer;
       padding: 0;
       width: 32px;
@@ -134,8 +145,8 @@
       font-weight: bold;
     }
     .intelagent-new-button:hover {
-      background: white;
-      color: black;
+      background: rgba(0, 0, 0, 0.05);
+      color: #333;
     }
     .intelagent-chat-messages {
       flex-grow: 1;
@@ -175,6 +186,16 @@
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+    @keyframes smoothSlideDown {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
       }
     }
     .intelagent-message.user {
@@ -247,9 +268,9 @@
       background: white;
     }
     .intelagent-send-button {
-      background: black;
-      color: white;
-      border: 1px solid black;
+      background: none;
+      color: #666;
+      border: none;
       border-radius: 50%;
       width: 36px;
       height: 36px;
@@ -261,12 +282,11 @@
       flex-shrink: 0;
     }
     .intelagent-send-button:hover {
-      background: white;
-      color: black;
+      background: rgba(0, 0, 0, 0.05);
       transform: scale(1.05);
     }
     .intelagent-send-button:hover svg {
-      fill: black;
+      fill: #333;
     }
     .intelagent-send-button:disabled {
       opacity: 0.5;
@@ -275,7 +295,7 @@
     .intelagent-send-button svg {
       width: 20px;
       height: 20px;
-      fill: white;
+      fill: #666;
     }
     .intelagent-ai-disclaimer {
       font-size: 10px;
@@ -476,10 +496,18 @@
     // Toggle chat visibility
     function toggleChat() {
       isChatOpen = !isChatOpen;
-      chatBox.style.display = isChatOpen ? 'flex' : 'none';
       if (isChatOpen) {
+        chatBox.style.display = 'flex';
+        chatBox.style.animation = 'smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         renderMessages();
-        document.getElementById('intelagent-input').focus();
+        setTimeout(() => {
+          document.getElementById('intelagent-input').focus();
+        }, 100);
+      } else {
+        chatBox.style.animation = 'smoothSlideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        setTimeout(() => {
+          chatBox.style.display = 'none';
+        }, 280);
       }
       // Notify parent window
       window.parent.postMessage({ type: 'chatToggled', isOpen: isChatOpen }, '*');
