@@ -117,6 +117,26 @@
       background: rgba(0, 0, 0, 0.05);
       color: #333;
     }
+    .intelagent-new-button {
+      background: black;
+      border: 1px solid black;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      font-weight: bold;
+    }
+    .intelagent-new-button:hover {
+      background: white;
+      color: black;
+    }
     .intelagent-chat-messages {
       flex-grow: 1;
       padding: 24px;
@@ -200,17 +220,16 @@
     .intelagent-chat-input {
       display: flex;
       border-top: none;
-      padding: 16px;
+      padding: 12px 16px;
       background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      min-height: 60px;
-      gap: 12px;
-      align-items: flex-end;
+      gap: 10px;
+      align-items: center;
     }
     .intelagent-chat-input textarea {
       flex-grow: 1;
-      padding: 8px 12px;
+      padding: 6px 12px;
       border: 1px solid rgba(0, 0, 0, 0.2);
       border-radius: 8px;
       font-size: 14px;
@@ -218,11 +237,9 @@
       font-family: 'Inter', sans-serif;
       background: white;
       resize: none;
-      min-height: 32px;
       height: 32px;
-      max-height: 60px;
-      overflow-y: auto;
-      line-height: 1.3;
+      overflow: hidden;
+      line-height: 20px;
       transition: border-color 0.2s, background 0.2s;
     }
     .intelagent-chat-input textarea:focus {
@@ -404,7 +421,7 @@
       <div class="intelagent-chat-header">
         <span>Chat Assistant</span>
         <div style="display: flex; gap: 8px;">
-          <button class="intelagent-close-button intelagent-new-button" aria-label="New conversation" title="Start new conversation" style="font-size: 18px;">🔄</button>
+          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">↻</button>
           <button class="intelagent-close-button" aria-label="Close chat">×</button>
         </div>
       </div>
@@ -574,9 +591,14 @@
           (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content.replace(/<[^>]*>/g, '')
         ).join('\\n');
 
+        console.log('Sending message to webhook:', webhookUrl);
         const response = await fetch(webhookUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          mode: 'cors',
           body: JSON.stringify({
             message: message,
             session_id: sessionId,
@@ -589,11 +611,18 @@
           })
         });
 
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Response data:', data);
         removeTypingIndicator();
 
         // Add bot response with formatting
-        const botResponse = data.message || data.chatbot_response || 'I apologize, but I encountered an error processing your request.';
+        const botResponse = data.message || data.chatbot_response || data.response || 'I apologize, but I encountered an error processing your request.';
         
         // Process the response:
         // 1. First process markdown links
@@ -642,6 +671,7 @@
       } catch (error) {
         removeTypingIndicator();
         console.error('IntelagentChat Error:', error);
+        console.error('Error details:', error.message);
         
         const errorMsg = {
           type: 'bot',
@@ -669,15 +699,10 @@
       }
     }
 
-    // Auto-resize textarea function
+    // Auto-resize textarea function - disabled for single line
     function autoResizeTextarea(textarea) {
-      textarea.style.height = '40px';  // Reset to base height first
-      const scrollHeight = textarea.scrollHeight;
-      const maxHeight = 100;  // Match the CSS max-height
-      
-      if (scrollHeight > 40) {
-        textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
-      }
+      // Keep it single line
+      textarea.style.height = '32px';
     }
 
     // Handle input
