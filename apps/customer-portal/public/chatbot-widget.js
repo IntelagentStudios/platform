@@ -487,8 +487,8 @@
 
     chatButton.addEventListener('click', toggleChat);
     
-    // Close button functionality (the second button with close-button class)
-    const closeButton = chatBox.querySelectorAll('.intelagent-close-button')[1];
+    // Close button functionality
+    const closeButton = chatBox.querySelector('.intelagent-close-button');
     closeButton.addEventListener('click', toggleChat);
     
     // New conversation button functionality
