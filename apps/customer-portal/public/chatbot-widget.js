@@ -112,41 +112,43 @@
     .intelagent-close-button {
       background: none;
       border: none;
-      font-size: 24px;
-      color: #666;
+      font-size: 20px;
+      color: #888;
       cursor: pointer;
       padding: 0;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: 6px;
       transition: all 0.2s;
     }
     .intelagent-close-button:hover {
-      background: rgba(0, 0, 0, 0.05);
+      background: rgba(0, 0, 0, 0.06);
       color: #333;
+      transform: scale(1.1);
     }
     .intelagent-new-button {
       background: none;
       border: none;
-      color: #666;
-      font-size: 20px;
+      color: #888;
+      font-size: 18px;
       cursor: pointer;
       padding: 0;
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: 6px;
       transition: all 0.2s;
-      font-weight: bold;
+      font-weight: normal;
     }
     .intelagent-new-button:hover {
-      background: rgba(0, 0, 0, 0.05);
+      background: rgba(0, 0, 0, 0.06);
       color: #333;
+      transform: rotate(-45deg);
     }
     .intelagent-chat-messages {
       flex-grow: 1;
@@ -440,9 +442,9 @@
     chatBox.innerHTML = \`
       <div class="intelagent-chat-header">
         <span>Chat Assistant</span>
-        <div style="display: flex; gap: 8px;">
-          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">↻</button>
-          <button class="intelagent-close-button" aria-label="Close chat">×</button>
+        <div style="display: flex; gap: 6px;">
+          <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">⟳</button>
+          <button class="intelagent-close-button" aria-label="Close chat">✕</button>
         </div>
       </div>
       <div class="intelagent-chat-messages" id="intelagent-messages"></div>
