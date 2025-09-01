@@ -26,6 +26,9 @@ COPY . .
 # Generate Prisma Client in the database package
 RUN cd packages/database && npx prisma generate
 
+# Build the skills-orchestrator package
+RUN cd packages/skills-orchestrator && npm run build
+
 # Also generate Prisma Client in customer-portal for Next.js
 RUN cd apps/customer-portal && npx prisma generate --schema=../../packages/database/prisma/schema.prisma
 
