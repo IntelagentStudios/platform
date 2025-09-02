@@ -179,17 +179,46 @@ export class SkillsRegistry {
   private async createSkillImplementation(id: string): Promise<BaseSkill | null> {
     // Import existing implementations
     switch (id) {
-      case 'calculator':
-        const { CalculatorSkill } = await import('./impl/CalculatorSkill');
-        return new CalculatorSkill();
+      // Communication skills
+      case 'email_composer':
+        const { EmailComposerSkill } = await import('./impl/EmailComposerSkill');
+        return new EmailComposerSkill();
       
-      case 'datetime':
-        const { DateTimeSkill } = await import('./impl/DateTimeSkill');
-        return new DateTimeSkill();
+      case 'text_summarizer':
+        const { TextSummarizerSkill } = await import('./impl/TextSummarizerSkill');
+        return new TextSummarizerSkill();
       
-      case 'weather':
-        const { WeatherSkill } = await import('./impl/WeatherSkill');
-        return new WeatherSkill();
+      // AI/ML skills
+      case 'sentiment_analyzer':
+        const { SentimentAnalyzerSkill } = await import('./impl/SentimentAnalyzerSkill');
+        return new SentimentAnalyzerSkill();
+      
+      case 'language_detector':
+        const { LanguageDetectorSkill } = await import('./impl/LanguageDetectorSkill');
+        return new LanguageDetectorSkill();
+      
+      // Data Processing skills
+      case 'data_enricher':
+        const { DataEnricherSkill } = await import('./impl/DataEnricherSkill');
+        return new DataEnricherSkill();
+      
+      case 'data_validator':
+        const { DataValidatorSkill } = await import('./impl/DataValidatorSkill');
+        return new DataValidatorSkill();
+      
+      case 'data_transformer':
+        const { DataTransformerSkill } = await import('./impl/DataTransformerSkill');
+        return new DataTransformerSkill();
+      
+      // Integration skills
+      case 'webhook_sender':
+        const { WebhookSenderSkill } = await import('./impl/WebhookSenderSkill');
+        return new WebhookSenderSkill();
+      
+      // Automation skills
+      case 'workflow_engine':
+        const { WorkflowEngineSkill } = await import('./impl/WorkflowEngineSkill');
+        return new WorkflowEngineSkill();
       
       default:
         // For unimplemented skills, return a mock implementation
