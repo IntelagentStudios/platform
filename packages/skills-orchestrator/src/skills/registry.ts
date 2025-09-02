@@ -180,6 +180,10 @@ export class SkillsRegistry {
     // Import existing implementations
     switch (id) {
       // Communication skills
+      case 'website_chatbot':
+        const { WebsiteChatbotSkill } = await import('./impl/WebsiteChatbotSkill');
+        return new WebsiteChatbotSkill();
+      
       case 'email_composer':
         const { EmailComposerSkill } = await import('./impl/EmailComposerSkill');
         return new EmailComposerSkill();
@@ -187,6 +191,14 @@ export class SkillsRegistry {
       case 'text_summarizer':
         const { TextSummarizerSkill } = await import('./impl/TextSummarizerSkill');
         return new TextSummarizerSkill();
+      
+      case 'chatbot':
+        const { ChatbotSkill } = await import('./impl/ChatbotSkill');
+        return new ChatbotSkill();
+      
+      case 'template_engine':
+        const { TemplateEngineSkill } = await import('./impl/TemplateEngineSkill');
+        return new TemplateEngineSkill();
       
       // AI/ML skills
       case 'sentiment_analyzer':
@@ -219,6 +231,11 @@ export class SkillsRegistry {
       case 'workflow_engine':
         const { WorkflowEngineSkill } = await import('./impl/WorkflowEngineSkill');
         return new WorkflowEngineSkill();
+      
+      // Analytics skills
+      case 'report_generator':
+        const { ReportGeneratorSkill } = await import('./impl/ReportGeneratorSkill');
+        return new ReportGeneratorSkill();
       
       default:
         // For unimplemented skills, return a mock implementation

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { chatbotIsolationMiddleware, shouldBypassSkills } from './middleware/chatbot-isolation';
 
 const publicPaths = [
   '/login',
@@ -11,6 +12,12 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // CRITICAL: Apply chatbot isolation FIRST
+  // This ensures chatbot remains independent from skills system
+  if (shouldBypassSkills(pathname)) {
+    return chatbotIsolationMiddleware(request);
+  }
   
   // Allow public paths
   if (publicPaths.some(path => pathname.startsWith(path))) {
