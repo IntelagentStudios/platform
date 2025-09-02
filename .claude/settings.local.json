@@ -1,11 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git ls-tree:*)",
-      "Bash(git checkout:*)",
-      "Bash(npm run build:*)",
-      "Bash(docker build:*)",
-      "Bash(dir:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
