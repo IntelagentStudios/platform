@@ -237,6 +237,29 @@ export class SkillsRegistry {
         const { ReportGeneratorSkill } = await import('./impl/ReportGeneratorSkill');
         return new ReportGeneratorSkill();
       
+      // Integration skills (continued)
+      case 'api_connector':
+        const { ApiConnectorSkill } = await import('./impl/ApiConnectorSkill');
+        return new ApiConnectorSkill();
+      
+      case 'database_connector':
+        const { DatabaseConnectorSkill } = await import('./impl/DatabaseConnectorSkill');
+        return new DatabaseConnectorSkill();
+      
+      // AI/ML skills (continued)
+      case 'image_analysis':
+        const { ImageAnalysisSkill } = await import('./impl/ImageAnalysisSkill');
+        return new ImageAnalysisSkill();
+      
+      case 'predictive_analytics':
+        const { PredictiveAnalyticsSkill } = await import('./impl/PredictiveAnalyticsSkill');
+        return new PredictiveAnalyticsSkill();
+      
+      // Productivity skills
+      case 'task_manager':
+        const { TaskManagerSkill } = await import('./impl/TaskManagerSkill');
+        return new TaskManagerSkill();
+      
       default:
         // For unimplemented skills, return a mock implementation
         return this.createMockSkill(id);

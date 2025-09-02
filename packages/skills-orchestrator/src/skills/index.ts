@@ -17,3 +17,8 @@ export * from './impl/WorkflowEngineSkill';
 export * from './impl/ChatbotSkill';
 export * from './impl/TemplateEngineSkill';
 export * from './impl/ReportGeneratorSkill';
+export * from './impl/ApiConnectorSkill';
+export * from './impl/DatabaseConnectorSkill';
+export * from './impl/ImageAnalysisSkill';
+export * from './impl/PredictiveAnalyticsSkill';
+export * from './impl/TaskManagerSkill';
