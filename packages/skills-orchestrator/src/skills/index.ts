@@ -3,22 +3,5 @@ export * from './BaseSkill';
 export * from './SkillFactory';
 export * from './registry';
 
-// Export skill implementations
-export * from './impl/WebsiteChatbotSkill';
-export * from './impl/EmailComposerSkill';
-export * from './impl/SentimentAnalyzerSkill';
-export * from './impl/DataEnricherSkill';
-export * from './impl/WebhookSenderSkill';
-export * from './impl/TextSummarizerSkill';
-export * from './impl/LanguageDetectorSkill';
-export * from './impl/DataValidatorSkill';
-export * from './impl/DataTransformerSkill';
-export * from './impl/WorkflowEngineSkill';
-export * from './impl/ChatbotSkill';
-export * from './impl/TemplateEngineSkill';
-export * from './impl/ReportGeneratorSkill';
-export * from './impl/ApiConnectorSkill';
-export * from './impl/DatabaseConnectorSkill';
-export * from './impl/ImageAnalysisSkill';
-export * from './impl/PredictiveAnalyticsSkill';
-export * from './impl/TaskManagerSkill';
+// Export all skill implementations from the index
+export * from './impl';

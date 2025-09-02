@@ -19,7 +19,9 @@ import {
   HardDrive,
   Cpu,
   MemoryStick,
-  DollarSign
+  DollarSign,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 
 interface SystemStatus {
@@ -52,6 +54,11 @@ export default function AdminDashboard() {
   const [licenseStats, setLicenseStats] = useState<LicenseStats | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  
+  // Quick action to go to Management System
+  const goToManagementSystem = () => {
+    router.push('/admin/management-system');
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,6 +125,48 @@ export default function AdminDashboard() {
           </span>
         </div>
       </header>
+
+      {/* Management System Master Control - Prominent Card */}
+      <Card 
+        className="p-6 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20 cursor-pointer hover:shadow-xl transition-all hover:scale-[1.02]"
+        onClick={goToManagementSystem}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-500/20 rounded-lg">
+              <Brain className="w-8 h-8 text-purple-500" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-xl font-bold">Skills Management System</h2>
+                <Sparkles className="w-4 h-4 text-yellow-500" />
+                <span className="px-2 py-0.5 bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs font-semibold rounded-full">
+                  MASTER CONTROL
+                </span>
+              </div>
+              <p className="text-muted-foreground">
+                310 Skills • 4 Management Agents • Full Automation
+              </p>
+              <div className="flex gap-4 mt-2 text-sm">
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-green-600 dark:text-green-400">All Systems Operational</span>
+                </span>
+                <span className="text-muted-foreground">28 Active Executions</span>
+                <span className="text-muted-foreground">45 Queued Tasks</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <button className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-sm font-medium">
+              Open Control Panel →
+            </button>
+            <div className="text-xs text-muted-foreground">
+              Click to manage agents & skills
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Critical Alerts - Actionable */}
       {criticalAlerts > 0 && (

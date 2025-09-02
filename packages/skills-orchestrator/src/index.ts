@@ -1,19 +1,24 @@
 /**
  * Skills Orchestrator
  * Central system for managing and executing skills
- * IMPORTANT: This system is isolated from the chatbot to prevent disruption
+ * IMPORTANT: All external calls MUST go through OrchestratorAgent
  */
 
+// ============================================
+// ORCHESTRATOR AGENT - PRIMARY INTERFACE
+// ============================================
+export { OrchestratorAgent } from './core/OrchestratorAgent';
+export type { 
+  OrchestrationRequest, 
+  OrchestrationResult,
+  WorkflowDefinition,
+  WorkflowStep 
+} from './core/OrchestratorAgent';
+
+// ============================================
+// INTERNAL COMPONENTS (Not for external use)
+// ============================================
 export { BaseSkill } from './skills/BaseSkill';
-export { SkillRegistry } from './registry';
-export { SkillExecutor } from './executor';
-export { SkillResult, SkillParams, SkillCategory } from './types';
-
-// Export skills management
-export { SkillFactory, SkillDefinition } from './skills/SkillFactory';
 export { SkillsRegistry } from './skills/registry';
-
-// Export individual skills
-export { WeatherSkill } from './skills/impl/WeatherSkill';
-export { CalculatorSkill } from './skills/impl/CalculatorSkill';
-export { DateTimeSkill } from './skills/impl/DateTimeSkill';
+export { SkillResult, SkillParams, SkillCategory } from './types';
+export { SkillFactory, SkillDefinition } from './skills/SkillFactory';

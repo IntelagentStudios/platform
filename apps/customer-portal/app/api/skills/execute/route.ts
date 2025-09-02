@@ -1,37 +1,29 @@
 /**
- * Skills Execution API
- * Handles skill execution requests
+ * Skill Execution API
+ * Execute skills with proper monitoring and license tracking
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAuth } from '@/lib/auth-validator';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { SkillsRegistry } from '@intelagent/skills-orchestrator';
-
-const SKILLS_ENABLED = process.env.SKILLS_ENABLED !== 'false';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
-  // Feature flag check
-  if (!SKILLS_ENABLED) {
-    return NextResponse.json(
-      { error: 'Skills system is currently disabled' },
-      { status: 503 }
-    );
-  }
-
   try {
-    // Validate authentication
-    const authResult = await validateAuth(request);
-    
-    if (!authResult.authenticated) {
+    // Get session
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const data = await request.json();
-    const { skillId, params, options = {} } = data;
+    // Get request body
+    const body = await request.json();
+    const { skillId, params, licenseKey } = body;
 
     if (!skillId) {
       return NextResponse.json(
@@ -40,143 +32,282 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if skill exists in registry
-    const registry = SkillsRegistry.getInstance();
-    const registrySkill = registry.getSkill(skillId);
-    
-    if (!registrySkill) {
+    // Validate license key
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: licenseKey || session.user.licenseKey },
+      include: {
+        users: true,
+        license_types: true
+      }
+    });
+
+    if (!license || license.status !== 'active') {
       return NextResponse.json(
-        { error: 'Skill not found' },
-        { status: 404 }
+        { error: 'Valid active license required' },
+        { status: 403 }
       );
     }
 
-    // Check user's tier for premium skills
-    const skillDefinition = registrySkill.definition;
+    // Check if skill is available for this license tier
+    const tierSkills = license.license_types?.features?.skills || [];
+    const isPremiumSkill = await checkIfPremiumSkill(skillId);
     
-    if (skillDefinition?.isPremium) {
-      // Check if user has premium access
-      const userIsPro = authResult.user?.is_pro || false;
-      if (!userIsPro) {
-        return NextResponse.json(
-          { error: 'This skill requires a Pro or Enterprise subscription' },
-          { status: 403 }
-        );
-      }
+    if (isPremiumSkill && !tierSkills.includes(skillId) && !tierSkills.includes('all')) {
+      return NextResponse.json(
+        { error: 'This skill is not available for your license tier' },
+        { status: 403 }
+      );
     }
 
-    // Generate execution ID
-    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Create execution record
+    const executionId = uuidv4();
+    const execution = await prisma.executions.create({
+      data: {
+        id: executionId,
+        license_key: license.license_key,
+        execution_type: 'skill',
+        status: 'running',
+        metadata: {
+          skillId,
+          userId: session.user.id,
+          userEmail: session.user.email,
+          params
+        },
+        started_at: new Date()
+      }
+    });
 
+    // Log execution start event
+    await prisma.execution_events.create({
+      data: {
+        execution_id: executionId,
+        event_type: 'skill_start',
+        event_data: {
+          skillId,
+          params,
+          user: session.user.email
+        }
+      }
+    });
+
+    // Use Orchestrator Agent - Single point of contact
+    const { OrchestratorAgent } = await import('@intelagent/skills-orchestrator');
+    const orchestrator = OrchestratorAgent.getInstance();
+
+    // Execute through orchestrator
     try {
-      // Load and execute skill
       const startTime = Date.now();
-      const skill = await registry.loadSkill(skillId);
       
-      if (!skill) {
-        throw new Error('Failed to load skill implementation');
-      }
-
-      // Validate parameters
-      if (!skill.validate(params)) {
-        throw new Error('Invalid parameters for skill');
-      }
-
-      // Execute skill directly
-      const result = await skill.execute(params);
-      const executionTime = Date.now() - startTime;
-
-      // Update registry statistics
-      registry.updateSkillStats(
+      const orchestrationResult = await orchestrator.execute({
         skillId,
-        result.success,
-        executionTime
-      );
+        params: params || {},
+        context: {
+          userId: session.user.id,
+          licenseKey: license.license_key,
+          sessionId: executionId,
+          metadata: {
+            userEmail: session.user.email,
+            executionId
+          }
+        }
+      });
 
-      // Log execution for analytics
-      console.log(`[Skill Execution] ${skillId} - ${result.success ? 'Success' : 'Failed'} - ${executionTime}ms`);
+      const executionTime = Date.now() - startTime;
+      const result = orchestrationResult.results[0] || { 
+        success: false, 
+        error: orchestrationResult.error 
+      };
 
+      // Update execution record
+      await prisma.executions.update({
+        where: { id: executionId },
+        data: {
+          status: result.success ? 'completed' : 'failed',
+          result: result as any,
+          completed_at: new Date(),
+          duration_ms: executionTime,
+          error_message: result.error
+        }
+      });
+
+      // Log execution completion
+      await prisma.execution_events.create({
+        data: {
+          execution_id: executionId,
+          event_type: result.success ? 'skill_success' : 'skill_failure',
+          event_data: {
+            skillId,
+            success: result.success,
+            executionTime,
+            error: result.error
+          }
+        }
+      });
+
+      // Track metrics
+      await prisma.execution_metrics.create({
+        data: {
+          execution_id: executionId,
+          metric_name: 'skill_execution_time',
+          metric_value: executionTime,
+          unit: 'ms'
+        }
+      });
+
+      // Stats are now handled by the orchestrator internally
+      
+      // Return result
       return NextResponse.json({
         executionId,
         skillId,
         success: result.success,
         data: result.data,
         error: result.error,
-        executionTime,
-        metadata: result.metadata
+        metadata: {
+          ...result.metadata,
+          executionTime,
+          licenseKey: license.license_key
+        }
       });
 
     } catch (error: any) {
-      // Update registry statistics
-      registry.updateSkillStats(skillId, false, 0);
-
-      console.error(`[Skill Execution Error] ${skillId}:`, error);
+      await updateExecutionStatus(executionId, 'failed', error.message);
+      
+      await prisma.execution_events.create({
+        data: {
+          execution_id: executionId,
+          event_type: 'skill_error',
+          event_data: {
+            skillId,
+            error: error.message,
+            stack: error.stack
+          }
+        }
+      });
 
       return NextResponse.json(
-        {
-          executionId,
-          skillId,
-          success: false,
-          error: error.message || 'Skill execution failed'
+        { 
+          error: 'Skill execution failed',
+          message: error.message,
+          executionId 
         },
         { status: 500 }
       );
     }
 
   } catch (error: any) {
-    console.error('Skill execution error:', error);
+    console.error('Skill execution API error:', error);
     return NextResponse.json(
-      { error: 'Failed to execute skill' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-/**
- * GET /api/skills/execute?id=executionId
- * Get execution status and result
- */
-export async function GET(request: NextRequest) {
-  if (!SKILLS_ENABLED) {
-    return NextResponse.json(
-      { error: 'Skills system is currently disabled' },
-      { status: 503 }
-    );
-  }
+// Helper function to update execution status
+async function updateExecutionStatus(
+  executionId: string,
+  status: string,
+  errorMessage?: string
+) {
+  await prisma.executions.update({
+    where: { id: executionId },
+    data: {
+      status,
+      error_message: errorMessage,
+      completed_at: new Date()
+    }
+  });
+}
 
+// Helper function to check if skill is premium
+async function checkIfPremiumSkill(skillId: string): Promise<boolean> {
+  const premiumSkills = [
+    'predictive_analytics',
+    'image_analysis',
+    'face_recognizer',
+    'recommendation_engine',
+    'salesforce_connector',
+    'hubspot_connector',
+    'stripe_payment',
+    'shopify_connector'
+  ];
+  
+  return premiumSkills.includes(skillId);
+}
+
+// GET endpoint to list available skills
+export async function GET(request: NextRequest) {
   try {
-    const authResult = await validateAuth(request);
-    
-    if (!authResult.authenticated) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const executionId = searchParams.get('id');
+    // Get user's license
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: session.user.licenseKey! },
+      include: { license_types: true }
+    });
 
-    if (!executionId) {
+    if (!license) {
       return NextResponse.json(
-        { error: 'Execution ID is required' },
-        { status: 400 }
+        { error: 'No valid license found' },
+        { status: 403 }
       );
     }
 
-    // Return mock execution data for now
-    // In production, this would query the skill_executions table
+    // Get all skills from registry
+    const registry = SkillsRegistry.getInstance();
+    const allSkills = registry.getAllSkills();
+
+    // Filter based on license tier
+    const tierSkills = license.license_types?.features?.skills || [];
+    const hasAllAccess = tierSkills.includes('all');
+
+    const availableSkills = allSkills
+      .filter(skill => registry.isSkillEnabled(skill.definition.id))
+      .filter(skill => {
+        if (hasAllAccess) return true;
+        const isPremium = await checkIfPremiumSkill(skill.definition.id);
+        return !isPremium || tierSkills.includes(skill.definition.id);
+      })
+      .map(skill => ({
+        id: skill.definition.id,
+        name: skill.definition.name,
+        description: skill.definition.description,
+        category: skill.definition.category,
+        isPremium: skill.definition.isPremium,
+        status: skill.status,
+        stats: skill.stats
+      }));
+
+    // Group by category
+    const skillsByCategory = availableSkills.reduce((acc: any, skill) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = [];
+      }
+      acc[skill.category].push(skill);
+      return acc;
+    }, {});
+
     return NextResponse.json({
-      id: executionId,
-      skillId: 'unknown',
-      status: 'completed',
-      message: 'Execution tracking not yet available'
+      total: availableSkills.length,
+      skills: availableSkills,
+      byCategory: skillsByCategory,
+      license: {
+        tier: license.license_types?.name,
+        hasAllAccess
+      }
     });
 
-  } catch (error) {
-    console.error('Error fetching execution:', error);
+  } catch (error: any) {
+    console.error('Skills listing error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch execution' },
+      { error: 'Failed to fetch skills' },
       { status: 500 }
     );
   }
