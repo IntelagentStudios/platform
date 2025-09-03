@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       const sessionMap = new Map()
       domainSessions.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.product_key ? licenseMap.get(log.product_key) : null
+          const license: any = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
       
       recentLogs.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.product_key ? licenseMap.get(log.product_key) : null
+          const license: any = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
@@ -294,7 +294,7 @@ export async function GET(request: NextRequest) {
       const sessionMap = new Map()
       sessionDetails.forEach(log => {
         if (!sessionMap.has(log.session_id)) {
-          const license = log.product_key ? licenseMap.get(log.product_key) : null
+          const license: any = log.product_key ? licenseMap.get(log.product_key) : null
           sessionMap.set(log.session_id, {
             session_id: log.session_id,
             domain: log.domain || license?.domain || 'Unknown',
