@@ -27,9 +27,9 @@ export class TestRunnerSkill extends BaseSkill {
     try {
       const startTime = Date.now();
       const licenseKey = params._context?.licenseKey;
-      const taskId = params._context?.taskId;
+      const contextTaskId = params._context?.taskId;
       
-      console.log(`[Test Runner] Executing for license ${licenseKey}, task ${taskId}`);
+      console.log(`[Test Runner] Executing for license ${licenseKey}, task ${contextTaskId}`);
       
       
       const { task, schedule } = params;
