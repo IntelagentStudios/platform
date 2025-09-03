@@ -86,7 +86,7 @@ export class CiCdPipelineSkill extends BaseSkill {
     return { ...input, processed: true };
   }
   
-  private async analyzeCI/CDPipeline(data: any): Promise<any> {
+  private async analyzeCiCdPipeline(data: any): Promise<any> {
     return {
       result: 'analyzed',
       confidence: 0.95,
@@ -106,7 +106,7 @@ export class CiCdPipelineSkill extends BaseSkill {
     return { status: 200, data: 'success' };
   }
   
-  private async processCI/CDPipeline(entity: any): Promise<any> {
+  private async processCiCdPipeline(entity: any): Promise<any> {
     return { ...entity, processed: true };
   }
   

@@ -720,7 +720,7 @@ export class ${skill.id.charAt(0).toUpperCase() + skill.id.slice(1).replace(/_/g
     // Internal queue system
     return {
       add: async (data: any) => {
-        console.log(\`Added to \${name} queue:`, data);
+        console.log(\`Added to \${name} queue:\`, data);
       }
     };
   }
@@ -729,7 +729,7 @@ export class ${skill.id.charAt(0).toUpperCase() + skill.id.slice(1).replace(/_/g
     // Internal storage system
     return {
       save: async (data: any) => {
-        console.log(\`Saved to \${name} storage:`, data);
+        console.log(\`Saved to \${name} storage:\`, data);
       }
     };
   }

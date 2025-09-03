@@ -27,7 +27,20 @@ export enum SkillCategory {
   AI_POWERED = 'ai_powered',
   AUTOMATION = 'automation',
   ANALYTICS = 'analytics',
-  PRODUCTIVITY = 'productivity'
+  PRODUCTIVITY = 'productivity',
+  AI_ANALYTICS = 'ai_analytics',
+  AI_ML = 'ai_ml',
+  BUSINESS = 'business',
+  BLOCKCHAIN = 'blockchain',
+  EDUCATION = 'education',
+  ENTERTAINMENT = 'entertainment',
+  FINANCE = 'finance',
+  HEALTHCARE = 'healthcare',
+  LEGAL = 'legal',
+  MANUFACTURING = 'manufacturing',
+  MEDIA = 'media',
+  REALESTATE = 'realestate',
+  SECURITY = 'security'
 }
 
 export interface SkillConfig {
