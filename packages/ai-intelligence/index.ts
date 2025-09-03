@@ -48,7 +48,7 @@ class AIIntelligenceService {
     }
 
     // Initialize our in-house vector store
-    this.vectorStore = new IntelagentVectorStore(prisma);
+    this.vectorStore = new IntelagentVectorStore({ prisma });
     console.log('Intelagent Vector Store initialized successfully');
   }
 
