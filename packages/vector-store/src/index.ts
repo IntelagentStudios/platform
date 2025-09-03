@@ -245,10 +245,15 @@ export class IntelagentVectorStore {
       // Calculate similarities
       for (const vector of vectors) {
         const embedding = vector.embedding as number[];
+        // Map inner_product to dotproduct (they're the same)
+        const metric = collectionConfig.metric === 'inner_product' 
+          ? 'dotproduct' 
+          : collectionConfig.metric as 'cosine' | 'euclidean' | 'dotproduct';
+        
         const score = this.calculateSimilarity(
           queryVector,
           embedding,
-          collectionConfig.metric
+          metric
         );
         
         results.push({
