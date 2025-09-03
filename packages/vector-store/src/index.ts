@@ -669,7 +669,7 @@ export async function searchKnowledgeBase(
   siteKey: string
 ): Promise<any[]> {
   const store = new IntelagentVectorStore();
-  await store.initialize();
+  // Store initializes itself in constructor
   
   const embedding = await store.generateEmbedding(query);
   const results = await store.query(
@@ -693,7 +693,7 @@ export async function indexWebsite(
   pages: any[]
 ): Promise<any> {
   const store = new IntelagentVectorStore();
-  await store.initialize();
+  // Store initializes itself in constructor
   
   const collection = `chatbot_${siteKey}`;
   const vectors: Vector[] = [];
@@ -730,7 +730,7 @@ export async function deleteKnowledgeBase(
   siteKey: string
 ): Promise<void> {
   const store = new IntelagentVectorStore();
-  await store.initialize();
+  // Store initializes itself in constructor
   await store.deleteCollection(`chatbot_${siteKey}`);
 }
 
