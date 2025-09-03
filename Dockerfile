@@ -40,16 +40,14 @@ COPY . .
 # Re-run install to set up workspace links
 RUN npm install --legacy-peer-deps
 
-# Generate Prisma Client after copying source
+# Generate Prisma Client in the database package location
 RUN cd packages/database && npx prisma generate
 
 # Build skills-orchestrator
 RUN cd packages/skills-orchestrator && npm run build
 
-# Pre-build Next.js app to cache it
-RUN cd apps/customer-portal && \
-    npx prisma generate --schema=../../packages/database/prisma/schema.prisma && \
-    npm run build || echo "Build will complete at runtime"
+# Do NOT pre-build Next.js - it causes Prisma initialization errors
+# Build will happen at runtime after Prisma is properly initialized
 
 # Set environment
 ENV NODE_ENV=production
@@ -73,5 +71,5 @@ EXPOSE 3000
 # Set working directory
 WORKDIR /app/apps/customer-portal
 
-# Start command - only build if needed, then start
-CMD ["sh", "-c", "if [ ! -d '.next' ]; then npx prisma generate --schema=../../packages/database/prisma/schema.prisma && npm run build; fi && npm start"]
+# Start command - ensure Prisma is generated, build if needed, then start
+CMD ["sh", "-c", "cd /app/packages/database && npx prisma generate && cd /app/apps/customer-portal && if [ ! -d '.next' ]; then npm run build; fi && npm start"]
