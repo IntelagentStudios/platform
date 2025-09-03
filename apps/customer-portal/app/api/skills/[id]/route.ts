@@ -36,9 +36,12 @@ export async function GET(
 
     // Get skill from registry/factory
     const registry = SkillsRegistry.getInstance();
-    const registrySkill = registry.getSkill(params.id);
+    const registrySkill = registry.get(params.id);
     
-    if (!registrySkill) {
+    // Also check SkillFactory for definition
+    const skillDefinition = registrySkill ? null : SkillFactory.getSkillDefinition(params.id);
+    
+    if (!registrySkill && !skillDefinition) {
       return NextResponse.json(
         { error: 'Skill not found' },
         { status: 404 }
@@ -48,17 +51,31 @@ export async function GET(
     // Get skill statistics from registry
     const registryStats = registry.getSkillStats(params.id);
 
+    // Use either registry skill or factory definition
+    const skillInfo = registrySkill ? {
+      id: params.id,
+      name: params.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      description: `Skill: ${params.id}`,
+      category: 'utility',
+      tags: [],
+      isPremium: false,
+      requiredParams: [],
+      optionalParams: [],
+    } : {
+      id: skillDefinition!.id,
+      name: skillDefinition!.name,
+      description: skillDefinition!.description,
+      category: skillDefinition!.category,
+      tags: skillDefinition!.tags || [],
+      isPremium: skillDefinition!.isPremium || false,
+      requiredParams: skillDefinition!.requiredParams || [],
+      optionalParams: skillDefinition!.optionalParams || [],
+    };
+
     // Return skill information without database data
     return NextResponse.json({
       skill: {
-        id: registrySkill.definition.id,
-        name: registrySkill.definition.name,
-        description: registrySkill.definition.description,
-        category: registrySkill.definition.category,
-        tags: registrySkill.definition.tags,
-        isPremium: registrySkill.definition.isPremium || false,
-        requiredParams: registrySkill.definition.requiredParams || [],
-        optionalParams: registrySkill.definition.optionalParams || [],
+        ...skillInfo,
         version: '1.0.0',
         author: 'Intelagent',
         active: true
