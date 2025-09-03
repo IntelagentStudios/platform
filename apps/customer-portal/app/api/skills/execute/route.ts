@@ -115,11 +115,11 @@ export async function POST(request: NextRequest) {
     try {
       const startTime = Date.now();
       
-      const orchestrationResult = await orchestrator.execute({
+      const orchestrationResult = await orchestrator.orchestrate({
         skillId,
         params: params || {},
         context: {
-          userId: session.user.id,
+          userId: session.user?.id || 'unknown',
           licenseKey: license.license_key,
           sessionId: executionId,
           metadata: {
