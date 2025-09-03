@@ -6,9 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { AIIntelligenceService } from '@intelagent/ai-intelligence';
-import { prisma } from '@/lib/prisma';
 
-const aiService = new AIIntelligenceService(prisma);
+const aiService = new AIIntelligenceService();
 
 /**
  * GET /api/intelligence/insights
