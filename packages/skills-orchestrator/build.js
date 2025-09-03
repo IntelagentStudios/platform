@@ -66,6 +66,16 @@ module.exports = {
     has(skillId) {
       return this.skills.has(skillId);
     }
+    getSkillStats(skillId) {
+      // Return mock stats in fallback mode
+      return {
+        executions: 0,
+        successRate: 100,
+        averageExecutionTime: 0,
+        lastExecuted: null,
+        errors: 0
+      };
+    }
   },
   BaseSkill: class BaseSkill {
     constructor() {}
@@ -183,6 +193,13 @@ export class SkillsRegistry {
   get(skillId: string): any;
   getAll(): any[];
   has(skillId: string): boolean;
+  getSkillStats(skillId: string): {
+    executions: number;
+    successRate: number;
+    averageExecutionTime: number;
+    lastExecuted: Date | null;
+    errors: number;
+  };
 }
 
 export class BaseSkill {
