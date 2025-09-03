@@ -1,4 +1,3 @@
-import { prisma } from '@intelagent/database';
 import OpenAI from 'openai';
 import { IntelagentVectorStore, VectorUtils } from '@intelagent/vector-store';
 
@@ -32,14 +31,22 @@ interface Pattern {
 
 class AIIntelligenceService {
   private openai: OpenAI | null = null;
-  private vectorStore: IntelagentVectorStore;
+  private vectorStore: IntelagentVectorStore | null = null;
   private embeddingsCache: Map<string, number[]> = new Map();
+  private initialized = false;
+  private prismaClient: any = null;
 
   constructor() {
-    this.initializeServices();
+    // Delay initialization until first use to avoid build-time issues
   }
 
-  private initializeServices() {
+  private async ensureInitialized() {
+    if (this.initialized) return;
+    
+    // Lazy load prisma only when needed
+    const { prisma } = await import('@intelagent/database');
+    this.prismaClient = prisma;
+    
     // Initialize OpenAI
     if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({
@@ -50,9 +57,12 @@ class AIIntelligenceService {
     // Initialize our in-house vector store
     this.vectorStore = new IntelagentVectorStore({ prisma });
     console.log('Intelagent Vector Store initialized successfully');
+    
+    this.initialized = true;
   }
 
   async generateInsights(request: InsightRequest): Promise<Insight[]> {
+    await this.ensureInitialized();
     const insights: Insight[] = [];
 
     // Gather data from all products
@@ -128,7 +138,7 @@ class AIIntelligenceService {
 
     const [conversations, intents, satisfaction] = await Promise.all([
       // Get conversation data
-      prisma.chatbot_logs.findMany({
+      this.prismaClient.chatbot_logs.findMany({
         where,
         select: {
           session_id: true,
@@ -142,14 +152,14 @@ class AIIntelligenceService {
       }),
 
       // Get intent distribution
-      prisma.chatbot_logs.groupBy({
+      this.prismaClient.chatbot_logs.groupBy({
         by: ['intent_detected'],
         where,
         _count: true
       }),
 
       // Analyze satisfaction (simplified - would need sentiment analysis)
-      prisma.chatbot_logs.count({
+      this.prismaClient.chatbot_logs.count({
         where: {
           ...where,
           OR: [
@@ -339,7 +349,7 @@ class AIIntelligenceService {
     const insights: Insight[] = [];
 
     // Product adoption recommendations
-    const license = await prisma.licenses.findUnique({
+    const license = await this.prismaClient.licenses.findUnique({
       where: { license_key: request.licenseKey },
       select: { products: true, plan: true }
     });
@@ -609,7 +619,7 @@ class AIIntelligenceService {
     for (const insight of insights) {
       // AI insights table doesn't exist yet - skip database storage
       // TODO: Implement when ai_insights table is added to schema
-      // await prisma.ai_insights.create({
+      // await this.prismaClient.ai_insights.create({
       //   data: {
       //     license_key: licenseKey,
       //     insight_id: insight.id,
@@ -629,7 +639,7 @@ class AIIntelligenceService {
       const text = `${insight.title} ${insight.description} ${insight.recommendations.join(' ')}`;
       const embedding = await this.getEmbedding(text);
       
-      await this.vectorStore.upsert('insights', [{
+      await this.vectorStore!.upsert('insights', [{
         id: insight.id,
         values: embedding,
         metadata: {
@@ -685,9 +695,10 @@ class AIIntelligenceService {
     query: string,
     limit: number = 5
   ): Promise<Insight[]> {
+    await this.ensureInitialized();
     const queryEmbedding = await this.getEmbedding(query);
     
-    const results = await this.vectorStore.query(
+    const results = await this.vectorStore!.query(
       'insights',
       queryEmbedding,
       limit,
