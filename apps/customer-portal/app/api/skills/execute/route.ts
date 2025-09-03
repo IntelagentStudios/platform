@@ -140,10 +140,10 @@ export async function POST(request: NextRequest) {
         where: { id: executionId },
         data: {
           status: result.success ? 'completed' : 'failed',
-          result: result as any,
+          output_data: result.data || {},
+          error_data: result.error ? { error: result.error } : null,
           completed_at: new Date(),
-          duration_ms: executionTime,
-          error_message: result.error
+          duration_ms: executionTime
         }
       });
 
