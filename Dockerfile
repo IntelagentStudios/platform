@@ -71,5 +71,5 @@ EXPOSE 3000
 # Set working directory
 WORKDIR /app/apps/customer-portal
 
-# Start command - ensure Prisma is generated, build if needed, then start
-CMD ["sh", "-c", "cd /app/packages/database && npx prisma generate && cd /app/apps/customer-portal && if [ ! -d '.next' ]; then npm run build; fi && npm start"]
+# Start command - ensure Prisma is generated, build, then start
+CMD ["sh", "-c", "cd /app/packages/database && npx prisma generate && cd /app/apps/customer-portal && npm run build && npm start"]
