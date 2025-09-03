@@ -79,12 +79,14 @@ export async function POST(request: NextRequest) {
         id: executionId,
         license_key: license.license_key,
         execution_type: 'skill',
+        execution_name: `Skill: ${skillId}`,
         status: 'running',
-        metadata: {
+        input_data: {
           skillId,
-          userId: session.user.id,
-          userEmail: session.user.email,
           params
+        },
+        metadata: {
+          userEmail: session.user.email || 'unknown'
         },
         started_at: new Date()
       }
