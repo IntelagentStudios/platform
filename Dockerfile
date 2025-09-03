@@ -57,16 +57,9 @@ RUN cd packages/database && npx prisma generate
 # Build the skills-orchestrator package
 RUN cd packages/skills-orchestrator && npm run build
 
-# Also generate Prisma Client in customer-portal for Next.js
-RUN cd apps/customer-portal && npx prisma generate --schema=../../packages/database/prisma/schema.prisma
-
-# Build the customer portal (main user dashboard)
-# Set build environment to disable all external service connections
-ENV BUILDING=true
+# Skip build during Docker image creation - will build at runtime
+# This avoids Prisma initialization issues during Next.js page collection
 ENV NODE_ENV=production
-RUN cd apps/customer-portal && npm run build
-# Reset environment for runtime
-ENV BUILDING=false
 ENV PORT=3000
 
 # Expose the port
@@ -75,5 +68,5 @@ EXPOSE 3000
 # Change to customer-portal directory and start the server
 WORKDIR /app/apps/customer-portal
 
-# Start the application
-CMD ["node", "server.js"]
+# Generate Prisma client, build Next.js app, and start at runtime
+CMD ["sh", "-c", "npx prisma generate --schema=../../packages/database/prisma/schema.prisma && npm run build && npm start"]
