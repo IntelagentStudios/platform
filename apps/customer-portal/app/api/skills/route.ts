@@ -35,22 +35,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get skills from registry
-    const registry = SkillsRegistry.getInstance();
-    const allSkills = registry.getEnabledSkills();
+    // Get skills from factory since registry might be empty
+    const allSkills = SkillFactory.getAllSkills();
     
     // Transform to API response format
     const skills = allSkills.map(skill => ({
-      id: skill.definition.id,
-      name: skill.definition.name,
-      description: skill.definition.description,
-      category: skill.definition.category,
+      id: skill.id,
+      name: skill.name,
+      description: skill.description,
+      category: skill.category,
       version: '1.0.0',
       author: 'Intelagent',
       configuration: {},
       created_at: new Date(),
-      tags: skill.definition.tags,
-      isPremium: skill.definition.isPremium || false
+      tags: skill.tags,
+      isPremium: skill.isPremium || false
     }));
 
     // Mock recent executions for now
@@ -106,16 +105,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if skill exists in registry
+    // Check if skill exists
     const registry = SkillsRegistry.getInstance();
-    const skill = registry.getSkill(skillId);
+    const registrySkill = registry.get(skillId);
+    const skillDefinition = registrySkill ? null : SkillFactory.getSkillDefinition(skillId);
 
-    if (!skill || !registry.isSkillEnabled(skillId)) {
+    if (!registrySkill && !skillDefinition) {
       return NextResponse.json(
         { error: 'Skill not found or inactive' },
         { status: 404 }
       );
     }
+    
+    const skill = registrySkill || skillDefinition;
 
     // Generate execution ID
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -125,7 +127,7 @@ export async function POST(request: NextRequest) {
     const mockResult = {
       success: true,
       data: {
-        message: `Skill '${skill.definition.name}' executed successfully`,
+        message: `Skill '${skill.name || skillId}' executed successfully`,
         skillId,
         params,
         timestamp: new Date().toISOString()
@@ -136,8 +138,8 @@ export async function POST(request: NextRequest) {
       executionId,
       result: mockResult,
       skill: {
-        id: skill.definition.id,
-        name: skill.definition.name
+        id: skillId,
+        name: skill.name || skillId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       }
     });
 
