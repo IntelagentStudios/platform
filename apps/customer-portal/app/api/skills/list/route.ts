@@ -19,14 +19,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's license
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: session.user.licenseKey! },
-      include: { 
-        license_types: true,
-        users: true
+    // Get user's license - lookup by email
+    let license = null;
+    if (session.user.email) {
+      const user = await prisma.users.findFirst({
+        where: { email: session.user.email },
+        select: { license_key: true }
+      });
+      
+      if (user?.license_key) {
+        license = await prisma.licenses.findUnique({
+          where: { license_key: user.license_key }
+        });
       }
-    });
+    }
 
     if (!license) {
       return NextResponse.json(
@@ -36,28 +42,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Import skills from orchestrator
-    const { SkillsRegistry } = await import('@intelagent/skills-orchestrator');
+    const { SkillsRegistry, SkillFactory } = await import('@intelagent/skills-orchestrator');
     const registry = SkillsRegistry.getInstance();
-    const allSkills = registry.getAllSkills();
+    const allSkillDefs = SkillFactory.getAllSkills();
 
     // Determine user's tier and accessible skills
-    const tier = license.license_types?.name || 'free';
-    const isPro = tier === 'professional' || tier === 'enterprise';
-    const hasAllAccess = tier === 'enterprise';
+    const tier = license.plan || 'free';
+    const isPro = license.is_pro === true;
+    const hasAllAccess = license.products?.includes('all') || false;
 
     // Filter skills based on tier
-    const availableSkills = allSkills
+    const availableSkills = allSkillDefs
       .filter(skill => {
-        // Check if skill is enabled
-        if (!registry.isSkillEnabled(skill.definition.id)) {
-          return false;
-        }
+        // All skills are enabled in fallback build
         
         // Enterprise gets everything
         if (hasAllAccess) return true;
         
         // Pro gets most skills
-        if (isPro && !skill.definition.isPremium) return true;
+        if (isPro && !skill.isPremium) return true;
         
         // Free tier gets basic skills
         const freeSkills = [
@@ -66,16 +69,16 @@ export async function GET(request: NextRequest) {
           'url_shortener', 'qr_generator', 'uuid_generator'
         ];
         
-        return freeSkills.includes(skill.definition.id);
+        return freeSkills.includes(skill.id);
       })
       .map(skill => ({
-        id: skill.definition.id,
-        name: skill.definition.name,
-        description: skill.definition.description,
-        category: skill.definition.category,
-        isPremium: skill.definition.isPremium,
-        status: skill.status,
-        stats: skill.stats
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        category: skill.category,
+        isPremium: skill.isPremium,
+        status: 'enabled',
+        stats: {}
       }));
 
     // Get execution stats from database
