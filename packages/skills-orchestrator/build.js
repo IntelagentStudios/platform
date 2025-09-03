@@ -86,6 +86,18 @@ module.exports = {
         recentExecutions: []
       };
     }
+    enableSkill(skillId) {
+      console.log(\`Enabling skill: \${skillId}\`);
+      return true;
+    }
+    disableSkill(skillId) {
+      console.log(\`Disabling skill: \${skillId}\`);
+      return true;
+    }
+    configureSkill(skillId, config) {
+      console.log(\`Configuring skill: \${skillId}\`);
+      return true;
+    }
   },
   BaseSkill: class BaseSkill {
     constructor() {}
@@ -217,6 +229,9 @@ export class SkillsRegistry {
     topSkills: any[];
     recentExecutions: any[];
   };
+  enableSkill(skillId: string): boolean;
+  disableSkill(skillId: string): boolean;
+  configureSkill(skillId: string, config: any): boolean;
 }
 
 export class BaseSkill {
