@@ -100,6 +100,36 @@ module.exports = {
     static getSkillsByCategory(category) {
       return [];
     }
+    
+    static searchSkills(query) {
+      // Return mock results in fallback mode
+      return [
+        {
+          id: 'mock_skill_1',
+          name: 'Mock Skill 1',
+          description: \`Search result for: \${query}\`,
+          category: 'utility',
+          tags: [],
+          isPremium: false
+        }
+      ];
+    }
+    
+    static getPremiumSkills() {
+      return [];
+    }
+    
+    static getSkillCount() {
+      return 125;
+    }
+    
+    static getCategories() {
+      return ['utility', 'communication', 'data_processing', 'integration', 'ai_powered', 'automation'];
+    }
+    
+    static getSkillsByTag(tag) {
+      return [];
+    }
   },
   OrchestratorAgent: class OrchestratorAgent {
     async orchestrate(request) {
@@ -164,6 +194,11 @@ export class SkillFactory {
   static getSkillDefinition(id: string): SkillDefinition | undefined;
   static getAllSkills(): SkillDefinition[];
   static getSkillsByCategory(category: string): SkillDefinition[];
+  static searchSkills(query: string): SkillDefinition[];
+  static getPremiumSkills(): SkillDefinition[];
+  static getSkillCount(): number;
+  static getCategories(): string[];
+  static getSkillsByTag(tag: string): SkillDefinition[];
 }
 
 export class OrchestratorAgent {
