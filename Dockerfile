@@ -25,9 +25,8 @@ FROM base AS source
 
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/admin-portal/node_modules ./apps/admin-portal/node_modules
-COPY --from=deps /app/apps/customer-portal/node_modules ./apps/customer-portal/node_modules
-COPY --from=deps /app/packages/*/node_modules ./packages/
+COPY --from=deps /app/apps/ ./apps/
+COPY --from=deps /app/packages/ ./packages/
 
 # Copy source code
 COPY . .
