@@ -268,11 +268,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's license
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: session.user.licenseKey! },
-      include: { license_types: true }
-    });
+    // Get user's license - lookup by email
+    let license = null;
+    if (session.user.email) {
+      const user = await prisma.users.findFirst({
+        where: { email: session.user.email },
+        select: { license_key: true }
+      });
+      
+      if (user?.license_key) {
+        license = await prisma.licenses.findUnique({
+          where: { license_key: user.license_key }
+        });
+      }
+    }
 
     if (!license) {
       return NextResponse.json(
@@ -286,7 +295,7 @@ export async function GET(request: NextRequest) {
     const allSkills = registry.getAllSkills();
 
     // Filter based on license tier
-    const tierSkills = license.license_types?.features?.skills || [];
+    const tierSkills = license.products || [];
     const hasAllAccess = tierSkills.includes('all');
 
     const availableSkills = [];
@@ -328,7 +337,7 @@ export async function GET(request: NextRequest) {
       skills: availableSkills,
       byCategory: skillsByCategory,
       license: {
-        tier: license.license_types?.name,
+        tier: license.plan || 'basic',
         hasAllAccess
       }
     });
