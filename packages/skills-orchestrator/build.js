@@ -46,11 +46,25 @@ module.exports = {
     constructor() {
       this.skills = new Map();
     }
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new SkillsRegistry();
+      }
+      return this.instance;
+    }
     register(skill) {
       console.log(\`Registering skill: \${skill.id || 'unknown'}\`);
+      this.skills.set(skill.id, skill);
     }
     get(skillId) {
-      return null;
+      return this.skills.get(skillId) || null;
+    }
+    getAll() {
+      return Array.from(this.skills.values());
+    }
+    has(skillId) {
+      return this.skills.has(skillId);
     }
   },
   BaseSkill: class BaseSkill {
@@ -134,8 +148,11 @@ export class SkillsEngine {
 }
 
 export class SkillsRegistry {
+  static getInstance(): SkillsRegistry;
   register(skill: any): void;
   get(skillId: string): any;
+  getAll(): any[];
+  has(skillId: string): boolean;
 }
 
 export class BaseSkill {
