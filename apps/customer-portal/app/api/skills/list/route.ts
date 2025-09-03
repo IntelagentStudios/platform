@@ -81,31 +81,38 @@ export async function GET(request: NextRequest) {
         stats: {}
       }));
 
-    // Get execution stats from database
-    const executionStats = await prisma.skill_executions.groupBy({
-      by: ['skill_id'],
+    // Get execution stats from database - simplified to avoid circular type issues
+    const executionStats = await prisma.skill_executions.findMany({
       where: {
         license_key: license.license_key,
-        created_at: {
+        started_at: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
         }
       },
-      _count: true,
-      _avg: {
-        execution_time: true
+      select: {
+        skill_id: true,
+        execution_time_ms: true
       }
     });
 
+    // Aggregate stats manually
+    const statsMap = new Map<string, { count: number; totalTime: number }>();
+    for (const exec of executionStats) {
+      const existing = statsMap.get(exec.skill_id) || { count: 0, totalTime: 0 };
+      existing.count++;
+      existing.totalTime += exec.execution_time_ms || 0;
+      statsMap.set(exec.skill_id, existing);
+    }
+
     // Merge stats with skills
     const skillsWithStats = availableSkills.map(skill => {
-      const stats = executionStats.find(s => s.skill_id === skill.id);
+      const stats = statsMap.get(skill.id);
       if (stats) {
         return {
           ...skill,
           stats: {
-            ...skill.stats,
-            totalExecutions: stats._count,
-            averageTime: stats._avg.execution_time || 0
+            totalExecutions: stats.count,
+            averageTime: stats.count > 0 ? Math.round(stats.totalTime / stats.count) : 0
           }
         };
       }
