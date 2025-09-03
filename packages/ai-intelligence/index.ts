@@ -195,20 +195,9 @@ class AIIntelligenceService {
   }
 
   private async getUsageMetrics(licenseKey: string, timeRange?: any) {
-    const where: any = { license_key: licenseKey };
-    
-    if (timeRange) {
-      where.period_start = {
-        gte: timeRange.start,
-        lte: timeRange.end
-      };
-    }
-
-    return await prisma.usage_metrics.findMany({
-      where,
-      orderBy: { period_start: 'desc' },
-      take: 30
-    });
+    // Usage metrics table doesn't exist yet - return empty array
+    // TODO: Implement when usage_metrics table is added to schema
+    return [];
   }
 
   private async detectPatterns(data: any, request: InsightRequest): Promise<Insight[]> {
@@ -618,22 +607,23 @@ class AIIntelligenceService {
 
   private async storeInsights(insights: Insight[], licenseKey: string): Promise<void> {
     for (const insight of insights) {
-      // Store in database
-      await prisma.ai_insights.create({
-        data: {
-          license_key: licenseKey,
-          insight_id: insight.id,
-          type: insight.type,
-          title: insight.title,
-          description: insight.description,
-          impact: insight.impact,
-          confidence: insight.confidence,
-          recommendations: insight.recommendations,
-          data: insight.data,
-          sources: insight.sources,
-          created_at: new Date()
-        }
-      });
+      // AI insights table doesn't exist yet - skip database storage
+      // TODO: Implement when ai_insights table is added to schema
+      // await prisma.ai_insights.create({
+      //   data: {
+      //     license_key: licenseKey,
+      //     insight_id: insight.id,
+      //     type: insight.type,
+      //     title: insight.title,
+      //     description: insight.description,
+      //     impact: insight.impact,
+      //     confidence: insight.confidence,
+      //     recommendations: insight.recommendations,
+      //     data: insight.data,
+      //     sources: insight.sources,
+      //     created_at: new Date()
+      //   }
+      // });
 
       // Store vector embedding for similarity search
       const text = `${insight.title} ${insight.description} ${insight.recommendations.join(' ')}`;
@@ -704,26 +694,19 @@ class AIIntelligenceService {
       { licenseKey }
     );
 
-    const insights: Insight[] = [];
-    for (const result of results) {
-      const dbInsight = await prisma.ai_insights.findFirst({
-        where: { insight_id: result.id }
-      });
-      
-      if (dbInsight) {
-        insights.push({
-          id: dbInsight.insight_id,
-          type: dbInsight.type as any,
-          title: dbInsight.title,
-          description: dbInsight.description || '',
-          impact: dbInsight.impact as any,
-          confidence: dbInsight.confidence,
-          recommendations: dbInsight.recommendations as string[],
-          data: dbInsight.data as any,
-          sources: dbInsight.sources as string[]
-        });
-      }
-    }
+    // AI insights table doesn't exist yet - return mock data from vector store results
+    // TODO: Implement when ai_insights table is added to schema
+    const insights: Insight[] = results.map(result => ({
+      id: result.id,
+      type: 'pattern' as any,
+      title: `Insight ${result.id}`,
+      description: result.metadata?.description || '',
+      impact: 'medium' as any,
+      confidence: result.score,
+      recommendations: [],
+      data: result.metadata || {},
+      sources: []
+    }));
 
     return insights;
   }
