@@ -268,13 +268,21 @@ export async function GET(request: NextRequest) {
     const tierSkills = license.license_types?.features?.skills || [];
     const hasAllAccess = tierSkills.includes('all');
 
-    const availableSkills = allSkills
-      .filter(skill => registry.isSkillEnabled(skill.definition.id))
-      .filter(skill => {
-        if (hasAllAccess) return true;
+    const availableSkills = [];
+    for (const skill of allSkills) {
+      if (!registry.isSkillEnabled(skill.definition.id)) continue;
+      
+      if (hasAllAccess) {
+        availableSkills.push(skill);
+      } else {
         const isPremium = await checkIfPremiumSkill(skill.definition.id);
-        return !isPremium || tierSkills.includes(skill.definition.id);
-      })
+        if (!isPremium || tierSkills.includes(skill.definition.id)) {
+          availableSkills.push(skill);
+        }
+      }
+    }
+    
+    const formattedSkills = availableSkills
       .map(skill => ({
         id: skill.definition.id,
         name: skill.definition.name,
@@ -286,7 +294,7 @@ export async function GET(request: NextRequest) {
       }));
 
     // Group by category
-    const skillsByCategory = availableSkills.reduce((acc: any, skill) => {
+    const skillsByCategory = formattedSkills.reduce((acc: any, skill) => {
       if (!acc[skill.category]) {
         acc[skill.category] = [];
       }

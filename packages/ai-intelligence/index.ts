@@ -1,6 +1,12 @@
 import { prisma } from '@intelagent/database';
 import OpenAI from 'openai';
-import { ChromaClient } from 'chromadb';
+// ChromaDB is optional - only import if available
+let ChromaClient: any;
+try {
+  ChromaClient = require('chromadb').ChromaClient;
+} catch {
+  ChromaClient = null;
+}
 
 interface InsightRequest {
   licenseKey: string;
@@ -47,11 +53,15 @@ class AIIntelligenceService {
       });
     }
 
-    // Initialize ChromaDB for vector storage
-    if (process.env.CHROMA_URL) {
-      this.chromaClient = new ChromaClient({
-        path: process.env.CHROMA_URL
-      });
+    // Initialize ChromaDB for vector storage if available
+    if (process.env.CHROMA_URL && ChromaClient) {
+      try {
+        this.chromaClient = new ChromaClient({
+          path: process.env.CHROMA_URL
+        });
+      } catch (error) {
+        console.log('ChromaDB not available, running without vector storage');
+      }
     }
   }
 
