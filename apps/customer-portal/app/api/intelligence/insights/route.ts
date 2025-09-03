@@ -256,12 +256,21 @@ export async function POST(request: NextRequest) {
         };
     }
 
-    // Mark insight as acted upon
-    await prisma.platform_insights.update({
-      where: { id: insightId },
+    // Record that the insight was acted upon
+    await prisma.audit_logs.create({
       data: {
-        acted_on: true,
-        acted_at: new Date()
+        license_key: licenseKey,
+        user_id: authResult.user?.userId || licenseKey,
+        action: 'ai_insight_acted_upon',
+        resource_type: 'insight',
+        resource_id: insightId,
+        changes: {
+          actionId,
+          actionType: action.type,
+          actionLabel: action.label,
+          result,
+          acted_at: new Date()
+        }
       }
     });
 
