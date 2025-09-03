@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
 
     // Get all skills from registry
     const registry = SkillsRegistry.getInstance();
-    const allSkills = registry.getAllSkills();
+    const allSkills = registry.getAll();
 
     // Filter based on license tier
     const tierSkills = license.products || [];
