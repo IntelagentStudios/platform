@@ -403,7 +403,7 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    const webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
+    const apiUrl = 'https://1ntelagent.up.railway.app/api/chatbot/' + productKey;
 
     // Load chat history from localStorage
     function loadChatHistory() {
@@ -621,8 +621,8 @@
           (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content.replace(/<[^>]*>/g, '')
         ).join('\\n');
 
-        console.log('Sending message to webhook:', webhookUrl);
-        const response = await fetch(webhookUrl, {
+        console.log('Sending message to API:', apiUrl);
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -631,13 +631,8 @@
           mode: 'cors',
           body: JSON.stringify({
             message: message,
-            session_id: sessionId,
-            product_key: productKey, // Now using product_key instead of site_key
-            site_key: productKey, // Keep for backward compatibility
-            chat_history: historyString,
-            domain: window.location.hostname,
-            timestamp: new Date().toISOString(),
-            conversation_id: sessionId // Use session ID as conversation ID
+            sessionId: sessionId,
+            chatHistory: chatHistory.slice(-10) // Send last 10 messages for context
           })
         });
 

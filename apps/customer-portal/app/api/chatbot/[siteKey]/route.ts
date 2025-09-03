@@ -23,7 +23,13 @@ export async function POST(
     if (!message) {
       return NextResponse.json(
         { error: 'Message is required' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
     
@@ -79,14 +85,26 @@ export async function POST(
     if (!productSetup) {
       return NextResponse.json(
         { error: 'Invalid site key' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
     
     if (!productSetup.is_active) {
       return NextResponse.json(
         { error: 'Chatbot is not active' },
-        { status: 403 }
+        { 
+          status: 403,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
     
@@ -161,13 +179,25 @@ export async function POST(
       sessionId,
       timestamp: new Date().toISOString(),
       metadata
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }
     });
     
   } catch (error) {
     console.error('Chatbot API error:', error);
     return NextResponse.json(
       { error: 'Failed to process message' },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      }
     );
   }
 }
@@ -226,7 +256,13 @@ export async function PUT(
     if (!productSetup) {
       return NextResponse.json(
         { error: 'Invalid site key' },
-        { status: 401 }
+        { 
+          status: 401,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          }
+        }
       );
     }
     
@@ -510,6 +546,7 @@ export async function OPTIONS(request: NextRequest) {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
     },
   });
 }
