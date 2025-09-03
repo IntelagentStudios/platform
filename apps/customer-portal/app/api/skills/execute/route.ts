@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { SkillsRegistry } from '@intelagent/skills-orchestrator';
+import { SkillsRegistry, SkillFactory } from '@intelagent/skills-orchestrator';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
