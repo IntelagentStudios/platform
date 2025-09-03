@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         skillId,
         params: params || {},
         context: {
-          userId: session.user?.id || 'unknown',
+          userId: session.user?.email || 'unknown',
           licenseKey: license.license_key,
           sessionId: executionId,
           metadata: {
