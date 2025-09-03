@@ -1,21 +1,25 @@
 {
   "name": "@intelagent/vector-store",
   "version": "1.0.0",
-  "description": "Vector store integration with Pinecone for Intelagent Platform",
+  "description": "In-house vector database with pgvector and Redis support for Intelagent Platform",
   "main": "index.ts",
   "types": "index.ts",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "benchmark": "node benchmark.js",
+    "benchmark:quick": "node benchmark.js quick",
+    "benchmark:full": "node benchmark.js full"
   },
   "dependencies": {
-    "@pinecone-database/pinecone": "^2.0.0",
-    "openai": "^4.0.0",
+    "@prisma/client": "^5.0.0",
+    "ioredis": "^5.3.0",
     "@intelagent/database": "*",
     "@intelagent/redis": "*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
   }
 }

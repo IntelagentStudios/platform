@@ -1,5 +1,6 @@
 import { prisma } from '@intelagent/database';
 import OpenAI from 'openai';
+import { IntelagentVectorStore, VectorUtils } from '@intelagent/vector-store';
 
 interface InsightRequest {
   licenseKey: string;
@@ -31,7 +32,7 @@ interface Pattern {
 
 class AIIntelligenceService {
   private openai: OpenAI | null = null;
-  private chromaClient: any = null;
+  private vectorStore: IntelagentVectorStore;
   private embeddingsCache: Map<string, number[]> = new Map();
 
   constructor() {
@@ -46,10 +47,9 @@ class AIIntelligenceService {
       });
     }
 
-    // Initialize ChromaDB for vector storage if available
-    if (process.env.CHROMA_URL) {
-      this.initializeChromaDB();
-    }
+    // Initialize our in-house vector store
+    this.vectorStore = new IntelagentVectorStore(prisma);
+    console.log('Intelagent Vector Store initialized successfully');
   }
 
   async generateInsights(request: InsightRequest): Promise<Insight[]> {
@@ -618,6 +618,7 @@ class AIIntelligenceService {
 
   private async storeInsights(insights: Insight[], licenseKey: string): Promise<void> {
     for (const insight of insights) {
+      // Store in database
       await prisma.ai_insights.create({
         data: {
           license_key: licenseKey,
@@ -633,17 +634,102 @@ class AIIntelligenceService {
           created_at: new Date()
         }
       });
+
+      // Store vector embedding for similarity search
+      const text = `${insight.title} ${insight.description} ${insight.recommendations.join(' ')}`;
+      const embedding = await this.getEmbedding(text);
+      
+      await this.vectorStore.upsert('insights', [{
+        id: insight.id,
+        values: embedding,
+        metadata: {
+          licenseKey,
+          type: insight.type,
+          impact: insight.impact,
+          confidence: insight.confidence,
+          timestamp: new Date()
+        }
+      }]);
     }
+  }
+
+  /**
+   * Get embedding for text using OpenAI or fallback to simple embedding
+   */
+  private async getEmbedding(text: string): Promise<number[]> {
+    // Check cache first
+    const cacheKey = `emb_${text.substring(0, 50)}`;
+    if (this.embeddingsCache.has(cacheKey)) {
+      return this.embeddingsCache.get(cacheKey)!;
+    }
+
+    let embedding: number[];
+
+    if (this.openai) {
+      try {
+        // Use OpenAI embeddings
+        const response = await this.openai.embeddings.create({
+          model: 'text-embedding-ada-002',
+          input: text
+        });
+        embedding = response.data[0].embedding;
+      } catch (error) {
+        // Fallback to simple embedding
+        embedding = VectorUtils.textToVector(text, 1536);
+      }
+    } else {
+      // Use simple embedding
+      embedding = VectorUtils.textToVector(text, 1536);
+    }
+
+    // Cache the embedding
+    this.embeddingsCache.set(cacheKey, embedding);
+    return embedding;
+  }
+
+  /**
+   * Find similar insights using vector search
+   */
+  async findSimilarInsights(
+    licenseKey: string,
+    query: string,
+    limit: number = 5
+  ): Promise<Insight[]> {
+    const queryEmbedding = await this.getEmbedding(query);
+    
+    const results = await this.vectorStore.query(
+      'insights',
+      queryEmbedding,
+      limit,
+      { licenseKey }
+    );
+
+    const insights: Insight[] = [];
+    for (const result of results) {
+      const dbInsight = await prisma.ai_insights.findFirst({
+        where: { insight_id: result.id }
+      });
+      
+      if (dbInsight) {
+        insights.push({
+          id: dbInsight.insight_id,
+          type: dbInsight.type as any,
+          title: dbInsight.title,
+          description: dbInsight.description || '',
+          impact: dbInsight.impact as any,
+          confidence: dbInsight.confidence,
+          recommendations: dbInsight.recommendations as string[],
+          data: dbInsight.data as any,
+          sources: dbInsight.sources as string[]
+        });
+      }
+    }
+
+    return insights;
   }
 
   private generateId(): string {
     return `insight_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-  }
-
-  private async initializeChromaDB() {
-    // ChromaDB disabled for now - will be added when package is available
-    console.log('ChromaDB vector storage disabled in this build');
-    this.chromaClient = null;
   }
 
   // Advanced AI features
