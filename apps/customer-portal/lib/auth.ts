@@ -1,8 +1,32 @@
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
+import { NextAuthOptions } from 'next-auth'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS'
+
+// NextAuth configuration (placeholder for now)
+export const authOptions: NextAuthOptions = {
+  providers: [],
+  secret: JWT_SECRET,
+  session: {
+    strategy: 'jwt'
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.license_key = (user as any).license_key;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.license_key) {
+        (session.user as any).license_key = token.license_key;
+      }
+      return session;
+    }
+  }
+}
 
 export interface AuthToken {
   license_key: string

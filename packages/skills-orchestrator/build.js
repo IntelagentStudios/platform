@@ -58,6 +58,25 @@ module.exports = {
     async execute(params) {
       return { success: true, data: {} };
     }
+  },
+  SkillFactory: class SkillFactory {
+    static createSkill(type) {
+      console.log(\`Creating skill: \${type}\`);
+      return new this.BaseSkill();
+    }
+  },
+  OrchestratorAgent: class OrchestratorAgent {
+    async orchestrate(request) {
+      return { success: true, results: [] };
+    }
+  },
+  SkillCategory: {
+    UTILITY: 'utility',
+    COMMUNICATION: 'communication',
+    DATA_PROCESSING: 'data_processing',
+    INTEGRATION: 'integration',
+    AI_POWERED: 'ai_powered',
+    AUTOMATION: 'automation'
   }
 };
 `;
@@ -99,6 +118,21 @@ export class SkillsRegistry {
 
 export class BaseSkill {
   execute(params: SkillParams): Promise<SkillResult>;
+}
+
+export class SkillFactory {
+  static createSkill(type: string): any;
+}
+
+export class OrchestratorAgent {
+  orchestrate(request: any): Promise<any>;
+}
+
+export interface SkillDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: SkillCategory;
 }
 `;
 

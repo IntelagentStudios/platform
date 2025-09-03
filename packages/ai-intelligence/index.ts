@@ -1,12 +1,5 @@
 import { prisma } from '@intelagent/database';
 import OpenAI from 'openai';
-// ChromaDB is optional - only import if available
-let ChromaClient: any;
-try {
-  ChromaClient = require('chromadb').ChromaClient;
-} catch {
-  ChromaClient = null;
-}
 
 interface InsightRequest {
   licenseKey: string;
@@ -38,7 +31,7 @@ interface Pattern {
 
 class AIIntelligenceService {
   private openai: OpenAI | null = null;
-  private chromaClient: ChromaClient | null = null;
+  private chromaClient: any = null;
   private embeddingsCache: Map<string, number[]> = new Map();
 
   constructor() {
@@ -54,14 +47,8 @@ class AIIntelligenceService {
     }
 
     // Initialize ChromaDB for vector storage if available
-    if (process.env.CHROMA_URL && ChromaClient) {
-      try {
-        this.chromaClient = new ChromaClient({
-          path: process.env.CHROMA_URL
-        });
-      } catch (error) {
-        console.log('ChromaDB not available, running without vector storage');
-      }
+    if (process.env.CHROMA_URL) {
+      this.initializeChromaDB();
     }
   }
 
@@ -651,6 +638,20 @@ class AIIntelligenceService {
 
   private generateId(): string {
     return `insight_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  }
+
+  private async initializeChromaDB() {
+    try {
+      // Dynamic import to avoid build-time errors
+      const { ChromaClient } = await import('chromadb').catch(() => ({ ChromaClient: null }));
+      if (ChromaClient) {
+        this.chromaClient = new ChromaClient({
+          path: process.env.CHROMA_URL
+        });
+      }
+    } catch (error) {
+      console.log('ChromaDB not available, running without vector storage');
+    }
   }
 
   // Advanced AI features
