@@ -32,9 +32,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate license key
+    // Validate license key - if not provided, try to find it from the user's email
+    let finalLicenseKey = licenseKey;
+    
+    if (!finalLicenseKey && session.user.email) {
+      const user = await prisma.users.findFirst({
+        where: { email: session.user.email },
+        select: { license_key: true }
+      });
+      finalLicenseKey = user?.license_key;
+    }
+    
+    if (!finalLicenseKey) {
+      return NextResponse.json(
+        { error: 'License key is required' },
+        { status: 400 }
+      );
+    }
+    
     const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey || session.user.licenseKey },
+      where: { license_key: finalLicenseKey },
       include: {
         users: true,
         license_types: true
