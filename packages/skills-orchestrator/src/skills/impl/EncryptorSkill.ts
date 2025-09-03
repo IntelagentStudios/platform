@@ -36,7 +36,7 @@ export class EncryptorSkill extends BaseSkill {
       const result = await core.encrypt(data, key);
       
       return {
-        encrypted: result.encrypted,
+        data: result.encrypted,
         iv: result.iv,
         key: result.key,
         algorithm: 'aes-256-cbc',

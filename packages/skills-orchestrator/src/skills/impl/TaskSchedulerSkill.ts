@@ -43,7 +43,7 @@ export class TaskSchedulerSkill extends BaseSkill {
       }
       
       return {
-        taskId: result.taskId,
+        data: result.taskId,
         scheduled: result.scheduled,
         delay,
         recurring: recurring || false,
@@ -93,7 +93,7 @@ export class TaskSchedulerSkill extends BaseSkill {
       skillName: 'TaskScheduler',
       params: Object.keys(params).filter(k => !k.startsWith('_')),
       licenseKey: params._context?.licenseKey,
-      taskId: params._context?.taskId,
+      data: params._context?.taskId,
       success: true
     };
   }

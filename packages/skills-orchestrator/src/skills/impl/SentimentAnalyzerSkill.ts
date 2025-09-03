@@ -36,7 +36,7 @@ export class SentimentAnalyzerSkill extends BaseSkill {
       const result = await core.analyzeSentiment(text);
       
       return {
-        sentiment: result.sentiment,
+        data: result.sentiment,
         score: result.score,
         confidence: result.confidence,
         language,

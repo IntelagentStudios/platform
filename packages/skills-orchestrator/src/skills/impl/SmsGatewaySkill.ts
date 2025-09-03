@@ -40,7 +40,7 @@ export class SmsGatewaySkill extends BaseSkill {
       });
       
       return {
-        messageId: result.messageId,
+        data: result.messageId,
         status: result.status,
         carrier: result.carrier,
         timestamp: new Date()

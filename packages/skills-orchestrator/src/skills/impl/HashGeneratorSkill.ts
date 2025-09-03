@@ -36,15 +36,13 @@ export class HashGeneratorSkill extends BaseSkill {
       const hash = core.generateHash(data, algorithm);
       
       return {
-        hash,
-        algorithm,
-        length: hash.length,
-        timestamp: new Date()
-      };
-      
-      return {
         success: true,
-        data: result,
+        data: {
+          hash,
+          algorithm,
+          length: hash.length,
+          timestamp: new Date()
+        },
         metadata: {
           skillId: this.metadata.id,
           skillName: this.metadata.name,

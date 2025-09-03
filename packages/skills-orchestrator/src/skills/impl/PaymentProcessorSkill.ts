@@ -40,7 +40,7 @@ export class PaymentProcessorSkill extends BaseSkill {
       });
       
       return {
-        transactionId: result.transactionId,
+        data: result.transactionId,
         amount: result.amount,
         currency: result.currency,
         status: result.status,

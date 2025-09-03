@@ -41,7 +41,7 @@ export class PdfGeneratorSkill extends BaseSkill {
       });
       
       return {
-        documentId: result.documentId,
+        data: result.documentId,
         fileName: result.fileName,
         size: result.size,
         pageCount: result.pageCount,

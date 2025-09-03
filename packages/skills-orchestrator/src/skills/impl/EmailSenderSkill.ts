@@ -40,7 +40,7 @@ export class EmailSenderSkill extends BaseSkill {
       });
       
       return {
-        messageId: result.messageId,
+        data: result.messageId,
         status: 'sent',
         provider: 'internal',
         timestamp: new Date()

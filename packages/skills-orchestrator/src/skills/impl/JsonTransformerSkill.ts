@@ -36,7 +36,7 @@ export class JsonTransformerSkill extends BaseSkill {
       const result = await core.processData(input, operation, { schema });
       
       return {
-        output: result,
+        data: result,
         operation,
         timestamp: new Date()
       };

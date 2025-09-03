@@ -39,7 +39,7 @@ export class CsvParserSkill extends BaseSkill {
       });
       
       return {
-        rows: result,
+        data: result,
         count: result.length,
         headers: headers || Object.keys(result[0] || {})
       };

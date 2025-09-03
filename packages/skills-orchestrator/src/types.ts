@@ -40,7 +40,13 @@ export enum SkillCategory {
   MANUFACTURING = 'manufacturing',
   MEDIA = 'media',
   REALESTATE = 'realestate',
-  SECURITY = 'security'
+  SECURITY = 'security',
+  ECOMMERCE = 'ecommerce',
+  MARKETING = 'marketing',
+  SALES = 'sales',
+  CUSTOMER_SERVICE = 'customer_service',
+  DEVELOPMENT = 'development',
+  CUSTOM = 'custom'
 }
 
 export interface SkillConfig {
@@ -71,4 +77,10 @@ export interface SkillExample {
   description: string;
   params: SkillParams;
   expectedResult?: any;
+}
+
+export interface SkillDefinition extends SkillMetadata {
+  config?: SkillConfig;
+  execute: (params: SkillParams) => Promise<SkillResult>;
+  validate?: (params: SkillParams) => boolean;
 }

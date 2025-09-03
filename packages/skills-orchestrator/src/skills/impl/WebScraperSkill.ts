@@ -45,15 +45,12 @@ export class WebScraperSkill extends BaseSkill {
       };
       
       return {
-        url,
-        data: selector ? scrapedData[selector] : scrapedData,
-        timestamp: new Date(),
-        success: true
-      };
-      
-      return {
         success: true,
-        data: result,
+        data: {
+          url,
+          content: selector ? scrapedData[selector] : scrapedData,
+          timestamp: new Date()
+        },
         metadata: {
           skillId: this.metadata.id,
           skillName: this.metadata.name,

@@ -42,7 +42,7 @@ export class SlackMessengerSkill extends BaseSkill {
       });
       
       return {
-        messageId: result.notificationId,
+        data: result.notificationId,
         channel,
         delivered: result.delivered,
         timestamp: result.timestamp

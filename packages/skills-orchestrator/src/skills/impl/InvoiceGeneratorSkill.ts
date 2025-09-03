@@ -42,16 +42,14 @@ export class InvoiceGeneratorSkill extends BaseSkill {
       });
       
       return {
-        invoiceId: invoice.invoiceId,
-        invoiceNumber: invoice.invoiceNumber,
-        total: invoice.total,
-        dueDate: invoice.dueDate,
-        status: invoice.status
-      };
-      
-      return {
         success: true,
-        data: result,
+        data: {
+          invoiceId: invoice.invoiceId,
+          invoiceNumber: invoice.invoiceNumber,
+          total: invoice.total,
+          dueDate: invoice.dueDate,
+          status: invoice.status
+        },
         metadata: {
           skillId: this.metadata.id,
           skillName: this.metadata.name,

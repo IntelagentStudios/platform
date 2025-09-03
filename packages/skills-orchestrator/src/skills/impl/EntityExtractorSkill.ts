@@ -42,7 +42,7 @@ export class EntityExtractorSkill extends BaseSkill {
         ) : result;
       
       return {
-        entities: filtered,
+        data: filtered,
         count: Object.values(filtered).flat().length,
         timestamp: new Date()
       };

@@ -13,7 +13,7 @@ export class TextClassifierSkill extends BaseSkill {
     id: 'text_classifier',
     name: 'Text Classifier',
     description: 'Classify text into categories',
-    category: SkillCategory.AI_ANALYTICS,
+    data: SkillCategory.AI_ANALYTICS,
     version: '2.0.0',
     author: 'Intelagent',
     tags: ["textclassifier"]
@@ -36,7 +36,7 @@ export class TextClassifierSkill extends BaseSkill {
       const result = await core.classify(text, categories);
       
       return {
-        category: result.category,
+        data: result.category,
         confidence: result.confidence,
         scores: result.scores,
         model,
@@ -98,7 +98,7 @@ export class TextClassifierSkill extends BaseSkill {
   getConfig(): Record<string, any> {
     return {
       enabled: true,
-      category: 'ai_analytics',
+      data: 'ai_analytics',
       version: '2.0.0'
     };
   }

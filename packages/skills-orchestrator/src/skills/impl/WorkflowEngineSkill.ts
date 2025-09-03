@@ -39,7 +39,7 @@ export class WorkflowEngineSkill extends BaseSkill {
       })));
       
       return {
-        workflowId: result.workflowId,
+        data: result.workflowId,
         results: result.results,
         success: result.results.every(r => r.success),
         timestamp: new Date()

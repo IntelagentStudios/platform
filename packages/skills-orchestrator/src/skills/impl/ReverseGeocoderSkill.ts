@@ -88,11 +88,11 @@ export class ReverseGeocoderSkill extends BaseSkill {
     };
   }
   
-  private async scheduleTask(id: string, task: any, schedule: any): Promise<void> {
+  private async scheduleTask(id: string, task: any): Promise<void> {
     console.log(`[Reverse Geocoder] Task scheduled: ${id}`);
   }
   
-  private async executeTask(id: string, task: any): Promise<void> {
+  private async executeTask(id: string): Promise<void> {
     console.log(`[Reverse Geocoder] Task executed: ${id}`);
   }
   

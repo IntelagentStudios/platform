@@ -35,7 +35,7 @@ export class DataCleanerSkill extends BaseSkill {
       });
       
       return {
-        cleaned: result,
+        data: result,
         original: data,
         timestamp: new Date()
       };

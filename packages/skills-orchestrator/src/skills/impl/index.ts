@@ -314,7 +314,7 @@ export { WoocommerceConnectorSkill } from './WoocommerceConnectorSkill';
 export { WorkflowEngineSkill } from './WorkflowEngineSkill';
 export { XmlProcessorSkill } from './XmlProcessorSkill';
 export { ZoomConnectorSkill } from './ZoomConnectorSkill';
-export { generateRemainingSkills } from './generateRemainingSkills';
+// Removed non-existent export: generateRemainingSkills
 
 // Export all skills as an array for easy registration
 import { BaseSkill } from '../BaseSkill';
@@ -630,7 +630,7 @@ import { WoocommerceConnectorSkill } from './WoocommerceConnectorSkill';
 import { WorkflowEngineSkill } from './WorkflowEngineSkill';
 import { XmlProcessorSkill } from './XmlProcessorSkill';
 import { ZoomConnectorSkill } from './ZoomConnectorSkill';
-import { generateRemainingSkills } from './generateRemainingSkills';
+// Removed non-existent import: generateRemainingSkills
 
 export const ALL_SKILLS = [
   AbTestingSkill,
