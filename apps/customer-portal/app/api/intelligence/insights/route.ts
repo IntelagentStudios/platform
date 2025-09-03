@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       await prisma.audit_logs.createMany({
         data: allInsights.map(insight => ({
           license_key: licenseKey,
-          user_id: authResult.user?.id || licenseKey,
+          user_id: authResult.user?.userId || licenseKey,
           action: 'ai_insight_generated',
           resource_type: 'insight',
           resource_id: insight.id,
