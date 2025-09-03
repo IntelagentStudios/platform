@@ -641,17 +641,9 @@ class AIIntelligenceService {
   }
 
   private async initializeChromaDB() {
-    try {
-      // Dynamic import to avoid build-time errors
-      const { ChromaClient } = await import('chromadb').catch(() => ({ ChromaClient: null }));
-      if (ChromaClient) {
-        this.chromaClient = new ChromaClient({
-          path: process.env.CHROMA_URL
-        });
-      }
-    } catch (error) {
-      console.log('ChromaDB not available, running without vector storage');
-    }
+    // ChromaDB disabled for now - will be added when package is available
+    console.log('ChromaDB vector storage disabled in this build');
+    this.chromaClient = null;
   }
 
   // Advanced AI features
