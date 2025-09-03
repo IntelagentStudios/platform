@@ -346,6 +346,25 @@ export class IntelagentVectorStore {
   }
 
   /**
+   * Delete an entire collection
+   */
+  async deleteCollection(collection: string): Promise<void> {
+    await this.prisma.vector_embeddings.deleteMany({
+      where: { collection }
+    });
+
+    // Remove collection from local registry
+    this.collections.delete(collection);
+
+    // Clear cache for this collection
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(`${collection}:`)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /**
    * Get a specific vector
    */
   async get(collection: string, id: string): Promise<Vector | null> {
