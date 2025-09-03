@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
           execution_id: executionId,
           metric_name: 'skill_execution_time',
           metric_value: executionTime,
-          unit: 'ms'
+          metric_unit: 'ms'
         }
       });
 
