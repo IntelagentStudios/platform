@@ -640,12 +640,12 @@ export async function getChatbotResponse(
   siteKey: string
 ): Promise<string> {
   const store = new IntelagentVectorStore();
-  await store.initialize();
+  // Store initializes itself in constructor
   
   // Search for relevant documents
   const searchResults = await store.query(
     `chatbot_${siteKey}`, 
-    await store.getEmbedding(query),
+    await store.generateEmbedding(query),
     5
   );
   
@@ -671,7 +671,7 @@ export async function searchKnowledgeBase(
   const store = new IntelagentVectorStore();
   await store.initialize();
   
-  const embedding = await store.getEmbedding(query);
+  const embedding = await store.generateEmbedding(query);
   const results = await store.query(
     `chatbot_${siteKey}`, 
     embedding,
@@ -699,7 +699,7 @@ export async function indexWebsite(
   const vectors: Vector[] = [];
   
   for (const page of pages) {
-    const embedding = await store.getEmbedding(page.content || page.text || '');
+    const embedding = await store.generateEmbedding(page.content || page.text || '');
     vectors.push({
       id: `${siteKey}_${page.url}`,
       values: embedding,
