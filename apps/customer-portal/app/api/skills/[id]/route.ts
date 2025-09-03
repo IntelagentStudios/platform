@@ -82,10 +82,10 @@ export async function GET(
       },
       executions: [], // No execution history yet
       stats: {
-        totalExecutions: registryStats?.totalExecutions || 0,
+        totalExecutions: registryStats?.executions || 0,
         userExecutions: 0,
         successRate: registryStats?.successRate || 0,
-        avgDuration: registryStats?.avgDuration || 0
+        avgDuration: registryStats?.averageExecutionTime || 0
       }
     });
 
