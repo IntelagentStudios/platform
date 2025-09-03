@@ -157,7 +157,13 @@ export interface SkillDefinition {
   id: string;
   name: string;
   description: string;
-  category: SkillCategory;
+  category: string;
+  tags?: string[];
+  requiredParams?: string[];
+  optionalParams?: string[];
+  outputFormat?: string;
+  examples?: any[];
+  isPremium?: boolean;
 }
 `;
 
