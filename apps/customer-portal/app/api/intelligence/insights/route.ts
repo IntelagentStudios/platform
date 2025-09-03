@@ -171,15 +171,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the insight from database
-    const insight = await prisma.platform_insights.findFirst({
+    // Get the insight from audit logs
+    const insightLog = await prisma.audit_logs.findFirst({
       where: {
-        id: insightId,
-        license_key: licenseKey
+        resource_id: insightId,
+        license_key: licenseKey,
+        action: 'ai_insight_generated',
+        resource_type: 'insight'
       }
     });
 
-    if (!insight) {
+    if (!insightLog) {
       return NextResponse.json(
         { error: 'Insight not found' },
         { status: 404 }
@@ -187,8 +189,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the action
-    const actions = insight.actions as any[];
-    const action = actions?.find(a => a.id === actionId);
+    const insightData = insightLog.changes as any;
+    const actions = insightData?.actions as any[];
+    const action = actions?.find((a: any) => a.id === actionId);
 
     if (!action) {
       return NextResponse.json(
