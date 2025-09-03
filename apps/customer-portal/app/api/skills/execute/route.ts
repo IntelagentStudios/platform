@@ -235,7 +235,7 @@ async function updateExecutionStatus(
     where: { id: executionId },
     data: {
       status,
-      error_message: errorMessage,
+      error_data: errorMessage ? { error: errorMessage } : null,
       completed_at: new Date()
     }
   });
