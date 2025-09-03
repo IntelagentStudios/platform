@@ -776,4 +776,5 @@ class AIIntelligenceService {
 // Singleton instance
 const aiIntelligence = new AIIntelligenceService();
 
-export { aiIntelligence, AIIntelligenceService, InsightRequest, Insight, Pattern };
+export { aiIntelligence, AIIntelligenceService };
+export type { InsightRequest, Insight, Pattern };
