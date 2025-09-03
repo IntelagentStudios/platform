@@ -1,37 +1,114 @@
+# Dependencies
 node_modules
 **/node_modules
+.pnp
+.pnp.js
+
+# Build outputs (will be created at runtime)
 **/.next
 **/dist
+**/build
+**/out
 **/.turbo
+
+# Git
 .git
 .gitignore
-README.md
+.github
+
+# Documentation
+*.md
+!README.md
+docs
+LICENSE
+
+# Environment files
 .env
 .env.*
-*.log
-.DS_Store
-Thumbs.db
-coverage
-.nyc_output
+*.local.json
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
 .vscode
 .idea
 *.swp
 *.swo
 *~
-.cache
-tmp
-temp
-*.pid
-*.seed
-*.pid.lock
+*.swn
+
+# Logs
+*.log
+logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .npm
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+coverage
+.nyc_output
+__tests__
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+**/*.spec.ts
+e2e
+cypress
+jest.config.*
+vitest.config.*
+
+# Cache
+.cache
+**/.cache
 .eslintcache
+.stylelintcache
+.parcel-cache
 .yarn-integrity
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.vercel
+
+# Temporary
+tmp
+temp
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# Development files
+*.map
+.prettierignore
+.eslintignore
+.husky
+
+# Prisma migrations (schema file is needed)
+**/migrations
+
+# Railway specific
+railway.json
+.railway
+
+# Python cache (if any Python scripts)
+__pycache__
+*.pyc
+*.pyo
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Archive files (usually not needed in Docker)
+*.zip
+*.tar.gz
+*.rar
+*.7z
