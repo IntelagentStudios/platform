@@ -298,29 +298,31 @@ export async function GET(request: NextRequest) {
     const tierSkills = license.products || [];
     const hasAllAccess = tierSkills.includes('all');
 
+    // In fallback build, all skills are enabled by default
+    // Get skill definitions from SkillFactory instead
     const availableSkills = [];
-    for (const skill of allSkills) {
-      if (!registry.isSkillEnabled(skill.definition.id)) continue;
-      
+    const allSkillDefs = SkillFactory.getAllSkills();
+    
+    for (const skillDef of allSkillDefs) {
       if (hasAllAccess) {
-        availableSkills.push(skill);
+        availableSkills.push(skillDef);
       } else {
-        const isPremium = await checkIfPremiumSkill(skill.definition.id);
-        if (!isPremium || tierSkills.includes(skill.definition.id)) {
-          availableSkills.push(skill);
+        const isPremium = await checkIfPremiumSkill(skillDef.id);
+        if (!isPremium || license.is_pro) {
+          availableSkills.push(skillDef);
         }
       }
     }
     
     const formattedSkills = availableSkills
       .map(skill => ({
-        id: skill.definition.id,
-        name: skill.definition.name,
-        description: skill.definition.description,
-        category: skill.definition.category,
-        isPremium: skill.definition.isPremium,
-        status: skill.status,
-        stats: skill.stats
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        category: skill.category || 'utility',
+        isPremium: skill.isPremium || false,
+        status: 'enabled',
+        stats: registry.getSkillStats(skill.id)
       }));
 
     // Group by category
