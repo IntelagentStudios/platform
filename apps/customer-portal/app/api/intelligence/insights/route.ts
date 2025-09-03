@@ -94,21 +94,26 @@ export async function GET(request: NextRequest) {
       metadata: insight.data
     }));
 
-    // Store insights in database for tracking
+    // Store insights in audit log for tracking
     if (allInsights.length > 0) {
-      await prisma.platform_insights.createMany({
+      await prisma.audit_logs.createMany({
         data: allInsights.map(insight => ({
           license_key: licenseKey,
-          insight_type: insight.type,
-          title: insight.title,
-          description: insight.description,
-          severity: insight.severity,
-          confidence: insight.confidence,
-          data: insight.data,
-          actions: insight.actions,
-          metadata: insight.metadata
-        })),
-        skipDuplicates: true
+          user_id: authResult.user?.id || licenseKey,
+          action: 'ai_insight_generated',
+          resource_type: 'insight',
+          resource_id: insight.id,
+          changes: {
+            type: insight.type,
+            title: insight.title,
+            description: insight.description,
+            severity: insight.severity,
+            confidence: insight.confidence,
+            data: insight.data,
+            actions: insight.actions,
+            metadata: insight.metadata
+          }
+        }))
       });
     }
 
