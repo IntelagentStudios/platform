@@ -2,21 +2,20 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined };
 
-// Lazy initialization to avoid build-time issues
-function getPrismaClient(): PrismaClient {
+let prismaInstance: PrismaClient | undefined;
+
+// Only initialize Prisma if we're not in a build environment
+if (process.env.BUILDING !== 'true') {
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient();
   }
-  return globalForPrisma.prisma;
+  prismaInstance = globalForPrisma.prisma;
+} else {
+  // During build, export a dummy object that won't cause initialization errors
+  prismaInstance = {} as PrismaClient;
 }
 
-// Export a getter that initializes on first use
-export const prisma = new Proxy({} as PrismaClient, {
-  get(target, prop) {
-    const client = getPrismaClient();
-    return client[prop as keyof PrismaClient];
-  }
-});
+export const prisma = prismaInstance;
 
 export { PrismaClient } from '@prisma/client';
 export * from '@prisma/client';
@@ -26,4 +25,4 @@ export { getTenantManager, TenantManager } from './src/tenant-manager';
 export type { TenantConfig } from './src/tenant-manager';
 
 // Export admin DB helper
-export const getAdminDb = async () => prisma;
+export const getAdminDb = async () => prismaInstance;
