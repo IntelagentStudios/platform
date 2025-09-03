@@ -51,11 +51,7 @@ export async function POST(request: NextRequest) {
     }
     
     const license = await prisma.licenses.findUnique({
-      where: { license_key: finalLicenseKey },
-      include: {
-        users: true,
-        license_types: true
-      }
+      where: { license_key: finalLicenseKey }
     });
 
     if (!license || license.status !== 'active') {
@@ -66,12 +62,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if skill is available for this license tier
-    const tierSkills = license.license_types?.features?.skills || [];
+    // For now, check if user has pro license for premium skills
     const isPremiumSkill = await checkIfPremiumSkill(skillId);
     
-    if (isPremiumSkill && !tierSkills.includes(skillId) && !tierSkills.includes('all')) {
+    if (isPremiumSkill && !license.is_pro) {
       return NextResponse.json(
-        { error: 'This skill is not available for your license tier' },
+        { error: 'This skill requires a Pro license' },
         { status: 403 }
       );
     }
