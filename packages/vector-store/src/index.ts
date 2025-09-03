@@ -702,7 +702,7 @@ export async function indexWebsite(
     const embedding = await store.generateEmbedding(page.content || page.text || '');
     vectors.push({
       id: `${siteKey}_${page.url}`,
-      values: embedding,
+      embedding: embedding,
       metadata: {
         licenseKey,
         siteKey,
@@ -715,7 +715,11 @@ export async function indexWebsite(
     });
   }
   
-  await store.upsert(collection, vectors);
+  await store.upsert(collection, vectors.map(v => ({
+    id: v.id,
+    values: v.embedding,
+    metadata: v.metadata
+  })));
   
   return {
     total: pages.length,
