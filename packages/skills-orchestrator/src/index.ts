@@ -21,4 +21,5 @@ export type {
 export { BaseSkill } from './skills/BaseSkill';
 export { SkillsRegistry } from './skills/registry';
 export { SkillResult, SkillParams, SkillCategory } from './types';
-export { SkillFactory, SkillDefinition } from './skills/SkillFactory';
+export { SkillFactory } from './skills/SkillFactory';
+export type { SkillDefinition } from './skills/SkillFactory';

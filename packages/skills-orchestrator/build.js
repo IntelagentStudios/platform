@@ -60,9 +60,31 @@ module.exports = {
     }
   },
   SkillFactory: class SkillFactory {
+    static skillDefinitions = new Map();
+    
     static createSkill(type) {
       console.log(\`Creating skill: \${type}\`);
       return new this.BaseSkill();
+    }
+    
+    static getSkillDefinition(id) {
+      // Return a mock skill definition in fallback mode
+      return {
+        id: id,
+        name: id.replace(/_/g, ' ').replace(/\\b\\w/g, l => l.toUpperCase()),
+        description: \`Skill: \${id}\`,
+        category: 'utility',
+        tags: [],
+        isPremium: false
+      };
+    }
+    
+    static getAllSkills() {
+      return [];
+    }
+    
+    static getSkillsByCategory(category) {
+      return [];
     }
   },
   OrchestratorAgent: class OrchestratorAgent {
@@ -122,6 +144,9 @@ export class BaseSkill {
 
 export class SkillFactory {
   static createSkill(type: string): any;
+  static getSkillDefinition(id: string): SkillDefinition | undefined;
+  static getAllSkills(): SkillDefinition[];
+  static getSkillsByCategory(category: string): SkillDefinition[];
 }
 
 export class OrchestratorAgent {
