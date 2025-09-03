@@ -76,6 +76,16 @@ module.exports = {
         errors: 0
       };
     }
+    getRegistryStats() {
+      // Return mock registry stats in fallback mode
+      return {
+        totalSkills: this.skills.size,
+        totalExecutions: 0,
+        averageSuccessRate: 100,
+        topSkills: [],
+        recentExecutions: []
+      };
+    }
   },
   BaseSkill: class BaseSkill {
     constructor() {}
@@ -199,6 +209,13 @@ export class SkillsRegistry {
     averageExecutionTime: number;
     lastExecuted: Date | null;
     errors: number;
+  };
+  getRegistryStats(): {
+    totalSkills: number;
+    totalExecutions: number;
+    averageSuccessRate: number;
+    topSkills: any[];
+    recentExecutions: any[];
   };
 }
 
