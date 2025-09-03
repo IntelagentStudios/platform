@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     // Use Orchestrator Agent - Single point of contact
     const { OrchestratorAgent } = await import('@intelagent/skills-orchestrator');
-    const orchestrator = OrchestratorAgent.getInstance();
+    const orchestrator = new OrchestratorAgent();
 
     // Execute through orchestrator
     try {
