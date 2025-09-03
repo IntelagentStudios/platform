@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { AIIntelligenceService } from '@intelagent/ai-intelligence';
+import { prisma } from '@/lib/prisma';
 
 const aiService = new AIIntelligenceService();
 
@@ -70,24 +71,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Get AI insights
-    const insights = await aiService.analyzeExecutions({
+    const insightType = includeRecommendations ? 'recommendation' : 
+                       includePredictions ? 'prediction' : 'summary';
+    
+    const insights = await aiService.generateInsights({
       licenseKey,
-      context: context as any,
-      timeRange,
-      includeRecommendations,
-      includePredictions
+      type: insightType as any,
+      timeRange: timeRange ? { start: timeRange.start, end: timeRange.end } : undefined,
+      context: { context }
     });
 
-    // Get real-time alerts
-    const alerts = await aiService.getRealTimeAlerts(licenseKey);
-
-    // Combine and sort by severity and confidence
-    const allInsights = [...insights, ...alerts].sort((a, b) => {
-      const severityOrder = { critical: 0, warning: 1, info: 2 };
-      const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
-      if (severityDiff !== 0) return severityDiff;
-      return b.confidence - a.confidence;
-    });
+    // Map insights to match expected format
+    const allInsights = insights.map(insight => ({
+      ...insight,
+      severity: insight.impact === 'critical' ? 'critical' : 
+                insight.impact === 'high' ? 'warning' : 'info',
+      actions: insight.recommendations.map((rec, idx) => ({
+        id: `action-${idx}`,
+        label: rec,
+        type: 'recommendation'
+      })),
+      metadata: insight.data
+    }));
 
     // Store insights in database for tracking
     if (allInsights.length > 0) {
