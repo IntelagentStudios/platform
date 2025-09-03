@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@intelagent/database';
 import { getChatbotResponse, searchKnowledgeBase } from '@intelagent/vector-store';
 // import { websiteIndexer } from '@/services/enrichment/src/modules/websiteIndexer';
 // Temporarily disabled - websiteIndexer needs to be properly packaged
@@ -16,6 +15,9 @@ export async function POST(
   { params }: { params: { siteKey: string } }
 ) {
   try {
+    // Lazy load prisma to avoid build-time initialization
+    const { prisma } = await import('@intelagent/database');
+    
     const { siteKey } = params;
     const body = await request.json();
     const { message, sessionId = generateSessionId(), chatHistory = [] } = body;
@@ -178,6 +180,9 @@ export async function PUT(
   { params }: { params: { siteKey: string } }
 ) {
   try {
+    // Lazy load prisma to avoid build-time initialization
+    const { prisma } = await import('@intelagent/database');
+    
     const { siteKey } = params;
     const body = await request.json();
     const { action = 'status' } = body;
@@ -288,6 +293,9 @@ export async function GET(
   { params }: { params: { siteKey: string } }
 ) {
   try {
+    // Lazy load prisma to avoid build-time initialization
+    const { prisma } = await import('@intelagent/database');
+    
     const { siteKey } = params;
     
     // Check if siteKey is a product_key or legacy site_key
@@ -449,6 +457,9 @@ function detectIntent(message: string): string {
 // Helper function to track usage
 async function trackUsage(siteKey: string): Promise<void> {
   try {
+    // Lazy load prisma to avoid build-time initialization
+    const { prisma } = await import('@intelagent/database');
+    
     // Check if siteKey is a product_key or legacy site_key
     let license: any = null;
     
