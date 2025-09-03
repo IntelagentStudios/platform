@@ -96,12 +96,14 @@ export async function POST(request: NextRequest) {
     await prisma.execution_events.create({
       data: {
         execution_id: executionId,
-        event_type: 'skill_start',
+        event_type: 'start',
+        event_name: `Starting skill: ${skillId}`,
         event_data: {
           skillId,
           params,
           user: session.user.email
-        }
+        },
+        severity: 'info'
       }
     });
 
@@ -149,13 +151,15 @@ export async function POST(request: NextRequest) {
       await prisma.execution_events.create({
         data: {
           execution_id: executionId,
-          event_type: result.success ? 'skill_success' : 'skill_failure',
+          event_type: result.success ? 'complete' : 'error',
+          event_name: result.success ? `Skill completed: ${skillId}` : `Skill failed: ${skillId}`,
           event_data: {
             skillId,
             success: result.success,
             executionTime,
             error: result.error
-          }
+          },
+          severity: result.success ? 'info' : 'error'
         }
       });
 
@@ -191,12 +195,14 @@ export async function POST(request: NextRequest) {
       await prisma.execution_events.create({
         data: {
           execution_id: executionId,
-          event_type: 'skill_error',
+          event_type: 'error',
+          event_name: `Skill error: ${skillId}`,
           event_data: {
             skillId,
             error: error.message,
             stack: error.stack
-          }
+          },
+          severity: 'error'
         }
       });
 
