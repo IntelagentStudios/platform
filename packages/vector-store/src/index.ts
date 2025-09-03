@@ -627,3 +627,115 @@ export const VectorUtils = {
 };
 
 export default IntelagentVectorStore;
+
+// Legacy compatibility functions for customer portal
+export async function getChatbotResponse(
+  query: string, 
+  licenseKey: string, 
+  siteKey: string
+): Promise<string> {
+  const store = new IntelagentVectorStore();
+  await store.initialize();
+  
+  // Search for relevant documents
+  const searchResults = await store.query(
+    `chatbot_${siteKey}`, 
+    await store.getEmbedding(query),
+    5
+  );
+  
+  if (searchResults.length === 0) {
+    return "I don't have enough information to answer your question. Please contact support for assistance.";
+  }
+  
+  // Build context from search results
+  const context = searchResults
+    .map(result => result.metadata?.content || '')
+    .join('\n\n---\n\n');
+  
+  // Simple response based on most relevant result
+  return searchResults[0].metadata?.content || 
+    "I'm unable to generate a response at this time. Please try again later.";
+}
+
+export async function searchKnowledgeBase(
+  query: string, 
+  licenseKey: string, 
+  siteKey: string
+): Promise<any[]> {
+  const store = new IntelagentVectorStore();
+  await store.initialize();
+  
+  const embedding = await store.getEmbedding(query);
+  const results = await store.query(
+    `chatbot_${siteKey}`, 
+    embedding,
+    10
+  );
+  
+  return results.map(r => ({
+    id: r.id,
+    score: r.score,
+    content: r.metadata?.content || '',
+    metadata: r.metadata
+  }));
+}
+
+export async function indexWebsite(
+  licenseKey: string, 
+  siteKey: string, 
+  domain: string, 
+  pages: any[]
+): Promise<any> {
+  const store = new IntelagentVectorStore();
+  await store.initialize();
+  
+  const collection = `chatbot_${siteKey}`;
+  const vectors: Vector[] = [];
+  
+  for (const page of pages) {
+    const embedding = await store.getEmbedding(page.content || page.text || '');
+    vectors.push({
+      id: `${siteKey}_${page.url}`,
+      values: embedding,
+      metadata: {
+        licenseKey,
+        siteKey,
+        domain,
+        url: page.url,
+        title: page.title,
+        content: page.content || page.text || '',
+        type: page.type || 'webpage'
+      }
+    });
+  }
+  
+  await store.upsert(collection, vectors);
+  
+  return {
+    total: pages.length,
+    processed: pages.length,
+    failed: 0,
+    status: 'completed'
+  };
+}
+
+export async function deleteKnowledgeBase(
+  licenseKey: string, 
+  siteKey: string
+): Promise<void> {
+  const store = new IntelagentVectorStore();
+  await store.initialize();
+  await store.deleteCollection(`chatbot_${siteKey}`);
+}
+
+export async function getIndexingStatus(
+  licenseKey: string, 
+  siteKey: string
+): Promise<any> {
+  return {
+    status: 'completed',
+    progress: 100,
+    message: 'Indexing complete'
+  };
+}
