@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
+import WorkflowDisplay from '@/components/WorkflowDisplay';
 import { 
   ArrowLeft,
   TrendingUp,
@@ -14,7 +15,8 @@ import {
   Activity,
   Smartphone,
   Monitor,
-  Tablet
+  Tablet,
+  GitBranch
 } from 'lucide-react';
 
 function ProductAnalyticsContent() {
@@ -425,6 +427,28 @@ function ProductAnalyticsContent() {
                     </p>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Workflows and Skills Section */}
+            <div className="mt-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  <GitBranch className="h-5 w-5" />
+                  Active Workflows & Skills
+                </h2>
+                <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                  Skills and workflows powering this product from our 310-skill infrastructure
+                </p>
+              </div>
+              <div className="rounded-lg p-6" style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid rgba(169, 189, 203, 0.15)'
+              }}>
+                <WorkflowDisplay 
+                  productId={product}
+                  activeWorkflows={['customer_engagement', 'support_automation', 'analytics_reporting']}
+                />
               </div>
             </div>
           </div>
