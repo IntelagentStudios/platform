@@ -60,7 +60,13 @@ module.exports = {
     get(skillId) {
       return this.skills.get(skillId) || null;
     }
+    getSkill(skillId) {
+      return this.skills.get(skillId) || null;
+    }
     getAll() {
+      return Array.from(this.skills.values());
+    }
+    getAllSkills() {
       return Array.from(this.skills.values());
     }
     has(skillId) {
@@ -164,7 +170,17 @@ module.exports = {
     }
   },
   OrchestratorAgent: class OrchestratorAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new OrchestratorAgent();
+      }
+      return this.instance;
+    }
     async orchestrate(request) {
+      return { success: true, results: [] };
+    }
+    async execute(request) {
       return { success: true, results: [] };
     }
   },
