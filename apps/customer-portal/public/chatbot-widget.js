@@ -403,16 +403,11 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    // Connect to n8n webhook endpoint for chatbot workflow
-    // n8n handles the actual chatbot logic and AI responses
-    const n8nBaseUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:5678'  // n8n default local port
-      : 'https://1ntelagent.up.railway.app';  // Your n8n instance on Railway
-    
-    // Use webhook endpoint - you'll need to create this workflow in n8n
-    // The webhook should accept POST requests with {message, sessionId, productKey}
-    // Simple path without productKey - configure this in your n8n workflow
-    const apiUrl = n8nBaseUrl + '/webhook/chatbot';
+    // Connect to the dashboard server webhook endpoint
+    // Both the widget and webhook are hosted on the same server
+    const apiUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3002/api/chatbot/' + productKey
+      : 'https://1ntelagent.up.railway.app/api/chatbot/' + productKey;
 
     // Load chat history from localStorage
     function loadChatHistory() {
