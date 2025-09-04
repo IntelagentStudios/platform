@@ -6,7 +6,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { AIIntelligenceService } from '@intelagent/ai-intelligence';
-import { prisma } from '@/lib/prisma';
 
 const aiService = new AIIntelligenceService();
 
@@ -96,6 +95,7 @@ export async function GET(request: NextRequest) {
 
     // Store insights in audit log for tracking
     if (allInsights.length > 0) {
+      const { prisma } = await import('@/lib/prisma');
       await prisma.audit_logs.createMany({
         data: allInsights.map(insight => ({
           license_key: licenseKey,
@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the insight from audit logs
+    const { prisma } = await import('@/lib/prisma');
     const insightLog = await prisma.audit_logs.findFirst({
       where: {
         resource_id: insightId,

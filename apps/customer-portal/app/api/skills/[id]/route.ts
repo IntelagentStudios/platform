@@ -36,7 +36,7 @@ export async function GET(
 
     // Get skill from registry/factory
     const registry = SkillsRegistry.getInstance();
-    const registrySkill = registry.get(params.id);
+    const registrySkill = registry.getSkill(params.id);
     
     // Also check SkillFactory for definition
     const skillDefinition = registrySkill ? null : SkillFactory.getSkillDefinition(params.id);
@@ -82,10 +82,10 @@ export async function GET(
       },
       executions: [], // No execution history yet
       stats: {
-        totalExecutions: registryStats?.executions || 0,
+        totalExecutions: registryStats?.totalExecutions || 0,
         userExecutions: 0,
         successRate: registryStats?.successRate || 0,
-        avgDuration: registryStats?.averageExecutionTime || 0
+        avgDuration: registryStats?.avgDuration || 0
       }
     });
 

@@ -109,13 +109,13 @@ export async function POST(request: NextRequest) {
 
     // Use Orchestrator Agent - Single point of contact
     const { OrchestratorAgent } = await import('@intelagent/skills-orchestrator');
-    const orchestrator = new OrchestratorAgent();
+    const orchestrator = OrchestratorAgent.getInstance();
 
     // Execute through orchestrator
     try {
       const startTime = Date.now();
       
-      const orchestrationResult = await orchestrator.orchestrate({
+      const orchestrationResult = await orchestrator.execute({
         skillId,
         params: params || {},
         context: {
@@ -292,7 +292,7 @@ export async function GET(request: NextRequest) {
 
     // Get all skills from registry
     const registry = SkillsRegistry.getInstance();
-    const allSkills = registry.getAll();
+    const allSkills = registry.getAllSkills();
 
     // Filter based on license tier
     const tierSkills = license.products || [];

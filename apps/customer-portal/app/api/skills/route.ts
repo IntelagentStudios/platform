@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     // Check if skill exists
     const registry = SkillsRegistry.getInstance();
-    const registrySkill = registry.get(skillId);
+    const registrySkill = registry.getSkill(skillId);
     const skillDefinition = registrySkill ? null : SkillFactory.getSkillDefinition(skillId);
 
     if (!registrySkill && !skillDefinition) {
@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
     }
     
     const skill = registrySkill || skillDefinition;
+    const skillName = registrySkill ? registrySkill.definition.name : (skillDefinition ? skillDefinition.name : skillId);
 
     // Generate execution ID
     const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
     const mockResult = {
       success: true,
       data: {
-        message: `Skill '${skill.name || skillId}' executed successfully`,
+        message: `Skill '${skillName}' executed successfully`,
         skillId,
         params,
         timestamp: new Date().toISOString()
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
       result: mockResult,
       skill: {
         id: skillId,
-        name: skill.name || skillId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        name: skillName
       }
     });
 
