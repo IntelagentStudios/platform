@@ -404,18 +404,22 @@
     
     let sessionId = getOrCreateSessionId();
     
-    // Migration complete: Skills system is now the default
-    // Legacy n8n mode can still be enabled with data-mode="n8n" for backward compatibility
+    // Migration complete: Enhanced skills system with 310 skills is now the default
+    // Options: 'enhanced' (default), 'skills' (basic), 'n8n' (legacy)
     const scriptTag = document.currentScript || document.querySelector('script[src*="chatbot-widget"]');
-    const mode = scriptTag?.getAttribute('data-mode') || 'skills';
-    const useSkillsSystem = mode !== 'n8n';
+    const mode = scriptTag?.getAttribute('data-mode') || 'enhanced';
     
     // Select endpoint based on mode
-    const webhookUrl = useSkillsSystem 
-      ? 'https://dashboard.intelagentstudios.com/api/chatbot-skills'
-      : 'https://1ntelagent.up.railway.app/webhook/chatbot';
+    let webhookUrl;
+    if (mode === 'enhanced') {
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/enhanced';
+    } else if (mode === 'skills') {
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills';
+    } else {
+      webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
+    }
     
-    console.log('Chatbot mode:', useSkillsSystem ? 'Skills System (Default)' : 'n8n Webhook (Legacy)');
+    console.log('Chatbot mode:', mode === 'enhanced' ? 'Enhanced Skills (310 skills)' : mode === 'skills' ? 'Basic Skills' : 'n8n Webhook (Legacy)');
 
     // Load chat history from localStorage
     function loadChatHistory() {

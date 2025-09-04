@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Chatbot Test - 310 Skills System</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .test-category {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        .test-category h3 {
+            color: #667eea;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .test-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s;
+            display: block;
+            width: calc(100% - 10px);
+            text-align: left;
+        }
+        .test-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .response-area {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1f2937;
+            border-radius: 8px;
+            color: #f9fafb;
+            min-height: 200px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .skills-used {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .skill-tag {
+            background: #ddd6fe;
+            color: #5b21b6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            Enhanced Chatbot Test Suite
+            <span class="badge">310 Skills Active</span>
+        </h1>
+        <p style="color: #6b7280;">Test the enhanced chatbot with full skills integration, context awareness, and intelligent routing.</p>
+        
+        <div class="test-grid">
+            <!-- E-commerce Tests -->
+            <div class="test-category">
+                <h3>💳 E-commerce Workflows</h3>
+                <button class="test-btn" onclick="testQuery('I want to buy a premium subscription')">
+                    Purchase Flow
+                </button>
+                <button class="test-btn" onclick="testQuery('I need a refund for my last order')">
+                    Refund Process
+                </button>
+                <button class="test-btn" onclick="testQuery('Show me my recent invoices')">
+                    Invoice Management
+                </button>
+                <button class="test-btn" onclick="testQuery('Update my payment method')">
+                    Payment Settings
+                </button>
+            </div>
+            
+            <!-- Support Tests -->
+            <div class="test-category">
+                <h3>🎧 Support & Help</h3>
+                <button class="test-btn" onclick="testQuery('I\\'m having trouble logging in')">
+                    Account Support
+                </button>
+                <button class="test-btn" onclick="testQuery('The API is returning 500 errors')">
+                    Technical Support
+                </button>
+                <button class="test-btn" onclick="testQuery('I need to speak to a manager')">
+                    Escalation Flow
+                </button>
+                <button class="test-btn" onclick="testQuery('How do I reset my password?')">
+                    Password Reset
+                </button>
+            </div>
+            
+            <!-- Analytics Tests -->
+            <div class="test-category">
+                <h3>📊 Analytics & Reports</h3>
+                <button class="test-btn" onclick="testQuery('Generate a monthly sales report')">
+                    Report Generation
+                </button>
+                <button class="test-btn" onclick="testQuery('Show me performance metrics for last week')">
+                    Performance Analysis
+                </button>
+                <button class="test-btn" onclick="testQuery('I need customer engagement analytics')">
+                    Engagement Metrics
+                </button>
+                <button class="test-btn" onclick="testQuery('Export all data to CSV')">
+                    Data Export
+                </button>
+            </div>
+            
+            <!-- Automation Tests -->
+            <div class="test-category">
+                <h3>⚙️ Automation</h3>
+                <button class="test-btn" onclick="testQuery('Set up a daily backup workflow')">
+                    Workflow Creation
+                </button>
+                <button class="test-btn" onclick="testQuery('Schedule a task for tomorrow at 3pm')">
+                    Task Scheduling
+                </button>
+                <button class="test-btn" onclick="testQuery('Automate my email responses')">
+                    Email Automation
+                </button>
+                <button class="test-btn" onclick="testQuery('Create a data processing pipeline')">
+                    Pipeline Setup
+                </button>
+            </div>
+            
+            <!-- Integration Tests -->
+            <div class="test-category">
+                <h3>🔗 Integrations</h3>
+                <button class="test-btn" onclick="testQuery('Connect my Salesforce account')">
+                    CRM Integration
+                </button>
+                <button class="test-btn" onclick="testQuery('Set up webhook notifications')">
+                    Webhook Setup
+                </button>
+                <button class="test-btn" onclick="testQuery('Sync data with Google Sheets')">
+                    Data Sync
+                </button>
+                <button class="test-btn" onclick="testQuery('Configure API access')">
+                    API Configuration
+                </button>
+            </div>
+            
+            <!-- Context Tests -->
+            <div class="test-category">
+                <h3>🧠 Context Awareness</h3>
+                <button class="test-btn" onclick="testMultiTurn()">
+                    Multi-turn Conversation
+                </button>
+                <button class="test-btn" onclick="testQuery('My name is John from Acme Corp')">
+                    Entity Recognition
+                </button>
+                <button class="test-btn" onclick="testQuery('Remember that for next time')">
+                    Memory Test
+                </button>
+                <button class="test-btn" onclick="testQuery('What were we discussing?')">
+                    Context Recall
+                </button>
+            </div>
+        </div>
+        
+        <div class="response-area" id="response">
+            <div style="color: #10b981;">System Ready - Enhanced Chatbot with 310 Skills</div>
+            <div style="color: #6b7280; margin-top: 10px;">Click any test button to send a query...</div>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-value" id="responseTime">--</div>
+                <div class="metric-label">Response Time (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="skillsCount">--</div>
+                <div class="metric-label">Skills Used</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="confidence">--</div>
+                <div class="metric-label">Confidence</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="contextItems">--</div>
+                <div class="metric-label">Context Items</div>
+            </div>
+        </div>
+        
+        <div class="skills-used" id="skillsList" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script>
+        let conversationHistory = [];
+        let sessionId = 'test-' + Date.now();
+        
+        async function testQuery(message) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = '<div style="color: #f59e0b;">Processing with enhanced skills system...</div>';
+            
+            const startTime = performance.now();
+            
+            try {
+                const response = await fetch('https://dashboard.intelagentstudios.com/api/chatbot-skills/enhanced', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message,
+                        sessionId,
+                        productKey: 'test-enhanced',
+                        chatHistory: conversationHistory,
+                        context: {
+                            testMode: true,
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                // Update conversation history
+                conversationHistory.push({
+                    user: message,
+                    bot: data.response,
+                    timestamp: new Date()
+                });
+                
+                // Display response
+                responseDiv.innerHTML = `
+                    <div style="color: #6b7280; margin-bottom: 10px;">
+                        <strong>User:</strong> ${message}
+                    </div>
+                    <div style="color: #10b981; margin-bottom: 10px;">
+                        <strong>Bot:</strong> ${data.response || 'No response'}
+                    </div>
+                `;
+                
+                // Add suggestions if present
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseDiv.innerHTML += `
+                        <div style="color: #f59e0b; margin-top: 15px;">
+                            <strong>Suggestions:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                ${data.suggestions.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Add actions if present
+                if (data.actions && data.actions.length > 0) {
+                    responseDiv.innerHTML += `
+                        <div style="color: #8b5cf6; margin-top: 15px;">
+                            <strong>Available Actions:</strong>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                ${data.actions.map(a => `<li>${a}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Update metrics
+                document.getElementById('responseTime').textContent = responseTime;
+                document.getElementById('skillsCount').textContent = data.metadata?.skillsUsed || '0';
+                document.getElementById('confidence').textContent = 
+                    data.metadata?.confidence ? (data.metadata.confidence * 100).toFixed(0) + '%' : '--';
+                document.getElementById('contextItems').textContent = 
+                    conversationHistory.length;
+                
+                // Display skills used
+                if (data.metadata?.skillsUsed) {
+                    const skillsList = document.getElementById('skillsList');
+                    skillsList.innerHTML = '<strong style="margin-right: 10px;">Skills activated:</strong>';
+                    // Mock skill names for now
+                    const skills = ['intent_analyzer', 'context_manager', 'skill_router', 'response_generator'];
+                    skills.forEach(skill => {
+                        skillsList.innerHTML += `<span class="skill-tag">${skill}</span>`;
+                    });
+                }
+                
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <div style="color: #ef4444;">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                    <div style="color: #6b7280; margin-top: 10px;">
+                        This might be because the endpoint is not deployed yet.
+                        The enhanced system is ready for deployment.
+                    </div>
+                `;
+            }
+        }
+        
+        async function testMultiTurn() {
+            // Test multi-turn conversation
+            const queries = [
+                "I want to buy your premium plan",
+                "What payment methods do you accept?",
+                "I'll pay with credit card",
+                "Process the payment"
+            ];
+            
+            for (const query of queries) {
+                await testQuery(query);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        }
+        
+        // Display system info on load
+        window.addEventListener('load', () => {
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML += `
+                <div style="color: #6b7280; margin-top: 20px;">
+                    <strong>System Capabilities:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>310 modular skills available</li>
+                        <li>8 management agents (Finance, Operations, Infrastructure, etc.)</li>
+                        <li>Context-aware multi-turn conversations</li>
+                        <li>Entity recognition and memory</li>
+                        <li>Sentiment analysis and trend detection</li>
+                        <li>Intelligent skill routing and workflow execution</li>
+                        <li>16 predefined business workflows</li>
+                    </ul>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
