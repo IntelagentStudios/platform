@@ -32,39 +32,42 @@ export async function GET(request: NextRequest) {
     }
     
     // Get metrics from database
-    const conversations = await prisma.chatbotConversation.findMany({
+    const conversations = await prisma.chatbot_logs.findMany({
       where: {
-        createdAt: {
+        timestamp: {
           gte: since
         }
       },
       select: {
         id: true,
-        productKey: true,
-        userMessage: true,
-        botResponse: true,
-        responseTime: true,
-        error: true,
-        createdAt: true,
-        metadata: true
+        product_key: true,
+        customer_message: true,
+        chatbot_response: true,
+        intent_detected: true,
+        timestamp: true,
+        session_id: true
       },
       orderBy: {
-        createdAt: 'desc'
+        timestamp: 'desc'
       },
       take: detailed ? 100 : 10
     });
     
     // Calculate statistics
     const totalRequests = conversations.length;
-    const failedRequests = conversations.filter(c => c.error).length;
-    const successRate = totalRequests > 0 ? ((totalRequests - failedRequests) / totalRequests * 100).toFixed(2) : 100;
+    // Since we don't have error field in chatbot_logs, count empty responses as failures
+    const failedRequests = conversations.filter(c => !c.chatbot_response || c.chatbot_response === '').length;
+    const successRate = totalRequests > 0 ? ((totalRequests - failedRequests) / totalRequests * 100).toFixed(2) : '100';
     
-    // Calculate average response time (if stored in metadata)
+    // Calculate average response time from intent_detected JSON
     const responseTimes = conversations
       .map(c => {
         try {
-          const meta = c.metadata as any;
-          return meta?.responseTime || c.responseTime || 0;
+          if (c.intent_detected) {
+            const meta = JSON.parse(c.intent_detected);
+            return meta?.responseTime || meta?.executionTime || 0;
+          }
+          return 0;
         } catch {
           return 0;
         }
@@ -78,19 +81,14 @@ export async function GET(request: NextRequest) {
     // Group by product key
     const byProductKey: Record<string, number> = {};
     conversations.forEach(c => {
-      if (c.productKey) {
-        byProductKey[c.productKey] = (byProductKey[c.productKey] || 0) + 1;
+      if (c.product_key) {
+        byProductKey[c.product_key] = (byProductKey[c.product_key] || 0) + 1;
       }
     });
     
     // Get unique sessions count
     const uniqueSessions = new Set(conversations.map(c => {
-      try {
-        const meta = c.metadata as any;
-        return meta?.sessionId || 'unknown';
-      } catch {
-        return 'unknown';
-      }
+      return c.session_id || 'unknown';
     })).size;
     
     // Check system health
@@ -124,14 +122,15 @@ export async function GET(request: NextRequest) {
     
     // Add recent errors if detailed view requested
     if (detailed) {
+      // Since we don't have error field, filter by empty responses
       const recentErrors = conversations
-        .filter(c => c.error)
+        .filter(c => !c.chatbot_response || c.chatbot_response === '')
         .slice(0, 5)
         .map(c => ({
           id: c.id,
-          time: c.createdAt,
-          error: c.error,
-          message: c.userMessage
+          time: c.timestamp,
+          error: 'No response generated',
+          message: c.customer_message
         }));
       
       response['recentErrors'] = recentErrors;
@@ -139,10 +138,10 @@ export async function GET(request: NextRequest) {
       // Add recent conversations sample
       response['recentConversations'] = conversations.slice(0, 5).map(c => ({
         id: c.id,
-        time: c.createdAt,
-        userMessage: c.userMessage?.substring(0, 50) + '...',
-        responsePreview: c.botResponse?.substring(0, 50) + '...',
-        productKey: c.productKey
+        time: c.timestamp,
+        userMessage: c.customer_message?.substring(0, 50) + '...',
+        responsePreview: c.chatbot_response?.substring(0, 50) + '...',
+        productKey: c.product_key
       }));
     }
     

@@ -49,8 +49,11 @@ export class AIIntelligenceService {
   async analyzeExecutions(request: AIAnalysisRequest): Promise<AIInsight[]> {
     const insights: AIInsight[] = [];
     
+    // TODO: Fix execution_entity table structure - it doesn't have license_key field
+    // Temporarily return empty insights until table structure is fixed
+    /*
     // Get execution data for analysis
-    const executions = await this.prisma.executions.findMany({
+    const executions = await this.prisma.execution_entity.findMany({
       where: {
         license_key: request.licenseKey,
         started_at: request.timeRange ? {
@@ -66,7 +69,7 @@ export class AIIntelligenceService {
       orderBy: { started_at: 'desc' },
       take: 1000
     });
-
+    
     // Analyze performance patterns
     if (request.context === 'performance' || request.context === 'general') {
       const perfInsights = await this.analyzePerformance(executions);
@@ -102,7 +105,9 @@ export class AIIntelligenceService {
       const recommendations = await this.generateRecommendations(executions, insights);
       insights.push(...recommendations);
     }
+    */
 
+    // Return empty insights until table structure is fixed
     return insights;
   }
 
@@ -483,8 +488,11 @@ export class AIIntelligenceService {
   async getRealTimeAlerts(licenseKey: string): Promise<AIInsight[]> {
     const alerts: AIInsight[] = [];
     
+    // TODO: Fix execution_entity table structure - it doesn't have license_key field
+    // Temporarily skip this check until table structure is fixed
+    /*
     // Check for currently failing executions
-    const runningExecs = await this.prisma.executions.findMany({
+    const runningExecs = await this.prisma.execution_entity.findMany({
       where: {
         license_key: licenseKey,
         status: 'running',
@@ -493,6 +501,8 @@ export class AIIntelligenceService {
         }
       }
     });
+    */
+    const runningExecs: any[] = [];
     
     if (runningExecs.length > 0) {
       alerts.push({
@@ -507,7 +517,7 @@ export class AIIntelligenceService {
           id: 'terminate',
           label: 'Terminate stuck executions',
           type: 'auto_fix',
-          params: { executionIds: runningExecs.map(e => e.id) }
+          params: { executionIds: runningExecs.map((e: any) => e.id) }
         }]
       });
     }

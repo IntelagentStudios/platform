@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OrchestratorAgent } from '@intelagent/skills-orchestrator';
-import { SkillsMatrix } from '@intelagent/skills-orchestrator/agents/SkillsMatrix';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -31,9 +30,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize skills matrix
-    const skillsMatrix = SkillsMatrix.getInstance();
-    
     // Get product configuration
     const productConfig = await getProductConfiguration(productKey);
     
@@ -41,7 +37,7 @@ export async function POST(request: NextRequest) {
     const analysis = await analyzeIntent(message, chatHistory, context);
     
     // Route to appropriate skills based on intent
-    const skillsToExecute = determineSkillCombination(analysis, skillsMatrix);
+    const skillsToExecute = determineSkillCombination(analysis, null);
     
     // Execute skills in optimized sequence
     const orchestrator = new OrchestratorAgent();
@@ -266,10 +262,16 @@ async function executeSkillWorkflow(
   for (const group of parallelGroups) {
     const groupPromises = group.map(async (skill) => {
       try {
-        const result = await orchestrator.executeSkill(skill.id, {
-          ...params,
-          previousResults: results
+        // Use the execute method with a single skill
+        const result = await orchestrator.execute({
+          workflow: 'single_skill',
+          params: {
+            ...params,
+            previousResults: results
+          },
+          skills: [skill.id]
         });
+        
         results[skill.id] = result;
         return { skillId: skill.id, success: true, result };
       } catch (error) {
@@ -302,25 +304,25 @@ async function generateEnhancedResponse(
   // Process skill results
   for (const [skillId, result] of Object.entries(executionResults)) {
     if (result && typeof result === 'object' && 'output' in result) {
-      const output = result.output;
+      const output = result.output as any;
       
       // Aggregate response text
-      if (output.message) {
+      if (output?.message) {
         responseText += output.message + ' ';
       }
       
       // Collect suggestions
-      if (output.suggestions) {
+      if (output?.suggestions) {
         suggestions.push(...output.suggestions);
       }
       
       // Collect actionable items
-      if (output.actions) {
+      if (output?.actions) {
         actions.push(...output.actions);
       }
       
       // Update context
-      if (output.context) {
+      if (output?.context) {
         Object.assign(context, output.context);
       }
     }
@@ -514,16 +516,13 @@ async function getProductConfiguration(productKey: string) {
   if (!productKey) return null;
   
   try {
-    const config = await prisma.productKey.findUnique({
-      where: { productKey },
+    const config = await prisma.product_keys.findFirst({
+      where: { 
+        product_key: productKey,
+        status: 'active'
+      },
       include: {
-        user: {
-          select: {
-            email: true,
-            name: true,
-            preferences: true
-          }
-        }
+        licenses: true
       }
     });
     
@@ -536,15 +535,21 @@ async function getProductConfiguration(productKey: string) {
 
 async function storeEnhancedConversation(data: any) {
   try {
-    await prisma.chatbotConversation.create({
+    await prisma.chatbot_logs.create({
       data: {
-        productKey: data.productKey || 'anonymous',
-        sessionId: data.sessionId,
-        userMessage: data.userMessage,
-        botResponse: data.botResponse,
-        metadata: data.metadata,
-        responseTime: data.metadata.executionTime,
-        createdAt: new Date()
+        product_key: data.productKey || 'anonymous',
+        session_id: data.sessionId,
+        customer_message: data.userMessage,
+        chatbot_response: data.botResponse,
+        intent_detected: JSON.stringify({
+          enhanced: true,
+          skills: data.metadata?.skillsUsed,
+          executionTime: data.metadata?.executionTime
+        }).slice(0, 255),
+        conversation_id: data.sessionId,
+        domain: 'intelagentstudios.com',
+        user_id: 'enhanced_user',
+        timestamp: new Date()
       }
     });
   } catch (error) {

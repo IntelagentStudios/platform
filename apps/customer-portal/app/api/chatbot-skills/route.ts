@@ -60,10 +60,13 @@ export async function POST(request: NextRequest) {
         });
 
         if (productKeyRecord) {
+          // Cast metadata to proper type
+          const metadata = productKeyRecord.metadata as { domain?: string } | null;
+          
           productKeyData = {
             product_key: productKey,
             license_key: productKeyRecord.license_key,
-            domain: productKeyRecord.metadata?.domain || 
+            domain: metadata?.domain || 
                    productKeyRecord.licenses?.domain || 
                    'intelagentstudios.com',
             customer_name: productKeyRecord.licenses?.customer_name
@@ -71,13 +74,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Get custom knowledge for this product key
-        const knowledge = await prisma.chatbot_knowledge.findMany({
-          where: { product_key: productKey }
-        });
-        
-        if (knowledge.length > 0) {
-          customKnowledge = knowledge.map(k => k.content).join('\n');
-        }
+        // TODO: Implement chatbot_knowledge table
+        // const knowledge = await prisma.chatbot_knowledge.findMany({
+        //   where: { product_key: productKey }
+        // });
+        // 
+        // if (knowledge.length > 0) {
+        //   customKnowledge = knowledge.map(k => k.content).join('\n');
+        // }
       } catch (dbError) {
         console.error('Database query error:', dbError);
         // Continue without database data

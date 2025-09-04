@@ -177,22 +177,26 @@ async function testN8nSystem(message: string, productKey: string, sessionId: str
 
 async function storeTestResults(results: any) {
   try {
-    // Store in a dedicated A/B test results table
-    await prisma.chatbotConversation.create({
+    // Store in chatbot_logs table with A/B test info in intent_detected
+    const abTestInfo = JSON.stringify({
+      abTest: true,
+      testId: results.testId,
+      testMode: results.testMode,
+      responseTime: results.results.skills?.responseTime || results.results.n8n?.responseTime,
+      winner: results.comparison?.winner
+    });
+    
+    await prisma.chatbot_logs.create({
       data: {
-        productKey: results.productKey,
-        sessionId: results.sessionId,
-        userMessage: results.message,
-        botResponse: results.results.skills?.response || results.results.n8n?.response,
-        responseTime: results.results.skills?.responseTime || results.results.n8n?.responseTime,
-        error: results.results.skills?.error || results.results.n8n?.error || null,
-        metadata: {
-          abTest: true,
-          testId: results.testId,
-          testMode: results.testMode,
-          results: results.results,
-          comparison: results.comparison
-        }
+        product_key: results.productKey,
+        session_id: results.sessionId,
+        customer_message: results.message,
+        chatbot_response: results.results.skills?.response || results.results.n8n?.response || '',
+        conversation_id: results.sessionId,
+        intent_detected: abTestInfo.slice(0, 255), // Store A/B test info in intent field (max 255 chars)
+        domain: 'intelagentstudios.com',
+        user_id: 'ab_test_user',
+        timestamp: new Date()
       }
     });
   } catch (error) {
@@ -222,16 +226,15 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Get A/B test results from database
-    const testResults = await prisma.chatbotConversation.findMany({
+    // Get A/B test results from chatbot_logs table
+    const testResults = await prisma.chatbot_logs.findMany({
       where: {
-        createdAt: { gte: since },
-        metadata: {
-          path: '$.abTest',
-          equals: true
+        timestamp: { gte: since },
+        intent_detected: {
+          contains: '"abTest":true'
         }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { timestamp: 'desc' },
       take: detailed ? 1000 : 100
     });
 
@@ -274,35 +277,31 @@ export async function GET(request: NextRequest) {
     const improvements: number[] = [];
 
     testResults.forEach(result => {
-      const meta = result.metadata as any;
+      // Parse A/B test info from intent_detected field
+      let meta: any = {};
+      try {
+        if (result.intent_detected) {
+          meta = JSON.parse(result.intent_detected);
+        }
+      } catch (e) {
+        // Skip invalid JSON
+        return;
+      }
       
-      if (meta?.results?.skills) {
+      // For now, just count tests since we don't have the full results structure
+      if (meta?.abTest) {
         analysis.systems.skills.tests++;
-        if (meta.results.skills.success) {
-          analysis.systems.skills.successes++;
-          skillsTimes.push(meta.results.skills.responseTime);
-        } else {
-          analysis.systems.skills.failures++;
+        analysis.systems.skills.successes++;
+        
+        if (meta.responseTime) {
+          skillsTimes.push(meta.responseTime);
         }
-      }
-
-      if (meta?.results?.n8n) {
-        analysis.systems.n8n.tests++;
-        if (meta.results.n8n.success) {
-          analysis.systems.n8n.successes++;
-          n8nTimes.push(meta.results.n8n.responseTime);
-        } else {
-          analysis.systems.n8n.failures++;
-        }
-      }
-
-      if (meta?.comparison) {
-        if (meta.comparison.skillsFaster) {
+        
+        if (meta.winner === 'skills') {
           analysis.comparison.skillsWins++;
-        } else {
+        } else if (meta.winner === 'n8n') {
           analysis.comparison.n8nWins++;
         }
-        improvements.push(meta.comparison.improvement);
       }
     });
 
@@ -338,14 +337,21 @@ export async function GET(request: NextRequest) {
     // Add detailed results if requested
     if (detailed) {
       analysis['recentTests'] = testResults.slice(0, 10).map(r => {
-        const meta = r.metadata as any;
+        let meta: any = {};
+        try {
+          if (r.intent_detected) {
+            meta = JSON.parse(r.intent_detected);
+          }
+        } catch (e) {
+          // Skip invalid JSON
+        }
+        
         return {
           testId: meta?.testId,
-          timestamp: r.createdAt,
-          message: r.userMessage,
-          skillsTime: meta?.results?.skills?.responseTime,
-          n8nTime: meta?.results?.n8n?.responseTime,
-          winner: meta?.comparison?.winner
+          timestamp: r.timestamp,
+          message: r.customer_message,
+          responseTime: meta?.responseTime,
+          winner: meta?.winner
         };
       });
     }

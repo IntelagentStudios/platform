@@ -86,7 +86,8 @@
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
-      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)"
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
+      "Bash(npx next build:*)"
     ],
     "deny": [],
     "ask": []

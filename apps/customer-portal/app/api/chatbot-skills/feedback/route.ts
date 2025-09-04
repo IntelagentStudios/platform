@@ -26,21 +26,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Store feedback in database
-    const feedbackEntry = await prisma.chatbotConversation.create({
+    const feedbackEntry = await prisma.chatbot_logs.create({
       data: {
-        productKey: productKey || 'anonymous',
-        sessionId: sessionId || `feedback-${Date.now()}`,
-        userMessage: '[FEEDBACK]',
-        botResponse: feedback || '',
-        metadata: {
+        product_key: productKey || 'anonymous',
+        session_id: sessionId || `feedback-${Date.now()}`,
+        customer_message: '[FEEDBACK]',
+        chatbot_response: feedback || '',
+        intent_detected: JSON.stringify({
           type: 'feedback',
           rating,
           category,
           wouldRecommend,
           responseTime,
-          timestamp: new Date().toISOString(),
           ...metadata
-        }
+        }).slice(0, 255),
+        conversation_id: sessionId || `feedback-${Date.now()}`,
+        domain: 'intelagentstudios.com',
+        user_id: 'feedback_user',
+        timestamp: new Date()
       }
     });
 
@@ -107,17 +110,17 @@ export async function GET(request: NextRequest) {
 
     // Query feedback from database
     const whereClause: any = {
-      createdAt: { gte: since },
-      userMessage: '[FEEDBACK]'
+      timestamp: { gte: since },
+      customer_message: '[FEEDBACK]'
     };
     
     if (productKey) {
-      whereClause.productKey = productKey;
+      whereClause.product_key = productKey;
     }
 
-    const feedbackEntries = await prisma.chatbotConversation.findMany({
+    const feedbackEntries = await prisma.chatbot_logs.findMany({
       where: whereClause,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { timestamp: 'desc' }
     });
 
     // Analyze feedback
@@ -158,7 +161,14 @@ export async function GET(request: NextRequest) {
     let npsCount = 0;
 
     feedbackEntries.forEach(entry => {
-      const meta = entry.metadata as any;
+      let meta: any = {};
+      try {
+        if (entry.intent_detected) {
+          meta = JSON.parse(entry.intent_detected);
+        }
+      } catch (e) {
+        // Skip invalid JSON
+      }
       
       // Rating distribution
       if (meta?.rating) {
@@ -187,7 +197,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Sentiment (would need more sophisticated analysis in production)
-      const feedback = entry.botResponse?.toLowerCase() || '';
+      const feedback = entry.chatbot_response?.toLowerCase() || '';
       if (feedback.includes('great') || feedback.includes('excellent') || meta?.rating >= 4) {
         analysis.sentiment.positive++;
       } else if (feedback.includes('bad') || feedback.includes('slow') || meta?.rating <= 2) {
@@ -211,14 +221,22 @@ export async function GET(request: NextRequest) {
 
     // Add recent feedback samples
     const recentFeedback = feedbackEntries.slice(0, 5).map(entry => {
-      const meta = entry.metadata as any;
+      let meta: any = {};
+      try {
+        if (entry.intent_detected) {
+          meta = JSON.parse(entry.intent_detected);
+        }
+      } catch (e) {
+        // Skip invalid JSON
+      }
+      
       return {
         id: entry.id,
-        timestamp: entry.createdAt,
+        timestamp: entry.timestamp,
         rating: meta?.rating,
         category: meta?.category,
-        feedback: entry.botResponse,
-        productKey: entry.productKey
+        feedback: entry.chatbot_response,
+        productKey: entry.product_key
       };
     });
 
