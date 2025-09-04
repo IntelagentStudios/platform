@@ -403,11 +403,15 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    // TODO: Update this to the correct deployment URL
-    // For now, use local development or the correct production URL
-    const apiUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3002/api/chatbot/' + productKey
-      : 'https://dashboard.intelagentstudios.com/api/chatbot/' + productKey;
+    // Connect to n8n webhook endpoint for chatbot workflow
+    // n8n handles the actual chatbot logic and AI responses
+    const n8nBaseUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5678'  // n8n default local port
+      : 'https://1ntelagent.up.railway.app';  // Your n8n instance on Railway
+    
+    // Use webhook endpoint - you'll need to create this workflow in n8n
+    // The webhook should accept POST requests with {message, sessionId, productKey}
+    const apiUrl = n8nBaseUrl + '/webhook/chatbot/' + productKey;
 
     // Load chat history from localStorage
     function loadChatHistory() {
@@ -650,8 +654,15 @@
         console.log('Response data:', data);
         removeTypingIndicator();
 
-        // Add bot response with formatting
-        const botResponse = data.message || data.chatbot_response || data.response || 'I apologize, but I encountered an error processing your request.';
+        // Handle n8n webhook response format
+        // n8n might return data in different structures depending on the workflow
+        const botResponse = data.message || 
+                           data.response || 
+                           data.output || 
+                           data.text || 
+                           data.chatbot_response || 
+                           (data.data && data.data.message) ||
+                           'I apologize, but I encountered an error processing your request.';
         
         // Process the response:
         // 1. First process markdown links
