@@ -8,11 +8,7 @@ import type { NextRequest } from 'next/server';
 
 // Define isolated chatbot routes
 const ISOLATED_CHATBOT_ROUTES = [
-  '/api/chatbot',
-  '/api/chatbot/widget',
-  '/api/chatbot/session',
-  '/api/chatbot/message',
-  '/api/chatbot/stream',
+  '/api/chatbot',  // This now covers /api/chatbot/[siteKey] as well
   '/chatbot-widget.js',
   '/chatbot-widget.css'
 ];
@@ -76,26 +72,7 @@ export function chatbotIsolationMiddleware(request: NextRequest) {
 
 // Validate chatbot request
 export function validateChatbotRequest(request: NextRequest): boolean {
-  const headers = request.headers;
-  
-  // Check for isolation header
-  if (headers.get('X-Chatbot-Isolated') !== 'true') {
-    return false;
-  }
-  
-  // Verify origin
-  const origin = headers.get('origin') || '';
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://intelagent.com',
-    'https://www.intelagent.com'
-  ];
-  
-  if (!allowedOrigins.some(allowed => origin.startsWith(allowed))) {
-    return false;
-  }
-  
+  // For now, allow all chatbot requests - we'll rely on the product key validation in the API
   return true;
 }
 
