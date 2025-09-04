@@ -403,11 +403,11 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    // Connect to the dashboard server webhook endpoint
-    // Both the widget and webhook are hosted on the same server
+    // Connect to the webhook endpoint - using n8n webhook that's confirmed working
+    // The webhook at /webhook/chatbot is active and responding
     const apiUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3002/api/chatbot/' + productKey
-      : 'https://1ntelagent.up.railway.app/api/chatbot/' + productKey;
+      ? 'http://localhost:3002/api/chatbot/' + productKey  // Local Next.js API
+      : 'https://1ntelagent.up.railway.app/webhook/chatbot';  // n8n webhook (confirmed working)
 
     // Load chat history from localStorage
     function loadChatHistory() {
