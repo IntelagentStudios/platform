@@ -10,6 +10,18 @@ const port = process.env.PORT || 3002
 const app = next({ dev, port })
 const handle = app.getRequestHandler()
 
+// Ensure build exists before starting in production
+const fs = require('fs')
+const path = require('path')
+if (!dev) {
+  const buildDir = path.join(__dirname, '.next')
+  if (!fs.existsSync(buildDir)) {
+    console.error('Production build not found! Please run "npm run build" first.')
+    console.log('Starting in development mode as fallback...')
+    process.env.NODE_ENV = 'development'
+  }
+}
+
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
     try {
