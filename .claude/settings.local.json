@@ -82,7 +82,11 @@
       "Read(/C:\\Projects\\Intelagent Platform\\apps\\customer-portal\\app\\api\\skills\\[id]/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\database\\prisma/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\database/**)",
-      "Read(/C:\\Projects\\Intelagent Platform/**)"
+      "Read(/C:\\Projects\\Intelagent Platform/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\src\\skills/**)"
     ],
     "deny": [],
     "ask": []

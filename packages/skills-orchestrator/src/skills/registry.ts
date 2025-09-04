@@ -260,6 +260,19 @@ export class SkillsRegistry {
         const { TaskManagerSkill } = await import('./impl/TaskManagerSkill');
         return new TaskManagerSkill();
       
+      // Chatbot workflow skills
+      case 'search_strategy':
+        const { SearchStrategySkill } = await import('./impl/SearchStrategySkill');
+        return new SearchStrategySkill();
+      
+      case 'response_creator':
+        const { ResponseCreatorSkill } = await import('./impl/ResponseCreatorSkill');
+        return new ResponseCreatorSkill();
+      
+      case 'web_scraper':
+        const { WebScraperSkill } = await import('./impl/WebScraperSkill');
+        return new WebScraperSkill();
+      
       default:
         // For unimplemented skills, return a mock implementation
         return this.createMockSkill(id);

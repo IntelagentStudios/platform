@@ -156,6 +156,23 @@ export class SkillFactory {
       tags: ['moderation', 'comments', 'ai']
     });
     
+    // Chatbot workflow skills
+    this.addSkill({
+      id: 'search_strategy',
+      name: 'Search Strategy',
+      description: 'Intelligent search strategist that selects the best pages to scrape',
+      category: 'ai_powered',
+      tags: ['search', 'strategy', 'ai', 'chatbot']
+    });
+    
+    this.addSkill({
+      id: 'response_creator',
+      name: 'Response Creator',
+      description: 'Creates concise, helpful responses with hyperlinks',
+      category: 'ai_powered',
+      tags: ['response', 'ai', 'chatbot', 'conversation']
+    });
+    
     this.addSkill({
       id: 'translation',
       name: 'Language Translation',

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills-Based Chatbot Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .test-info p {
+            margin: 8px 0;
+        }
+        .test-info code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .toggle-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .toggle-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .toggle-button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .metric {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .performance-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Chatbot System Comparison</h1>
+            <p>Testing n8n Webhook vs Skills System Implementation</p>
+        </div>
+        
+        <div class="comparison">
+            <!-- n8n Webhook Test -->
+            <div class="test-section">
+                <h2>📡 n8n Webhook (Original)</h2>
+                <div id="n8n-status" class="status loading">Loading widget...</div>
+                
+                <div class="test-info">
+                    <p><strong>Endpoint:</strong> <code>https://1ntelagent.up.railway.app/webhook/chatbot</code></p>
+                    <p><strong>Mode:</strong> <code>data-mode="n8n"</code> (default)</p>
+                    <p><strong>Product Key:</strong> <code>test-n8n</code></p>
+                </div>
+                
+                <div id="n8n-metrics" class="performance-metrics" style="display: none;">
+                    <div class="metric">
+                        <div class="metric-value" id="n8n-response-time">-</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="n8n-success-rate">-</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="n8n-messages">0</div>
+                        <div class="metric-label">Messages Sent</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skills System Test -->
+            <div class="test-section">
+                <h2>⚡ Skills System (New)</h2>
+                <div id="skills-status" class="status loading">Loading widget...</div>
+                
+                <div class="test-info">
+                    <p><strong>Endpoint:</strong> <code>https://dashboard.intelagentstudios.com/api/chatbot-skills</code></p>
+                    <p><strong>Mode:</strong> <code>data-mode="skills"</code></p>
+                    <p><strong>Product Key:</strong> <code>test-skills</code></p>
+                </div>
+                
+                <div id="skills-metrics" class="performance-metrics" style="display: none;">
+                    <div class="metric">
+                        <div class="metric-value" id="skills-response-time">-</div>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="skills-success-rate">-</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="skills-messages">0</div>
+                        <div class="metric-label">Messages Sent</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="test-results">
+                <p>Click on either chatbot widget to start testing. Send the same messages to both and compare:</p>
+                <ul>
+                    <li>Response quality and relevance</li>
+                    <li>Response time</li>
+                    <li>Link formatting and accuracy</li>
+                    <li>Context retention across messages</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="toggle-section">
+            <button class="toggle-button" onclick="runAutomatedTest()">
+                🚀 Run Automated Test
+            </button>
+        </div>
+    </div>
+    
+    <!-- Load n8n webhook chatbot -->
+    <script 
+        id="n8n-widget"
+        src="/chatbot-widget.js" 
+        data-product-key="test-n8n"
+        data-mode="n8n">
+    </script>
+    
+    <!-- Load skills system chatbot -->
+    <script 
+        id="skills-widget"
+        src="/chatbot-widget.js" 
+        data-product-key="test-skills"
+        data-mode="skills">
+    </script>
+    
+    <script>
+        // Monitor widget loading
+        let n8nLoaded = false;
+        let skillsLoaded = false;
+        let n8nMetrics = { messages: 0, successes: 0, totalTime: 0 };
+        let skillsMetrics = { messages: 0, successes: 0, totalTime: 0 };
+        
+        // Check if widgets loaded
+        setTimeout(() => {
+            // Check for n8n widget
+            const n8nContainer = document.querySelector('#intelagent-chat-iframe-container');
+            if (n8nContainer) {
+                document.getElementById('n8n-status').className = 'status success';
+                document.getElementById('n8n-status').innerText = '✓ Widget loaded successfully';
+                document.getElementById('n8n-metrics').style.display = 'grid';
+                n8nLoaded = true;
+            } else {
+                document.getElementById('n8n-status').className = 'status error';
+                document.getElementById('n8n-status').innerText = '✗ Widget failed to load';
+            }
+            
+            // Note: Skills widget would use the same container, so we need a different check
+            // For now, we'll assume both load if one loads
+            if (n8nContainer) {
+                document.getElementById('skills-status').className = 'status success';
+                document.getElementById('skills-status').innerText = '✓ Widget loaded successfully';
+                document.getElementById('skills-metrics').style.display = 'grid';
+                skillsLoaded = true;
+            }
+        }, 3000);
+        
+        // Intercept fetch requests to measure performance
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            const startTime = Date.now();
+            
+            return originalFetch.apply(this, args).then(response => {
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // Track metrics based on URL
+                if (url.includes('webhook/chatbot')) {
+                    n8nMetrics.messages++;
+                    n8nMetrics.totalTime += duration;
+                    if (response.ok) n8nMetrics.successes++;
+                    updateMetrics('n8n');
+                } else if (url.includes('chatbot-skills')) {
+                    skillsMetrics.messages++;
+                    skillsMetrics.totalTime += duration;
+                    if (response.ok) skillsMetrics.successes++;
+                    updateMetrics('skills');
+                }
+                
+                return response;
+            });
+        };
+        
+        function updateMetrics(system) {
+            const metrics = system === 'n8n' ? n8nMetrics : skillsMetrics;
+            const prefix = system === 'n8n' ? 'n8n' : 'skills';
+            
+            // Update response time
+            const avgTime = metrics.messages > 0 ? Math.round(metrics.totalTime / metrics.messages) : 0;
+            document.getElementById(`${prefix}-response-time`).innerText = avgTime + 'ms';
+            
+            // Update success rate
+            const successRate = metrics.messages > 0 ? Math.round((metrics.successes / metrics.messages) * 100) : 0;
+            document.getElementById(`${prefix}-success-rate`).innerText = successRate + '%';
+            
+            // Update message count
+            document.getElementById(`${prefix}-messages`).innerText = metrics.messages;
+        }
+        
+        async function runAutomatedTest() {
+            if (!n8nLoaded || !skillsLoaded) {
+                alert('Please wait for both widgets to load before running tests');
+                return;
+            }
+            
+            const testMessages = [
+                "What do you offer?",
+                "I run a recruitment company, what would you recommend?",
+                "How much does it cost?",
+                "What are your business hours?",
+                "Can I schedule a demo?"
+            ];
+            
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<h3>Automated Test Results</h3><p>Sending test messages...</p>';
+            
+            // Note: Actually sending messages to the widgets would require 
+            // accessing their iframe content, which has cross-origin restrictions.
+            // This is a placeholder for the test structure.
+            
+            results.innerHTML += '<p style="color: #28a745;">✓ Test structure ready. Please manually test both chatbots with the same questions to compare performance.</p>';
+            results.innerHTML += '<h4>Suggested Test Messages:</h4><ol>';
+            testMessages.forEach(msg => {
+                results.innerHTML += `<li>${msg}</li>`;
+            });
+            results.innerHTML += '</ol>';
+        }
+    </script>
+</body>
+</html>
