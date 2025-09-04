@@ -403,7 +403,11 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    const apiUrl = 'https://1ntelagent.up.railway.app/api/chatbot/' + productKey;
+    // TODO: Update this to the correct deployment URL
+    // For now, use local development or the correct production URL
+    const apiUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3002/api/chatbot/' + productKey
+      : 'https://dashboard.intelagentstudios.com/api/chatbot/' + productKey;
 
     // Load chat history from localStorage
     function loadChatHistory() {
