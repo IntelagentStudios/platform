@@ -1,8 +1,11 @@
 # Simple, Railway-optimized Dockerfile
-FROM node:20-alpine
+FROM node:18-alpine
 
-# Install dependencies for node-gyp and Prisma - including OpenSSL 1.1 compatibility
-RUN apk add --no-cache python3 make g++ openssl1.1-compat openssl-dev libc6-compat
+# Install dependencies for node-gyp and Prisma
+# Note: Node 18 Alpine comes with OpenSSL 3.0 but we need compatibility layer
+RUN apk add --no-cache python3 make g++ libc6-compat \
+    && ln -s /usr/lib/libssl.so.3 /usr/lib/libssl.so.1.1 \
+    && ln -s /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.1.1
 
 WORKDIR /app
 
