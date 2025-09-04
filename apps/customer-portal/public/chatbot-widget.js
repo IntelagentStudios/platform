@@ -403,11 +403,9 @@
     }
     
     let sessionId = getOrCreateSessionId();
-    // Connect to the webhook endpoint - using n8n webhook that's confirmed working
-    // The webhook at /webhook/chatbot is active and responding
-    const apiUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3002/api/chatbot/' + productKey  // Local Next.js API
-      : 'https://1ntelagent.up.railway.app/webhook/chatbot';  // n8n webhook (confirmed working)
+    // CRITICAL: Use the n8n webhook that was working before skills system changes
+    // This webhook has been confirmed active and must remain the connection point
+    const webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
 
     // Load chat history from localStorage
     function loadChatHistory() {
@@ -625,8 +623,8 @@
           (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content.replace(/<[^>]*>/g, '')
         ).join('\\n');
 
-        console.log('Sending message to API:', apiUrl);
-        const response = await fetch(apiUrl, {
+        console.log('Sending message to webhook:', webhookUrl);
+        const response = await fetch(webhookUrl, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
