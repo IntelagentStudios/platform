@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chatbot Widget Test Page</h1>
+        
+        <div class="test-section">
+            <h2>Widget Status</h2>
+            <div id="widget-status" class="status">Checking widget...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Information</h2>
+            <p><strong>Current URL:</strong> <code id="current-url"></code></p>
+            <p><strong>Widget Script:</strong> <code>/chatbot-widget.js</code></p>
+            <p><strong>Product Key:</strong> <code>test-site</code></p>
+            <p><strong>Webhook URL:</strong> <code>https://1ntelagent.up.railway.app/webhook/chatbot</code></p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>The chatbot widget should appear in the bottom-right corner</li>
+                <li>Click the chat button to open the chat interface</li>
+                <li>Type a message and press Enter to test the webhook connection</li>
+                <li>Check the browser console for any errors</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Console Output</h2>
+            <pre id="console-output" style="background: #212529; color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;">Monitoring console...</pre>
+        </div>
+    </div>
+    
+    <!-- Load the chatbot widget -->
+    <script 
+        src="/chatbot-widget.js" 
+        data-product-key="test-site"
+        onerror="document.getElementById('widget-status').className = 'status error'; document.getElementById('widget-status').innerText = 'Failed to load widget script';">
+    </script>
+    
+    <script>
+        // Display current URL
+        document.getElementById('current-url').innerText = window.location.href;
+        
+        // Monitor console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function addToConsole(message, type) {
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : '#51cf66';
+            consoleOutput.innerHTML += `\n<span style="color: ${color}">[${time}] ${message}</span>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        // Check if widget loaded
+        setTimeout(() => {
+            const widgetExists = document.getElementById('intelagent-chat-iframe-container');
+            const statusDiv = document.getElementById('widget-status');
+            
+            if (widgetExists) {
+                statusDiv.className = 'status success';
+                statusDiv.innerText = '✓ Widget loaded successfully! Look for the chat button in the bottom-right corner.';
+                console.log('Widget container found:', widgetExists);
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerText = '✗ Widget failed to load. Check console for errors.';
+                console.error('Widget container not found');
+            }
+        }, 2000);
+        
+        // Test webhook connectivity
+        async function testWebhook() {
+            try {
+                console.log('Testing webhook connectivity...');
+                const response = await fetch('https://1ntelagent.up.railway.app/webhook/chatbot', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Test connection',
+                        sessionId: 'test-' + Date.now(),
+                        productKey: 'test-site'
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Webhook test successful! Status:', response.status);
+                } else {
+                    console.error('Webhook test failed! Status:', response.status);
+                }
+            } catch (error) {
+                console.error('Webhook test error:', error.message);
+            }
+        }
+        
+        // Run webhook test after page loads
+        window.addEventListener('load', () => {
+            setTimeout(testWebhook, 1000);
+        });
+    </script>
+</body>
+</html>

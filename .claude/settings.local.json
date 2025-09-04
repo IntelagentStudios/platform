@@ -73,7 +73,13 @@
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\dist/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\dist/**)",
       "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator/**)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Read(/C:\\Projects\\Intelagent Platform\\apps\\customer-portal\\public/**)",
+      "Read(/C:\\Projects\\Intelagent Platform/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\apps\\customer-portal/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\apps\\customer-portal/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\packages\\skills-orchestrator\\dist/**)",
+      "Read(/C:\\Projects\\Intelagent Platform\\apps\\customer-portal\\app\\api\\skills\\[id]/**)"
     ],
     "deny": [],
     "ask": []

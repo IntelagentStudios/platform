@@ -229,7 +229,9 @@ export class SkillsRegistry {
   static getInstance(): SkillsRegistry;
   register(skill: any): void;
   get(skillId: string): any;
+  getSkill(skillId: string): any;
   getAll(): any[];
+  getAllSkills(): any[];
   has(skillId: string): boolean;
   getSkillStats(skillId: string): {
     executions: number;
@@ -267,7 +269,9 @@ export class SkillFactory {
 }
 
 export class OrchestratorAgent {
+  static getInstance(): OrchestratorAgent;
   orchestrate(request: any): Promise<any>;
+  execute(request: any): Promise<any>;
 }
 
 export interface SkillDefinition {
