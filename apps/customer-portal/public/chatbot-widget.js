@@ -411,7 +411,8 @@
     
     // Use webhook endpoint - you'll need to create this workflow in n8n
     // The webhook should accept POST requests with {message, sessionId, productKey}
-    const apiUrl = n8nBaseUrl + '/webhook/chatbot/' + productKey;
+    // Simple path without productKey - configure this in your n8n workflow
+    const apiUrl = n8nBaseUrl + '/webhook/chatbot';
 
     // Load chat history from localStorage
     function loadChatHistory() {
@@ -640,6 +641,7 @@
           body: JSON.stringify({
             message: message,
             sessionId: sessionId,
+            productKey: productKey,  // Include productKey in request body
             chatHistory: chatHistory.slice(-10) // Send last 10 messages for context
           })
         });
