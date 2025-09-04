@@ -1,8 +1,8 @@
 # Simple, Railway-optimized Dockerfile
 FROM node:20-alpine
 
-# Install dependencies for node-gyp and Prisma
-RUN apk add --no-cache python3 make g++ openssl openssl-dev libc6-compat
+# Install dependencies for node-gyp and Prisma - including OpenSSL 1.1 compatibility
+RUN apk add --no-cache python3 make g++ openssl1.1-compat openssl-dev libc6-compat
 
 WORKDIR /app
 
@@ -51,7 +51,7 @@ RUN cd packages/skills-orchestrator && npm run build
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3002
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create non-root user
@@ -66,7 +66,7 @@ RUN mkdir -p /app/apps/customer-portal/.next && \
 USER nextjs
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3002
 
 # Set working directory
 WORKDIR /app/apps/customer-portal
