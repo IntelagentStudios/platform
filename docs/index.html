@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intelagent Chatbot Widget</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Intelagent Chatbot Widget Loader</h1>
+    <p>This page hosts the chatbot widget file.</p>
+    <script id="intelagent-chatbot-widget" type="text/javascript">
+// This script will be loaded by customer websites
+(function() {
+  // Get the product key from the script tag
+  const script = document.currentScript || document.getElementById('intelagent-chatbot-widget');
+  const productKey = script.getAttribute('data-product-key') || 
+                     script.getAttribute('data-site-key') || 
+                     script.getAttribute('data-site');
+  
+  if (!productKey) {
+    console.error('IntelagentChat: No product key provided. Use data-product-key attribute.');
+    return;
+  }
+  
+  console.log('IntelagentChat: Initializing with product key:', productKey);
+
+  // Check if widget already exists
+  if (document.getElementById('intelagent-chat-widget-container')) {
+    return;
+  }
+
+  // Create a container for the widget
+  const container = document.createElement('div');
+  container.id = 'intelagent-chat-widget-container';
+  container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:999999;';
+  
+  // Create the chat button
+  const button = document.createElement('div');
+  button.id = 'intelagent-chat-button';
+  button.style.cssText = `
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  `;
+  button.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+  
+  // Create the chat window
+  const chatWindow = document.createElement('div');
+  chatWindow.id = 'intelagent-chat-window';
+  chatWindow.style.cssText = `
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 380px;
+    height: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  `;
+  
+  chatWindow.innerHTML = `
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+      <span>Chat Support</span>
+      <span id="intelagent-close" style="cursor: pointer; font-size: 24px;">&times;</span>
+    </div>
+    <div id="intelagent-messages" style="flex: 1; overflow-y: auto; padding: 20px;"></div>
+    <div style="padding: 20px; border-top: 1px solid #e0e0e0;">
+      <div style="display: flex; gap: 10px;">
+        <input id="intelagent-input" type="text" placeholder="Type your message..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+        <button id="intelagent-send" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">Send</button>
+      </div>
+    </div>
+  `;
+  
+  container.appendChild(button);
+  container.appendChild(chatWindow);
+  document.body.appendChild(container);
+  
+  // Widget functionality
+  let isOpen = false;
+  let sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  const messagesDiv = document.getElementById('intelagent-messages');
+  const input = document.getElementById('intelagent-input');
+  const sendBtn = document.getElementById('intelagent-send');
+  const closeBtn = document.getElementById('intelagent-close');
+  
+  // Toggle chat window
+  button.onclick = function() {
+    isOpen = !isOpen;
+    chatWindow.style.display = isOpen ? 'flex' : 'none';
+    if (isOpen && messagesDiv.children.length === 0) {
+      addMessage('bot', 'Hello! How can I help you today?');
+    }
+  };
+  
+  closeBtn.onclick = function() {
+    isOpen = false;
+    chatWindow.style.display = 'none';
+  };
+  
+  // Add message to chat
+  function addMessage(type, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = `
+      margin: 10px 0;
+      display: flex;
+      justify-content: ${type === 'user' ? 'flex-end' : 'flex-start'};
+    `;
+    
+    const bubble = document.createElement('div');
+    bubble.style.cssText = `
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 18px;
+      background: ${type === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f0f0f0'};
+      color: ${type === 'user' ? 'white' : '#333'};
+    `;
+    bubble.innerHTML = text;
+    
+    msgDiv.appendChild(bubble);
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+  
+  // Send message to webhook
+  async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+    
+    addMessage('user', message);
+    input.value = '';
+    
+    try {
+      const response = await fetch('https://1ntelagent.up.railway.app/webhook/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: message,
+          sessionId: sessionId,
+          productKey: productKey
+        })
+      });
+      
+      const data = await response.json();
+      const botResponse = data.message || data.response || 'I apologize, but I encountered an error.';
+      addMessage('bot', botResponse);
+      
+    } catch (error) {
+      console.error('Chat error:', error);
+      addMessage('bot', 'Sorry, I am having trouble connecting. Please try again later.');
+    }
+  }
+  
+  sendBtn.onclick = sendMessage;
+  input.onkeypress = function(e) {
+    if (e.key === 'Enter') sendMessage();
+  };
+  
+  console.log('IntelagentChat: Widget loaded successfully');
+})();
+    </script>
+    
+    <h2>How to embed the chatbot on your website:</h2>
+    <pre>
+&lt;script 
+  src="https://intelagentstudios.github.io/platform/index.html" 
+  data-product-key="YOUR-PRODUCT-KEY"&gt;
+&lt;/script&gt;
+    </pre>
+</body>
+</html>
