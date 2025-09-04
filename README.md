@@ -4,6 +4,13 @@ A unified, modular AI-powered business automation platform that consolidates mul
 
 ## 🆕 Latest Updates (January 2025)
 
+### Chatbot System Migration to Skills Platform
+- **Skills-based implementation** - Migrated from n8n webhook to native skills system
+- **Improved performance** - Direct database access, no external webhook calls
+- **Zero-downtime migration** - Both systems available, skills mode now default
+- **Better maintainability** - All code in single repository with unified error handling
+- See test page at `/test-migrated-chatbot.html` for verification
+
 ### Universal Product Configuration System v2.0
 - **Form-based configuration** - Replaced conversational setup with simple forms
 - **Universal product status** - Consistent detection across all licenses

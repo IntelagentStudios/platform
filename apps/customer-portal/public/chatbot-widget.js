@@ -404,18 +404,18 @@
     
     let sessionId = getOrCreateSessionId();
     
-    // DUAL MODE: Support both n8n webhook AND skills-based endpoint
-    // Check for mode in script tag: data-mode="skills" or data-mode="n8n" (default)
+    // Migration complete: Skills system is now the default
+    // Legacy n8n mode can still be enabled with data-mode="n8n" for backward compatibility
     const scriptTag = document.currentScript || document.querySelector('script[src*="chatbot-widget"]');
-    const mode = scriptTag?.getAttribute('data-mode') || 'n8n';
-    const useSkillsSystem = mode === 'skills' || scriptTag?.hasAttribute('data-use-skills');
+    const mode = scriptTag?.getAttribute('data-mode') || 'skills';
+    const useSkillsSystem = mode !== 'n8n';
     
     // Select endpoint based on mode
     const webhookUrl = useSkillsSystem 
       ? 'https://dashboard.intelagentstudios.com/api/chatbot-skills'
       : 'https://1ntelagent.up.railway.app/webhook/chatbot';
     
-    console.log('Chatbot mode:', useSkillsSystem ? 'Skills System' : 'n8n Webhook');
+    console.log('Chatbot mode:', useSkillsSystem ? 'Skills System (Default)' : 'n8n Webhook (Legacy)');
 
     // Load chat history from localStorage
     function loadChatHistory() {
