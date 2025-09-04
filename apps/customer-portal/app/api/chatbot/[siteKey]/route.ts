@@ -175,7 +175,8 @@ export async function POST(
     await trackUsage(siteKey);
     
     return NextResponse.json({
-      response,
+      message: response,  // Changed from 'response' to 'message' to match what the widget expects
+      response,  // Keep for backwards compatibility
       sessionId,
       timestamp: new Date().toISOString(),
       metadata
