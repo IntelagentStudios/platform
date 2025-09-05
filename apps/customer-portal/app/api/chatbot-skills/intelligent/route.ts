@@ -262,17 +262,17 @@ function createResponseWithContent(
       .replace(/\s+/g, ' ')
       .trim();
     
-    // Add appropriate link based on intent
+    // Add appropriate link based on intent (generic for all companies)
     const linkMap: { [key: string]: string } = {
-      recruitment_solutions: `Learn more about our <a href="${baseUrl}/products">recruitment solutions</a>.`,
-      ecommerce_solutions: `Explore our <a href="${baseUrl}/products/chatbot">e-commerce tools</a>.`,
-      services: `View all <a href="${baseUrl}/services">services</a>.`,
-      offerings: `See our <a href="${baseUrl}/products">full offerings</a>.`,
-      products: `Browse our <a href="${baseUrl}/products">product catalog</a>.`,
+      recruitment_solutions: `Learn more about <a href="${baseUrl}/products">our solutions</a>.`,
+      ecommerce_solutions: `Explore <a href="${baseUrl}/products">our tools</a>.`,
+      services: `View <a href="${baseUrl}/services">our services</a>.`,
+      offerings: `See <a href="${baseUrl}/products">our offerings</a>.`,
+      products: `Browse <a href="${baseUrl}/products">our products</a>.`,
       pricing: `Check <a href="${baseUrl}/pricing">pricing details</a>.`,
-      contact_info: `<a href="${baseUrl}/contact">Contact us directly</a>.`,
+      contact_info: `<a href="${baseUrl}/contact">Contact us</a>.`,
       company_info: `More <a href="${baseUrl}/about">about us</a>.`,
-      chatbot: `Try our <a href="${baseUrl}/products/chatbot">chatbot free</a>.`
+      chatbot: `Learn more <a href="${baseUrl}">here</a>.`
     };
     
     // Add follow-up question based on intent
@@ -299,17 +299,17 @@ function createResponseWithContent(
     return `${response} ${link} ${followUp}`;
   }
   
-  // ONLY if no content was scraped at all, provide minimal fallback
+  // ONLY if no content was scraped at all, provide minimal generic fallback
   console.log('Warning: No content scraped, using minimal fallback');
   const minimalFallbacks: { [key: string]: string } = {
-    services: `Please visit our <a href="${baseUrl}/services">services page</a> for current offerings. How can we assist you?`,
-    offerings: `View our <a href="${baseUrl}/products">products and solutions</a>. What specific need do you have?`,
-    products: `See our <a href="${baseUrl}/products">product catalog</a>. What are you looking for?`,
-    pricing: `Check our <a href="${baseUrl}/pricing">pricing page</a> for current rates. Need a custom quote?`,
-    contact_info: `Visit our <a href="${baseUrl}/contact">contact page</a> for details. How can we help?`,
-    company_info: `Learn more <a href="${baseUrl}/about">about ${companyName}</a>. What would you like to know?`,
-    chatbot: `Explore our <a href="${baseUrl}/products/chatbot">chatbot solution</a>. Want a demo?`,
-    general: `Visit <a href="${baseUrl}">our website</a> for information. How can I help you?`
+    services: `Please visit our <a href="${baseUrl}/services">services page</a> for details. How can I assist you?`,
+    offerings: `View our <a href="${baseUrl}/products">solutions</a>. What are you looking for?`,
+    products: `See our <a href="${baseUrl}/products">products</a>. What interests you?`,
+    pricing: `Check our <a href="${baseUrl}/pricing">pricing page</a>. Need specific information?`,
+    contact_info: `Visit our <a href="${baseUrl}/contact">contact page</a>. How can I help?`,
+    company_info: `Learn more <a href="${baseUrl}/about">about us</a>. What would you like to know?`,
+    chatbot: `I'm here to help answer your questions. What would you like to know?`,
+    general: `Visit <a href="${baseUrl}">our website</a> for more information. How can I assist you?`
   };
   
   return minimalFallbacks[intent] || minimalFallbacks.general;
