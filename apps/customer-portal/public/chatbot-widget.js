@@ -411,15 +411,17 @@
     
     // Select endpoint based on mode
     let webhookUrl;
-    if (mode === 'enhanced') {
+    if (mode === 'modular' || mode === 'n8n') {
+      // Use modular endpoint that can call n8n or other skills
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/modular';
+    } else if (mode === 'enhanced' || mode === 'intelligent') {
       // Use intelligent dual-agent endpoint
-      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/intelligent';
-    } else if (mode === 'skills') {
       webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/intelligent';
     } else if (mode === 'simple') {
       webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/simple';
     } else {
-      webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';
+      // Default to modular endpoint (which uses n8n by default)
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/modular';
     }
     
     console.log('Chatbot mode:', mode === 'enhanced' ? 'Enhanced Skills (310 skills)' : mode === 'skills' ? 'Basic Skills' : 'n8n Webhook (Legacy)');
