@@ -124,10 +124,38 @@ function searchStrategy(message: string, chatHistory: any[], customKnowledge: an
 }
 
 /**
+ * Extract relevant sentences from scraped content
+ */
+function extractRelevantInfo(content: string, keywords: string[], maxLength: number = 200): string {
+  if (!content) return '';
+  
+  const sentences = content.match(/[^.!?]+[.!?]+/g) || [];
+  const relevant: string[] = [];
+  
+  for (const sentence of sentences) {
+    const lowerSentence = sentence.toLowerCase();
+    for (const keyword of keywords) {
+      if (lowerSentence.includes(keyword.toLowerCase())) {
+        const cleaned = sentence.trim().replace(/\s+/g, ' ');
+        if (cleaned.length > 20 && cleaned.length < 300 && !relevant.includes(cleaned)) {
+          relevant.push(cleaned);
+          break;
+        }
+      }
+    }
+    if (relevant.length >= 2) break;
+  }
+  
+  const result = relevant.join(' ').substring(0, maxLength);
+  return result || '';
+}
+
+/**
  * Agent 2: Concise Company Representative
  * Creates SHORT responses with hyperlinks (max 2 sentences, 40 words)
+ * Uses ACTUAL scraped content when available
  */
-function createResponse(
+function createResponseWithContent(
   message: string,
   strategy: any,
   scrapedContent: string,
@@ -137,7 +165,46 @@ function createResponse(
   const intent = strategy.intent;
   const baseUrl = `https://${domain}`;
   
-  // Map of intent to response templates
+  // Try to extract relevant info from scraped content
+  let extractedInfo = '';
+  if (scrapedContent) {
+    // Keywords based on intent
+    const keywordMap: { [key: string]: string[] } = {
+      recruitment_solutions: ['recruitment', 'hiring', 'candidate', 'screening', 'talent'],
+      ecommerce_solutions: ['ecommerce', 'shop', 'store', 'cart', 'order', 'customer'],
+      offerings: ['service', 'offer', 'provide', 'solution', 'help'],
+      products: ['product', 'feature', 'tool', 'platform', 'software'],
+      pricing: ['price', 'cost', 'plan', 'package', 'subscription', 'free', '$'],
+      contact_info: ['contact', 'email', 'phone', 'hours', 'support', '@'],
+      company_info: ['about', 'founded', 'mission', 'team', 'company'],
+      chatbot: ['chatbot', 'chat', 'ai', 'conversation', 'automated']
+    };
+    
+    const keywords = keywordMap[intent] || ['service', 'product', 'help'];
+    extractedInfo = extractRelevantInfo(scrapedContent, keywords);
+  }
+  
+  // If we found relevant content, use it; otherwise fall back to templates
+  if (extractedInfo && extractedInfo.length > 50) {
+    // Create response using actual scraped data
+    const shortInfo = extractedInfo.substring(0, 120).replace(/\s+$/, '');
+    
+    const contextualResponses: { [key: string]: string } = {
+      recruitment_solutions: `${shortInfo}. View our <a href="${baseUrl}/products">full recruitment solutions</a>. How can we help with hiring?`,
+      ecommerce_solutions: `${shortInfo}. Check our <a href="${baseUrl}/products/chatbot">e-commerce tools</a>. What's your store platform?`,
+      offerings: `${shortInfo}. Explore <a href="${baseUrl}/products">all solutions</a>. Which area interests you?`,
+      products: `${shortInfo}. See <a href="${baseUrl}/products">complete catalog</a>. Need specific details?`,
+      pricing: `${shortInfo}. View <a href="${baseUrl}/pricing">pricing options</a> or <a href="${baseUrl}/contact">contact sales</a>.`,
+      contact_info: `${shortInfo}. <a href="${baseUrl}/contact">Contact us</a> for immediate assistance.`,
+      company_info: `${shortInfo}. Learn more <a href="${baseUrl}/about">about us</a>.`,
+      chatbot: `${shortInfo}. Try our <a href="${baseUrl}/products/chatbot">AI chatbot</a> free.`,
+      general: `${shortInfo}. Visit <a href="${baseUrl}">our website</a> for more information.`
+    };
+    
+    return contextualResponses[intent] || contextualResponses.general;
+  }
+  
+  // Fall back to original template responses if no content scraped
   const responses: { [key: string]: string } = {
     offerings: `We provide AI-powered automation tools including chatbots, sales agents, and workflow automation. Our <a href="${baseUrl}/products">solutions</a> help businesses reduce costs by up to 70%. Which area interests you most?`,
     
@@ -207,12 +274,74 @@ export async function POST(request: NextRequest) {
     const strategy = searchStrategy(message, chatHistory, customKnowledge);
     console.log('Search strategy:', strategy);
 
-    // For now, we'll use scraped content placeholder
-    // In production, this would actually scrape the determined pages
-    const scrapedContent = '';
+    // Actually scrape the website based on strategy
+    let scrapedContent = '';
+    try {
+      const urlToScrape = `https://${domain}${strategy.search_path}`;
+      console.log('Scraping:', urlToScrape);
+      
+      const scrapeResponse = await fetch(urlToScrape, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'IntelagentChatbot/2.0'
+        }
+      }).catch(() => null);
+      
+      if (scrapeResponse && scrapeResponse.ok) {
+        const html = await scrapeResponse.text();
+        
+        // Extract text content (remove HTML tags)
+        scrapedContent = html
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .substring(0, 5000); // Limit to 5000 chars
+        
+        console.log(`Scraped ${scrapedContent.length} characters from ${urlToScrape}`);
+        
+        // Try fallback paths if content is too short
+        if (scrapedContent.length < 100 && strategy.fallback_paths?.length > 0) {
+          for (const fallbackPath of strategy.fallback_paths.slice(0, 2)) {
+            const fallbackUrl = `https://${domain}${fallbackPath}`;
+            console.log('Trying fallback:', fallbackUrl);
+            
+            const fallbackResponse = await fetch(fallbackUrl, {
+              method: 'GET',
+              headers: { 'User-Agent': 'IntelagentChatbot/2.0' }
+            }).catch(() => null);
+            
+            if (fallbackResponse && fallbackResponse.ok) {
+              const fallbackHtml = await fallbackResponse.text();
+              const fallbackContent = fallbackHtml
+                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .substring(0, 3000);
+              
+              scrapedContent += ' ' + fallbackContent;
+              
+              if (scrapedContent.length > 500) break; // Enough content
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Scraping error:', error);
+    }
+    
+    // If no scraped content, check custom knowledge
+    if (!scrapedContent && customKnowledge) {
+      scrapedContent = JSON.stringify(customKnowledge);
+    }
+    
+    console.log('Final scraped content length:', scrapedContent.length);
 
-    // AGENT 2: Create concise response with hyperlinks
-    const response = createResponse(message, strategy, scrapedContent, domain, companyName);
+    // AGENT 2: Create response using scraped content
+    const response = createResponseWithContent(message, strategy, scrapedContent, domain, companyName);
 
     // Log conversation
     try {

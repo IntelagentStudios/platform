@@ -155,6 +155,27 @@ model chatbot_logs {
   @@schema("public")
 }
 
+model skill_logs {
+  id           Int       @id @default(autoincrement())
+  skill_id     String    @db.VarChar(100)
+  skill_name   String    @db.VarChar(255)
+  session_id   String    @db.VarChar(255)
+  user_id      String?   @db.VarChar(255)
+  product_key  String?   @db.VarChar(255)
+  domain       String?   @db.VarChar(255)
+  log_type     String    @db.VarChar(50) // 'request', 'response', 'error'
+  data         Json?
+  timestamp    DateTime? @default(now()) @db.Timestamp(6)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([session_id], map: "idx_skill_logs_session")
+  @@index([skill_id], map: "idx_skill_logs_skill")
+  @@index([product_key], map: "idx_skill_logs_product")
+  @@index([timestamp], map: "idx_skill_logs_timestamp")
+  @@index([domain], map: "idx_skill_logs_domain")
+  @@schema("public")
+}
+
 model credentials_entity {
   name               String               @db.VarChar(128)
   data               String
