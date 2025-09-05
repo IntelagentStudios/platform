@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Health check endpoint for Docker/Railway
  * Returns 200 OK if the service is running
+ * Updated: 2025-09-05 - Fixed n8n integration
  */
 export async function GET(request: NextRequest) {
   try {
