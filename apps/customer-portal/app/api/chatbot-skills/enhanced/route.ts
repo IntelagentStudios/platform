@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { OrchestratorAgent } from '@intelagent/skills-orchestrator';
+import { OrchestratorAgent } from '@intelagent/skills-orchestrator/dist/core/OrchestratorAgent';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const skillsToExecute = determineSkillCombination(analysis, null);
     
     // Execute skills in optimized sequence
-    const orchestrator = new OrchestratorAgent();
+    const orchestrator = OrchestratorAgent.getInstance();
     const executionResults = await executeSkillWorkflow(
       orchestrator,
       skillsToExecute,
@@ -262,14 +262,23 @@ async function executeSkillWorkflow(
   for (const group of parallelGroups) {
     const groupPromises = group.map(async (skill) => {
       try {
-        // Use the execute method with a single skill
+        // Use the execute method with proper parameters
         const result = await orchestrator.execute({
-          workflow: 'single_skill',
+          skillId: skill.id,
           params: {
-            ...params,
+            ...params.context,
+            message: params.message,
             previousResults: results
           },
-          skills: [skill.id]
+          context: {
+            userId: params.sessionId || 'chatbot-user',
+            licenseKey: params.productKey || 'chatbot',
+            sessionId: params.sessionId,
+            metadata: {
+              source: 'chatbot',
+              productKey: params.productKey
+            }
+          }
         });
         
         results[skill.id] = result;
