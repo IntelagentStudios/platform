@@ -132,63 +132,83 @@ function searchStrategy(message: string, chatHistory: any[], customKnowledge: an
 }
 
 /**
- * Extract and clean relevant information from scraped content
+ * Extract and intelligently process scraped content
+ * Similar to n8n workflow's content extraction
  */
-function extractRelevantInfo(content: string, keywords: string[]): string {
-  if (!content) return '';
+function extractRelevantInfo(content: string, keywords: string[]): string[] {
+  if (!content) return [];
   
-  // Clean up the content first
-  const cleaned = content
-    .replace(/\s+/g, ' ')
-    .replace(/([A-Z])/g, ' $1') // Add space before capitals
+  // First, clean the content properly
+  let cleaned = content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/\n+/g, '. ')
     .replace(/\s+/g, ' ')
     .trim();
   
-  // Look for meaningful phrases containing keywords
-  const words = cleaned.split(' ');
-  const relevantPhrases: string[] = [];
+  // Split into sentences
+  const sentences = cleaned.match(/[^.!?]+[.!?]+/g) || [];
+  const relevantSentences: string[] = [];
+  const seenContent = new Set<string>();
   
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i].toLowerCase();
+  // Score each sentence based on keyword relevance
+  for (const sentence of sentences) {
+    let score = 0;
+    const lowerSentence = sentence.toLowerCase();
+    
+    // Skip navigation/header content
+    if (lowerSentence.length < 30 || 
+        lowerSentence.match(/^(home|about|services|products|contact|menu)/i) ||
+        lowerSentence.includes('cookie') ||
+        lowerSentence.includes('privacy policy')) {
+      continue;
+    }
+    
+    // Score based on keywords
     for (const keyword of keywords) {
-      if (word.includes(keyword.toLowerCase())) {
-        // Get surrounding context (5 words before and after)
-        const start = Math.max(0, i - 5);
-        const end = Math.min(words.length, i + 6);
-        const phrase = words.slice(start, end).join(' ');
-        
-        // Clean up the phrase
-        const cleanPhrase = phrase
-          .replace(/[A-Z]{2,}/g, match => match.charAt(0) + match.slice(1).toLowerCase()) // Fix ALL CAPS
-          .replace(/\b(CONTACT US|HOME|ABOUT|SERVICES|PRODUCTS)\b/gi, '') // Remove nav items
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        if (cleanPhrase.length > 30 && cleanPhrase.length < 150) {
-          relevantPhrases.push(cleanPhrase);
-        }
-        break;
+      if (lowerSentence.includes(keyword.toLowerCase())) {
+        score += 2;
       }
     }
-    if (relevantPhrases.length >= 2) break;
+    
+    // Boost score for valuable content indicators
+    if (lowerSentence.includes('we offer') || 
+        lowerSentence.includes('we provide') ||
+        lowerSentence.includes('our service') ||
+        lowerSentence.includes('our product')) {
+      score += 3;
+    }
+    
+    if (score > 0) {
+      const cleanedSentence = sentence
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Avoid duplicates
+      const sentenceKey = cleanedSentence.substring(0, 50);
+      if (!seenContent.has(sentenceKey)) {
+        seenContent.add(sentenceKey);
+        relevantSentences.push({
+          sentence: cleanedSentence,
+          score: score
+        } as any);
+      }
+    }
   }
   
-  // If no good phrases found, return empty (will use templates)
-  if (relevantPhrases.length === 0) return '';
-  
-  // Join and clean up
-  const result = relevantPhrases.join('. ')
-    .replace(/\.\./g, '.')
-    .replace(/\s+/g, ' ')
-    .substring(0, 150);
-  
-  return result;
+  // Sort by score and take the best ones
+  return relevantSentences
+    .sort((a: any, b: any) => b.score - a.score)
+    .slice(0, 3)
+    .map((item: any) => item.sentence);
 }
 
 /**
- * Agent 2: Concise Company Representative
- * Creates SHORT responses with hyperlinks (max 2 sentences, 40 words)
- * Uses ACTUAL scraped content when available
+ * Agent 2: Intelligent Response Creator
+ * Uses ACTUAL scraped content to create responses
+ * Mimics n8n workflow's dual-agent approach
  */
 function createResponseWithContent(
   message: string,
@@ -200,87 +220,99 @@ function createResponseWithContent(
   const intent = strategy.intent;
   const baseUrl = `https://${domain}`;
   
-  // Try to extract relevant info from scraped content
-  let extractedInfo = '';
-  if (scrapedContent) {
-    // Keywords based on intent
+  // Extract relevant sentences from scraped content
+  let relevantSentences: string[] = [];
+  
+  if (scrapedContent && scrapedContent.length > 100) {
+    // Keywords based on intent - more comprehensive
     const keywordMap: { [key: string]: string[] } = {
-      recruitment_solutions: ['recruitment', 'hiring', 'candidate', 'screening', 'talent'],
-      ecommerce_solutions: ['ecommerce', 'shop', 'store', 'cart', 'order', 'customer'],
-      services: ['service', 'consulting', 'implementation', 'support', 'professional'],
-      offerings: ['offer', 'provide', 'solution', 'help', 'automation'],
-      products: ['product', 'feature', 'tool', 'platform', 'software'],
-      pricing: ['price', 'cost', 'plan', 'package', 'subscription', 'free', '$'],
-      contact_info: ['contact', 'email', 'phone', 'hours', 'support', '@'],
-      company_info: ['about', 'founded', 'mission', 'team', 'company'],
-      chatbot: ['chatbot', 'chat', 'ai', 'conversation', 'automated']
+      recruitment_solutions: ['recruitment', 'hiring', 'candidate', 'screening', 'talent', 'hr', 'interview', 'applicant'],
+      ecommerce_solutions: ['ecommerce', 'e-commerce', 'shop', 'store', 'cart', 'order', 'customer', 'online', 'retail'],
+      services: ['service', 'consulting', 'implementation', 'support', 'professional', 'expertise', 'assist'],
+      offerings: ['offer', 'provide', 'solution', 'help', 'automation', 'deliver', 'enable'],
+      products: ['product', 'feature', 'tool', 'platform', 'software', 'application', 'system'],
+      pricing: ['price', 'pricing', 'cost', 'plan', 'package', 'subscription', 'free', 'trial', 'month', 'year', '$', '€', '£'],
+      contact_info: ['contact', 'email', 'phone', 'call', 'hours', 'support', 'reach', 'available', '@'],
+      company_info: ['about', 'founded', 'mission', 'team', 'company', 'who we are', 'established', 'vision'],
+      chatbot: ['chatbot', 'chat', 'bot', 'ai', 'artificial', 'conversation', 'automated', 'assistant']
     };
     
-    const keywords = keywordMap[intent] || ['service', 'product', 'help'];
-    extractedInfo = extractRelevantInfo(scrapedContent, keywords);
+    const keywords = keywordMap[intent] || ['service', 'product', 'solution', 'help', 'offer', 'provide'];
+    relevantSentences = extractRelevantInfo(scrapedContent, keywords);
   }
   
-  // Check if we have meaningful extracted content
-  const hasGoodContent = extractedInfo && 
-                         extractedInfo.length > 50 && 
-                         !extractedInfo.includes('undefined') &&
-                         !extractedInfo.match(/^[A-Z\s]+$/); // Not all caps navigation
-  
-  // If scraped content is poor quality, use professional templates
-  if (!hasGoodContent) {
-    // Skip to template responses below
-  } else {
-    // Try to create a better response with scraped content
-    // But validate it first - if it looks bad, skip it
-    const testResponse = extractedInfo.substring(0, 120).replace(/\s+$/, '');
+  // Build response from scraped content
+  if (relevantSentences && relevantSentences.length > 0) {
+    // Take the best 1-2 sentences and make them concise
+    let response = '';
     
-    // Check if the extracted content is actually useful
-    if (testResponse.split(' ').length < 5 || testResponse.match(/\b(info@|\.com|Studios Contact)\b/)) {
-      // Content is too fragmented, use templates instead
+    if (relevantSentences.length >= 2) {
+      // Use first sentence as main info, second as support
+      const mainInfo = relevantSentences[0].substring(0, 100);
+      const supportInfo = relevantSentences[1].substring(0, 80);
+      response = `${mainInfo}. ${supportInfo}`;
     } else {
-      // Use the extracted content with proper formatting
-      const contextualResponses: { [key: string]: string } = {
-        recruitment_solutions: `We offer comprehensive recruitment solutions. View our <a href="${baseUrl}/products">full suite</a> for hiring automation. How can we help streamline your recruitment?`,
-        ecommerce_solutions: `Our e-commerce solutions automate customer service and sales. Check our <a href="${baseUrl}/products/chatbot">AI tools</a>. What's your platform?`,
-        services: `We provide consulting, implementation, and support services for AI automation. View our <a href="${baseUrl}/services">service offerings</a>. What challenge can we help solve?`,
-        offerings: `We provide AI-powered business automation tools. Explore <a href="${baseUrl}/products">all solutions</a>. Which area interests you most?`,
-        products: `Our products include AI chatbots, sales agents, and automation tools. See our <a href="${baseUrl}/products">complete catalog</a>. What's your need?`,
-        pricing: `Pricing starts at $299/month with custom enterprise options. View <a href="${baseUrl}/pricing">pricing details</a> or <a href="${baseUrl}/contact">contact sales</a>.`,
-        contact_info: `Reach us at support@${domain} or through our website. <a href="${baseUrl}/contact">Contact us here</a> for immediate assistance.`,
-        company_info: `${companyName} specializes in AI-powered business automation. Learn more <a href="${baseUrl}/about">about our mission</a>.`,
-        chatbot: `Our AI chatbot handles unlimited conversations 24/7. Try it <a href="${baseUrl}/products/chatbot">free here</a>.`,
-        general: `We offer AI automation solutions for businesses. Visit <a href="${baseUrl}">our website</a> to explore our products.`
-      };
-      
-      return contextualResponses[intent] || contextualResponses.general;
+      // Use single sentence
+      response = relevantSentences[0].substring(0, 150);
     }
+    
+    // Clean up the response
+    response = response
+      .replace(/\.\./g, '.')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Add appropriate link based on intent
+    const linkMap: { [key: string]: string } = {
+      recruitment_solutions: `Learn more about our <a href="${baseUrl}/products">recruitment solutions</a>.`,
+      ecommerce_solutions: `Explore our <a href="${baseUrl}/products/chatbot">e-commerce tools</a>.`,
+      services: `View all <a href="${baseUrl}/services">services</a>.`,
+      offerings: `See our <a href="${baseUrl}/products">full offerings</a>.`,
+      products: `Browse our <a href="${baseUrl}/products">product catalog</a>.`,
+      pricing: `Check <a href="${baseUrl}/pricing">pricing details</a>.`,
+      contact_info: `<a href="${baseUrl}/contact">Contact us directly</a>.`,
+      company_info: `More <a href="${baseUrl}/about">about us</a>.`,
+      chatbot: `Try our <a href="${baseUrl}/products/chatbot">chatbot free</a>.`
+    };
+    
+    // Add follow-up question based on intent
+    const followUpMap: { [key: string]: string } = {
+      recruitment_solutions: 'What role are you hiring for?',
+      ecommerce_solutions: 'What platform do you use?',
+      services: 'What challenge can we help with?',
+      offerings: 'Which area interests you?',
+      products: 'What functionality do you need?',
+      pricing: 'What's your budget range?',
+      contact_info: 'How can we help?',
+      company_info: 'What would you like to know?',
+      chatbot: 'Would you like a demo?'
+    };
+    
+    const link = linkMap[intent] || `Visit <a href="${baseUrl}">our website</a>.`;
+    const followUp = followUpMap[intent] || 'How can I help?';
+    
+    // Combine into final response (keep under 2 sentences, ~40 words)
+    if (response.length > 120) {
+      response = response.substring(0, 120) + '...';
+    }
+    
+    return `${response} ${link} ${followUp}`;
   }
   
-  // Fall back to original template responses if no content scraped
-  const responses: { [key: string]: string } = {
-    services: `We offer professional services including consulting, implementation, and 24/7 support. Check our <a href="${baseUrl}/services">services page</a> for details. How can we assist you?`,
-    
-    offerings: `We provide AI-powered automation tools including chatbots, sales agents, and workflow automation. Our <a href="${baseUrl}/products">solutions</a> help businesses reduce costs by up to 70%. Which area interests you most?`,
-    
-    products: `Our <a href="${baseUrl}/products">product suite</a> includes AI chatbots, sales automation, and data enrichment tools. Each integrates seamlessly with your existing systems. What's your primary automation need?`,
-    
-    recruitment_solutions: `Our <a href="${baseUrl}/products/sales-agent">AI Sales Agent</a> automates candidate outreach while our chatbot screens applicants 24/7. This reduces hiring time by 60%. What's your biggest recruitment challenge?`,
-    
-    ecommerce_solutions: `Our <a href="${baseUrl}/products/chatbot">AI Chatbot</a> handles customer inquiries and order tracking instantly. It integrates with Shopify, WooCommerce, and custom platforms. What's your current monthly ticket volume?`,
-    
-    pricing: `Solutions start at $299/month with <a href="${baseUrl}/pricing">various packages</a> for different business sizes. <a href="${baseUrl}/contact">Contact us</a> for enterprise pricing. What's your budget range?`,
-    
-    contact_info: `Reach us at support@${domain} or call during business hours (9am-6pm EST). <a href="${baseUrl}/contact">Schedule a consultation</a> for personalized assistance. When would work best for you?`,
-    
-    company_info: `${companyName} specializes in AI automation with over 310+ skills to transform your business processes. Learn more <a href="${baseUrl}/about">about our mission</a>. What specific challenge brought you here?`,
-    
-    chatbot: `Our <a href="${baseUrl}/products/chatbot">AI Chatbot</a> learns from your content and handles unlimited conversations simultaneously. Setup takes just 5 minutes. Would you like a free trial?`,
-    
-    general: `I can help you explore our <a href="${baseUrl}/products">AI automation solutions</a> or answer specific questions. Our tools save businesses 20+ hours weekly. What process would you like to automate first?`
+  // ONLY if no content was scraped at all, provide minimal fallback
+  console.log('Warning: No content scraped, using minimal fallback');
+  const minimalFallbacks: { [key: string]: string } = {
+    services: `Please visit our <a href="${baseUrl}/services">services page</a> for current offerings. How can we assist you?`,
+    offerings: `View our <a href="${baseUrl}/products">products and solutions</a>. What specific need do you have?`,
+    products: `See our <a href="${baseUrl}/products">product catalog</a>. What are you looking for?`,
+    pricing: `Check our <a href="${baseUrl}/pricing">pricing page</a> for current rates. Need a custom quote?`,
+    contact_info: `Visit our <a href="${baseUrl}/contact">contact page</a> for details. How can we help?`,
+    company_info: `Learn more <a href="${baseUrl}/about">about ${companyName}</a>. What would you like to know?`,
+    chatbot: `Explore our <a href="${baseUrl}/products/chatbot">chatbot solution</a>. Want a demo?`,
+    general: `Visit <a href="${baseUrl}">our website</a> for information. How can I help you?`
   };
   
-  // Return the appropriate response or default
-  return responses[intent] || responses.general;
+  return minimalFallbacks[intent] || minimalFallbacks.general;
 }
 
 export async function POST(request: NextRequest) {
@@ -330,62 +362,76 @@ export async function POST(request: NextRequest) {
 
     // Actually scrape the website based on strategy
     let scrapedContent = '';
-    try {
-      const urlToScrape = `https://${domain}${strategy.search_path}`;
-      console.log('Scraping:', urlToScrape);
-      
-      const scrapeResponse = await fetch(urlToScrape, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'IntelagentChatbot/2.0'
-        }
-      }).catch(() => null);
-      
-      if (scrapeResponse && scrapeResponse.ok) {
-        const html = await scrapeResponse.text();
-        
-        // Extract text content (remove HTML tags)
-        scrapedContent = html
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .substring(0, 5000); // Limit to 5000 chars
-        
-        console.log(`Scraped ${scrapedContent.length} characters from ${urlToScrape}`);
-        
-        // Try fallback paths if content is too short
-        if (scrapedContent.length < 100 && strategy.fallback_paths?.length > 0) {
-          for (const fallbackPath of strategy.fallback_paths.slice(0, 2)) {
-            const fallbackUrl = `https://${domain}${fallbackPath}`;
-            console.log('Trying fallback:', fallbackUrl);
-            
-            const fallbackResponse = await fetch(fallbackUrl, {
-              method: 'GET',
-              headers: { 'User-Agent': 'IntelagentChatbot/2.0' }
-            }).catch(() => null);
-            
-            if (fallbackResponse && fallbackResponse.ok) {
-              const fallbackHtml = await fallbackResponse.text();
-              const fallbackContent = fallbackHtml
-                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-                .replace(/<[^>]+>/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .substring(0, 3000);
-              
-              scrapedContent += ' ' + fallbackContent;
-              
-              if (scrapedContent.length > 500) break; // Enough content
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Scraping error:', error);
+    const urlsToScrape: string[] = [];
+    
+    // Build list of URLs to scrape
+    urlsToScrape.push(`https://${domain}${strategy.search_path}`);
+    if (strategy.fallback_paths && strategy.fallback_paths.length > 0) {
+      strategy.fallback_paths.forEach((path: string) => {
+        urlsToScrape.push(`https://${domain}${path}`);
+      });
     }
+    
+    console.log('URLs to scrape:', urlsToScrape);
+    
+    // Scrape multiple pages for better content
+    for (const url of urlsToScrape.slice(0, 3)) {
+      try {
+        console.log('Scraping:', url);
+        
+        const scrapeResponse = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; IntelagentBot/2.0)',
+            'Accept': 'text/html,application/xhtml+xml'
+          },
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        }).catch(err => {
+          console.log(`Failed to fetch ${url}:`, err.message);
+          return null;
+        });
+        
+        if (scrapeResponse && scrapeResponse.ok) {
+          const html = await scrapeResponse.text();
+          
+          // Better HTML processing
+          let pageContent = html
+            // Remove script and style tags first
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+            .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
+            // Extract text from important tags
+            .replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, ' $1. ')
+            .replace(/<p[^>]*>(.*?)<\/p>/gi, ' $1. ')
+            .replace(/<li[^>]*>(.*?)<\/li>/gi, ' $1. ')
+            .replace(/<div[^>]*>(.*?)<\/div>/gi, ' $1 ')
+            .replace(/<span[^>]*>(.*?)<\/span>/gi, ' $1 ')
+            // Remove remaining HTML
+            .replace(/<[^>]+>/g, ' ')
+            // Clean up entities
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            // Clean whitespace
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          if (pageContent.length > 100) {
+            scrapedContent += ' ' + pageContent.substring(0, 3000);
+            console.log(`Added ${pageContent.length} chars from ${url}`);
+          }
+          
+          // Stop if we have enough content
+          if (scrapedContent.length > 5000) break;
+        }
+      } catch (error) {
+        console.log(`Error scraping ${url}:`, error);
+      }
+    }
+    
+    console.log(`Total scraped content: ${scrapedContent.length} characters`);
     
     // If no scraped content, check custom knowledge
     if (!scrapedContent && customKnowledge) {
