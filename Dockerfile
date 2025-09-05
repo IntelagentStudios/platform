@@ -1,69 +1,87 @@
-# Simple, Railway-optimized Dockerfile
-FROM node:18-alpine
-
-# Install dependencies for node-gyp and Prisma
-# Note: Node 18 Alpine comes with OpenSSL 3.0 but we need compatibility layer
-RUN apk add --no-cache python3 make g++ libc6-compat \
-    && ln -s /usr/lib/libssl.so.3 /usr/lib/libssl.so.1.1 \
-    && ln -s /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.1.1
-
+# Multi-stage optimized Dockerfile for production
+# Stage 1: Dependencies
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
 WORKDIR /app
 
-# Copy package files
+# Copy root package files
 COPY package*.json ./
-COPY apps/admin-portal/package*.json ./apps/admin-portal/
-COPY apps/customer-portal/package*.json ./apps/customer-portal/
-COPY packages/ai-intelligence/package*.json ./packages/ai-intelligence/
-COPY packages/analytics/package*.json ./packages/analytics/
-COPY packages/auth/package*.json ./packages/auth/
-COPY packages/backup-recovery/package*.json ./packages/backup-recovery/
-COPY packages/billing/package*.json ./packages/billing/
-COPY packages/compliance/package*.json ./packages/compliance/
-COPY packages/core/package*.json ./packages/core/
-COPY packages/database/package*.json ./packages/database/
-COPY packages/email-templates/package*.json ./packages/email-templates/
-COPY packages/enrichment/package*.json ./packages/enrichment/
-COPY packages/notifications/package*.json ./packages/notifications/
-COPY packages/rate-limiter/package*.json ./packages/rate-limiter/
-COPY packages/redis/package*.json ./packages/redis/
-COPY packages/security/package*.json ./packages/security/
-COPY packages/shared/package*.json ./packages/shared/
-COPY packages/skills-orchestrator/package*.json ./packages/skills-orchestrator/
-COPY packages/teams/package*.json ./packages/teams/
-COPY packages/ui/package*.json ./packages/ui/
-COPY packages/usage-tracking/package*.json ./packages/usage-tracking/
-COPY packages/vector-store/package*.json ./packages/vector-store/
+COPY turbo.json ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps --ignore-scripts
+# Copy workspace package.json files for dependency resolution
+COPY apps/customer-portal/package*.json ./apps/customer-portal/
+COPY packages/*/package*.json ./packages/
+
+# Install dependencies with better caching
+RUN npm ci --legacy-peer-deps --ignore-scripts && \
+    npm cache clean --force
+
+# Stage 2: Builder
+FROM node:18-alpine AS builder
+RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/customer-portal/node_modules ./apps/customer-portal/node_modules
+COPY --from=deps /app/packages ./packages
 
 # Copy source code
 COPY . .
 
-# Re-run install to set up workspace links
-RUN npm install --legacy-peer-deps
+# Set environment for Prisma
+ENV PRISMA_BINARIES_MIRROR=https://binaries.prisma.sh
+ENV PRISMA_GENERATE_SKIP_AUTOINSTALL=true
 
-# Generate Prisma Client in the database package location
-RUN cd packages/database && npx prisma generate
+# Generate Prisma Client with proper binary targets
+RUN cd packages/database && \
+    npx prisma generate --schema=./prisma/schema.prisma
 
-# Build skills-orchestrator
+# Build skills-orchestrator package
 RUN cd packages/skills-orchestrator && npm run build
 
-# Do NOT pre-build Next.js - it causes Prisma initialization errors
-# Build will happen at runtime after Prisma is properly initialized
-
-# Set environment
-ENV NODE_ENV=production
-ENV PORT=3002
+# Build Next.js application with standalone output
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN cd apps/customer-portal && \
+    npm run build && \
+    # Clean up unnecessary files
+    rm -rf .next/cache
 
-# Create non-root user
+# Stage 3: Runner - minimal production image
+FROM node:18-alpine AS runner
+RUN apk add --no-cache libc6-compat openssl
+
+# Create app user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Create necessary directories with correct permissions
-RUN mkdir -p /app/apps/customer-portal/.next && \
-    chown -R nextjs:nodejs /app
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3002
+ENV PRISMA_BINARIES_MIRROR=https://binaries.prisma.sh
+
+# Copy necessary files from builder
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/public ./apps/customer-portal/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/.next ./apps/customer-portal/.next
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/server.js ./apps/customer-portal/server.js
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/package*.json ./apps/customer-portal/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/next.config.mjs ./apps/customer-portal/
+
+# Copy node_modules (optimized - only production deps)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-portal/node_modules ./apps/customer-portal/node_modules
+
+# Copy packages for runtime
+COPY --from=builder --chown=nextjs:nodejs /app/packages ./packages
+COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+
+# Copy Prisma schema and generated client
+COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 # Switch to non-root user
 USER nextjs
@@ -71,8 +89,12 @@ USER nextjs
 # Expose port
 EXPOSE 3002
 
-# Set working directory
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3002/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); })"
+
+# Set working directory for runtime
 WORKDIR /app/apps/customer-portal
 
-# Start command - ensure Prisma is generated, build, then start
-CMD ["sh", "-c", "cd /app/packages/database && npx prisma generate && cd /app/apps/customer-portal && npm run build && npm start"]
+# Start the application
+CMD ["npm", "start"]
