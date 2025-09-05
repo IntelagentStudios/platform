@@ -100,11 +100,16 @@ export async function POST(request: NextRequest) {
       }
     });
     
-  } catch (error) {
-    console.error('Enhanced chatbot error:', error);
+  } catch (error: any) {
+    console.error('Enhanced chatbot error:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     return NextResponse.json({
       error: 'Failed to process message',
-      message: error.message
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   }
 }
@@ -186,18 +191,18 @@ function determineSkillCombination(analysis: any, skillsMatrix: any) {
   // For now, use the chatbot_ai skill for all intents since it's the one that works
   // TODO: Map actual existing skills to intents once all skills are properly implemented
   const skillSets = {
-    // Currently using chatbot_ai as the primary skill for all conversation intents
+    // Using 'chatbot' skill (the actual registered ID) for conversation intents
     general: [
-      { id: 'chatbot_ai', priority: 1 }
+      { id: 'chatbot', priority: 1 }
     ],
     information: [
-      { id: 'chatbot_ai', priority: 1 }
+      { id: 'chatbot', priority: 1 }
     ],
     product: [
-      { id: 'chatbot_ai', priority: 1 }
+      { id: 'chatbot', priority: 1 }
     ],
     help: [
-      { id: 'chatbot_ai', priority: 1 }
+      { id: 'chatbot', priority: 1 }
     ],
     // Specific skills that exist and can be used
     weather: [
@@ -211,7 +216,7 @@ function determineSkillCombination(analysis: any, skillsMatrix: any) {
     ],
     // Default fallback
     default: [
-      { id: 'chatbot_ai', priority: 1 }
+      { id: 'chatbot', priority: 1 }
     ]
   };
   
@@ -247,12 +252,18 @@ async function executeSkillWorkflow(
   for (const group of parallelGroups) {
     const groupPromises = group.map(async (skill) => {
       try {
+        console.log(`Executing skill: ${skill.id}`, {
+          params: params.message,
+          sessionId: params.sessionId
+        });
+        
         // Use the execute method with proper parameters
         const result = await orchestrator.execute({
           skillId: skill.id,
           params: {
             ...params.context,
             message: params.message,
+            sessionId: params.sessionId,
             previousResults: results
           },
           context: {
@@ -266,10 +277,14 @@ async function executeSkillWorkflow(
           }
         });
         
+        console.log(`Skill ${skill.id} completed:`, result.success);
         results[skill.id] = result;
         return { skillId: skill.id, success: true, result };
-      } catch (error) {
-        console.error(`Skill ${skill.id} failed:`, error);
+      } catch (error: any) {
+        console.error(`Skill ${skill.id} failed:`, {
+          error: error.message,
+          stack: error.stack
+        });
         return { skillId: skill.id, success: false, error: error.message };
       }
     });
