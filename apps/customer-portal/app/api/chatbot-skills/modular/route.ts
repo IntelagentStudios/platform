@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { N8NChatbotSkill } from '@/packages/skills-orchestrator/src/skills/impl/N8NChatbotSkill';
+import { N8NChatbotSkill } from '@intelagent/skills-orchestrator/src/skills/impl/N8NChatbotSkill';
 
 // Initialize Prisma
 const prisma = new PrismaClient();
