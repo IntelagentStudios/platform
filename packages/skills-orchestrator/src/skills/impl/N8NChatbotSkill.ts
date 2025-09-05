@@ -72,16 +72,17 @@ export class N8NChatbotSkill extends BaseSkill {
       const result = await response.json();
 
       // Format the response to match our skill interface
+      // Handle the n8n response format which uses chatbot_response
       return this.success({
-        response: result.response || result.message || result.text,
-        sessionId: result.sessionId || sessionId,
-        intent: result.intent || 'general',
+        response: result.chatbot_response || result.response || result.message || result.text,
+        sessionId: result.session_id || result.sessionId || sessionId,
+        intent: result.intent_detected || result.intent || 'general',
         confidence: result.confidence || 0.8,
         metadata: {
           source: 'n8n-workflow',
           workflowId: result.workflowId,
           executionId: result.executionId,
-          domain: domain,
+          domain: result.domain || domain,
           timestamp: new Date()
         }
       });
