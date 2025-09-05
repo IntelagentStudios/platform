@@ -583,17 +583,33 @@
       messagesDiv.scrollTop = relativeTop - 20;
     }
 
-    // Process markdown links to HTML - opens in parent window
+    // Process markdown and HTML links - opens in parent window
     function processMarkdownLinks(text) {
-      // Convert markdown links [text](url) to HTML that opens in parent
-      return text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, function(match, linkText, url) {
+      // First, process existing HTML <a> tags to ensure they open in parent
+      text = text.replace(/<a\\s+href=["']([^"']+)["']([^>]*)>([^<]+)<\\/a>/g, function(match, url, attrs, linkText) {
+        // If it's a relative URL and doesn't already have target
+        if ((url.startsWith('/') || (!url.startsWith('http') && !url.startsWith('#'))) && !attrs.includes('target')) {
+          // Add data attribute for parent link handling
+          return '<a href="' + url + '" data-parent-link="true" style="color: #0066cc; text-decoration: none; font-weight: 500; cursor: pointer;">' + linkText + '</a>';
+        }
+        // External URLs open in new tab
+        if (url.startsWith('http') && !attrs.includes('target')) {
+          return '<a href="' + url + '" target="_blank" style="color: #0066cc; text-decoration: none; font-weight: 500;">' + linkText + '</a>';
+        }
+        return match;
+      });
+      
+      // Then convert markdown links [text](url) to HTML
+      text = text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, function(match, linkText, url) {
         // For relative URLs, make them open in parent window
         if (url.startsWith('/') || !url.startsWith('http')) {
-          return '<a href="#" onclick="event.preventDefault(); window.parent.location.href=\\'' + url + '\\'; return false;" style="color: #0066cc; text-decoration: none; font-weight: 500;">' + linkText + '</a>';
+          return '<a href="' + url + '" data-parent-link="true" style="color: #0066cc; text-decoration: none; font-weight: 500; cursor: pointer;">' + linkText + '</a>';
         }
         // For external URLs, open in new tab
-        return '<a href="' + url + '" target="_blank">' + linkText + '</a>';
+        return '<a href="' + url + '" target="_blank" style="color: #0066cc; text-decoration: none; font-weight: 500;">' + linkText + '</a>';
       });
+      
+      return text;
     }
 
     // Send message function
@@ -707,15 +723,22 @@
         messagesDiv.appendChild(botMsgDiv);
         
         // Add click handlers to all links after the message is added to DOM
-        const links = botMsgDiv.querySelectorAll('a');
+        const links = botMsgDiv.querySelectorAll('a[data-parent-link="true"]');
         links.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href && !href.startsWith('http') && href !== '#') {
-            link.addEventListener('click', function(e) {
-              e.preventDefault();
-              window.parent.location.href = href;
-            });
-          }
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = link.getAttribute('href');
+            if (href) {
+              // Check if we're in an iframe
+              if (window.parent !== window) {
+                // Open in parent window
+                window.parent.location.href = href.startsWith('/') ? window.parent.location.origin + href : href;
+              } else {
+                // Open directly if not in iframe
+                window.location.href = href;
+              }
+            }
+          });
         });
         
         // No need to scroll - we already scrolled when showing the typing indicator
