@@ -183,55 +183,40 @@ async function analyzeIntent(message: string, history: any[], context: any) {
  * Determine which skills to execute based on intent
  */
 function determineSkillCombination(analysis: any, skillsMatrix: any) {
+  // For now, use the chatbot_ai skill for all intents since it's the one that works
+  // TODO: Map actual existing skills to intents once all skills are properly implemented
   const skillSets = {
-    payment: [
-      { id: 'payment_processor', priority: 1 },
-      { id: 'invoice_generator', priority: 2 },
-      { id: 'notification_hub', priority: 3 }
-    ],
-    scheduling: [
-      { id: 'calendar_scheduler', priority: 1 },
-      { id: 'email_sender', priority: 2 },
-      { id: 'reminder_system', priority: 3 }
-    ],
-    workflow: [
-      { id: 'workflow_engine', priority: 1 },
-      { id: 'task_scheduler', priority: 2 },
-      { id: 'approval_workflow', priority: 3 }
-    ],
-    data: [
-      { id: 'data_aggregator', priority: 1 },
-      { id: 'report_generator', priority: 2 },
-      { id: 'pdf_generator', priority: 3 }
-    ],
-    integration: [
-      { id: 'api_connector', priority: 1 },
-      { id: 'webhook_handler', priority: 2 },
-      { id: 'data_sync', priority: 3 }
-    ],
-    analytics: [
-      { id: 'analytics_engine', priority: 1 },
-      { id: 'predictive_model', priority: 2 },
-      { id: 'dashboard_builder', priority: 3 }
-    ],
-    security: [
-      { id: 'auth_manager', priority: 1 },
-      { id: 'encryption_tool', priority: 2 },
-      { id: 'audit_logger', priority: 3 }
-    ],
-    notification: [
-      { id: 'notification_hub', priority: 1 },
-      { id: 'email_composer', priority: 2 },
-      { id: 'sms_gateway', priority: 3 }
-    ],
+    // Currently using chatbot_ai as the primary skill for all conversation intents
     general: [
-      { id: 'nlp_processor', priority: 1 },
-      { id: 'response_generator', priority: 2 }
+      { id: 'chatbot_ai', priority: 1 }
+    ],
+    information: [
+      { id: 'chatbot_ai', priority: 1 }
+    ],
+    product: [
+      { id: 'chatbot_ai', priority: 1 }
+    ],
+    help: [
+      { id: 'chatbot_ai', priority: 1 }
+    ],
+    // Specific skills that exist and can be used
+    weather: [
+      { id: 'weather', priority: 1 }
+    ],
+    datetime: [
+      { id: 'datetime', priority: 1 }
+    ],
+    email: [
+      { id: 'email_composer', priority: 1 }
+    ],
+    // Default fallback
+    default: [
+      { id: 'chatbot_ai', priority: 1 }
     ]
   };
   
-  // Get relevant skills for the intent
-  const relevantSkills = skillSets[analysis.intent] || skillSets.general;
+  // Get relevant skills for the intent, always fallback to chatbot_ai
+  const relevantSkills = skillSets[analysis.intent] || skillSets.default;
   
   // Add conditional skills based on entities
   if (analysis.entities.includes('urgent')) {
