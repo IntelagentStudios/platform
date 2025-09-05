@@ -282,7 +282,7 @@ function createResponseWithContent(
       services: 'What challenge can we help with?',
       offerings: 'Which area interests you?',
       products: 'What functionality do you need?',
-      pricing: 'What's your budget range?',
+      pricing: 'What\'s your budget range?',
       contact_info: 'How can we help?',
       company_info: 'What would you like to know?',
       chatbot: 'Would you like a demo?'
