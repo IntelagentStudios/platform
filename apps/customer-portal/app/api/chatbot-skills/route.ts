@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (productKeyRecord) {
-          // Cast metadata to proper type
+          // Cast metadata to proper type to avoid TypeScript JsonValue error
           const metadata = productKeyRecord.metadata as { domain?: string } | null;
           
           productKeyData = {
