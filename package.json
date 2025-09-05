@@ -43,5 +43,8 @@
     "url": "https://github.com/IntelagentStudios/platform.git"
   },
   "author": "Intelagent Studios",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "critters": "^0.0.23"
+  }
 }
