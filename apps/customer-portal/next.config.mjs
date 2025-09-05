@@ -2,8 +2,8 @@ import crypto from 'crypto';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone output for optimized deployments
-  output: 'standalone',
+  // Note: 'standalone' output disabled as we use custom server.js with Socket.io
+  // output: 'standalone',
   
   // Performance optimizations
   compress: true,
