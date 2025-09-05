@@ -412,9 +412,11 @@
     // Select endpoint based on mode
     let webhookUrl;
     if (mode === 'enhanced') {
-      // Use simple endpoint until enhanced is fixed
-      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/simple';
+      // Use scraper endpoint that reads actual website content
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/scraper';
     } else if (mode === 'skills') {
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/scraper';
+    } else if (mode === 'simple') {
       webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/simple';
     } else {
       webhookUrl = 'https://1ntelagent.up.railway.app/webhook/chatbot';

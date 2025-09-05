@@ -15,8 +15,8 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// Company knowledge base (mimicking n8n workflow)
-const COMPANY_INFO = {
+// Default company info for Intelagent Studios
+const DEFAULT_COMPANY_INFO = {
   name: "Intelagent Studios",
   description: "We specialize in developing intelligent business solutions using AI. Our modular tools adapt to your workflows, helping you streamline processes and make data-driven decisions.",
   services: [
@@ -56,6 +56,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get company info based on product key
+    let COMPANY_INFO = DEFAULT_COMPANY_INFO;
+    let domain = 'intelagentstudios.com';
+    
+    if (productKey) {
+      try {
+        // Look up product key to get domain and custom settings
+        const productKeyRecord = await prisma.product_keys.findFirst({
+          where: {
+            product_key: productKey,
+            product: 'chatbot',
+            status: 'active'
+          },
+          include: {
+            licenses: true
+          }
+        });
+
+        if (productKeyRecord) {
+          const metadata = productKeyRecord.metadata as any;
+          domain = metadata?.domain || productKeyRecord.licenses?.domain || domain;
+          
+          // TODO: Get custom knowledge when table exists
+          const customKnowledge: any[] = [];
+
+          if (customKnowledge.length > 0) {
+            // Build company info from custom knowledge
+            const companyData = customKnowledge.find((k: any) => k.type === 'company_info');
+            const servicesData = customKnowledge.find((k: any) => k.type === 'services');
+            const productsData = customKnowledge.find((k: any) => k.type === 'products');
+            
+            COMPANY_INFO = {
+              name: companyData?.data?.name || metadata?.company_name || productKeyRecord.licenses?.customer_name || domain,
+              description: companyData?.data?.description || `Welcome to ${domain}. How can I help you today?`,
+              services: servicesData?.data?.services || [`Visit our website at ${domain} for our services`],
+              products: productsData?.data?.products || [`Check out our products at ${domain}`],
+              benefits: companyData?.data?.benefits || ['Quality service', 'Customer satisfaction', 'Professional support']
+            };
+          } else {
+            // Use domain-based defaults
+            COMPANY_INFO = {
+              name: metadata?.company_name || productKeyRecord.licenses?.customer_name || domain,
+              description: `Welcome to ${domain}. I'm here to help answer your questions and provide information about our services.`,
+              services: [`Visit ${domain} to learn more about our services`],
+              products: [`Explore our products at ${domain}`],
+              benefits: ['Quality service', 'Customer satisfaction', 'Professional support']
+            };
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch custom knowledge:', error);
+      }
+    }
+
     // Simple intent detection
     const lowerMessage = message.toLowerCase();
     let response = "";
@@ -74,7 +128,7 @@ export async function POST(request: NextRequest) {
       response = "Our pricing is flexible and based on your specific needs. We offer both subscription and one-time license options. Would you like to schedule a consultation to discuss pricing for your requirements?";
     }
     else if (lowerMessage.includes('contact') || lowerMessage.includes('speak') || lowerMessage.includes('human')) {
-      response = "You can reach our team at support@intelagentstudios.com or schedule a demo through our website. How else can I assist you today?";
+      response = `You can reach our team through our website at ${domain} or use the contact form available there. How else can I assist you today?`;
     }
     else if (lowerMessage.includes('ai') && (lowerMessage.includes('automation') || lowerMessage.includes('automate'))) {
       response = "AI automation can transform your business by handling repetitive tasks, providing instant customer support, analyzing data patterns, and making intelligent decisions. Our platform offers 310+ skills that can be combined to create powerful automation workflows. What specific processes are you looking to automate?";
@@ -104,7 +158,7 @@ export async function POST(request: NextRequest) {
           intent_detected: 'general',
           conversation_id: sessionId || 'anonymous',
           product_key: productKey,
-          domain: 'intelagentstudios.com',
+          domain: domain,
           user_id: 'anonymous'
         }
       });
