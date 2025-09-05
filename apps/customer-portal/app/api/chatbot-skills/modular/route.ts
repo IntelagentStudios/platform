@@ -89,15 +89,26 @@ export async function POST(request: NextRequest) {
         intent = result.data.intent || 'general';
         confidence = result.data.confidence || 0.8;
       } else {
-        // Fallback to intelligent chatbot if n8n fails
-        const intelligentResponse = await fetch(`${request.nextUrl.origin}/api/chatbot-skills/intelligent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, sessionId, productKey, chatHistory })
-        });
+        // If n8n fails, provide a helpful fallback response
+        console.error('N8N chatbot failed, using fallback response');
         
-        const intelligentData = await intelligentResponse.json();
-        response = intelligentData.response;
+        // Simple but helpful fallback responses based on common intents
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('product') || lowerMessage.includes('service') || lowerMessage.includes('offer')) {
+          response = `We offer innovative AI-powered solutions including chatbots, data enrichment, and sales automation tools. Visit ${domain || 'our website'} to learn more about our products, or feel free to ask specific questions!`;
+        } else if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
+          response = `I'd be happy to help! You can reach our support team at support@${domain || 'intelagentstudios.com'} or visit our help center. What specific issue can I assist you with?`;
+        } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('pricing')) {
+          response = `For pricing information, please visit ${domain || 'our website'}/pricing or contact our sales team. We offer flexible plans tailored to your needs.`;
+        } else if (lowerMessage.includes('contact')) {
+          response = `You can reach us at info@${domain || 'intelagentstudios.com'} or through the contact form on our website. We typically respond within 24 hours.`;
+        } else {
+          response = `Thank you for your message. For the best experience, please visit ${domain || 'our website'} or contact us at info@${domain || 'intelagentstudios.com'}. How else can I help you today?`;
+        }
+        
+        intent = 'fallback';
+        confidence = 0.5;
       }
       
     } else if (chatbotMode === 'intelligent') {

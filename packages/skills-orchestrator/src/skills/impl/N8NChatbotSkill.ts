@@ -35,9 +35,10 @@ export class N8NChatbotSkill extends BaseSkill {
       } = params;
 
       // Get the webhook URL from environment or params
+      // Use the correct n8n instance URL
       const webhookUrl = params.webhookUrl || 
                         process.env.N8N_CHATBOT_WEBHOOK || 
-                        'https://intelagentchatbotn8n.up.railway.app/webhook/chatbot';
+                        'https://1ntelagent.up.railway.app/webhook/chatbot';  // Your working n8n instance
 
       // Prepare payload for n8n workflow
       const payload = {
