@@ -70,8 +70,12 @@ export async function POST(request: NextRequest) {
     let confidence = 0.8;
 
     // Route to appropriate chatbot implementation
+    console.log('Chatbot mode:', chatbotMode);
+    console.log('Webhook URL from metadata:', webhookUrl);
+    
     if (chatbotMode === 'n8n') {
       // Use the proven n8n workflow
+      console.log('Using N8NChatbotSkill with message:', message);
       const n8nSkill = new N8NChatbotSkill();
       
       const result = await n8nSkill.execute({
@@ -83,6 +87,8 @@ export async function POST(request: NextRequest) {
         customKnowledge,
         webhookUrl
       });
+      
+      console.log('N8N Skill result:', result);
 
       if (result.success) {
         response = result.data.response;

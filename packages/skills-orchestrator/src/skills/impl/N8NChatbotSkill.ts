@@ -53,6 +53,7 @@ export class N8NChatbotSkill extends BaseSkill {
       };
 
       console.log(`Calling n8n chatbot webhook: ${webhookUrl}`);
+      console.log('N8N Payload:', JSON.stringify(payload, null, 2));
       
       // Call the n8n webhook
       const response = await fetch(webhookUrl, {
