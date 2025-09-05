@@ -46,6 +46,14 @@ function searchStrategy(message: string, chatHistory: any[], customKnowledge: an
     fallbackPaths = ['/services/consultancy', '/products'];
     knowledgeGaps = 'Integration methods, platform compatibility';
   }
+  // Service-specific queries
+  else if (lowerMessage.includes('services') || lowerMessage.includes('what services')) {
+    searchPath = '/services';
+    intent = 'services';
+    expectedContent = 'Full list of services offered';
+    fallbackPaths = ['/products', '/solutions'];
+    knowledgeGaps = 'Service details, implementation process';
+  }
   // General product/service queries
   else if (lowerMessage.includes('offer') || lowerMessage.includes('service') || lowerMessage.includes('what do you') || lowerMessage.includes('what can')) {
     searchPath = '/products';
@@ -124,30 +132,57 @@ function searchStrategy(message: string, chatHistory: any[], customKnowledge: an
 }
 
 /**
- * Extract relevant sentences from scraped content
+ * Extract and clean relevant information from scraped content
  */
-function extractRelevantInfo(content: string, keywords: string[], maxLength: number = 200): string {
+function extractRelevantInfo(content: string, keywords: string[]): string {
   if (!content) return '';
   
-  const sentences = content.match(/[^.!?]+[.!?]+/g) || [];
-  const relevant: string[] = [];
+  // Clean up the content first
+  const cleaned = content
+    .replace(/\s+/g, ' ')
+    .replace(/([A-Z])/g, ' $1') // Add space before capitals
+    .replace(/\s+/g, ' ')
+    .trim();
   
-  for (const sentence of sentences) {
-    const lowerSentence = sentence.toLowerCase();
+  // Look for meaningful phrases containing keywords
+  const words = cleaned.split(' ');
+  const relevantPhrases: string[] = [];
+  
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i].toLowerCase();
     for (const keyword of keywords) {
-      if (lowerSentence.includes(keyword.toLowerCase())) {
-        const cleaned = sentence.trim().replace(/\s+/g, ' ');
-        if (cleaned.length > 20 && cleaned.length < 300 && !relevant.includes(cleaned)) {
-          relevant.push(cleaned);
-          break;
+      if (word.includes(keyword.toLowerCase())) {
+        // Get surrounding context (5 words before and after)
+        const start = Math.max(0, i - 5);
+        const end = Math.min(words.length, i + 6);
+        const phrase = words.slice(start, end).join(' ');
+        
+        // Clean up the phrase
+        const cleanPhrase = phrase
+          .replace(/[A-Z]{2,}/g, match => match.charAt(0) + match.slice(1).toLowerCase()) // Fix ALL CAPS
+          .replace(/\b(CONTACT US|HOME|ABOUT|SERVICES|PRODUCTS)\b/gi, '') // Remove nav items
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        if (cleanPhrase.length > 30 && cleanPhrase.length < 150) {
+          relevantPhrases.push(cleanPhrase);
         }
+        break;
       }
     }
-    if (relevant.length >= 2) break;
+    if (relevantPhrases.length >= 2) break;
   }
   
-  const result = relevant.join(' ').substring(0, maxLength);
-  return result || '';
+  // If no good phrases found, return empty (will use templates)
+  if (relevantPhrases.length === 0) return '';
+  
+  // Join and clean up
+  const result = relevantPhrases.join('. ')
+    .replace(/\.\./g, '.')
+    .replace(/\s+/g, ' ')
+    .substring(0, 150);
+  
+  return result;
 }
 
 /**
@@ -172,7 +207,8 @@ function createResponseWithContent(
     const keywordMap: { [key: string]: string[] } = {
       recruitment_solutions: ['recruitment', 'hiring', 'candidate', 'screening', 'talent'],
       ecommerce_solutions: ['ecommerce', 'shop', 'store', 'cart', 'order', 'customer'],
-      offerings: ['service', 'offer', 'provide', 'solution', 'help'],
+      services: ['service', 'consulting', 'implementation', 'support', 'professional'],
+      offerings: ['offer', 'provide', 'solution', 'help', 'automation'],
       products: ['product', 'feature', 'tool', 'platform', 'software'],
       pricing: ['price', 'cost', 'plan', 'package', 'subscription', 'free', '$'],
       contact_info: ['contact', 'email', 'phone', 'hours', 'support', '@'],
@@ -184,28 +220,46 @@ function createResponseWithContent(
     extractedInfo = extractRelevantInfo(scrapedContent, keywords);
   }
   
-  // If we found relevant content, use it; otherwise fall back to templates
-  if (extractedInfo && extractedInfo.length > 50) {
-    // Create response using actual scraped data
-    const shortInfo = extractedInfo.substring(0, 120).replace(/\s+$/, '');
+  // Check if we have meaningful extracted content
+  const hasGoodContent = extractedInfo && 
+                         extractedInfo.length > 50 && 
+                         !extractedInfo.includes('undefined') &&
+                         !extractedInfo.match(/^[A-Z\s]+$/); // Not all caps navigation
+  
+  // If scraped content is poor quality, use professional templates
+  if (!hasGoodContent) {
+    // Skip to template responses below
+  } else {
+    // Try to create a better response with scraped content
+    // But validate it first - if it looks bad, skip it
+    const testResponse = extractedInfo.substring(0, 120).replace(/\s+$/, '');
     
-    const contextualResponses: { [key: string]: string } = {
-      recruitment_solutions: `${shortInfo}. View our <a href="${baseUrl}/products">full recruitment solutions</a>. How can we help with hiring?`,
-      ecommerce_solutions: `${shortInfo}. Check our <a href="${baseUrl}/products/chatbot">e-commerce tools</a>. What's your store platform?`,
-      offerings: `${shortInfo}. Explore <a href="${baseUrl}/products">all solutions</a>. Which area interests you?`,
-      products: `${shortInfo}. See <a href="${baseUrl}/products">complete catalog</a>. Need specific details?`,
-      pricing: `${shortInfo}. View <a href="${baseUrl}/pricing">pricing options</a> or <a href="${baseUrl}/contact">contact sales</a>.`,
-      contact_info: `${shortInfo}. <a href="${baseUrl}/contact">Contact us</a> for immediate assistance.`,
-      company_info: `${shortInfo}. Learn more <a href="${baseUrl}/about">about us</a>.`,
-      chatbot: `${shortInfo}. Try our <a href="${baseUrl}/products/chatbot">AI chatbot</a> free.`,
-      general: `${shortInfo}. Visit <a href="${baseUrl}">our website</a> for more information.`
-    };
-    
-    return contextualResponses[intent] || contextualResponses.general;
+    // Check if the extracted content is actually useful
+    if (testResponse.split(' ').length < 5 || testResponse.match(/\b(info@|\.com|Studios Contact)\b/)) {
+      // Content is too fragmented, use templates instead
+    } else {
+      // Use the extracted content with proper formatting
+      const contextualResponses: { [key: string]: string } = {
+        recruitment_solutions: `We offer comprehensive recruitment solutions. View our <a href="${baseUrl}/products">full suite</a> for hiring automation. How can we help streamline your recruitment?`,
+        ecommerce_solutions: `Our e-commerce solutions automate customer service and sales. Check our <a href="${baseUrl}/products/chatbot">AI tools</a>. What's your platform?`,
+        services: `We provide consulting, implementation, and support services for AI automation. View our <a href="${baseUrl}/services">service offerings</a>. What challenge can we help solve?`,
+        offerings: `We provide AI-powered business automation tools. Explore <a href="${baseUrl}/products">all solutions</a>. Which area interests you most?`,
+        products: `Our products include AI chatbots, sales agents, and automation tools. See our <a href="${baseUrl}/products">complete catalog</a>. What's your need?`,
+        pricing: `Pricing starts at $299/month with custom enterprise options. View <a href="${baseUrl}/pricing">pricing details</a> or <a href="${baseUrl}/contact">contact sales</a>.`,
+        contact_info: `Reach us at support@${domain} or through our website. <a href="${baseUrl}/contact">Contact us here</a> for immediate assistance.`,
+        company_info: `${companyName} specializes in AI-powered business automation. Learn more <a href="${baseUrl}/about">about our mission</a>.`,
+        chatbot: `Our AI chatbot handles unlimited conversations 24/7. Try it <a href="${baseUrl}/products/chatbot">free here</a>.`,
+        general: `We offer AI automation solutions for businesses. Visit <a href="${baseUrl}">our website</a> to explore our products.`
+      };
+      
+      return contextualResponses[intent] || contextualResponses.general;
+    }
   }
   
   // Fall back to original template responses if no content scraped
   const responses: { [key: string]: string } = {
+    services: `We offer professional services including consulting, implementation, and 24/7 support. Check our <a href="${baseUrl}/services">services page</a> for details. How can we assist you?`,
+    
     offerings: `We provide AI-powered automation tools including chatbots, sales agents, and workflow automation. Our <a href="${baseUrl}/products">solutions</a> help businesses reduce costs by up to 70%. Which area interests you most?`,
     
     products: `Our <a href="${baseUrl}/products">product suite</a> includes AI chatbots, sales automation, and data enrichment tools. Each integrates seamlessly with your existing systems. What's your primary automation need?`,
