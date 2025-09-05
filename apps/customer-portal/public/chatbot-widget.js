@@ -412,10 +412,10 @@
     // Select endpoint based on mode
     let webhookUrl;
     if (mode === 'enhanced') {
-      // Use scraper endpoint that reads actual website content
-      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/scraper';
+      // Use intelligent dual-agent endpoint
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/intelligent';
     } else if (mode === 'skills') {
-      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/scraper';
+      webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/intelligent';
     } else if (mode === 'simple') {
       webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/simple';
     } else {
