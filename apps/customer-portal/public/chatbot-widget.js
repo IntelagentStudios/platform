@@ -407,7 +407,7 @@
     // Migration complete: Enhanced skills system with 310 skills is now the default
     // Options: 'enhanced' (default), 'skills' (basic), 'n8n' (legacy)
     const scriptTag = document.currentScript || document.querySelector('script[src*="chatbot-widget"]');
-    const mode = scriptTag?.getAttribute('data-mode') || 'enhanced';
+    const mode = scriptTag?.getAttribute('data-mode') || 'modular'; // Default to modular (uses n8n)
     
     // Select endpoint based on mode
     let webhookUrl;
@@ -424,7 +424,8 @@
       webhookUrl = 'https://dashboard.intelagentstudios.com/api/chatbot-skills/modular';
     }
     
-    console.log('Chatbot mode:', mode === 'enhanced' ? 'Enhanced Skills (310 skills)' : mode === 'skills' ? 'Basic Skills' : 'n8n Webhook (Legacy)');
+    console.log('Chatbot mode:', mode === 'modular' ? 'Modular (n8n default)' : mode === 'enhanced' ? 'Enhanced Skills (310 skills)' : mode === 'intelligent' ? 'Intelligent Scraper' : mode === 'n8n' ? 'n8n Direct' : 'Unknown mode: ' + mode);
+    console.log('Using endpoint:', webhookUrl);
 
     // Load chat history from localStorage
     function loadChatHistory() {
