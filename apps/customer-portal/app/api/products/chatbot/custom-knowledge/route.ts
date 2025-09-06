@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 /**
  * GET /api/products/chatbot/custom-knowledge
  * Get custom knowledge for a chatbot
+ * Fixed: Using direct JWT validation to avoid database dependency issues
  */
 export async function GET(request: NextRequest) {
   try {

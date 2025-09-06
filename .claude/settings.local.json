@@ -94,7 +94,8 @@
       "WebFetch(domain:api.github.com)",
       "Bash(npm:*)",
       "Bash(npx prisma generate:*)",
-      "Bash(npx depcheck:*)"
+      "Bash(npx depcheck:*)",
+      "WebFetch(domain:dashboard.intelagentstudios.com)"
     ],
     "deny": [],
     "ask": []
