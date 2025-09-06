@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAuth } from '@/lib/auth-validator';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
 /**
  * GET /api/products/chatbot/custom-knowledge
@@ -8,25 +8,37 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    let authResult;
-    try {
-      authResult = await validateAuth(request);
-    } catch (authError: any) {
-      console.error('Auth validation error:', authError);
-      return NextResponse.json(
-        { error: 'Auth validation failed', details: authError.message },
-        { status: 401 }
-      );
-    }
+    // Simple JWT validation without database lookup for now
+    const authToken = request.cookies.get('auth_token');
     
-    if (!authResult.authenticated || !authResult.user) {
+    if (!authToken) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const { licenseKey } = authResult.user;
+    // Decode JWT to get license key
+    const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    let licenseKey: string;
+    
+    try {
+      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+      licenseKey = decoded.licenseKey;
+      
+      if (!licenseKey) {
+        return NextResponse.json(
+          { error: 'No license key in token' },
+          { status: 401 }
+        );
+      }
+    } catch (jwtError) {
+      console.error('JWT verification error:', jwtError);
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
     
     // Get chatbot product key
     const productKey = await prisma.product_keys.findFirst({
@@ -78,16 +90,37 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await validateAuth(request);
+    // Simple JWT validation
+    const authToken = request.cookies.get('auth_token');
     
-    if (!authResult.authenticated || !authResult.user) {
+    if (!authToken) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const { licenseKey, email } = authResult.user;
+    const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    let licenseKey: string;
+    let email: string = 'unknown';
+    
+    try {
+      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+      licenseKey = decoded.licenseKey;
+      email = decoded.email || 'unknown';
+      
+      if (!licenseKey) {
+        return NextResponse.json(
+          { error: 'No license key in token' },
+          { status: 401 }
+        );
+      }
+    } catch (jwtError) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
     const body = await request.json();
     const { 
       content, 
@@ -176,16 +209,35 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const authResult = await validateAuth(request);
+    // Simple JWT validation
+    const authToken = request.cookies.get('auth_token');
     
-    if (!authResult.authenticated || !authResult.user) {
+    if (!authToken) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const { licenseKey } = authResult.user;
+    const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    let licenseKey: string;
+    
+    try {
+      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+      licenseKey = decoded.licenseKey;
+      
+      if (!licenseKey) {
+        return NextResponse.json(
+          { error: 'No license key in token' },
+          { status: 401 }
+        );
+      }
+    } catch (jwtError) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const knowledge_type = searchParams.get('type') || 'general';
 

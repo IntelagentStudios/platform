@@ -39,13 +39,13 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Correct data access pattern:
- * 1. Use license_key as primary filter (from JWT)
- * 2. Get product_key from product_keys table for chatbot
- * 3. Query chatbot_logs using product_key
+ * Access Control Pattern:
+ * 1. Master Admin (INTL-ADMIN-KEY): Sees ALL conversations from all accounts
+ * 2. Regular accounts: Only see conversations for product keys they OWN
+ * 3. Product key ownership is determined by license_key in product_keys table
  * 
- * This ensures data is scoped to the account (license_key)
- * while using product-specific routing (product_key)
+ * This ensures proper data isolation between accounts while allowing
+ * master admin oversight of all customer interactions
  */
 async function fetchConversations(licenseKey: string) {
   try {
@@ -127,8 +127,8 @@ async function fetchConversations(licenseKey: string) {
         }, { status: 403 });
       }
 
-      // Step 3: Get ALL product keys for chatbot (you have multiple)
-      const allChatbotKeys = await prisma.product_keys.findMany({
+      // Step 3: Get product keys that this license OWNS
+      const ownedProductKeys = await prisma.product_keys.findMany({
         where: {
           license_key: licenseKey,
           product: 'chatbot',
@@ -141,37 +141,38 @@ async function fetchConversations(licenseKey: string) {
       
       console.log('Fetching conversations for license:', licenseKey);
       console.log('Primary product key:', chatbotKey);
-      console.log('All product keys:', allChatbotKeys.map(k => k.product_key));
+      console.log('Owned product keys:', ownedProductKeys.map(k => k.product_key));
       
-      if (!chatbotKey) {
+      if (ownedProductKeys.length === 0) {
         return NextResponse.json({ 
           conversations: [],
-          message: 'Chatbot not configured. Please complete setup first.',
+          message: 'No chatbot product keys found. Please complete setup first.',
           needs_configuration: true
         });
       }
       
-      siteKeyUsed = chatbotKey;
+      siteKeyUsed = chatbotKey || ownedProductKeys[0].product_key;
       licenseInfo = {
         domain: license.domain,
         is_pro: license.is_pro,
         products: license.products,
-        using_product_key: true
+        using_product_key: true,
+        owned_keys_count: ownedProductKeys.length
       };
 
-      // Step 4: Fetch chatbot logs using ALL product keys for this license
-      const productKeysList = allChatbotKeys.map(k => k.product_key);
+      // Step 4: Fetch chatbot logs ONLY for product keys this license OWNS
+      const productKeysList = ownedProductKeys.map(k => k.product_key);
       logs = await prisma.chatbot_logs.findMany({
         where: { 
           product_key: {
-            in: productKeysList // Get logs from ALL your chatbot product keys
+            in: productKeysList // Only get logs from product keys owned by this license
           }
         },
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
       
-      console.log('Fetching logs for product keys:', productKeysList);
+      console.log('Fetching logs for owned product keys:', productKeysList);
       console.log('Found logs:', logs.length);
       
       // Update usage timestamp for the product key
@@ -252,7 +253,8 @@ async function fetchConversations(licenseKey: string) {
       unique_sessions: new Set(logs.map(l => l.session_id).filter(Boolean)).size,
       domains: [...new Set(logs.map(l => l.domain).filter(Boolean))],
       unique_product_keys: isMasterAdmin ? 
-        [...new Set(logs.map(l => l.product_key).filter(Boolean))].length : 1
+        [...new Set(logs.map(l => l.product_key).filter(Boolean))].length : 
+        [...new Set(logs.map(l => l.product_key).filter(Boolean))].length // Show actual count of owned keys in use
     };
 
     return NextResponse.json({
