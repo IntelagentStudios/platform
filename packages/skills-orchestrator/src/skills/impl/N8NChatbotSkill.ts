@@ -6,6 +6,7 @@
 
 import { BaseSkill } from '../BaseSkill';
 import { SkillResult, SkillParams, SkillCategory } from '../../types';
+import { skillLogger } from '../../services/SkillExecutionLogger';
 
 export class N8NChatbotSkill extends BaseSkill {
   metadata = {
@@ -22,7 +23,7 @@ export class N8NChatbotSkill extends BaseSkill {
     return !!(params.message || params.query);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         message, 

@@ -4,6 +4,9 @@
  */
 
 import { EventEmitter } from 'events';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export interface AgentInsight {
   id: string;
@@ -129,11 +132,48 @@ export abstract class SpecialistAgent extends EventEmitter {
   }
   
   /**
-   * Add an insight
+   * Add an insight and log to database
    */
-  protected addInsight(insight: AgentInsight): void {
+  protected async addInsight(insight: AgentInsight): Promise<void> {
     this.insights.push(insight);
     this.metrics.insightsGenerated++;
+    
+    // Log to skill_executions table
+    try {
+      await prisma.skill_executions.create({
+        data: {
+          skill_id: this.agentId,
+          license_key: 'SYSTEM', // System agents don't have a license
+          status: 'completed',
+          input_params: {
+            type: 'insight_generation',
+            domain: this.domain,
+            insightType: insight.type
+          },
+          output_result: {
+            insight: {
+              id: insight.id,
+              title: insight.title,
+              message: insight.message,
+              relevance: insight.relevance,
+              actionable: insight.actionable,
+              suggestedAction: insight.suggestedAction
+            },
+            data: insight.data
+          },
+          started_at: insight.timestamp,
+          completed_at: new Date(),
+          execution_time: 0,
+          metadata: {
+            agent: this.agentId,
+            domain: this.domain,
+            metrics: this.metrics
+          }
+        }
+      });
+    } catch (error) {
+      console.error(`Failed to log insight for ${this.agentId}:`, error);
+    }
     
     // Emit event for real-time updates
     this.emit('insight', insight);
