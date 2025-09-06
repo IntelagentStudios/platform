@@ -130,6 +130,9 @@ async function fetchConversations(licenseKey: string) {
       // Step 3: Get product key for chatbot
       const chatbotKey = await getProductKey(licenseKey, 'chatbot');
       
+      console.log('Fetching conversations for license:', licenseKey);
+      console.log('Product key found:', chatbotKey);
+      
       if (!chatbotKey) {
         return NextResponse.json({ 
           conversations: [],

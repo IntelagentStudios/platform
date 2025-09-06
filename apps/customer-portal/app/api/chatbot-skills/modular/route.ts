@@ -158,8 +158,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Log conversation
+    console.log('Logging conversation with productKey:', productKey, 'domain:', domain);
     try {
-      await prisma.chatbot_logs.create({
+      const logEntry = await prisma.chatbot_logs.create({
         data: {
           session_id: sessionId || 'anonymous',
           customer_message: message,
@@ -172,8 +173,10 @@ export async function POST(request: NextRequest) {
           user_id: 'anonymous'
         }
       });
+      console.log('Successfully logged conversation with ID:', logEntry.id);
     } catch (error) {
-      console.log('Could not log conversation:', error);
+      console.error('Could not log conversation:', error);
+      console.error('Failed productKey was:', productKey);
     }
 
     return NextResponse.json(
