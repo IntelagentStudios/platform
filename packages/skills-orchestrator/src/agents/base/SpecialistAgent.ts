@@ -163,7 +163,7 @@ export abstract class SpecialistAgent extends EventEmitter {
           },
           started_at: insight.timestamp,
           completed_at: new Date(),
-          execution_time: 0,
+          execution_time_ms: 0,
           metadata: {
             agent: this.agentId,
             domain: this.domain,

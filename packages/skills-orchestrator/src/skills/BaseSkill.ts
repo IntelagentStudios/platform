@@ -58,7 +58,7 @@ export abstract class BaseSkill {
             status: 'completed',
             output_result: result as any,
             completed_at: endTime,
-            execution_time: executionTime
+            execution_time_ms: executionTime
           }
         });
       } catch (error) {
@@ -78,7 +78,7 @@ export abstract class BaseSkill {
             status: 'failed',
             error_message: error.message || 'Unknown error',
             completed_at: endTime,
-            execution_time: executionTime
+            execution_time_ms: executionTime
           }
         });
       } catch (logError) {
