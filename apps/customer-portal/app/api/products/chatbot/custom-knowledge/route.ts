@@ -8,7 +8,16 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await validateAuth(request);
+    let authResult;
+    try {
+      authResult = await validateAuth(request);
+    } catch (authError: any) {
+      console.error('Auth validation error:', authError);
+      return NextResponse.json(
+        { error: 'Auth validation failed', details: authError.message },
+        { status: 401 }
+      );
+    }
     
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(

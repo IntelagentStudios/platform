@@ -127,11 +127,21 @@ async function fetchConversations(licenseKey: string) {
         }, { status: 403 });
       }
 
-      // Step 3: Get product key for chatbot
+      // Step 3: Get ALL product keys for chatbot (you have multiple)
+      const allChatbotKeys = await prisma.product_keys.findMany({
+        where: {
+          license_key: licenseKey,
+          product: 'chatbot',
+          status: 'active'
+        },
+        select: { product_key: true }
+      });
+      
       const chatbotKey = await getProductKey(licenseKey, 'chatbot');
       
       console.log('Fetching conversations for license:', licenseKey);
-      console.log('Product key found:', chatbotKey);
+      console.log('Primary product key:', chatbotKey);
+      console.log('All product keys:', allChatbotKeys.map(k => k.product_key));
       
       if (!chatbotKey) {
         return NextResponse.json({ 
@@ -149,12 +159,20 @@ async function fetchConversations(licenseKey: string) {
         using_product_key: true
       };
 
-      // Step 4: Fetch chatbot logs using the product key
+      // Step 4: Fetch chatbot logs using ALL product keys for this license
+      const productKeysList = allChatbotKeys.map(k => k.product_key);
       logs = await prisma.chatbot_logs.findMany({
-        where: { product_key: chatbotKey }, // Uses product key
+        where: { 
+          product_key: {
+            in: productKeysList // Get logs from ALL your chatbot product keys
+          }
+        },
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
+      
+      console.log('Fetching logs for product keys:', productKeysList);
+      console.log('Found logs:', logs.length);
       
       // Update usage timestamp for the product key
       await updateProductKeyUsage(chatbotKey);
