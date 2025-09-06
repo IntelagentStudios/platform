@@ -234,7 +234,7 @@ export default function DashboardPage() {
                           if (hasKey) {
                             // Route to manage pages for configured products
                             if (product.name === 'Chatbot') {
-                              window.location.href = '/products/chatbot/manage';
+                              window.location.href = '/products/chatbot/dashboard';
                             } else if (product.name === 'Sales Outreach Agent') {
                               window.location.href = '/products/sales-outreach-agent/manage';
                             } else if (product.name === 'Onboarding Agent') {

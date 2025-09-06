@@ -870,7 +870,7 @@ export default function App({ Component, pageProps }) {
             <button
               onClick={() => {
                 if (product === 'chatbot') {
-                  router.push('/products/chatbot/conversations');
+                  router.push('/products/chatbot/dashboard');
                 } else {
                   router.push('/products');
                 }

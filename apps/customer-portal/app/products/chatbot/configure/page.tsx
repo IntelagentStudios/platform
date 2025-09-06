@@ -475,7 +475,7 @@ export default function ConfigureChatbot() {
 
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button
-                  onClick={() => router.push('/products/chatbot/manage')}
+                  onClick={() => router.push('/products/chatbot/dashboard')}
                   style={{
                     flex: 1,
                     padding: '14px',

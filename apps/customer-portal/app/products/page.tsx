@@ -173,7 +173,7 @@ export default function ProductsPage() {
 
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
-      router.push('/products/chatbot/conversations');
+      router.push('/products/chatbot/dashboard');
     } else if (productId === 'sales-outreach-agent') {
       router.push('/products/sales-outreach-agent/manage');
     } else if (productId === 'data-enrichment') {
