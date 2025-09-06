@@ -59,17 +59,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all custom knowledge for this chatbot
-    const knowledge = await prisma.custom_knowledge.findMany({
-      where: {
-        product_key: productKey.product_key,
-        is_active: true,
-        OR: [
-          { expires_at: null },
-          { expires_at: { gt: new Date() } }
-        ]
-      },
-      orderBy: { created_at: 'desc' }
-    });
+    let knowledge = [];
+    try {
+      knowledge = await prisma.custom_knowledge.findMany({
+        where: {
+          product_key: productKey.product_key,
+          is_active: true,
+          OR: [
+            { expires_at: null },
+            { expires_at: { gt: new Date() } }
+          ]
+        },
+        orderBy: { created_at: 'desc' }
+      });
+    } catch (dbError) {
+      console.log('No custom knowledge found or table not ready:', dbError);
+      // Return empty array if table doesn't exist or query fails
+      knowledge = [];
+    }
 
     return NextResponse.json({
       success: true,
