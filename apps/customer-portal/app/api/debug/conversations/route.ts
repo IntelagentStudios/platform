@@ -34,6 +34,13 @@ export async function GET(request: NextRequest) {
       }
     });
     
+    // Specifically check for your product key
+    const yourProductKeyLogs = await prisma.chatbot_logs.findMany({
+      where: { product_key: 'chat_9b3f7e8a2c5d1f0e' },
+      orderBy: { timestamp: 'desc' },
+      take: 5
+    });
+    
     // Get product keys for this license
     const productKeys = await prisma.product_keys.findMany({
       where: { license_key: licenseKey },
@@ -69,12 +76,24 @@ export async function GET(request: NextRequest) {
       }
     });
     
+    // Check if the specific product key exists
+    const specificProductKey = await prisma.product_keys.findUnique({
+      where: { product_key: 'chat_9b3f7e8a2c5d1f0e' }
+    });
+    
     return NextResponse.json({
       debug: {
         your_license_key: licenseKey,
         your_license_info: license,
         your_product_keys: productKeys,
         recent_logs: recentLogs,
+        logs_for_chat_9b3f7e8a2c5d1f0e: {
+          count: yourProductKeyLogs.length,
+          logs: yourProductKeyLogs,
+          product_key_record: specificProductKey,
+          belongs_to_license: specificProductKey?.license_key,
+          matches_your_license: specificProductKey?.license_key === licenseKey
+        },
         logs_by_product_key: logCounts,
         total_logs_in_db: await prisma.chatbot_logs.count(),
         analysis: {
@@ -85,7 +104,10 @@ export async function GET(request: NextRequest) {
           logs_product_keys: logCounts.map(lc => lc.product_key),
           matching: productKeys.some(pk => 
             logCounts.some(lc => lc.product_key === pk.product_key)
-          ) ? 'YES - Logs should be visible' : 'NO - Product key mismatch'
+          ) ? 'YES - Logs should be visible' : 'NO - Product key mismatch',
+          specific_key_check: specificProductKey?.license_key === licenseKey ? 
+            'chat_9b3f7e8a2c5d1f0e IS linked to your license' : 
+            `chat_9b3f7e8a2c5d1f0e is linked to: ${specificProductKey?.license_key || 'NOT FOUND'}`
         }
       }
     });
