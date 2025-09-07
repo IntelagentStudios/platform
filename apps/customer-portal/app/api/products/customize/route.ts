@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     
     // Get user's license
     const user = await prisma.users.findUnique({
-      where: { id: decoded.userId },
-      include: { licenses: true }
+      where: { id: decoded.userId }
     });
 
     if (!user || !user.license_key) {
@@ -272,8 +271,7 @@ export async function PUT(request: NextRequest) {
     const { productKey, action } = body;
 
     const configuration = await prisma.product_configurations.findUnique({
-      where: { product_key: productKey },
-      include: { licenses: true }
+      where: { product_key: productKey }
     });
 
     if (!configuration) {
