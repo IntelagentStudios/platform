@@ -4,9 +4,43 @@
 
 The Intelagent Platform is a sophisticated AI-powered business automation system built on a revolutionary skills-based architecture. The platform features **310 modular skill workflows** orchestrated by **8 intelligent management agents**, enabling businesses to automate virtually any job role or business process.
 
-**Current Status**: Core infrastructure operational with authentication, product management, and complete skills framework with 310 skills. Successfully transitioned to skills-matrix architecture with 8 management agents while maintaining existing live services (particularly the chatbot). Management system fully integrated into admin dashboard with real-time data from all agents. Chatbot dashboard enhanced with improved UX, topic categorization, and clickable links.
+**Current Status**: Core infrastructure operational with authentication, product management, and complete skills framework with 310 skills. Successfully transitioned to skills-matrix architecture with 8 management agents while maintaining existing live services (particularly the chatbot). Management system fully integrated into admin dashboard with real-time data from all agents. Chatbot dashboard enhanced with improved UX, topic categorization, and clickable links. Stripe payment integration complete and live in production. 
+
+**Strategic Pivot**: Transitioning from tiered pricing to modular product architecture where base products (Chatbot, Sales Outreach, Onboarding) can be customized for specific business needs, with optional Platform upgrade for intelligent system integration and custom agent builder for completely bespoke solutions.
 
 ## 🎯 Ultimate Project Vision
+
+### New Product Architecture (V2)
+
+**Core Philosophy**: Modular, customizable products that adapt to specific business needs, with intelligent platform integration that multiplies value.
+
+#### Base Products Structure
+1. **Chatbot** (£299/month base)
+   - Customizable into: Support Bot, Knowledge Tool, Training Assistant, Sales Qualifier, Booking Assistant
+   - Uses 30-50 skills depending on configuration
+
+2. **Sales Outreach Agent** (£499/month base)
+   - Becomes: Lead Generator, Email Campaign Manager, Response Handler, CRM Automation, Pipeline Manager
+   - Uses 60-80 skills for comprehensive sales automation
+
+3. **Onboarding Agent** (£399/month base)
+   - Handles: Employee/Customer/Vendor onboarding, Form Processing, Document Generation, Workflow Automation
+   - Uses 40-60 skills for process automation
+
+#### Platform Intelligence Upgrade (£999/month)
+- Connects all products into unified intelligent system
+- Cross-product insights and automation
+- Predictive analytics across entire business
+- Value multiplier: Performance beyond sum of parts
+
+#### Custom Agent Builder (£799+/month)
+- Two approaches: Use-case based or Skills-based
+- Dynamic pricing based on complexity and value
+- Access to all 313 skills in the platform
+
+#### Pricing Model
+- Based on: Complexity, Skills used, Token consumption, Business value
+- Formula: Base + (Skills × £20) + (Tokens/1M × £50) + Complexity Factor + Value Multiplier
 
 ### Revolutionary Skills-Based Architecture
 
@@ -81,27 +115,37 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
    - Admin Dashboard Management Agent Integration (4 tabs with real-time data)
    - System improvements and TypeScript fixes
 
-## 📊 Current Implementation Status
+## 📊 Implementation Roadmap
 
-### ✅ Completed Features
+### Q1 2025 (January - March)
 
-#### Core Platform Infrastructure
-- [x] PostgreSQL database setup with Prisma ORM
-- [x] JWT-based authentication system with sessions
-- [x] License key validation and management
-- [x] Role-based access control (customer, master_admin, team_member)
-- [x] Multi-tenant data isolation architecture
-- [x] In-memory caching layer (Redis-ready)
-- [x] Product key generation system with coded prefixes
+**Week 3 (Jan 13-19)**
+- [ ] Design database schema for modular products
+- [ ] Create pricing calculation algorithm
+- [ ] Build API endpoints for customization
 
-#### Customer Portal (dashboard.intelagentstudios.com)
-- [x] User registration and login with license validation
-- [x] Product dashboard with active/available/coming soon sections
-- [x] Navigation system with collapsible sidebar
-- [x] Product configuration interface
-- [x] Real-time conversation tracking for chatbot
-- [x] Analytics dashboard with usage metrics
-- [x] Settings and account management
+**Week 4 (Jan 20-26)**  
+- [ ] Develop product customization UI
+- [ ] Implement skill selection marketplace
+- [ ] Create pricing preview component
+
+**February**
+- [ ] Launch Platform Intelligence layer
+- [ ] Build custom agent builder (MVP)
+- [ ] Beta test with 10 customers
+- [ ] Implement usage-based billing
+
+**March**
+- [ ] Full launch of Product V2
+- [ ] Migrate existing customers
+- [ ] Launch custom agent marketplace
+- [ ] Achieve £10k MRR target
+
+### Q2 2025 (April - June)
+- Complete Sales Outreach Agent
+- Complete Onboarding Agent  
+- Launch partner program
+- Reach 100+ active customers
 
 #### Products Implemented
 1. **Chatbot** (Fully Managed by Skills System)
@@ -223,6 +267,25 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
    - Manual intervention capabilities
 
 ## 🎯 Next Steps - Priority Order
+
+### Product Architecture Transformation (IN PROGRESS)
+1. **Implement Modular Product System**
+   - [ ] Update database schema for customizable products
+   - [ ] Create product configuration interface
+   - [ ] Build dynamic pricing calculator
+   - [ ] Implement skill-to-product mapping
+
+2. **Platform Intelligence Layer**
+   - [ ] Build cross-product data sharing system
+   - [ ] Create unified analytics dashboard
+   - [ ] Implement intelligent workflow orchestration
+   - [ ] Develop predictive insights engine
+
+3. **Custom Agent Builder**
+   - [ ] Design builder interface (use-case vs skills-based)
+   - [ ] Create skill marketplace with recommendations
+   - [ ] Build complexity scoring algorithm
+   - [ ] Implement sandbox for testing custom agents
 
 ### Revenue Generation (COMPLETED ✅)
 1. **Marketplace & Stripe Payment Integration** ✅
@@ -414,9 +477,14 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 6. ~~Build marketplace with Stripe payment integration~~ ✅
 7. ~~Build user management interface in admin~~ ✅
 8. ~~Fix all Railway deployment errors~~ ✅
-9. Complete Sales Agent functionality
-10. Complete Data Enrichment service
-11. Ensure zero disruption to existing chatbot service
+9. **Transform to modular product architecture** (IN PROGRESS)
+10. Build product customization system
+11. Implement Platform intelligence layer
+12. Create custom agent builder
+13. Update pricing to value-based model
+14. Complete Sales Outreach Agent functionality
+15. Complete Onboarding Agent functionality
+16. Ensure zero disruption to existing chatbot service
 
 ### Short-term Goals (2 weeks)
 1. ~~Complete skills infrastructure (310 skills)~~ ✅
