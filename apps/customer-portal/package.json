@@ -12,6 +12,7 @@
     "postinstall": "cd ../../packages/skills-orchestrator && npm run build && cd ../../apps/customer-portal && prisma generate --schema=../../packages/database/prisma/schema.prisma || true"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@intelagent/billing": "*",
     "@intelagent/database": "*",
     "@intelagent/notifications": "*",
