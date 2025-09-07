@@ -31,8 +31,8 @@ const tiers = [
   {
     id: 'professional',
     name: 'Professional',
-    price: 799,
-    priceDisplay: '£799',
+    price: 699,
+    priceDisplay: '£699',
     period: '/month',
     description: 'For growing businesses ready to scale with AI',
     features: [
@@ -52,11 +52,11 @@ const tiers = [
     popular: true
   },
   {
-    id: 'enterprise',
+    id: 'enterprise', 
     name: 'Enterprise',
-    price: 2499,
-    priceDisplay: 'Custom',
-    period: '',
+    price: 1499,
+    priceDisplay: '£1,499',
+    period: '/month',
     description: 'Tailored solutions for large organizations',
     features: [
       'Unlimited AI Chatbots',
