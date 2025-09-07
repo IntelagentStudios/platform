@@ -4,9 +4,16 @@ import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { sendWelcomeEmail, generatePasswordResetToken, generateTemporaryPassword } from '@/lib/email/send-welcome-email';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripe;
+};
 
 const prisma = new PrismaClient();
 
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
+      event = getStripe().webhooks.constructEvent(
         body,
         sig,
         process.env.STRIPE_WEBHOOK_SECRET!

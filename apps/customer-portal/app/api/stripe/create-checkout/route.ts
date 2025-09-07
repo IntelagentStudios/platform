@@ -3,9 +3,16 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripe;
+};
 
 const prisma = new PrismaClient();
 
@@ -83,7 +90,7 @@ export async function POST(request: NextRequest) {
     // Create or retrieve Stripe customer
     if (!customerId && userEmail) {
       // Check if customer exists
-      const customers = await stripe.customers.list({
+      const customers = await getStripe().customers.list({
         email: userEmail,
         limit: 1
       });
@@ -92,7 +99,7 @@ export async function POST(request: NextRequest) {
         customerId = customers.data[0].id;
       } else {
         // Create new customer
-        const customer = await stripe.customers.create({
+        const customer = await getStripe().customers.create({
           email: userEmail,
           metadata: {
             userId: userId || 'pending',
@@ -174,7 +181,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'subscription',

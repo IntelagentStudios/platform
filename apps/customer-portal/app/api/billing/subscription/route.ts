@@ -3,9 +3,16 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripe;
+};
 
 const prisma = new PrismaClient();
 
@@ -42,12 +49,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Get subscription from Stripe
-    const subscription = await stripe.subscriptions.retrieve(license.stripe_subscription_id);
+    const subscription = await getStripe().subscriptions.retrieve(license.stripe_subscription_id);
     
     // Get payment method
     let paymentMethod = null;
     if (subscription.default_payment_method) {
-      const pm = await stripe.paymentMethods.retrieve(
+      const pm = await getStripe().paymentMethods.retrieve(
         subscription.default_payment_method as string
       );
       paymentMethod = {

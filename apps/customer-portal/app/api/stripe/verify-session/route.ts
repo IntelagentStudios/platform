@@ -3,9 +3,16 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripe;
+};
 
 const prisma = new PrismaClient();
 
@@ -19,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Retrieve the checkout session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    const session = await getStripe().checkout.sessions.retrieve(sessionId, {
       expand: ['customer', 'subscription']
     });
 

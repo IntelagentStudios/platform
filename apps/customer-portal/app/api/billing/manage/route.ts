@@ -3,9 +3,16 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16',
-});
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripe;
+};
 
 const prisma = new PrismaClient();
 
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     if (!customerId) {
       // Check if customer exists in Stripe
-      const customers = await stripe.customers.list({
+      const customers = await getStripe().customers.list({
         email: user.email,
         limit: 1
       });
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest) {
         customerId = customers.data[0].id;
       } else {
         // Create new customer
-        const customer = await stripe.customers.create({
+        const customer = await getStripe().customers.create({
           email: user.email,
           name: user.name || undefined,
           metadata: {
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create billing portal session
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: customerId,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
     });
