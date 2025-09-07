@@ -394,11 +394,15 @@ model licenses {
   schema_name         String?        @db.VarChar(255)
   subtotal_pence      Int?           @default(0)
   discount_pence      Int?           @default(0)
+  
   product_keys        product_keys[]
   custom_knowledge    custom_knowledge[]
   executions          executions[]
   data_flows          data_flows[]
   skill_executions    skill_executions[]
+  product_configurations product_configurations[]
+  custom_agents       custom_agents[]
+  platform_subscriptions platform_subscriptions?
   pro_addon_pence     Int?           @default(0)
   total_pence         Int?           @default(0)
   activated_at        DateTime?      @db.Timestamptz(6)
@@ -830,12 +834,20 @@ model product_keys {
   license_key      String             @db.VarChar(20)
   product          String             @db.VarChar(50)
   product_key      String             @unique @db.VarChar(255)
+  
+  // Skills-based configuration
+  assigned_skills  Json?              @default("[]") // Skills assigned to this product instance
+  skill_limits     Json?              @default("{}") // Per-skill usage limits
+  custom_workflows Json?              @default("[]") // Custom skill workflows
+  skill_config     Json?              @default("{}") // Skill-specific configuration
+  
   created_at       DateTime?          @default(now()) @db.Timestamptz(6)
   last_used_at     DateTime?          @db.Timestamptz(6)
   status           String?            @default("active") @db.VarChar(20)
   metadata         Json?              @default("{}")
   licenses         licenses           @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
   custom_knowledge custom_knowledge[]
+  product_configurations product_configurations[]
 
   @@index([license_key], map: "idx_product_keys_license")
   @@index([product], map: "idx_product_keys_product")
@@ -997,16 +1009,37 @@ model skills {
   author          String    @db.VarChar(100)
   active          Boolean   @default(true)
   is_premium      Boolean   @default(false)
+  
+  // Product applicability
+  applicable_products Json?  @default("[\"all\"]") // Which products can use this skill
+  is_core_skill   Boolean   @default(false) // Core skills cannot be removed
+  skill_tier      String    @default("standard") @db.VarChar(50) // 'basic', 'standard', 'premium', 'enterprise'
+  management_agent String?   @db.VarChar(50) // Which agent manages this skill
+  
+  // Configuration and requirements
   configuration   Json      @default("{}")
   required_params Json?
   optional_params Json?
+  dependencies    Json?     @default("[]") // Other skills this depends on
+  
+  // Resource estimates
+  token_usage_estimate Int? @default(100) // Estimated tokens per execution
+  execution_time_ms Int?    @default(1000) // Estimated execution time
+  
+  // Pricing impact
+  base_cost_pence Int       @default(0) // Additional cost for using this skill
+  value_multiplier Decimal  @default(1.0) @db.Decimal(3, 2) // Value impact
+  
   created_at      DateTime  @default(now()) @db.Timestamptz(6)
   updated_at      DateTime  @default(now()) @db.Timestamptz(6)
   
   skill_executions skill_executions[]
+  skill_product_mappings skill_product_mappings[]
   
   @@index([category], map: "idx_skills_category")
   @@index([active], map: "idx_skills_active")
+  @@index([skill_tier], map: "idx_skills_tier")
+  @@index([management_agent], map: "idx_skills_agent")
   @@schema("public")
 }
 
@@ -1056,5 +1089,208 @@ model vector_embeddings {
 
   @@index([collection], map: "idx_vector_collection")
   @@index([created_at], map: "idx_vector_created")
+  @@schema("public")
+}
+
+// ==========================================
+// MODULAR PRODUCT ARCHITECTURE V2 TABLES
+// ==========================================
+
+// Configuration for customized products
+model product_configurations {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  product_key         String    @unique @db.VarChar(255)
+  license_key         String    @db.VarChar(20)
+  
+  // Product details
+  base_product        String    @db.VarChar(50) // 'chatbot', 'sales_outreach', 'onboarding'
+  customization_type  String    @db.VarChar(100) // e.g., 'support_bot', 'lead_generator', 'employee_onboarding'
+  custom_name         String?   @db.VarChar(255)
+  description         String?   @db.Text
+  
+  // Configuration
+  skills_enabled      Json      @default("[]") // Array of skill IDs
+  custom_settings     Json      @default("{}") // Product-specific settings
+  ui_preferences      Json?     @default("{}") // UI customization
+  integrations        Json?     @default("[]") // Third-party integrations
+  
+  // Complexity and pricing
+  complexity_score    Int       @default(1) // 1-10 scale
+  estimated_tokens    Int       @default(100000) // Monthly estimate
+  base_price_pence    Int       // Base monthly price in pence
+  addon_price_pence   Int       @default(0) // Additional features price
+  total_price_pence   Int       // Total monthly price
+  
+  // Status
+  status              String    @default("draft") @db.VarChar(20) // 'draft', 'active', 'paused', 'cancelled'
+  activated_at        DateTime? @db.Timestamptz(6)
+  paused_at           DateTime? @db.Timestamptz(6)
+  cancelled_at        DateTime? @db.Timestamptz(6)
+  
+  // Metadata
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  created_by          String?   @db.VarChar(255)
+  
+  product_keys        product_keys @relation(fields: [product_key], references: [product_key], onDelete: Cascade)
+  licenses            licenses     @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([license_key], map: "idx_product_config_license")
+  @@index([base_product], map: "idx_product_config_base")
+  @@index([status], map: "idx_product_config_status")
+  @@schema("public")
+}
+
+// Custom agents built by customers
+model custom_agents {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  license_key         String    @db.VarChar(20)
+  
+  // Agent details
+  agent_name          String    @db.VarChar(255)
+  agent_key           String    @unique @db.VarChar(255) // Generated unique key
+  description         String?   @db.Text
+  icon_url            String?   @db.VarChar(500)
+  category            String?   @db.VarChar(100) // User-defined category
+  
+  // Build configuration
+  build_approach      String    @db.VarChar(50) // 'use_case' or 'skills_based'
+  use_case_template   String?   @db.VarChar(100) // If use_case approach
+  selected_skills     Json      @default("[]") // Array of skill IDs
+  skill_count         Int       @default(0)
+  
+  // Agent configuration
+  configuration       Json      @default("{}") // Complete agent config
+  triggers            Json?     @default("[]") // Event triggers
+  schedules           Json?     @default("[]") // Scheduled runs
+  webhooks            Json?     @default("[]") // Webhook endpoints
+  
+  // Complexity and pricing
+  complexity_score    Int       @default(1) // 1-10 scale
+  estimated_tokens    Int       @default(100000) // Monthly estimate
+  base_price_pence    Int       @default(79900) // Starting at £799
+  skill_price_pence   Int       @default(0) // Skills × £20
+  total_price_pence   Int       // Total monthly price
+  
+  // Usage tracking
+  execution_count     Int       @default(0)
+  last_executed_at    DateTime? @db.Timestamptz(6)
+  total_tokens_used   Int       @default(0)
+  
+  // Status
+  status              String    @default("draft") @db.VarChar(20) // 'draft', 'testing', 'active', 'paused'
+  published_at        DateTime? @db.Timestamptz(6)
+  
+  // Metadata
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  created_by          String?   @db.VarChar(255)
+  
+  licenses            licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([license_key], map: "idx_custom_agents_license")
+  @@index([status], map: "idx_custom_agents_status")
+  @@index([build_approach], map: "idx_custom_agents_approach")
+  @@schema("public")
+}
+
+// Platform intelligence subscriptions
+model platform_subscriptions {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  license_key         String    @unique @db.VarChar(20)
+  
+  // Subscription details
+  subscription_tier   String    @default("standard") @db.VarChar(50) // 'standard', 'premium', 'enterprise'
+  monthly_price_pence Int       @default(99900) // £999 base
+  
+  // Connected products
+  products_connected  Json      @default("[]") // Array of product_keys
+  product_count       Int       @default(0)
+  
+  // Intelligence features
+  intelligence_features Json    @default("{\"unified_analytics\":true,\"cross_product_insights\":true,\"predictive_analytics\":false,\"workflow_orchestration\":true,\"intelligent_routing\":true,\"custom_reporting\":false,\"api_access\":false}")
+  
+  // Data sharing settings
+  unified_data        Boolean   @default(true)
+  data_sync_frequency String    @default("realtime") @db.VarChar(50) // 'realtime', 'hourly', 'daily'
+  
+  // Usage limits
+  max_products        Int       @default(10)
+  max_workflows       Int       @default(100)
+  max_api_calls       Int       @default(10000)
+  
+  // Status
+  status              String    @default("active") @db.VarChar(20) // 'active', 'paused', 'cancelled'
+  activated_at        DateTime  @default(now()) @db.Timestamptz(6)
+  expires_at          DateTime? @db.Timestamptz(6)
+  
+  // Metadata
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  
+  licenses            licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  
+  @@index([status], map: "idx_platform_sub_status")
+  @@schema("public")
+}
+
+// Mapping of skills to products
+model skill_product_mappings {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  skill_id            String    @db.VarChar(100)
+  base_product        String    @db.VarChar(50) // 'chatbot', 'sales_outreach', 'onboarding'
+  
+  // Categorization
+  is_core             Boolean   @default(false) // Core to the product
+  is_optional         Boolean   @default(true) // Can be added/removed
+  skill_category      String?   @db.VarChar(100) // Grouping for UI
+  
+  // Pricing impact
+  price_impact_pence  Int       @default(2000) // £20 per skill default
+  complexity_impact   Int       @default(1) // 1-3 impact on complexity
+  
+  // Usage estimates
+  avg_tokens_per_use  Int       @default(100)
+  avg_calls_per_month Int       @default(1000)
+  
+  // Metadata
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  
+  skills              skills    @relation(fields: [skill_id], references: [id], onDelete: Cascade)
+  
+  @@unique([skill_id, base_product])
+  @@index([base_product], map: "idx_skill_product_base")
+  @@index([skill_category], map: "idx_skill_product_category")
+  @@schema("public")
+}
+
+// Dynamic skill-based pricing rules
+model skill_pricing_rules {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  rule_name           String    @db.VarChar(255)
+  rule_type           String    @db.VarChar(50) // 'skill_count', 'skill_complexity', 'skill_usage', 'skill_tier'
+  
+  // Skill conditions
+  skill_id            String?   @db.VarChar(100) // Specific skill or null for all
+  skill_category      String?   @db.VarChar(100) // Apply to skill category
+  min_skill_count     Int?      // Minimum number of skills
+  max_skill_count     Int?      // Maximum number of skills
+  
+  // Pricing impact
+  price_per_skill     Int       @default(2000) // £20 per skill default
+  complexity_multiplier Decimal @default(1.0) @db.Decimal(3, 2)
+  
+  // Status
+  is_active           Boolean   @default(true)
+  valid_from          DateTime  @default(now()) @db.Timestamptz(6)
+  valid_until         DateTime? @db.Timestamptz(6)
+  
+  // Metadata
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  
+  @@index([rule_type], map: "idx_skill_pricing_type")
+  @@index([skill_category], map: "idx_skill_pricing_category")
+  @@index([is_active], map: "idx_skill_pricing_active")
   @@schema("public")
 }
