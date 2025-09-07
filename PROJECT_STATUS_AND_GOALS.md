@@ -212,37 +212,29 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 
 ## 🎯 Next Steps - Priority Order
 
-### Critical Bug Fixes (Do First)
-1. **Login Loop Issue** - Users redirected to login after authentication
-   - Check cookie/session validation in middleware
-   - Verify JWT token expiration settings
-   - Test authentication flow end-to-end
-
-2. **n8n Integration Issues** 
-   - Setup agent generating old format keys
-   - Update webhook endpoints to new format
-
-### Revenue Generation (High Priority)
-3. **Stripe Payment Integration**
+### Revenue Generation (Top Priority)
+1. **Marketplace & Stripe Payment Integration**
+   - Build unified marketplace (accessible with and without license)
+   - Implement subscription checkout flow
    - Implement subscription checkout flow
    - Add payment method management
    - Create billing portal integration
    - Set up webhook handlers for events
 
-4. **Admin User Management**
+2. **Admin User Management**
    - Build interface to view all users
    - Add license assignment/revocation
    - Create support ticket system
    - Implement user activity tracking
 
 ### Product Completion (Medium Priority)  
-5. **Sales Agent Implementation**
+3. **Sales Agent Implementation**
    - Complete lead discovery engine
    - Build email sequence automation
    - Add CRM integrations (Salesforce, HubSpot)
    - Implement campaign tracking
 
-6. **Data Enrichment Service**
+4. **Data Enrichment Service**
    - Implement actual enrichment APIs
    - Add bulk processing capabilities
    - Create usage tracking and limits
@@ -308,15 +300,6 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
    - [ ] Mobile applications
 
 ## 🔧 Technical Debt and Issues
-
-### Known Bugs
-1. **Login Loop Issue** (PROJECT_REQUIREMENTS_OVERVIEW.md)
-   - Users redirected to login after authentication
-   - Possible cookie/session validation problem
-
-2. **n8n Integration Issues**
-   - Setup agent generating old format keys
-   - Webhook endpoints need updating
 
 ### Code Quality Issues
 - Multiple TODO comments in codebase indicating incomplete implementations
@@ -413,11 +396,12 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 1. ~~Complete skills infrastructure (310 skills)~~ ✅
 2. ~~Deploy 8 management agents~~ ✅
 3. ~~Integrate management system into admin dashboard~~ ✅
-4. Fix critical authentication bugs (login loop issue)
-5. Implement payment integration (Stripe)
-6. Build user management interface in admin
-7. Complete Sales Agent functionality
-8. Ensure zero disruption to existing chatbot service
+4. ~~Fix critical authentication bugs~~ ✅
+5. ~~Fix n8n integration issues~~ ✅
+6. Build marketplace with Stripe payment integration
+7. Build user management interface in admin
+8. Complete Sales Agent functionality
+9. Ensure zero disruption to existing chatbot service
 
 ### Short-term Goals (2 weeks)
 1. ~~Complete skills infrastructure (310 skills)~~ ✅
@@ -488,7 +472,7 @@ The platform is currently undergoing migration from separate products to a unifi
 ---
 
 **Last Updated**: January 2025
-**Version**: 6.1
+**Version**: 6.2
 **Status**: OPERATIONAL - Skills System Managing All Chatbot Features
 **Owner**: Intelagent Studios
 

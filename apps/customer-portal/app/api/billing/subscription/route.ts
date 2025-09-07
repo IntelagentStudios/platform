@@ -1,258 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@intelagent/database';
-import stripeService from '@intelagent/billing';
 import Stripe from 'stripe';
+import { PrismaClient } from '@repo/database';
+import jwt from 'jsonwebtoken';
 
-// GET /api/billing/subscription - Get current subscription
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2024-12-18.acacia',
+});
+
+const prisma = new PrismaClient();
+
 export async function GET(request: NextRequest) {
   try {
-    const db = prisma;
-    
-    // Get license info
-    const license = await db.$queryRaw`
-      SELECT 
-        l.*,
-        u.stripe_customer_id,
-        u.stripe_subscription_id
-      FROM public.licenses l
-      LEFT JOIN public.users u ON u.license_key = l.license_key
-      WHERE l.license_key = current_setting('app.current_license')
-      LIMIT 1
-    ` as any[];
-
-    if (!license || license.length === 0) {
-      return NextResponse.json(
-        { error: 'License not found' },
-        { status: 404 }
-      );
+    // Get user from auth token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const licenseData = license[0];
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const userId = decoded.userId;
+
+    // Get user and license
+    const user = await prisma.users.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const license = await prisma.licenses.findFirst({
+      where: { license_key: user.license_key }
+    });
+
+    if (!license || !license.stripe_subscription_id) {
+      return NextResponse.json({
+        subscription: null,
+        paymentMethod: null
+      });
+    }
+
+    // Get subscription from Stripe
+    const subscription = await stripe.subscriptions.retrieve(license.stripe_subscription_id);
     
-    // Get subscription from Stripe if exists
-    let subscription = null;
-    if (licenseData.stripe_subscription_id) {
-      subscription = await stripeService.getSubscription(
-        licenseData.stripe_subscription_id
+    // Get payment method
+    let paymentMethod = null;
+    if (subscription.default_payment_method) {
+      const pm = await stripe.paymentMethods.retrieve(
+        subscription.default_payment_method as string
       );
+      paymentMethod = {
+        brand: pm.card?.brand,
+        last4: pm.card?.last4,
+        exp_month: pm.card?.exp_month,
+        exp_year: pm.card?.exp_year
+      };
     }
 
     return NextResponse.json({
-      license: {
-        ...licenseData,
-        total: licenseData.total_pence / 100,
-        formatted_total: `£${(licenseData.total_pence / 100).toFixed(2)}`
+      subscription: {
+        id: subscription.id,
+        tier: license.tier || 'starter',
+        status: subscription.status,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        price: subscription.items.data[0]?.price.unit_amount || 0,
+        interval: subscription.items.data[0]?.price.recurring?.interval || 'month'
       },
-      subscription
-    });
-  } catch (error) {
-    console.error('Failed to get subscription:', error);
-    return NextResponse.json(
-      { error: 'Failed to get subscription' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/billing/subscription - Create new subscription
-export async function POST(request: NextRequest) {
-  try {
-    const db = prisma;
-    const data = await request.json();
-    
-    // Get license and user info
-    const result = await db.$queryRaw`
-      SELECT 
-        l.*,
-        u.email,
-        u.name,
-        u.stripe_customer_id
-      FROM public.licenses l
-      JOIN public.users u ON u.license_key = l.license_key
-      WHERE l.license_key = current_setting('app.current_license')
-        AND u.role = 'owner'
-      LIMIT 1
-    ` as any[];
-
-    if (!result || result.length === 0) {
-      return NextResponse.json(
-        { error: 'License not found' },
-        { status: 404 }
-      );
-    }
-
-    const licenseData = result[0];
-    
-    // Create or get Stripe customer
-    let customerId = licenseData.stripe_customer_id;
-    if (!customerId) {
-      const customer = await stripeService.createCustomer({
-        email: licenseData.email,
-        name: licenseData.name,
-        licenseKey: licenseData.license_key
-      });
-      customerId = customer.id;
-      
-      // Update user with Stripe customer ID
-      await db.$executeRaw`
-        UPDATE public.users 
-        SET stripe_customer_id = ${customerId}
-        WHERE license_key = ${licenseData.license_key}
-          AND role = 'owner'
-      `;
-    }
-
-    // Create prices for selected products
-    const priceIds: string[] = [];
-    const products = JSON.parse(licenseData.products || '[]');
-    
-    for (const productSlug of products) {
-      const productId = await stripeService.ensureProduct(
-        productSlug,
-        `Intelagent ${productSlug} subscription`
-      );
-      
-      // Get price from our database
-      const productData = await db.$queryRaw`
-        SELECT base_price_pence 
-        FROM public.products 
-        WHERE slug = ${productSlug}
-      ` as any[];
-      
-      if (productData && productData[0]) {
-        const priceId = await stripeService.createPrice({
-          productId,
-          amount: productData[0].base_price_pence,
-          interval: licenseData.billing_cycle === 'annual' ? 'year' : 'month',
-          currency: 'gbp'
-        });
-        priceIds.push(priceId);
-      }
-    }
-
-    // Add pro addon if applicable
-    if (licenseData.is_pro) {
-      const proProductId = await stripeService.ensureProduct(
-        'Pro Addon',
-        'Advanced features and priority support'
-      );
-      const proPriceId = await stripeService.createPrice({
-        productId: proProductId,
-        amount: 49900, // £499
-        interval: licenseData.billing_cycle === 'annual' ? 'year' : 'month',
-        currency: 'gbp'
-      });
-      priceIds.push(proPriceId);
-    }
-
-    // Create subscription
-    const subscription = await stripeService.createSubscription({
-      customerId,
-      priceIds,
-      licenseKey: licenseData.license_key,
-      trialDays: data.trial_days,
-      promoCode: data.promo_code
+      paymentMethod
     });
 
-    // Update license with subscription ID
-    await db.$executeRaw`
-      UPDATE public.licenses 
-      SET stripe_subscription_id = ${subscription.id}
-      WHERE license_key = ${licenseData.license_key}
-    `;
-
-    // Get client secret from latest invoice if it's expanded
-    let clientSecret: string | undefined;
-    if (subscription.latest_invoice && typeof subscription.latest_invoice !== 'string') {
-      const invoice = subscription.latest_invoice as Stripe.Invoice;
-      if (invoice.payment_intent && typeof invoice.payment_intent !== 'string') {
-        clientSecret = invoice.payment_intent.client_secret || undefined;
-      }
-    }
-    
-    return NextResponse.json({
-      subscription,
-      client_secret: clientSecret
-    });
-  } catch (error) {
-    console.error('Failed to create subscription:', error);
+  } catch (error: any) {
+    console.error('Error fetching subscription:', error);
     return NextResponse.json(
-      { error: 'Failed to create subscription' },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT /api/billing/subscription - Update subscription
-export async function PUT(request: NextRequest) {
-  try {
-    const db = prisma;
-    const data = await request.json();
-    
-    if (!data.action) {
-      return NextResponse.json(
-        { error: 'Action required' },
-        { status: 400 }
-      );
-    }
-
-    // Get current subscription
-    const result = await db.$queryRaw`
-      SELECT stripe_subscription_id 
-      FROM public.licenses 
-      WHERE license_key = current_setting('app.current_license')
-    ` as any[];
-
-    if (!result || result.length === 0 || !result[0].stripe_subscription_id) {
-      return NextResponse.json(
-        { error: 'No active subscription' },
-        { status: 404 }
-      );
-    }
-
-    const subscriptionId = result[0].stripe_subscription_id;
-    let subscription;
-
-    switch (data.action) {
-      case 'cancel':
-        subscription = await stripeService.cancelSubscription(
-          subscriptionId,
-          data.immediately || false
-        );
-        
-        // Update license status
-        await db.$executeRaw`
-          UPDATE public.licenses 
-          SET status = 'cancelled',
-              cancelled_at = NOW()
-          WHERE license_key = current_setting('app.current_license')
-        `;
-        break;
-        
-      case 'resume':
-        subscription = await stripeService.resumeSubscription(subscriptionId);
-        
-        // Update license status
-        await db.$executeRaw`
-          UPDATE public.licenses 
-          SET status = 'active',
-              cancelled_at = NULL
-          WHERE license_key = current_setting('app.current_license')
-        `;
-        break;
-        
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action' },
-          { status: 400 }
-        );
-    }
-
-    return NextResponse.json({ subscription });
-  } catch (error) {
-    console.error('Failed to update subscription:', error);
-    return NextResponse.json(
-      { error: 'Failed to update subscription' },
+      { error: error.message || 'Failed to fetch subscription' },
       { status: 500 }
     );
   }

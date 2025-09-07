@@ -46,6 +46,31 @@ export class OperationsAgent {
   }
 
   /**
+   * Execute a skill by name
+   */
+  public async executeSkill(skillName: string, params: any): Promise<any> {
+    try {
+      const skill = this.skillsRegistry.getSkill(skillName);
+      if (!skill) {
+        throw new Error(`Skill ${skillName} not found`);
+      }
+      
+      const result = await skill.execute(params);
+      
+      // Log execution
+      console.log(`[OperationsAgent] Executed skill: ${skillName}`, {
+        success: result.success,
+        executionTime: result.data?.executionTime
+      });
+      
+      return result;
+    } catch (error: any) {
+      console.error(`[OperationsAgent] Error executing skill ${skillName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Monitor platform operations
    */
   public async monitorOperations(): Promise<OperationsMetrics> {

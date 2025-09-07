@@ -1,52 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@intelagent/database';
-import stripeService from '@intelagent/billing';
+import Stripe from 'stripe';
+import { PrismaClient } from '@repo/database';
+import jwt from 'jsonwebtoken';
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2024-12-18.acacia',
+});
 
-export const dynamic = 'force-dynamic';
-// GET /api/billing/invoices - List customer invoices
+const prisma = new PrismaClient();
+
 export async function GET(request: NextRequest) {
   try {
-    const db = prisma;
-    
-    // Get customer ID
-    const result = await db.$queryRaw`
-      SELECT u.stripe_customer_id 
-      FROM public.users u
-      WHERE u.license_key = current_setting('app.current_license')
-        AND u.role = 'owner'
-      LIMIT 1
-    ` as any[];
+    // Get user from auth token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (!result || result.length === 0 || !result[0].stripe_customer_id) {
-      // Return empty list if no Stripe customer
+    const token = authHeader.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const userId = decoded.userId;
+
+    // Get user
+    const user = await prisma.users.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !user.stripe_customer_id) {
       return NextResponse.json({ invoices: [] });
     }
 
-    const invoices = await stripeService.listInvoices(
-      result[0].stripe_customer_id,
-      20
-    );
+    // Get invoices from Stripe
+    const invoices = await stripe.invoices.list({
+      customer: user.stripe_customer_id,
+      limit: 100,
+    });
 
-    // Format invoices for display
-    const formattedInvoices = invoices.map(invoice => ({
+    // Format invoices for frontend
+    const formattedInvoices = invoices.data.map(invoice => ({
       id: invoice.id,
-      number: invoice.number,
-      amount: invoice.amount_paid / 100,
-      formatted_amount: `£${(invoice.amount_paid / 100).toFixed(2)}`,
+      amount: invoice.amount_paid,
       status: invoice.status,
-      paid: invoice.paid,
-      created: new Date(invoice.created * 1000),
-      due_date: invoice.due_date ? new Date(invoice.due_date * 1000) : null,
-      pdf_url: invoice.invoice_pdf,
-      hosted_url: invoice.hosted_invoice_url
+      date: new Date(invoice.created * 1000),
+      invoiceUrl: invoice.hosted_invoice_url,
+      pdfUrl: invoice.invoice_pdf,
+      number: invoice.number,
+      description: invoice.description,
+      currency: invoice.currency,
+      periodStart: invoice.period_start ? new Date(invoice.period_start * 1000) : null,
+      periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000) : null,
     }));
 
     return NextResponse.json({ invoices: formattedInvoices });
-  } catch (error) {
-    console.error('Failed to list invoices:', error);
+
+  } catch (error: any) {
+    console.error('Error fetching invoices:', error);
     return NextResponse.json(
-      { error: 'Failed to list invoices' },
+      { error: error.message || 'Failed to fetch invoices' },
       { status: 500 }
     );
   }

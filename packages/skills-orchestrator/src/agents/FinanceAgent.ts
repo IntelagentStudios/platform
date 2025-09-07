@@ -134,6 +134,33 @@ export class FinanceAgent extends EventEmitter {
   }
 
   /**
+   * Execute a skill managed by this agent
+   */
+  public async executeSkill(skillId: string, params: any): Promise<any> {
+    try {
+      // Import and execute the financial analytics skill
+      if (skillId === 'financial_analytics') {
+        const { FinancialAnalyticsSkill } = await import('../skills/impl/FinancialAnalyticsSkill');
+        const skill = new FinancialAnalyticsSkill();
+        return await skill.execute(params);
+      }
+      
+      // Handle other finance-related skills here in the future
+      
+      return {
+        success: false,
+        error: `Unknown skill: ${skillId}`
+      };
+    } catch (error: any) {
+      console.error(`[FinanceAgent] Error executing skill ${skillId}:`, error);
+      return {
+        success: false,
+        error: error.message || 'Failed to execute skill'
+      };
+    }
+  }
+
+  /**
    * Execute financial operation
    */
   public async execute(request: ManagementRequest): Promise<any> {

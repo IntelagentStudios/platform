@@ -404,6 +404,12 @@ model licenses {
   activated_at        DateTime?      @db.Timestamptz(6)
   suspended_at        DateTime?      @db.Timestamptz(6)
   cancelled_at        DateTime?      @db.Timestamptz(6)
+  tier                String?        @db.VarChar(50)
+  stripe_subscription_id String?     @db.VarChar(255)
+  stripe_price_id     String?        @db.VarChar(255)
+  current_period_end  DateTime?      @db.Timestamptz(6)
+  user_id             String?        @db.VarChar(36)
+  metadata            Json?
 
   @@index([domain], map: "idx_licenses_domain")
   @@index([email], map: "idx_licenses_email")
@@ -721,6 +727,7 @@ model users {
   updated_at        DateTime? @default(now()) @db.Timestamptz(6)
   email_verified    Boolean?  @default(false)
   email_verified_at DateTime? @db.Timestamp(6)
+  stripe_customer_id String?  @db.VarChar(255)
 
   @@index([email], map: "idx_users_email")
   @@index([license_key], map: "idx_users_license")
