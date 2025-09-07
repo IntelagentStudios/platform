@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { PrismaClient } from '@repo/database';
+import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
 import { sendWelcomeEmail, generatePasswordResetToken, generateTemporaryPassword } from '@/lib/email/send-welcome-email';
 
