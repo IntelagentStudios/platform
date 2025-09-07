@@ -55,11 +55,11 @@ export async function GET(request: NextRequest) {
         });
 
         products = productKeys.map(pk => {
-          const productName = pk.product_type === 'chatbot' ? 'AI Chatbot' :
-                            pk.product_type === 'sales-agent' ? 'Sales Agent' :
-                            pk.product_type === 'enrichment' ? 'Data Enrichment' :
-                            pk.product_type === 'setup-agent' ? 'Setup Agent' :
-                            pk.product_type;
+          const productName = pk.product === 'chatbot' ? 'AI Chatbot' :
+                            pk.product === 'sales-agent' ? 'Sales Agent' :
+                            pk.product === 'enrichment' ? 'Data Enrichment' :
+                            pk.product === 'setup-agent' ? 'Setup Agent' :
+                            pk.product;
           return productName;
         });
       }
@@ -77,11 +77,11 @@ export async function GET(request: NextRequest) {
         });
 
         products = productKeys.map(pk => {
-          const productName = pk.product_type === 'chatbot' ? 'AI Chatbot' :
-                            pk.product_type === 'sales-agent' ? 'Sales Agent' :
-                            pk.product_type === 'enrichment' ? 'Data Enrichment' :
-                            pk.product_type === 'setup-agent' ? 'Setup Agent' :
-                            pk.product_type;
+          const productName = pk.product === 'chatbot' ? 'AI Chatbot' :
+                            pk.product === 'sales-agent' ? 'Sales Agent' :
+                            pk.product === 'enrichment' ? 'Data Enrichment' :
+                            pk.product === 'setup-agent' ? 'Setup Agent' :
+                            pk.product;
           return productName;
         });
       }
