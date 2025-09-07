@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface WelcomeEmailData {
   email: string;
@@ -115,8 +117,6 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
 
   // For development, save to a file
   if (process.env.NODE_ENV === 'development') {
-    const fs = require('fs').promises;
-    const path = require('path');
     const emailDir = path.join(process.cwd(), 'emails-sent');
     
     try {
