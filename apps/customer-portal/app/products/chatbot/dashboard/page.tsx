@@ -4,6 +4,15 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { 
+  formatConversationTitle, 
+  extractTopic, 
+  getConversationDuration,
+  getConversationSentiment,
+  groupConversationsByDate,
+  getUniqueTopics,
+  parseMessageContent
+} from './utils';
+import { 
   MessageSquare, 
   Users, 
   TrendingUp, 
@@ -72,8 +81,10 @@ function ChatbotDashboardContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [domainFilter, setDomainFilter] = useState('all');
+  const [topicFilter, setTopicFilter] = useState('all');
   const [groupBy, setGroupBy] = useState('time');
   const [customKnowledge, setCustomKnowledge] = useState('');
+  const [uniqueTopics, setUniqueTopics] = useState<string[]>([]);
   const [savingKnowledge, setSavingKnowledge] = useState(false);
   const [knowledgeSaved, setKnowledgeSaved] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -103,7 +114,15 @@ function ChatbotDashboardContent() {
 
   useEffect(() => {
     filterConversations();
-  }, [conversations, searchQuery, dateFilter, domainFilter]);
+  }, [conversations, searchQuery, dateFilter, domainFilter, topicFilter]);
+
+  useEffect(() => {
+    // Extract unique topics when conversations change
+    if (conversations.length > 0) {
+      const topics = getUniqueTopics(conversations);
+      setUniqueTopics(topics);
+    }
+  }, [conversations]);
 
   const checkAuth = async () => {
     try {
@@ -151,6 +170,10 @@ function ChatbotDashboardContent() {
         setConversations(data.conversations);
         setFilteredConversations(data.conversations);
         calculateStats(data.conversations);
+        
+        // Extract unique topics for filtering
+        const topics = getUniqueTopics(data.conversations);
+        setUniqueTopics(topics);
         
         // Auto-select first conversation if none selected
         if (!selectedConversation && data.conversations.length > 0) {
@@ -253,6 +276,14 @@ function ChatbotDashboardContent() {
       filtered = filtered.filter(conv => conv.domain === domainFilter);
     }
 
+    // Topic filter
+    if (topicFilter !== 'all') {
+      filtered = filtered.filter(conv => {
+        const topic = extractTopic(conv.messages || []);
+        return topic === topicFilter;
+      });
+    }
+
     setFilteredConversations(filtered);
   };
 
@@ -337,7 +368,7 @@ function ChatbotDashboardContent() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'rgb(169, 189, 203)' }} />
         </div>
       </DashboardLayout>
     );
@@ -352,24 +383,24 @@ function ChatbotDashboardContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
             Chatbot Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
             Manage your AI chatbot, view conversations, and configure settings
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+        <div className="border-b mb-6" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'overview' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'overview' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
             >
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -378,17 +409,17 @@ function ChatbotDashboardContent() {
             </button>
             <button
               onClick={() => setActiveTab('conversations')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'conversations'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'conversations' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'conversations' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
             >
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Conversations
                 {conversations.length > 0 && (
-                  <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs">
+                  <span className="px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)', color: 'rgb(169, 189, 203)' }}>
                     {conversations.length}
                   </span>
                 )}
@@ -396,11 +427,11 @@ function ChatbotDashboardContent() {
             </button>
             <button
               onClick={() => setActiveTab('knowledge')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'knowledge'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'knowledge' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'knowledge' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
             >
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
@@ -409,11 +440,11 @@ function ChatbotDashboardContent() {
             </button>
             <button
               onClick={() => setActiveTab('integration')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'integration'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'integration' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'integration' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
@@ -422,11 +453,11 @@ function ChatbotDashboardContent() {
             </button>
             <button
               onClick={() => setActiveTab('settings')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'settings'
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'settings' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'settings' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
@@ -441,116 +472,122 @@ function ChatbotDashboardContent() {
           <div className="space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Conversations</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Conversations</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
                       {stats?.totalConversations || 0}
                     </p>
                   </div>
-                  <MessageSquare className="w-8 h-8 text-blue-500" />
+                  <MessageSquare className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Today</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
                       {stats?.todayConversations || 0}
                     </p>
                   </div>
-                  <Clock className="w-8 h-8 text-green-500" />
+                  <Clock className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">This Week</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>This Week</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
                       {stats?.weekConversations || 0}
                     </p>
                   </div>
-                  <TrendingUp className="w-8 h-8 text-purple-500" />
+                  <TrendingUp className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Messages</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
                       {stats?.avgMessagesPerConversation || 0}
                     </p>
                   </div>
-                  <Activity className="w-8 h-8 text-orange-500" />
+                  <Activity className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
             </div>
 
             {/* Recent Conversations */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
                     Recent Conversations
                   </h3>
                   <button
                     onClick={() => setActiveTab('conversations')}
-                    className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                    className="text-sm hover:opacity-80 transition"
+                    style={{ color: 'rgb(169, 189, 203)' }}
                   >
                     View all →
                   </button>
                 </div>
               </div>
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {conversations.slice(0, 5).map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => {
-                      setSelectedConversation(conversation);
-                      setActiveTab('conversations');
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {conversation.session_id?.substring(0, 8)}...
-                          </span>
-                          {conversation.domain && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              • {conversation.domain}
+              <div className="divide-y" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                {conversations.slice(0, 5).map((conversation) => {
+                  const convInfo = formatConversationTitle(conversation);
+                  return (
+                    <div
+                      key={conversation.id}
+                      className="p-4 cursor-pointer transition hover:opacity-80"
+                      style={{ backgroundColor: 'transparent' }}
+                      onClick={() => {
+                        setSelectedConversation(conversation);
+                        setActiveTab('conversations');
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {convInfo.title}
                             </span>
-                          )}
+                            {conversation.domain && (
+                              <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                • {conversation.domain}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                            {convInfo.subtitle}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {conversation.messages.length} messages
-                        </p>
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatDate(conversation.last_message_at)}
+                        <div className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                          {convInfo.time}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
             {/* Domain Distribution */}
             {stats?.domains && stats.domains.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                   Active Domains
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {stats.domains.map((domain) => (
                     <div
                       key={domain}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm"
+                      style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)', color: 'rgb(169, 189, 203)' }}
                     >
                       <Globe className="w-3 h-3" />
                       {domain}
@@ -567,36 +604,43 @@ function ChatbotDashboardContent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Conversation List */}
             <div className="lg:col-span-1">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                   {/* Search and Filters */}
                   <div className="space-y-3">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                       <input
                         type="text"
                         placeholder="Search conversations..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                        style={{ 
+                          borderColor: 'rgba(169, 189, 203, 0.3)', 
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)', 
+                          color: 'rgb(229, 227, 220)'
+                        }}
                       />
                     </div>
                     
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg transition hover:opacity-80"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', color: 'rgba(169, 189, 203, 0.8)' }}
                       >
                         <Filter className="w-4 h-4" />
                         Filters
-                        {(dateFilter !== 'all' || domainFilter !== 'all') && (
-                          <span className="ml-1 bg-blue-500 text-white rounded-full w-2 h-2" />
+                        {(dateFilter !== 'all' || domainFilter !== 'all' || topicFilter !== 'all') && (
+                          <span className="ml-1 rounded-full w-2 h-2" style={{ backgroundColor: 'rgb(169, 189, 203)' }} />
                         )}
                       </button>
                       <button
                         onClick={() => fetchConversations()}
                         disabled={refreshing}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg"
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg transition hover:opacity-80"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', color: 'rgba(169, 189, 203, 0.8)' }}
                       >
                         <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                         Refresh
@@ -604,11 +648,12 @@ function ChatbotDashboardContent() {
                     </div>
                     
                     {showFilters && (
-                      <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="space-y-2 pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                         <select
                           value={dateFilter}
                           onChange={(e) => setDateFilter(e.target.value)}
-                          className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                          style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
                         >
                           <option value="all">All time</option>
                           <option value="today">Today</option>
@@ -620,11 +665,26 @@ function ChatbotDashboardContent() {
                           <select
                             value={domainFilter}
                             onChange={(e) => setDomainFilter(e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
                           >
                             <option value="all">All domains</option>
                             {stats.domains.map((domain) => (
                               <option key={domain} value={domain}>{domain}</option>
+                            ))}
+                          </select>
+                        )}
+                        
+                        {uniqueTopics.length > 0 && (
+                          <select
+                            value={topicFilter}
+                            onChange={(e) => setTopicFilter(e.target.value)}
+                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                          >
+                            <option value="all">All topics</option>
+                            {uniqueTopics.map((topic) => (
+                              <option key={topic} value={topic}>{topic}</option>
                             ))}
                           </select>
                         )}
@@ -636,49 +696,54 @@ function ChatbotDashboardContent() {
                 {/* Conversation List */}
                 <div className="max-h-[600px] overflow-y-auto">
                   {filteredConversations.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                      <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                    <div className="p-8 text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      <MessageSquare className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
                       <p>No conversations found</p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {filteredConversations.map((conversation) => (
-                        <div
-                          key={conversation.id}
-                          onClick={() => setSelectedConversation(conversation)}
-                          className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
-                            selectedConversation?.id === conversation.id
-                              ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                              : ''
-                          }`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {conversation.session_id?.substring(0, 8)}...
-                                </span>
-                                {conversation.domain && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {conversation.domain}
+                    <div className="divide-y" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                      {filteredConversations.map((conversation) => {
+                        const convInfo = formatConversationTitle(conversation);
+                        const isSelected = selectedConversation?.id === conversation.id;
+                        return (
+                          <div
+                            key={conversation.id}
+                            onClick={() => setSelectedConversation(conversation)}
+                            className="p-4 cursor-pointer transition"
+                            style={{
+                              backgroundColor: isSelected ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
+                              borderLeft: isSelected ? '4px solid rgb(169, 189, 203)' : 'none',
+                              paddingLeft: isSelected ? '12px' : '16px'
+                            }}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium truncate" style={{ color: 'rgb(229, 227, 220)' }}>
+                                    {convInfo.title}
                                   </span>
+                                  {conversation.domain && (
+                                    <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                      {conversation.domain}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                                  {convInfo.subtitle}
+                                </p>
+                                {conversation.messages[0] && (
+                                  <p className="text-xs mt-1 truncate" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                    {conversation.messages[0].content}
+                                  </p>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {conversation.messages.length} messages
-                              </p>
-                              {conversation.messages[0] && (
-                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">
-                                  {conversation.messages[0].content}
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                              {formatDate(conversation.last_message_at)}
+                              <div className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                {convInfo.time}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -688,14 +753,14 @@ function ChatbotDashboardContent() {
             {/* Conversation Detail */}
             <div className="lg:col-span-2">
               {selectedConversation ? (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                  <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
                           Conversation Details
                         </h3>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                           <span>Session: {selectedConversation.session_id?.substring(0, 12)}...</span>
                           {selectedConversation.domain && (
                             <span>Domain: {selectedConversation.domain}</span>
@@ -704,7 +769,8 @@ function ChatbotDashboardContent() {
                       </div>
                       <button
                         onClick={() => setSelectedConversation(null)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="hover:opacity-80 transition"
+                        style={{ color: 'rgba(169, 189, 203, 0.6)' }}
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -718,11 +784,15 @@ function ChatbotDashboardContent() {
                         className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
                       >
                         <div
-                          className={`max-w-[70%] rounded-lg p-4 ${
-                            message.role === 'assistant'
-                              ? 'bg-gray-100 dark:bg-gray-700'
-                              : 'bg-blue-500 text-white'
-                          }`}
+                          className="max-w-[70%] rounded-lg p-4"
+                          style={{
+                            backgroundColor: message.role === 'assistant' 
+                              ? 'rgba(48, 54, 54, 0.7)' 
+                              : 'rgba(169, 189, 203, 0.2)',
+                            color: message.role === 'assistant'
+                              ? 'rgb(229, 227, 220)'
+                              : 'rgb(229, 227, 220)'
+                          }}
                         >
                           <div className="flex items-center gap-2 mb-2">
                             {message.role === 'assistant' ? (
@@ -737,7 +807,25 @@ function ChatbotDashboardContent() {
                               {formatDate(message.timestamp)}
                             </span>
                           </div>
-                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <div className="text-sm whitespace-pre-wrap">
+                            {parseMessageContent(message.content).map((part, i) => 
+                              part.isLink ? (
+                                <a
+                                  key={i}
+                                  href={part.text}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline hover:opacity-80 transition"
+                                  style={{ color: 'inherit' }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {part.text}
+                                </a>
+                              ) : (
+                                <span key={i}>{part.text}</span>
+                              )
+                            )}
+                          </div>
                           {message.intent && (
                             <p className="text-xs mt-2 opacity-75">
                               Intent: {message.intent}
@@ -749,9 +837,9 @@ function ChatbotDashboardContent() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-                  <div className="text-center text-gray-500 dark:text-gray-400">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                <div className="rounded-lg border p-8" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                  <div className="text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    <MessageSquare className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
                     <p>Select a conversation to view details</p>
                   </div>
                 </div>
