@@ -138,7 +138,7 @@ export default function SalesOutreachPage() {
           activeLeads: campaignsData.campaigns.filter((c: any) => c.status === 'active').length * 50,
           responseRate: totals.emailsSent > 0 ? Math.round((totals.responses / totals.emailsSent) * 100) : 0,
           meetingsBooked: totals.meetings,
-          conversionRate: totals.totalLeads > 0 ? ((totals.meetings / totals.totalLeads) * 100).toFixed(1) : 0,
+          conversionRate: totals.totalLeads > 0 ? parseFloat(((totals.meetings / totals.totalLeads) * 100).toFixed(1)) : 0,
           emailsSent: totals.emailsSent
         });
       }
