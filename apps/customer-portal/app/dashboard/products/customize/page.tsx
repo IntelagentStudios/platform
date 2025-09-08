@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { 
@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
-export default function CustomizeProductPage() {
+function CustomizeProductContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const productType = searchParams.get('type') || 'chatbot';
@@ -541,5 +541,19 @@ export default function CustomizeProductPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function CustomizeProductPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
+        </div>
+      </DashboardLayout>
+    }>
+      <CustomizeProductContent />
+    </Suspense>
   );
 }
