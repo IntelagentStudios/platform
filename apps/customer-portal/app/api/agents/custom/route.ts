@@ -57,20 +57,21 @@ export async function POST(request: NextRequest) {
         product_key: agentId,
         license_key: user.license_key,
         base_product: 'custom_agent',
-        product_name: name,
+        custom_name: name,
         customization_type: 'custom',
+        description,
         skills_enabled: skills,
-        skill_count: skills.length,
-        complexity_score: pricing.complexity,
-        total_price_pence: pricing.monthlyPrice,
-        setup_fee_pence: pricing.setupFee || 0,
-        metadata: {
-          description,
+        custom_settings: {
           industry,
           requirements,
           created_by: user.id,
           created_at: new Date().toISOString()
         },
+        complexity_score: pricing.complexity,
+        base_price_pence: pricing.monthlyPrice,
+        total_price_pence: pricing.monthlyPrice,
+        skill_count: skills.length,
+        setup_fee_pence: pricing.setupFee || 0,
         is_active: false // Will be activated after payment
       }
     });
@@ -168,9 +169,9 @@ export async function GET(request: NextRequest) {
       return {
         id: agent.id,
         agentId: agent.product_key,
-        name: agent.product_name,
-        description: (agent.metadata as any)?.description || '',
-        industry: (agent.metadata as any)?.industry || '',
+        name: agent.custom_name || 'Unnamed Agent',
+        description: agent.description || '',
+        industry: (agent.custom_settings as any)?.industry || '',
         skills: agent.skills_enabled as string[],
         skillCount: agent.skill_count,
         complexity: agent.complexity_score,
