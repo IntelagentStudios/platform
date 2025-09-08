@@ -348,7 +348,7 @@ export class LeadManagementSkill extends BaseSkill {
         leadId,
         score,
         factors: {
-          engagement: lead.email_opened || lead.email_clicked || lead.replied,
+          engagement: (lead.emails_opened > 0) || (lead.emails_clicked > 0) || !!lead.last_response,
           profileCompleteness: !!(lead.phone && lead.company_name && lead.job_title),
           activityLevel: recentActivities.length,
           companySize: lead.company_size
@@ -375,7 +375,7 @@ export class LeadManagementSkill extends BaseSkill {
         (criteria.minScore ? lead.lead_score >= criteria.minScore : true) &&
         (criteria.hasEmail ? !!lead.email : true) &&
         (criteria.hasCompany ? !!lead.company_name : true) &&
-        (criteria.hasEngagement ? (lead.email_opened || lead.replied) : true);
+        (criteria.hasEngagement ? (lead.emails_opened > 0 || !!lead.last_response) : true);
 
       const newStatus = qualified ? 'qualified' : 'unqualified';
 
@@ -572,15 +572,15 @@ export class LeadManagementSkill extends BaseSkill {
       // Update lead based on activity type
       const updates: any = {};
       if (activityData.type === 'email_opened') {
-        updates.email_opened = true;
-        updates.last_activity_at = new Date();
+        updates.emails_opened = (lead.emails_opened || 0) + 1;
+        updates.last_email_opened = new Date();
+        updates.updated_at = new Date();
       } else if (activityData.type === 'email_clicked') {
-        updates.email_clicked = true;
-        updates.last_activity_at = new Date();
+        updates.emails_clicked = (lead.emails_clicked || 0) + 1;
+        updates.updated_at = new Date();
       } else if (activityData.type === 'replied') {
-        updates.replied = true;
-        updates.replied_at = new Date();
-        updates.last_activity_at = new Date();
+        updates.last_response = new Date();
+        updates.updated_at = new Date();
       }
 
       if (Object.keys(updates).length > 0) {
