@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         status: 'active',
         plan: 'pro',
         is_pro: true,
-        products: ['chatbot', 'sales-agent', 'data-enrichment', 'setup-agent'],
+        products: ['chatbot'],
         site_key: null
       }
     });

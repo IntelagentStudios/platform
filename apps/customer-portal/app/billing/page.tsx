@@ -66,6 +66,7 @@ export default function BillingPage() {
     return null;
   }
 
+  // TODO: Connect to real billing data from Stripe or payment provider
   const invoices: any[] = [];
 
   const paymentMethods: any[] = [];
@@ -116,7 +117,7 @@ export default function BillingPage() {
                 <div className="flex items-center space-x-2">
                   <Package className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                   <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                    All 4 products included
+                    1 product included (Chatbot)
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">

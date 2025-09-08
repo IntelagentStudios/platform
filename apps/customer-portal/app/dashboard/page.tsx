@@ -98,27 +98,30 @@ export default function DashboardPage() {
   }
 
   // Get user's products from their profile
-  const userProducts = (user?.products && Array.isArray(user.products)) ? user.products : ['chatbot'];
+  // If products contains 'all', replace with actual product list
+  let userProducts = (user?.products && Array.isArray(user.products)) ? user.products : ['chatbot'];
+  if (userProducts.includes('all')) {
+    userProducts = ['chatbot']; // Only chatbot is fully implemented
+  }
   
+  // Show real data where available, otherwise show no data
   const stats = [
-    { label: 'Total Revenue', value: '-', change: '-', icon: DollarSign },
-    { label: 'Active Users', value: '-', change: '-', icon: Users },
-    { label: 'API Calls', value: '-', change: '-', icon: Activity },
+    { label: 'Total Revenue', value: '-', change: 'No data', icon: DollarSign },
+    { label: 'Active Users', value: '-', change: 'No data', icon: Users },
+    { label: 'API Calls', value: '-', change: 'No data', icon: Activity },
     { label: 'Products', value: userProducts.length.toString(), change: 'Active', icon: Package }
   ];
 
-  // Define only available products (exclude data-enrichment as it doesn't exist yet)
+  // Define only existing products
   const allProductsMap = {
-    'chatbot': { name: 'Chatbot', status: 'Ready', icon: Zap },
-    'sales-outreach-agent': { name: 'Sales Outreach Agent', status: 'Purchase Required', icon: Users },
-    'onboarding-agent': { name: 'Onboarding Agent', status: 'Coming Soon', icon: Settings }
+    'chatbot': { name: 'Chatbot', status: 'Active', icon: Zap }
   };
   
-  // Filter to only show user's products
+  // Filter to only show user's products that actually exist
   const products = userProducts && Array.isArray(userProducts) 
-    ? userProducts.map(productId => 
-        allProductsMap[productId] || { name: productId, status: 'Ready', icon: Package }
-      ).filter(Boolean)
+    ? userProducts
+        .filter(productId => productId in allProductsMap) // Only include products that exist
+        .map(productId => allProductsMap[productId])
     : [];
 
   return (

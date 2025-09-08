@@ -52,42 +52,41 @@ export default function AnalyticsPage() {
     return null;
   }
 
+  // TODO: Connect to real data sources (PostgreSQL/Skills Matrix)
   const metrics = [
     { 
       label: 'Total Revenue', 
       value: '-', 
-      change: '-', 
+      change: 'No data', 
       trend: 'neutral',
       icon: DollarSign
     },
     { 
       label: 'Active Users', 
       value: '-', 
-      change: '-', 
+      change: 'No data', 
       trend: 'neutral',
       icon: Users
     },
     { 
       label: 'API Calls', 
       value: '-', 
-      change: '-', 
+      change: 'No data', 
       trend: 'neutral',
       icon: Activity
     },
     { 
-      label: 'Products Available', 
-      value: '4', 
-      change: '-', 
+      label: 'Products Active', 
+      value: '1', 
+      change: 'Chatbot', 
       trend: 'neutral',
       icon: Package
     }
   ];
 
+  // TODO: Connect to real usage data from PostgreSQL
   const productMetrics = [
-    { name: 'Chatbot', usage: '-', revenue: '-', growth: '-' },
-    { name: 'Sales Agent', usage: '-', revenue: '-', growth: '-' },
-    { name: 'Data Enrichment', usage: '-', revenue: '-', growth: '-' },
-    { name: 'Setup Agent', usage: '-', revenue: '-', growth: '-' }
+    { name: 'Chatbot', usage: 'Active', revenue: '-', growth: 'No data' }
   ];
 
   return (

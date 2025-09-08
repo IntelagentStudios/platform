@@ -22,16 +22,9 @@ export async function GET(request: NextRequest) {
           productKey: 'CHATBOT-KEY-MOCK',
           canManage: true,
           canConfigure: false
-        },
-        'sales-agent': {
-          configured: true,
-          hasProductKey: true,
-          productKey: 'SALES-KEY-MOCK',
-          canManage: true,
-          canConfigure: false
         }
       },
-      userProducts: ['chatbot', 'sales-agent']
+      userProducts: ['chatbot']
     });
   }
 

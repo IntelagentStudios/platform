@@ -25,49 +25,22 @@ export default function PlatformPage() {
 
   const platformFeatures = [
     {
-      id: 'sales-agent',
-      title: 'Sales Agent',
-      description: 'Automated sales outreach and lead management',
-      icon: Users,
+      id: 'analytics',
+      title: 'Platform Analytics',
+      description: 'View insights into your AI operations',
+      icon: BarChart3,
       status: 'active',
-      path: '/platform/sales-agent',
-      color: 'purple'
-    },
-    {
-      id: 'data-enrichment',
-      title: 'Data Enrichment',
-      description: 'Enhance your data with AI-powered insights',
-      icon: Database,
-      status: 'active',
-      path: '/platform/data-enrichment',
-      color: 'blue'
-    },
-    {
-      id: 'setup-agent',
-      title: 'Setup Agent',
-      description: 'Automated configuration and deployment',
-      icon: Settings,
-      status: 'active',
-      path: '/platform/setup-agent',
-      color: 'green'
+      path: '/analytics',
+      color: 'indigo'
     },
     {
       id: 'integration-hub',
       title: 'Integration Hub',
       description: 'Connect with external services and APIs',
       icon: GitBranch,
-      status: 'active',
+      status: 'coming-soon',
       path: '/platform/integrations',
       color: 'orange'
-    },
-    {
-      id: 'analytics',
-      title: 'Platform Analytics',
-      description: 'Deep insights into your AI operations',
-      icon: BarChart3,
-      status: 'active',
-      path: '/analytics',
-      color: 'indigo'
     },
     {
       id: 'security',
@@ -80,11 +53,12 @@ export default function PlatformPage() {
     }
   ];
 
+  // TODO: Connect to real data sources
   const quickStats = [
-    { label: 'Active Agents', value: '3', trend: '+2 this week' },
-    { label: 'API Calls', value: '1.2k', trend: '+15% from last month' },
-    { label: 'Automations', value: '8', trend: 'Running smoothly' },
-    { label: 'Data Processed', value: '45GB', trend: 'This month' }
+    { label: 'Active Agents', value: '1', trend: 'Chatbot active' },
+    { label: 'API Calls', value: '-', trend: 'No data available' },
+    { label: 'Automations', value: '-', trend: 'No data available' },
+    { label: 'Data Processed', value: '-', trend: 'No data available' }
   ];
 
   return (
@@ -219,7 +193,7 @@ export default function PlatformPage() {
                   API Endpoints
                 </p>
                 <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  12 active endpoints
+                  Chatbot API active
                 </p>
               </div>
             </div>
@@ -241,7 +215,7 @@ export default function PlatformPage() {
                   Webhooks
                 </p>
                 <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  5 configured
+                  Not configured
                 </p>
               </div>
             </div>

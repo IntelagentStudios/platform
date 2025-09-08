@@ -7,6 +7,26 @@ const prisma = new PrismaClient();
 // GET: Check which skills are available for a user's products
 export async function GET(request: NextRequest) {
   try {
+    // Check for simple auth first
+    const simpleAuth = request.cookies.get('auth');
+    if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+      // Return mock skills data for simple auth
+      return NextResponse.json({
+        skills: {
+          core: [],
+          included: [],
+          available: [],
+          premium: [],
+          locked: []
+        },
+        currentConfiguration: null,
+        tierLimits: {
+          maxSkills: 10,
+          maxComplexity: 100
+        }
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const productKey = searchParams.get('productKey');
     const productType = searchParams.get('productType') || 'chatbot';

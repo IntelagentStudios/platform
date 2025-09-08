@@ -13,7 +13,6 @@ import {
   Settings,
   Menu,
   X,
-  ChevronLeft,
   MessageCircle,
   Cpu,
   ChevronRight
@@ -26,7 +25,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true); // Start collapsed
+  const [isHovering, setIsHovering] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -88,31 +88,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen flex" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
       {/* Sidebar Navigation - More subtle colors */}
       <aside 
-        className={`${sidebarCollapsed ? 'w-20' : 'w-64'} min-h-screen transition-all duration-300 relative`} 
+        className={`${(sidebarCollapsed && !isHovering) ? 'w-20' : 'w-64'} min-h-screen transition-all duration-300 relative`} 
         style={{ backgroundColor: 'rgb(58, 64, 64)' }} // Slightly lighter than main background
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
       >
-        {/* Collapse Toggle */}
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="absolute -right-3 top-8 p-1 rounded-full transition hover:opacity-80"
-          style={{ 
-            backgroundColor: 'rgb(73, 90, 88)',
-            border: '1px solid rgba(169, 189, 203, 0.2)'
-          }}
-        >
-          <ChevronLeft 
-            className={`h-4 w-4 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} 
-            style={{ color: 'rgb(169, 189, 203)' }}
-          />
-        </button>
-
         {/* Logo */}
         <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
           <div className="flex items-center space-x-3">
             <div className="p-2 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(169, 189, 203, 0.15)' }}>
               <Shield className="h-6 w-6" style={{ color: 'rgb(169, 189, 203)' }} />
             </div>
-            {!sidebarCollapsed && (
+            {(!sidebarCollapsed || isHovering) && (
               <div>
                 <h2 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
                   Intelagent
@@ -139,7 +126,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   }}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
+                  {(!sidebarCollapsed || isHovering) && <span>{item.label}</span>}
                 </button>
               </li>
             ))}
@@ -148,7 +135,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* User Section */}
         <div 
-          className={`absolute bottom-0 ${sidebarCollapsed ? 'w-20' : 'w-64'} p-4 border-t transition-all`} 
+          className={`absolute bottom-0 ${(sidebarCollapsed && !isHovering) ? 'w-20' : 'w-64'} p-4 border-t transition-all`} 
           style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}
         >
           {!sidebarCollapsed && (
@@ -165,7 +152,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-center space-x-2'} px-4 py-2 rounded-lg transition hover:opacity-80`}
+            className={`w-full flex items-center ${(sidebarCollapsed && !isHovering) ? 'justify-center' : 'justify-center space-x-2'} px-4 py-2 rounded-lg transition hover:opacity-80`}
             style={{ 
               backgroundColor: 'rgba(169, 189, 203, 0.05)',
               border: '1px solid rgba(169, 189, 203, 0.2)',

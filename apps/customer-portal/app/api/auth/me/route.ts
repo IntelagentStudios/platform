@@ -24,14 +24,14 @@ export async function GET(request: NextRequest) {
             license_type: 'pro_platform',
             site_key: null,
             role: 'master_admin',
-            products: ['all'],
+            products: ['chatbot'],
             plan: 'pro',
             subscription_status: 'active',
             next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
           },
           license: {
             key: 'INTL-MSTR-ADMN-PASS',
-            products: ['all'],
+            products: ['chatbot'],
             is_pro: true,
             site_key: null,
             status: 'active'

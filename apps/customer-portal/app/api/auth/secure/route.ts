@@ -18,7 +18,7 @@ const USERS = [
       status: 'active',
       type: 'pro_platform',
       expires: '2025-12-31',
-      products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent']
+      products: ['chatbot']
     }
   }
 ];
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
           role: 'owner',
           license_key: 'INTL-AGNT-BOSS-MODE',
           license_type: 'pro_platform',
-          products: ['chatbot', 'sales_agent', 'data_enrichment', 'setup_agent']
+          products: ['chatbot']
         }
       });
     }

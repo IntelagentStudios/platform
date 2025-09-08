@@ -40,7 +40,8 @@ export default function ProductsPage() {
         if (data.authenticated && data.user) {
           setIsAuthenticated(true);
           // Get user's products from their license
-          setUserProducts(data.user.products || ['chatbot']);
+          const initialProducts = data.user.products || ['chatbot'];
+          setUserProducts(initialProducts);
           
           // Fetch product configurations
           fetch('/api/products/check-keys', { credentials: 'include' })
@@ -48,6 +49,10 @@ export default function ProductsPage() {
             .then(data => {
               if (data.success) {
                 setConfigurations(data.configurations);
+                // Update user products from check-keys response as well
+                if (data.userProducts && data.userProducts.length > 0) {
+                  setUserProducts(data.userProducts);
+                }
               }
             })
             .catch(err => console.error('Failed to fetch product configurations:', err));
@@ -76,7 +81,7 @@ export default function ProductsPage() {
     return null;
   }
 
-  // Define all products
+  // Define all products - currently only chatbot is fully implemented
   const allProducts = [
     {
       id: 'chatbot',
@@ -84,36 +89,6 @@ export default function ProductsPage() {
       description: 'Intelligent customer support chatbot for your website',
       icon: MessageSquare,
       features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
-      status: 'available',
-      price: 'Included',
-      category: 'core'
-    },
-    {
-      id: 'sales-agent',
-      name: 'Sales Agent',
-      description: 'Automated sales outreach and lead management',
-      icon: Users,
-      features: ['Lead Qualification', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
-      status: 'available',
-      price: 'Included',
-      category: 'core'
-    },
-    {
-      id: 'data-enrichment',
-      name: 'Data Enrichment',
-      description: 'Enhance your data with AI-powered insights',
-      icon: TrendingUp,
-      features: ['Data Analysis', 'Pattern Recognition', 'Predictive Insights', 'Export Tools'],
-      status: 'available',
-      price: 'Included',
-      category: 'core'
-    },
-    {
-      id: 'setup-agent',
-      name: 'Setup Agent',
-      description: 'Automated configuration and deployment assistant',
-      icon: SettingsIcon,
-      features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Progress Tracking'],
       status: 'available',
       price: 'Included',
       category: 'core'
@@ -232,11 +207,13 @@ export default function ProductsPage() {
 
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
-      router.push('/products/chatbot/dashboard');
+      router.push('/chatbot');  // Go to main chatbot page
     } else if (productId === 'sales-agent') {
       router.push('/platform/sales-agent');
     } else if (productId === 'data-enrichment') {
-      router.push('/products/data-enrichment/manage');
+      router.push('/platform/data-enrichment');
+    } else if (productId === 'setup-agent') {
+      router.push('/platform/setup-agent');
     } else {
       // For unknown products, stay on products page
       router.push('/products');
