@@ -179,7 +179,7 @@ export class SalesOutreachSkill extends BaseSkill {
             ? ((campaign.emails_clicked / campaign.emails_sent) * 100).toFixed(2)
             : 0,
           replyRate: campaign.emails_sent > 0
-            ? ((campaign.replies_received / campaign.emails_sent) * 100).toFixed(2)
+            ? ((campaign.responses_received / campaign.emails_sent) * 100).toFixed(2)
             : 0
         }
       });
@@ -464,7 +464,7 @@ export class SalesOutreachSkill extends BaseSkill {
           emailsSent: campaign.emails_sent,
           emailsOpened: campaign.emails_opened,
           emailsClicked: campaign.emails_clicked,
-          repliesReceived: campaign.replies_received,
+          repliesReceived: campaign.responses_received,
           meetingsBooked: campaign.meetings_booked,
           dealsCreated: campaign.deals_created
         },
@@ -476,7 +476,7 @@ export class SalesOutreachSkill extends BaseSkill {
             ? ((campaign.emails_clicked / campaign.emails_sent) * 100).toFixed(2)
             : 0,
           replyRate: campaign.emails_sent > 0
-            ? ((campaign.replies_received / campaign.emails_sent) * 100).toFixed(2)
+            ? ((campaign.responses_received / campaign.emails_sent) * 100).toFixed(2)
             : 0,
           meetingRate: campaign.total_leads > 0
             ? ((campaign.meetings_booked / campaign.total_leads) * 100).toFixed(2)
