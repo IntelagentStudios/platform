@@ -147,19 +147,22 @@ export default function ProductMarketplace({ onProductActivated }: ProductMarket
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">Product Marketplace</h2>
-        <p className="text-blue-100">
+      <div className="rounded-lg p-6" style={{ 
+        backgroundColor: 'rgb(31, 35, 36)',
+        border: '1px solid rgba(169, 189, 203, 0.1)'
+      }}>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>Product Marketplace</h2>
+        <p style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
           Activate powerful AI products to streamline your business operations
         </p>
         <div className="mt-4 flex items-center gap-4">
-          <div className="bg-white/20 rounded-lg px-3 py-1">
-            <span className="text-sm">Your Tier: </span>
-            <span className="font-semibold capitalize">{userTier}</span>
+          <div className="rounded-lg px-3 py-1" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+            <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Your Tier: </span>
+            <span className="font-semibold capitalize" style={{ color: 'rgb(229, 227, 220)' }}>{userTier}</span>
           </div>
-          <div className="bg-white/20 rounded-lg px-3 py-1">
-            <span className="text-sm">Active Products: </span>
-            <span className="font-semibold">{templates.filter(t => t.isActive).length}</span>
+          <div className="rounded-lg px-3 py-1" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+            <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Active Products: </span>
+            <span className="font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>{templates.filter(t => t.isActive).length}</span>
           </div>
         </div>
       </div>
@@ -174,31 +177,38 @@ export default function ProductMarketplace({ onProductActivated }: ProductMarket
           return (
             <div
               key={template.id}
-              className={`bg-gray-800 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`rounded-lg overflow-hidden border transition-all ${
                 template.isActive
-                  ? 'border-green-500'
+                  ? ''
                   : isLocked
-                  ? 'border-gray-700 opacity-60'
-                  : 'border-gray-700 hover:border-gray-600'
+                  ? 'opacity-60'
+                  : 'hover:shadow-lg'
               }`}
+              style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.03)',
+                borderColor: template.isActive ? 'rgba(169, 189, 203, 0.3)' : 'rgba(48, 54, 54, 0.15)'
+              }}
             >
               {/* Product Header */}
-              <div className={`bg-gradient-to-r from-${color}-600 to-${color}-700 p-4`}>
+              <div className="p-4" style={{ backgroundColor: 'rgba(31, 35, 36, 0.05)' }}>
                 <div className="flex items-start justify-between">
-                  <Icon className="w-8 h-8 text-white" />
+                  <Icon className="w-8 h-8" style={{ color: 'rgb(31, 35, 36)' }} />
                   {template.isActive && (
-                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="text-xs px-2 py-1 rounded-full" style={{ 
+                      backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                      color: 'rgb(31, 35, 36)'
+                    }}>
                       Active
                     </span>
                   )}
                   {isLocked && (
-                    <LockClosedIcon className="w-5 h-5 text-white/60" />
+                    <LockClosedIcon className="w-5 h-5" style={{ color: 'rgba(31, 35, 36, 0.4)' }} />
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-white mt-2">
+                <h3 className="text-lg font-semibold mt-2" style={{ color: 'rgb(31, 35, 36)' }}>
                   {template.customName || template.name}
                 </h3>
-                <p className="text-sm text-white/80 mt-1">
+                <p className="text-sm mt-1" style={{ color: 'rgba(31, 35, 36, 0.7)' }}>
                   {template.description}
                 </p>
               </div>
@@ -206,25 +216,29 @@ export default function ProductMarketplace({ onProductActivated }: ProductMarket
               {/* Product Details */}
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Starting from</span>
-                  <span className="text-xl font-bold text-white">
+                  <span className="text-sm" style={{ color: 'rgba(31, 35, 36, 0.6)' }}>Starting from</span>
+                  <span className="text-xl font-bold" style={{ color: 'rgb(31, 35, 36)' }}>
                     £{template.basePrice}/mo
                   </span>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Core Features</p>
+                  <p className="text-xs mb-1" style={{ color: 'rgba(31, 35, 36, 0.6)' }}>Core Features</p>
                   <div className="flex flex-wrap gap-1">
                     {template.coreSkills.slice(0, 3).map(skill => (
                       <span
                         key={skill}
-                        className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded"
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ 
+                          backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                          color: 'rgb(31, 35, 36)'
+                        }}
                       >
                         {skill.replace(/_/g, ' ')}
                       </span>
                     ))}
                     {template.coreSkills.length > 3 && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs" style={{ color: 'rgba(31, 35, 36, 0.5)' }}>
                         +{template.coreSkills.length - 3} more
                       </span>
                     )}
@@ -235,13 +249,20 @@ export default function ProductMarketplace({ onProductActivated }: ProductMarket
                 {template.isActive ? (
                   <button
                     onClick={() => router.push(`/dashboard/${template.id.replace('-', '_')}`)}
-                    className="w-full py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition flex items-center justify-center"
+                    className="w-full py-2 rounded-lg transition flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: 'rgba(48, 54, 54, 0.1)',
+                      color: 'rgb(48, 54, 54)',
+                      border: '1px solid rgba(48, 54, 54, 0.2)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(48, 54, 54, 0.15)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(48, 54, 54, 0.1)'}
                   >
                     Open Dashboard
                     <ArrowRightIcon className="w-4 h-4 ml-2" />
                   </button>
                 ) : isLocked ? (
-                  <div className="text-center text-sm text-gray-500">
+                  <div className="text-center text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
                     Requires {template.minTier} tier
                   </div>
                 ) : (
@@ -252,7 +273,13 @@ export default function ProductMarketplace({ onProductActivated }: ProductMarket
                       setCustomName(template.name);
                       setSelectedSkills([]);
                     }}
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+                    className="w-full py-2 rounded-lg transition flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: 'rgb(48, 54, 54)',
+                      color: 'rgb(229, 227, 220)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(48, 54, 54, 0.9)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgb(48, 54, 54)'}
                   >
                     <RocketLaunchIcon className="w-4 h-4 mr-2" />
                     Activate
