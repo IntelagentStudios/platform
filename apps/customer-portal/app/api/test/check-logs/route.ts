@@ -30,19 +30,27 @@ export async function GET() {
     const uniqueProductKeys = [...new Set(recentLogs.map(s => s.product_key).filter(Boolean))] as string[]
     // Get product_keys info to map to licenses
     const productKeys = uniqueProductKeys.length > 0 ? await prisma.product_keys.findMany({
-      where: { product_key: { in: uniqueProductKeys } },
-      include: {
-        licenses: {
-          select: {
-            license_key: true,
-            domain: true,
-            customer_name: true,
-            products: true
-          }
-        }
+      where: { product_key: { in: uniqueProductKeys } }
+    }) : []
+    
+    // Get licenses for these product keys
+    const licenseKeys = [...new Set(productKeys.map(pk => pk.license_key).filter(Boolean))] as string[]
+    const licenses = licenseKeys.length > 0 ? await prisma.licenses.findMany({
+      where: { license_key: { in: licenseKeys } },
+      select: {
+        license_key: true,
+        domain: true,
+        customer_name: true,
+        products: true
       }
     }) : []
-    const licenseMap = new Map(productKeys.map(pk => [pk.product_key, pk.licenses]))
+    
+    // Create a map of product_key to license
+    const licenseKeyMap = new Map(licenses.map(l => [l.license_key, l]))
+    const licenseMap = new Map(productKeys.map(pk => [
+      pk.product_key, 
+      pk.license_key ? licenseKeyMap.get(pk.license_key) : null
+    ]))
 
     // Add license info to logs
     const logsWithLicense = recentLogs.map(log => ({

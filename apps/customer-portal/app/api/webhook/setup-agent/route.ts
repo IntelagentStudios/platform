@@ -21,10 +21,14 @@ export async function POST(request: NextRequest) {
     let license = null;
     if (key) {
       const productKeyRecord = await prisma.product_keys.findUnique({
-        where: { product_key: key },
-        include: { licenses: true }
+        where: { product_key: key }
       });
-      license = productKeyRecord?.licenses;
+      
+      if (productKeyRecord?.license_key) {
+        license = await prisma.licenses.findUnique({
+          where: { license_key: productKeyRecord.license_key }
+        });
+      }
     }
     
     if (!license) {

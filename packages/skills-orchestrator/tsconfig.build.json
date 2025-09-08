@@ -21,7 +21,6 @@
     "exactOptionalPropertyTypes": false,
     "noImplicitOverride": false,
     "allowJs": true,
-    "checkJs": false,
-    "suppressImplicitAnyIndexErrors": true
+    "checkJs": false
   }
 }
