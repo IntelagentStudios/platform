@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { SkillExecutor } from '../../../../../../../packages/skills-orchestrator/src/executor';
-import { SkillRegistry } from '../../../../../../../packages/skills-orchestrator/src/registry';
+import { OrchestratorAgent } from '@intelagent/skills-orchestrator';
 
-// Initialize executor with registry
-const registry = SkillRegistry.getInstance();
-const executor = new SkillExecutor(registry);
+// Register sales skills
+import '@intelagent/skills-orchestrator/src/skills/registerSalesSkills';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,14 +26,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Execute the skill
-    const result = await executor.execute(skillId, {
-      ...params,
-      action,
-      licenseKey: decoded.licenseKey || 'default',
-      userId: decoded.userId,
-      tenantId: decoded.tenantId
+    // Get orchestrator instance
+    const orchestrator = OrchestratorAgent.getInstance();
+    
+    // Execute the skill through orchestrator
+    const orchestrationResult = await orchestrator.execute({
+      skillId,
+      params: {
+        ...params,
+        action
+      },
+      context: {
+        userId: decoded.userId,
+        licenseKey: decoded.licenseKey || 'default',
+        sessionId: `sales-${Date.now()}`,
+        metadata: {
+          tenantId: decoded.tenantId
+        }
+      }
     });
+    
+    const result = orchestrationResult.results[0] || { 
+      success: false, 
+      error: orchestrationResult.error 
+    };
 
     if (result.success) {
       return NextResponse.json(result.data);
