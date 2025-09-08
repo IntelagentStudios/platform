@@ -7,6 +7,8 @@
 import { WebsiteChatbotSkill } from './WebsiteChatbotSkill';
 import { EmailComposerSkill } from './EmailComposerSkill';
 import { SentimentAnalyzerSkill } from './SentimentAnalyzerSkill';
+import { SalesOutreachSkill } from './SalesOutreachSkill';
+import { LeadManagementSkill } from './LeadManagementSkill';
 import { DataEnricherSkill } from './DataEnricherSkill';
 import { WebhookSenderSkill } from './WebhookSenderSkill';
 import { TextSummarizerSkill } from './TextSummarizerSkill';
@@ -143,6 +145,8 @@ export const ALL_SKILLS = [
   WebsiteChatbotSkill,
   EmailComposerSkill,
   SentimentAnalyzerSkill,
+  SalesOutreachSkill,
+  LeadManagementSkill,
   DataEnricherSkill,
   WebhookSenderSkill,
   TextSummarizerSkill,

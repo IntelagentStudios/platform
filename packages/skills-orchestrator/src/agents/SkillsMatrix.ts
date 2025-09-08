@@ -148,6 +148,8 @@ export class SkillsMatrix {
       { id: 'policy_enforcer', name: 'Policy Enforcer', category: 'compliance', complexity: 'high' },
       { id: 'rule_engine', name: 'Rule Engine', category: 'automation', complexity: 'high' },
       { id: 'decision_tree', name: 'Decision Tree', category: 'automation', complexity: 'high' },
+      { id: 'sales_outreach', name: 'Sales Outreach Manager', category: 'sales', complexity: 'high' },
+      { id: 'lead_management', name: 'Lead Management System', category: 'sales', complexity: 'high' },
       { id: 'state_machine', name: 'State Machine', category: 'automation', complexity: 'high' }
     ]);
     
