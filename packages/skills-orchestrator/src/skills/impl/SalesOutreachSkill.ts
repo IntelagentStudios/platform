@@ -242,15 +242,8 @@ export class SalesOutreachSkill extends BaseSkill {
         }
       });
 
-      // Create activity log
-      await prisma.sales_activities.create({
-        data: {
-          campaign_id: campaignId,
-          license_key: campaign.license_key,
-          activity_type: 'campaign_started',
-          metadata: { status: 'active' }
-        }
-      });
+      // Note: Campaign-level activities would require lead_id to be nullable in the schema
+      // For now, we'll track campaign status changes via the campaign record itself
 
       return this.success({
         campaign,
@@ -271,15 +264,8 @@ export class SalesOutreachSkill extends BaseSkill {
         }
       });
 
-      // Create activity log
-      await prisma.sales_activities.create({
-        data: {
-          campaign_id: campaignId,
-          license_key: campaign.license_key,
-          activity_type: 'campaign_paused',
-          metadata: { status: 'paused' }
-        }
-      });
+      // Note: Campaign-level activities would require lead_id to be nullable in the schema
+      // For now, we'll track campaign status changes via the campaign record itself
 
       return this.success({
         campaign,
