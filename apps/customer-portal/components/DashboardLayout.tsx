@@ -13,7 +13,10 @@ import {
   Settings,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  MessageCircle,
+  Cpu,
+  ChevronRight
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -54,6 +57,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: Home, path: '/dashboard' },
+    { id: 'chatbot', label: 'Chatbot', icon: MessageCircle, path: '/chatbot' },
+    { id: 'platform', label: 'Platform', icon: Cpu, path: '/platform' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
     { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
@@ -63,6 +68,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = (path: string) => {
     router.push(path);
   };
+
+  // Generate breadcrumbs from pathname
+  const generateBreadcrumbs = () => {
+    const paths = pathname.split('/').filter(Boolean);
+    const breadcrumbs = [];
+    
+    for (let i = 0; i < paths.length; i++) {
+      const path = '/' + paths.slice(0, i + 1).join('/');
+      const label = paths[i].charAt(0).toUpperCase() + paths[i].slice(1).replace(/-/g, ' ');
+      breadcrumbs.push({ label, path });
+    }
+    
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
@@ -160,6 +181,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
+        {/* Breadcrumbs */}
+        {breadcrumbs.length > 0 && (
+          <div className="px-8 py-3 border-b" style={{ 
+            borderColor: 'rgba(169, 189, 203, 0.1)',
+            backgroundColor: 'rgba(58, 64, 64, 0.3)'
+          }}>
+            <div className="flex items-center space-x-2 text-sm">
+              {breadcrumbs.map((crumb, index) => (
+                <div key={crumb.path} className="flex items-center">
+                  {index > 0 && (
+                    <ChevronRight className="h-4 w-4 mx-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                  )}
+                  <button
+                    onClick={() => navigate(crumb.path)}
+                    className={`hover:underline transition ${
+                      index === breadcrumbs.length - 1 ? 'font-semibold' : ''
+                    }`}
+                    style={{ 
+                      color: index === breadcrumbs.length - 1 
+                        ? 'rgb(229, 227, 220)' 
+                        : 'rgba(169, 189, 203, 0.8)'
+                    }}
+                  >
+                    {crumb.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {children}
       </main>
     </div>

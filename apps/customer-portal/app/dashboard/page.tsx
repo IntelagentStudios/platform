@@ -200,11 +200,6 @@ export default function DashboardPage() {
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
-                {userTier !== 'enterprise' && (
-                  <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-orange-500 text-white">
-                    Enterprise
-                  </div>
-                )}
                 <Cpu className="h-8 w-8 mb-2 group-hover:text-orange-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
                 <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Agent Builder</div>
                 <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Build custom agents</div>
