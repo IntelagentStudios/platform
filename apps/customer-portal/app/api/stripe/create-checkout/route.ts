@@ -59,7 +59,18 @@ const ADDONS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tier, billing = 'monthly', addons = [], email, isGuest = false } = body;
+    const { 
+      tier, 
+      billing = 'monthly', 
+      addons = [], 
+      email, 
+      isGuest = false,
+      // New modular product fields
+      productKey,
+      customPrice,
+      productType,
+      productName
+    } = body;
 
     // Get user info if logged in
     let userId = null;
@@ -121,8 +132,26 @@ export async function POST(request: NextRequest) {
     // Build line items
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
-    // Add main tier subscription
-    if (tier && PRODUCTS[tier as keyof typeof PRODUCTS]) {
+    // Handle modular product pricing
+    if (productKey && customPrice) {
+      // Custom modular product
+      lineItems.push({
+        price_data: {
+          currency: 'gbp',
+          product_data: {
+            name: productName || `Custom ${productType || 'Product'}`,
+            description: `Customized ${productType} with selected skills`,
+          },
+          recurring: {
+            interval: billing === 'annual' ? 'year' : 'month',
+            interval_count: 1
+          },
+          unit_amount: billing === 'annual' ? Math.round(customPrice * 0.8) : customPrice, // 20% discount for annual
+        },
+        quantity: 1,
+      });
+    } else if (tier && PRODUCTS[tier as keyof typeof PRODUCTS]) {
+      // Legacy tier-based pricing
       const product = PRODUCTS[tier as keyof typeof PRODUCTS];
       const priceData = billing === 'annual' ? product.annual : product.monthly;
 
@@ -194,7 +223,12 @@ export async function POST(request: NextRequest) {
         tier: tier,
         billing: billing,
         addons: JSON.stringify(addons),
-        isGuest: isGuest.toString()
+        isGuest: isGuest.toString(),
+        // Modular product metadata
+        productKey: productKey || '',
+        productType: productType || '',
+        productName: productName || '',
+        customPrice: customPrice?.toString() || ''
       },
       subscription_data: {
         metadata: {
