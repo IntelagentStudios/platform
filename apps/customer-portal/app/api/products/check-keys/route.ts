@@ -9,6 +9,32 @@ import { prisma } from '@/lib/prisma';
  * Check which products have active product keys configured
  */
 export async function GET(request: NextRequest) {
+  // Check for simple auth first
+  const simpleAuth = request.cookies.get('auth');
+  if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+    // Return mock configurations for simple auth
+    return NextResponse.json({
+      success: true,
+      configurations: {
+        chatbot: {
+          configured: true,
+          hasProductKey: true,
+          productKey: 'CHATBOT-KEY-MOCK',
+          canManage: true,
+          canConfigure: false
+        },
+        'sales-agent': {
+          configured: true,
+          hasProductKey: true,
+          productKey: 'SALES-KEY-MOCK',
+          canManage: true,
+          canConfigure: false
+        }
+      },
+      userProducts: ['chatbot', 'sales-agent']
+    });
+  }
+
   const authResult = await validateAuth(request);
   
   if (!authResult.authenticated || !authResult.user) {

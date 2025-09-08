@@ -57,7 +57,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: Home, path: '/dashboard' },
-    { id: 'chatbot', label: 'Chatbot', icon: MessageCircle, path: '/chatbot' },
     { id: 'platform', label: 'Platform', icon: Cpu, path: '/platform' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },

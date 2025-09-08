@@ -20,7 +20,8 @@ import {
   MessageSquare,
   TrendingUp,
   Shield,
-  Brain
+  Brain,
+  ChevronRight
 } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -79,93 +80,151 @@ export default function ProductsPage() {
   const allProducts = [
     {
       id: 'chatbot',
-      name: 'Chatbot',
-      description: 'AI-powered customer support chatbot for your website',
-      icon: Zap,
+      name: 'AI Chatbot',
+      description: 'Intelligent customer support chatbot for your website',
+      icon: MessageSquare,
       features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
       status: 'available',
-      price: 'Included'
+      price: 'Included',
+      category: 'core'
     },
     {
-      id: 'sales-outreach-agent',
-      name: 'Sales Outreach Agent',
-      description: 'Automated sales outreach system',
+      id: 'sales-agent',
+      name: 'Sales Agent',
+      description: 'Automated sales outreach and lead management',
       icon: Users,
       features: ['Lead Qualification', 'Email Automation', 'CRM Integration', 'Performance Tracking'],
-      status: 'purchase_required',
-      price: '£399/month'
+      status: 'available',
+      price: 'Included',
+      category: 'core'
     },
     {
+      id: 'data-enrichment',
+      name: 'Data Enrichment',
+      description: 'Enhance your data with AI-powered insights',
+      icon: TrendingUp,
+      features: ['Data Analysis', 'Pattern Recognition', 'Predictive Insights', 'Export Tools'],
+      status: 'available',
+      price: 'Included',
+      category: 'core'
     },
     {
-      id: 'onboarding-agent',
-      name: 'Onboarding Agent',
-      description: 'Automated customer onboarding',
+      id: 'setup-agent',
+      name: 'Setup Agent',
+      description: 'Automated configuration and deployment assistant',
       icon: SettingsIcon,
       features: ['Auto Configuration', 'Integration Setup', 'Workflow Builder', 'Progress Tracking'],
-      status: 'coming_soon',
-      price: 'Coming Soon'
+      status: 'available',
+      price: 'Included',
+      category: 'core'
     }
   ];
 
-  // Marketplace products (future upgrades)
+  // Real marketplace products and modular upgrades
   const marketplaceProducts = [
     {
-      id: 'voice-agent',
-      name: 'Voice Agent',
-      description: 'AI voice assistant for phone support',
-      icon: MessageSquare,
-      features: ['Natural Voice', 'Call Routing', 'Transcription', 'Sentiment Analysis'],
-      price: '$299/month',
-      badge: 'New'
-    },
-    {
-      id: 'analytics-pro',
-      name: 'Analytics Pro',
-      description: 'Advanced analytics and business intelligence',
-      icon: TrendingUp,
+      id: 'advanced-analytics',
+      name: 'Advanced Analytics',
+      description: 'Deep insights and custom reporting',
+      icon: BarChart3,
       features: ['Custom Dashboards', 'Predictive Analytics', 'Export Reports', 'API Access'],
-      price: '$199/month',
-      badge: 'Popular'
+      price: '£199/month',
+      badge: 'Popular',
+      type: 'upgrade'
     },
     {
-      id: 'security-suite',
-      name: 'Security Suite',
-      description: 'Enterprise-grade security and compliance tools',
+      id: 'voice-module',
+      name: 'Voice Module',
+      description: 'Add voice capabilities to your chatbot',
+      icon: MessageSquare,
+      features: ['Natural Voice', 'Voice Commands', 'Multi-language', 'Call Integration'],
+      price: '£299/month',
+      badge: 'New',
+      type: 'module'
+    },
+    {
+      id: 'workflow-automation',
+      name: 'Workflow Automation',
+      description: 'Advanced automation and orchestration',
+      icon: Zap,
+      features: ['Visual Builder', 'Conditional Logic', 'API Triggers', 'Schedule Tasks'],
+      price: '£399/month',
+      badge: 'Pro',
+      type: 'upgrade'
+    },
+    {
+      id: 'custom-integrations',
+      name: 'Custom Integrations',
+      description: 'Connect to any system or API',
+      icon: Package,
+      features: ['REST APIs', 'Webhooks', 'Custom Connectors', 'Data Sync'],
+      price: '£149/month',
+      badge: 'Essential',
+      type: 'module'
+    },
+    {
+      id: 'white-label',
+      name: 'White Label',
+      description: 'Full branding customization',
+      icon: Sparkles,
+      features: ['Custom Branding', 'Domain Setup', 'Theme Editor', 'CSS Override'],
+      price: '£599/month',
+      badge: 'Enterprise',
+      type: 'upgrade'
+    },
+    {
+      id: 'priority-support',
+      name: 'Priority Support',
+      description: '24/7 dedicated support team',
       icon: Shield,
-      features: ['SOC2 Compliance', 'Data Encryption', 'Audit Logs', 'GDPR Tools'],
-      price: '$499/month',
-      badge: 'Enterprise'
+      features: ['24/7 Support', 'Dedicated Manager', 'SLA Guarantee', 'Phone Support'],
+      price: '£999/month',
+      badge: 'Premium',
+      type: 'service'
     },
     {
-      id: 'ai-trainer',
-      name: 'AI Trainer',
-      description: 'Advanced AI model training and customization',
+      id: 'ai-training-credits',
+      name: 'AI Training Credits',
+      description: 'Additional model training capacity',
       icon: Brain,
-      features: ['Custom Models', 'Fine-tuning', 'A/B Testing', 'Version Control'],
-      price: '$599/month',
-      badge: 'Pro'
+      features: ['10,000 Credits', 'Custom Models', 'Fine-tuning', 'Priority Queue'],
+      price: '£499/pack',
+      badge: 'Scalable',
+      type: 'credits'
+    },
+    {
+      id: 'compliance-pack',
+      name: 'Compliance Pack',
+      description: 'GDPR, SOC2, and ISO compliance',
+      icon: Lock,
+      features: ['Audit Reports', 'Data Encryption', 'Access Controls', 'Compliance Tools'],
+      price: '£799/month',
+      badge: 'Enterprise',
+      type: 'upgrade'
     }
   ];
 
   // Separate products by status
-  // Show all products that are either owned or purchasable
+  // Products ready to configure should be shown prominently at the top
+  const readyToConfigureProducts = allProducts.filter(p => 
+    userProducts.includes(p.id) && !configurations[p.id]?.configured
+  );
   const configuredProducts = allProducts.filter(p => 
     userProducts.includes(p.id) && configurations[p.id]?.configured
   );
   const availableProducts = allProducts.filter(p => 
-    (userProducts.includes(p.id) && !configurations[p.id]?.configured && p.status === 'available') ||
-    (!userProducts.includes(p.id) && p.status === 'purchase_required')
+    !userProducts.includes(p.id) && p.status === 'available'
   );
-  const comingSoonProducts = allProducts.filter(p => p.status === 'coming_soon');
 
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/products/chatbot/configure');
-    } else if (productId === 'sales-outreach-agent') {
-      router.push('/products/sales-outreach-agent/setup');
-    } else if (productId === 'onboarding-agent') {
-      router.push('/products/onboarding-agent');
+    } else if (productId === 'sales-agent') {
+      router.push('/platform/sales-agent');
+    } else if (productId === 'data-enrichment') {
+      router.push('/platform/data-enrichment');
+    } else if (productId === 'setup-agent') {
+      router.push('/platform/setup-agent');
     } else {
       router.push(`/products/${productId}/setup`);
     }
@@ -174,8 +233,8 @@ export default function ProductsPage() {
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/products/chatbot/dashboard');
-    } else if (productId === 'sales-outreach-agent') {
-      router.push('/products/sales-outreach-agent/manage');
+    } else if (productId === 'sales-agent') {
+      router.push('/platform/sales-agent');
     } else if (productId === 'data-enrichment') {
       router.push('/products/data-enrichment/manage');
     } else {
@@ -202,6 +261,73 @@ export default function ProductsPage() {
 
       {/* Content */}
       <div className="p-8 space-y-8">
+        {/* Ready to Configure Section - Shown prominently at top */}
+        {readyToConfigureProducts.length > 0 && (
+          <section className="mb-8">
+            <div className="rounded-lg p-6" style={{
+              background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(169, 189, 203, 0.1) 100%)',
+              border: '2px solid rgba(76, 175, 80, 0.3)'
+            }}>
+              <div className="flex items-center space-x-2 mb-4">
+                <Sparkles className="h-5 w-5" style={{ color: '#4CAF50' }} />
+                <h2 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Ready to Configure
+                </h2>
+                <span className="text-xs px-2 py-1 rounded-full animate-pulse" 
+                      style={{ 
+                        backgroundColor: 'rgba(76, 175, 80, 0.3)',
+                        color: '#4CAF50'
+                      }}>
+                  Action Required
+                </span>
+              </div>
+              <p className="text-sm mb-4" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                These products are included in your license and ready to set up:
+              </p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {readyToConfigureProducts.map((product) => (
+                  <div 
+                    key={product.id}
+                    className="rounded-lg border overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+                    style={{ 
+                      backgroundColor: 'rgba(58, 64, 64, 0.7)',
+                      borderColor: 'rgba(76, 175, 80, 0.4)'
+                    }}
+                    onClick={() => handleConfigure(product.id)}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(76, 175, 80, 0.2)' }}>
+                            <product.icon className="h-5 w-5" style={{ color: '#4CAF50' }} />
+                          </div>
+                          <div>
+                            <h3 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {product.name}
+                            </h3>
+                            <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                              {product.description}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          className="px-3 py-1.5 rounded-lg font-medium transition hover:opacity-80 flex items-center space-x-1"
+                          style={{ 
+                            backgroundColor: '#4CAF50',
+                            color: 'white'
+                          }}
+                        >
+                          <span>Configure</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
         {/* Configured Products Section */}
         {configuredProducts.length > 0 && (
           <section>
@@ -275,20 +401,20 @@ export default function ProductsPage() {
           </section>
         )}
 
-        {/* Available Products Section */}
+        {/* Additional Products Section */}
         {availableProducts.length > 0 && (
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Package className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
               <h2 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                Available to Configure
+                Additional Products
               </h2>
               <span className="text-xs px-2 py-1 rounded-full" 
                     style={{ 
                       backgroundColor: 'rgba(169, 189, 203, 0.2)',
                       color: 'rgb(169, 189, 203)'
                     }}>
-                Ready to Setup
+                Available to Add
               </span>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -351,75 +477,20 @@ export default function ProductsPage() {
           </section>
         )}
 
-        {/* Coming Soon Section */}
-        {comingSoonProducts.length > 0 && (
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Sparkles className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-              <h2 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                Coming Soon
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {comingSoonProducts.map((product) => (
-                <div 
-                  key={product.id}
-                  className="rounded-lg border overflow-hidden opacity-60"
-                  style={{ 
-                    backgroundColor: 'rgba(58, 64, 64, 0.3)',
-                    borderColor: 'rgba(169, 189, 203, 0.1)'
-                  }}
-                >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(169, 189, 203, 0.05)' }}>
-                          <product.icon className="h-6 w-6" style={{ color: 'rgba(169, 189, 203, 0.4)' }} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
-                            {product.name}
-                          </h3>
-                          <p className="text-sm mt-1" style={{ color: 'rgba(229, 227, 220, 0.4)' }}>
-                            {product.description}
-                          </p>
-                        </div>
-                      </div>
-                      <Lock className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
-                    </div>
-                    <div className="mt-4">
-                      <button
-                        disabled
-                        className="w-full px-4 py-2 rounded-lg font-medium cursor-not-allowed"
-                        style={{ 
-                          backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                          color: 'rgba(169, 189, 203, 0.4)'
-                        }}
-                      >
-                        Coming Soon
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Marketplace Section */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <ShoppingCart className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
               <h2 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                Marketplace - Upgrades & Add-ons
+                Marketplace - Real Products & Modular Upgrades
               </h2>
               <span className="text-xs px-2 py-1 rounded-full" 
                     style={{ 
                       backgroundColor: 'rgba(169, 189, 203, 0.2)',
                       color: 'rgb(169, 189, 203)'
                     }}>
-                Premium
+                Premium Add-ons
               </span>
             </div>
           </div>
@@ -440,9 +511,13 @@ export default function ProductsPage() {
                           style={{ 
                             backgroundColor: product.badge === 'New' ? 'rgba(76, 175, 80, 0.2)' :
                                            product.badge === 'Popular' ? 'rgba(255, 193, 7, 0.2)' :
+                                           product.badge === 'Essential' ? 'rgba(33, 150, 243, 0.2)' :
+                                           product.badge === 'Scalable' ? 'rgba(156, 39, 176, 0.2)' :
                                            'rgba(169, 189, 203, 0.2)',
                             color: product.badge === 'New' ? '#4CAF50' :
                                   product.badge === 'Popular' ? '#FFC107' :
+                                  product.badge === 'Essential' ? '#2196F3' :
+                                  product.badge === 'Scalable' ? '#9C27B0' :
                                   'rgb(169, 189, 203)'
                           }}>
                       {product.badge}
