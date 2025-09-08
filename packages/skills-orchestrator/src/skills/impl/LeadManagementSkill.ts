@@ -307,9 +307,9 @@ export class LeadManagementSkill extends BaseSkill {
       let score = 0;
 
       // Email engagement
-      if (lead.email_opened) score += 10;
-      if (lead.email_clicked) score += 20;
-      if (lead.replied) score += 30;
+      if (lead.emails_opened > 0) score += 10;
+      if (lead.emails_clicked > 0) score += 20;
+      if (lead.last_response) score += 30;
 
       // Profile completeness
       if (lead.phone) score += 5;
