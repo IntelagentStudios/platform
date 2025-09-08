@@ -236,7 +236,8 @@ export class SalesOutreachSkill extends BaseSkill {
         where: { id: campaignId },
         data: {
           status: 'active',
-          started_at: new Date(),
+          start_date: new Date(),
+          last_activity_at: new Date(),
           updated_at: new Date()
         }
       });
