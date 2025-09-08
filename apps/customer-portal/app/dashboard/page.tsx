@@ -322,7 +322,7 @@ export default function DashboardPage() {
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/dashboard';
                             } else if (product.name === 'Sales Outreach Agent') {
-                              window.location.href = '/products/sales-outreach-agent/manage';
+                              window.location.href = '/dashboard/sales-outreach';
                             } else if (product.name === 'Onboarding Agent') {
                               window.location.href = '/products/onboarding-agent/manage';
                             }
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/configure';
                             } else if (product.name === 'Sales Outreach Agent') {
-                              window.location.href = '/products/sales-outreach-agent/setup';
+                              window.location.href = '/dashboard/products/customize?type=sales_outreach';
                             } else if (product.name === 'Onboarding Agent') {
                               window.location.href = '/products/onboarding-agent/setup';
                             }

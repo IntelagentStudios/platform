@@ -1294,3 +1294,185 @@ model skill_pricing_rules {
   @@index([is_active], map: "idx_skill_pricing_active")
   @@schema("public")
 }
+
+// Sales Campaign Management
+model sales_campaigns {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  license_key         String    @db.VarChar(20)
+  product_key         String    @db.VarChar(255)
+  
+  // Campaign details
+  name                String    @db.VarChar(255)
+  description         String?   @db.Text
+  status              String    @default("draft") @db.VarChar(50) // draft, active, paused, completed
+  campaign_type       String    @db.VarChar(100) // cold_outreach, nurture, follow_up, etc.
+  
+  // Target settings
+  target_industry     String?   @db.VarChar(100)
+  target_company_size String?   @db.VarChar(50)
+  target_personas     Json?     // Array of target personas
+  daily_send_limit    Int       @default(50)
+  
+  // Email settings
+  from_email          String?   @db.VarChar(255)
+  from_name           String?   @db.VarChar(255)
+  reply_to_email      String?   @db.VarChar(255)
+  email_templates     Json?     // Array of email templates with sequences
+  
+  // Performance metrics
+  total_leads         Int       @default(0)
+  leads_contacted     Int       @default(0)
+  emails_sent         Int       @default(0)
+  emails_opened       Int       @default(0)
+  emails_clicked      Int       @default(0)
+  responses_received  Int       @default(0)
+  meetings_booked     Int       @default(0)
+  deals_created       Int       @default(0)
+  
+  // Scheduling
+  start_date          DateTime? @db.Date
+  end_date            DateTime? @db.Date
+  send_times          Json?     // Preferred send times
+  timezone            String    @default("UTC") @db.VarChar(50)
+  
+  // Integration settings
+  crm_integration     String?   @db.VarChar(50) // salesforce, hubspot, etc.
+  crm_campaign_id     String?   @db.VarChar(255)
+  webhook_url         String?   @db.Text
+  
+  // Skills used
+  enabled_skills      Json?     // Array of skill IDs used in this campaign
+  
+  // Timestamps
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  last_activity_at    DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  leads               sales_leads[]
+  activities          sales_activities[]
+  
+  @@index([license_key], map: "idx_campaign_license")
+  @@index([status], map: "idx_campaign_status")
+  @@index([campaign_type], map: "idx_campaign_type")
+  @@schema("public")
+}
+
+// Sales Leads Management
+model sales_leads {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  campaign_id         String    @db.VarChar(36)
+  license_key         String    @db.VarChar(20)
+  
+  // Lead information
+  email               String    @db.VarChar(255)
+  first_name          String?   @db.VarChar(100)
+  last_name           String?   @db.VarChar(100)
+  full_name           String?   @db.VarChar(255)
+  phone               String?   @db.VarChar(50)
+  linkedin_url        String?   @db.Text
+  
+  // Company information
+  company_name        String?   @db.VarChar(255)
+  company_domain      String?   @db.VarChar(255)
+  job_title           String?   @db.VarChar(255)
+  department          String?   @db.VarChar(100)
+  company_size        String?   @db.VarChar(50)
+  industry            String?   @db.VarChar(100)
+  company_linkedin    String?   @db.Text
+  
+  // Lead status
+  status              String    @default("new") @db.VarChar(50) // new, contacted, responded, qualified, meeting_scheduled, opportunity, lost
+  lead_score          Int       @default(0) // 0-100
+  is_verified         Boolean   @default(false)
+  is_bounced          Boolean   @default(false)
+  is_unsubscribed     Boolean   @default(false)
+  
+  // Engagement metrics
+  emails_sent         Int       @default(0)
+  emails_opened       Int       @default(0)
+  emails_clicked      Int       @default(0)
+  last_email_sent     DateTime? @db.Timestamptz(6)
+  last_email_opened   DateTime? @db.Timestamptz(6)
+  last_response       DateTime? @db.Timestamptz(6)
+  
+  // Enrichment data
+  enrichment_data     Json?     // Additional data from enrichment services
+  social_profiles     Json?     // Twitter, Facebook, etc.
+  technologies_used   Json?     // Tech stack of the company
+  
+  // Custom fields
+  custom_fields       Json?     // User-defined custom fields
+  tags                Json?     // Array of tags
+  notes               String?   @db.Text
+  
+  // CRM sync
+  crm_id              String?   @db.VarChar(255)
+  crm_type            String?   @db.VarChar(50)
+  crm_sync_status     String?   @db.VarChar(50)
+  crm_last_synced     DateTime? @db.Timestamptz(6)
+  
+  // Timestamps
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
+  contacted_at        DateTime? @db.Timestamptz(6)
+  qualified_at        DateTime? @db.Timestamptz(6)
+  
+  // Relations
+  campaign            sales_campaigns @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  activities          sales_activities[]
+  
+  @@unique([campaign_id, email])
+  @@index([license_key], map: "idx_lead_license")
+  @@index([status], map: "idx_lead_status")
+  @@index([lead_score], map: "idx_lead_score")
+  @@index([email], map: "idx_lead_email")
+  @@schema("public")
+}
+
+// Sales Activity Tracking
+model sales_activities {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
+  campaign_id         String    @db.VarChar(36)
+  lead_id             String    @db.VarChar(36)
+  license_key         String    @db.VarChar(20)
+  
+  // Activity details
+  activity_type       String    @db.VarChar(50) // email_sent, email_opened, email_clicked, response_received, meeting_scheduled, call_made, etc.
+  activity_subtype    String?   @db.VarChar(50) // cold_email, follow_up, nurture, etc.
+  
+  // Email specific
+  email_subject       String?   @db.VarChar(500)
+  email_template_id   String?   @db.VarChar(100)
+  email_content       String?   @db.Text
+  email_sequence_num  Int?      // Which email in the sequence
+  
+  // Response/Interaction
+  response_content    String?   @db.Text
+  sentiment_score     Decimal?  @db.Decimal(3, 2) // -1 to 1
+  intent_detected     String?   @db.VarChar(100) // interested, not_interested, need_info, etc.
+  
+  // Meeting specific
+  meeting_date        DateTime? @db.Timestamptz(6)
+  meeting_duration    Int?      // in minutes
+  meeting_outcome     String?   @db.VarChar(255)
+  
+  // Metadata
+  skill_used          String?   @db.VarChar(100) // Which skill was used
+  automation_id       String?   @db.VarChar(100) // ID of automation that triggered this
+  metadata            Json?     // Additional activity data
+  
+  // Timestamps
+  activity_date       DateTime  @default(now()) @db.Timestamptz(6)
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  
+  // Relations
+  campaign            sales_campaigns @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  lead                sales_leads @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+  
+  @@index([license_key], map: "idx_activity_license")
+  @@index([activity_type], map: "idx_activity_type")
+  @@index([activity_date], map: "idx_activity_date")
+  @@index([lead_id], map: "idx_activity_lead")
+  @@schema("public")
+}
