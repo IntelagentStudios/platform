@@ -1,612 +1,419 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckIcon } from '@heroicons/react/24/solid';
-
-const tiers = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 299,
-    priceDisplay: '£299',
-    period: '/month',
-    description: 'Perfect for small businesses getting started with AI',
-    features: [
-      '1 AI Chatbot',
-      '10,000 messages/month',
-      'Basic analytics',
-      'Email support',
-      'Standard integrations',
-      'Knowledge base (up to 100 pages)'
-    ],
-    limitations: [
-      'No sales agent',
-      'No data enrichment',
-      'No API access'
-    ],
-    cta: 'Start Free Trial',
-    popular: false
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    price: 699,
-    priceDisplay: '£699',
-    period: '/month',
-    description: 'For growing businesses ready to scale with AI',
-    features: [
-      '3 AI Chatbots',
-      '50,000 messages/month',
-      'Advanced analytics & reporting',
-      'Priority support',
-      'Sales Agent included',
-      'Data enrichment (1,000 credits)',
-      'Custom integrations',
-      'Knowledge base (up to 1,000 pages)',
-      'API access',
-      'Team collaboration (5 users)'
-    ],
-    limitations: [],
-    cta: 'Start Free Trial',
-    popular: true
-  },
-  {
-    id: 'enterprise', 
-    name: 'Enterprise',
-    price: 1499,
-    priceDisplay: '£1,499',
-    period: '/month',
-    description: 'Tailored solutions for large organizations',
-    features: [
-      'Unlimited AI Chatbots',
-      'Unlimited messages',
-      'White-label options',
-      'Dedicated account manager',
-      'Custom AI training',
-      'Advanced Sales Agent',
-      'Unlimited data enrichment',
-      'Custom skill development',
-      'SLA guarantee',
-      'Unlimited team members',
-      'On-premise deployment option',
-      'Advanced security features'
-    ],
-    limitations: [],
-    cta: 'Contact Sales',
-    popular: false
-  }
-];
-
-const addons = [
-  {
-    id: 'extra-chatbot',
-    name: 'Additional Chatbot',
-    price: 199,
-    priceDisplay: '£199',
-    period: '/month',
-    description: 'Add another AI chatbot to your account'
-  },
-  {
-    id: 'sales-agent-addon',
-    name: 'Sales Agent',
-    price: 399,
-    priceDisplay: '£399',
-    period: '/month',
-    description: 'Automated lead generation and outreach'
-  },
-  {
-    id: 'enrichment-credits',
-    name: 'Data Enrichment Credits',
-    price: 99,
-    priceDisplay: '£99',
-    period: '/10,000 credits',
-    description: 'Additional data enrichment credits'
-  }
-];
+import { CheckIcon, SparklesIcon, CubeIcon, RocketLaunchIcon, BeakerIcon, ArrowRightIcon, LockClosedIcon } from '@heroicons/react/24/solid';
+import { StarIcon, BoltIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 export default function MarketplacePage() {
   const router = useRouter();
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [context, setContext] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedBilling, setSelectedBilling] = useState<'monthly' | 'annual'>('monthly');
 
-  const handleSelectTier = async (tierId: string) => {
-    if (tierId === 'enterprise') {
-      window.location.href = 'mailto:sales@intelagentstudios.com?subject=Enterprise Plan Inquiry';
-      return;
+  useEffect(() => {
+    fetchMarketplaceContext();
+  }, []);
+
+  const fetchMarketplaceContext = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers: any = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/marketplace/context', { headers });
+      const data = await response.json();
+      setContext(data);
+    } catch (error) {
+      console.error('Error fetching context:', error);
+      // Set default guest context
+      setContext({ isAuthenticated: false });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Logged in user - go to checkout
-      router.push(`/dashboard/checkout?tier=${tierId}&billing=${billingPeriod}`);
+  const handleProductClick = async (productType: string) => {
+    if (!context?.isAuthenticated) {
+      // Guest - go to signup/checkout
+      router.push(`/signup?product=${productType}`);
     } else {
-      // Guest user - go to signup with selected tier
-      router.push(`/register?tier=${tierId}&billing=${billingPeriod}`);
+      // Authenticated - go to customization
+      router.push(`/dashboard/products/customize?type=${productType}`);
     }
   };
 
-  const getAnnualPrice = (monthlyPrice: number) => {
-    return Math.round(monthlyPrice * 10); // 2 months free
+  const handlePlatformUpgrade = () => {
+    if (!context?.isAuthenticated) {
+      router.push('/signup');
+    } else {
+      router.push('/dashboard/platform/upgrade');
+    }
   };
+
+  const handleCustomAgent = () => {
+    if (!context?.isAuthenticated) {
+      router.push('/signup?product=custom');
+    } else {
+      router.push('/dashboard/agent-builder');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-white">Loading marketplace...</div>
+      </div>
+    );
+  }
+
+  const baseProducts = [
+    {
+      id: 'chatbot',
+      name: 'AI Chatbot',
+      icon: <CubeIcon className="w-8 h-8" />,
+      basePrice: 299,
+      description: 'Intelligent conversational AI that adapts to your needs',
+      coreSkills: 30,
+      customizations: ['Customer Support', 'Internal Knowledge', 'Sales Assistant', 'Training Bot'],
+      gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      id: 'sales_outreach',
+      name: 'Sales Outreach Agent',
+      icon: <RocketLaunchIcon className="w-8 h-8" />,
+      basePrice: 499,
+      description: 'Automated sales engine for growth',
+      coreSkills: 60,
+      customizations: ['Lead Generation', 'Email Campaigns', 'CRM Automation', 'Pipeline Management'],
+      gradient: 'from-purple-500 to-pink-500'
+    },
+    {
+      id: 'onboarding',
+      name: 'Onboarding Agent',
+      icon: <BeakerIcon className="w-8 h-8" />,
+      basePrice: 399,
+      description: 'Streamline any onboarding process',
+      coreSkills: 40,
+      customizations: ['Employee Onboarding', 'Customer Onboarding', 'Vendor Management', 'Compliance'],
+      gradient: 'from-green-500 to-emerald-500'
+    }
+  ];
+
+  // Filter products based on what user already has
+  const availableProducts = context?.isAuthenticated 
+    ? baseProducts.filter(p => !context.currentProducts?.some((cp: any) => cp.productType === p.id))
+    : baseProducts;
+
+  const ownedProducts = context?.isAuthenticated
+    ? baseProducts.filter(p => context.currentProducts?.some((cp: any) => cp.productType === p.id))
+    : [];
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: 'rgb(48, 54, 54)',
-      color: 'rgb(229, 227, 220)'
-    }}>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
-      <header style={{
-        padding: '20px 40px',
-        borderBottom: '1px solid rgba(169, 189, 203, 0.2)',
-        backgroundColor: 'rgba(58, 64, 64, 0.95)'
-      }}>
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: 'rgb(169, 189, 203)'
-            }}>
-              Intelagent Platform
-            </h1>
-            <nav style={{ display: 'flex', gap: '30px' }}>
-              <a href="#pricing" style={{ color: 'rgba(229, 227, 220, 0.8)', textDecoration: 'none' }}>Pricing</a>
-              <a href="#features" style={{ color: 'rgba(229, 227, 220, 0.8)', textDecoration: 'none' }}>Features</a>
-              <a href="#addons" style={{ color: 'rgba(229, 227, 220, 0.8)', textDecoration: 'none' }}>Add-ons</a>
-            </nav>
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button
-              onClick={() => router.push('/login')}
-              style={{
-                padding: '8px 20px',
-                backgroundColor: 'transparent',
-                color: 'rgb(169, 189, 203)',
-                border: '1px solid rgba(169, 189, 203, 0.3)',
-                borderRadius: '6px',
-                cursor: 'pointer'
-              }}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => router.push('/register')}
-              style={{
-                padding: '8px 20px',
-                backgroundColor: 'rgb(169, 189, 203)',
-                color: 'rgb(48, 54, 54)',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '600'
-              }}
-            >
-              Get Started
-            </button>
+      <header className="border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white">
+                {context?.isAuthenticated ? 'Your Marketplace' : 'AI Products Marketplace'}
+              </h1>
+              <p className="mt-2 text-gray-400">
+                {context?.isAuthenticated 
+                  ? `Welcome back! You have ${context.currentProducts?.length || 0} active products.`
+                  : 'Build your perfect AI workforce with modular, customizable products'}
+              </p>
+            </div>
+            
+            {/* Billing Toggle */}
+            <div className="flex items-center space-x-3 bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setSelectedBilling('monthly')}
+                className={`px-4 py-2 rounded-md transition ${
+                  selectedBilling === 'monthly' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setSelectedBilling('annual')}
+                className={`px-4 py-2 rounded-md transition ${
+                  selectedBilling === 'annual' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Annual
+                <span className="ml-1 text-xs text-green-400">Save 20%</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section style={{
-        padding: '80px 40px',
-        textAlign: 'center',
-        maxWidth: '1000px',
-        margin: '0 auto'
-      }}>
-        <h2 style={{
-          fontSize: '48px',
-          fontWeight: 'bold',
-          marginBottom: '24px',
-          lineHeight: '1.2'
-        }}>
-          AI-Powered Business Automation
-        </h2>
-        <p style={{
-          fontSize: '20px',
-          color: 'rgba(229, 227, 220, 0.8)',
-          marginBottom: '40px'
-        }}>
-          Transform your business with 310+ AI skills orchestrated by intelligent agents.
-          From customer service to sales automation, we've got you covered.
-        </p>
-
-        {/* Billing Toggle */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '16px',
-          marginBottom: '60px'
-        }}>
-          <span style={{
-            color: billingPeriod === 'monthly' ? 'rgb(169, 189, 203)' : 'rgba(229, 227, 220, 0.6)'
-          }}>
-            Monthly
-          </span>
-          <button
-            onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
-            style={{
-              width: '60px',
-              height: '30px',
-              borderRadius: '15px',
-              backgroundColor: 'rgba(169, 189, 203, 0.2)',
-              border: 'none',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s'
-            }}
-          >
-            <div style={{
-              width: '26px',
-              height: '26px',
-              borderRadius: '13px',
-              backgroundColor: 'rgb(169, 189, 203)',
-              position: 'absolute',
-              top: '2px',
-              left: billingPeriod === 'monthly' ? '2px' : '32px',
-              transition: 'left 0.3s'
-            }} />
-          </button>
-          <span style={{
-            color: billingPeriod === 'annual' ? 'rgb(169, 189, 203)' : 'rgba(229, 227, 220, 0.6)'
-          }}>
-            Annual
-          </span>
-          {billingPeriod === 'annual' && (
-            <span style={{
-              padding: '4px 12px',
-              backgroundColor: 'rgba(169, 189, 203, 0.2)',
-              borderRadius: '12px',
-              fontSize: '14px',
-              color: 'rgb(169, 189, 203)',
-              fontWeight: '600'
-            }}>
-              Save 17%
-            </span>
-          )}
-        </div>
-      </section>
-
-      {/* Pricing Tiers */}
-      <section id="pricing" style={{
-        padding: '0 40px 80px',
-        maxWidth: '1400px',
-        margin: '0 auto'
-      }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '30px'
-        }}>
-          {tiers.map((tier) => (
-            <div
-              key={tier.id}
-              style={{
-                backgroundColor: 'rgba(58, 64, 64, 0.95)',
-                borderRadius: '16px',
-                padding: '40px',
-                border: tier.popular ? '2px solid rgb(169, 189, 203)' : '1px solid rgba(169, 189, 203, 0.2)',
-                position: 'relative',
-                transition: 'transform 0.3s, box-shadow 0.3s',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-8px)';
-                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {tier.popular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  padding: '4px 16px',
-                  backgroundColor: 'rgb(169, 189, 203)',
-                  color: 'rgb(48, 54, 54)',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  textTransform: 'uppercase'
-                }}>
-                  Most Popular
-                </div>
-              )}
-
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  marginBottom: '8px'
-                }}>
-                  {tier.name}
-                </h3>
-                <p style={{
-                  fontSize: '14px',
-                  color: 'rgba(229, 227, 220, 0.7)',
-                  marginBottom: '16px'
-                }}>
-                  {tier.description}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  {tier.id !== 'enterprise' ? (
-                    <>
-                      <span style={{
-                        fontSize: '36px',
-                        fontWeight: 'bold',
-                        color: 'rgb(169, 189, 203)'
-                      }}>
-                        {billingPeriod === 'monthly' 
-                          ? tier.priceDisplay 
-                          : `£${getAnnualPrice(tier.price)}`}
-                      </span>
-                      <span style={{
-                        fontSize: '16px',
-                        color: 'rgba(229, 227, 220, 0.6)'
-                      }}>
-                        {billingPeriod === 'monthly' ? '/month' : '/year'}
-                      </span>
-                    </>
-                  ) : (
-                    <span style={{
-                      fontSize: '36px',
-                      fontWeight: 'bold',
-                      color: 'rgb(169, 189, 203)'
-                    }}>
-                      {tier.priceDisplay}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={() => handleSelectTier(tier.id)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  backgroundColor: tier.popular ? 'rgb(169, 189, 203)' : 'transparent',
-                  color: tier.popular ? 'rgb(48, 54, 54)' : 'rgb(169, 189, 203)',
-                  border: tier.popular ? 'none' : '2px solid rgba(169, 189, 203, 0.3)',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  marginBottom: '24px',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {tier.cta}
-              </button>
-
-              <div style={{ marginBottom: '16px' }}>
-                <p style={{
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  color: 'rgba(229, 227, 220, 0.5)',
-                  marginBottom: '12px',
-                  letterSpacing: '1px'
-                }}>
-                  What's included
-                </p>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {tier.features.map((feature, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        padding: '8px 0',
-                        fontSize: '14px',
-                        color: 'rgba(229, 227, 220, 0.9)',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px'
-                      }}
-                    >
-                      <CheckIcon style={{
-                        width: '16px',
-                        height: '16px',
-                        color: 'rgb(169, 189, 203)',
-                        flexShrink: 0,
-                        marginTop: '2px'
-                      }} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {tier.limitations.length > 0 && (
-                <div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {tier.limitations.map((limitation, idx) => (
-                      <li
-                        key={idx}
-                        style={{
-                          padding: '8px 0',
-                          fontSize: '14px',
-                          color: 'rgba(229, 227, 220, 0.5)',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '8px'
-                        }}
-                      >
-                        <span style={{ color: 'rgba(229, 227, 220, 0.3)' }}>✕</span>
-                        {limitation}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Add-ons Section */}
-      <section id="addons" style={{
-        padding: '80px 40px',
-        backgroundColor: 'rgba(58, 64, 64, 0.5)'
-      }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '36px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginBottom: '16px'
-          }}>
-            Power Up Your Platform
-          </h2>
-          <p style={{
-            fontSize: '18px',
-            color: 'rgba(229, 227, 220, 0.7)',
-            textAlign: 'center',
-            marginBottom: '60px'
-          }}>
-            Add extra capabilities to your existing plan
-          </p>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '24px'
-          }}>
-            {addons.map((addon) => (
-              <div
-                key={addon.id}
-                style={{
-                  backgroundColor: 'rgba(58, 64, 64, 0.95)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid rgba(169, 189, 203, 0.2)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <h4 style={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    marginBottom: '4px'
-                  }}>
-                    {addon.name}
-                  </h4>
-                  <p style={{
-                    fontSize: '14px',
-                    color: 'rgba(229, 227, 220, 0.7)',
-                    marginBottom: '8px'
-                  }}>
-                    {addon.description}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                    <span style={{
-                      fontSize: '20px',
-                      fontWeight: 'bold',
-                      color: 'rgb(169, 189, 203)'
-                    }}>
-                      {addon.priceDisplay}
-                    </span>
-                    <span style={{
-                      fontSize: '14px',
-                      color: 'rgba(229, 227, 220, 0.6)'
-                    }}>
-                      {addon.period}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push(`/register?addon=${addon.id}`)}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: 'transparent',
-                    color: 'rgb(169, 189, 203)',
-                    border: '1px solid rgba(169, 189, 203, 0.3)',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                  }}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Recommendations for authenticated users */}
+        {context?.isAuthenticated && context.recommendedUpgrades?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6">Recommended for You</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {context.recommendedUpgrades.slice(0, 3).map((rec: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 rounded-xl p-6 border border-blue-500/30"
                 >
-                  Add to Plan
+                  <div className="flex items-start justify-between mb-4">
+                    <SparklesIcon className="w-8 h-8 text-yellow-400" />
+                    {rec.priority === 'high' && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">High Priority</span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">{rec.title}</h3>
+                  <p className="text-gray-300 mb-4">{rec.description}</p>
+                  {rec.monthlyPrice && (
+                    <p className="text-2xl font-bold text-white mb-4">
+                      £{rec.monthlyPrice}
+                      <span className="text-sm text-gray-400">/month</span>
+                    </p>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (rec.type === 'platform_intelligence') handlePlatformUpgrade();
+                      else if (rec.type === 'new_product') handleProductClick(rec.productType);
+                    }}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition flex items-center justify-center"
+                  >
+                    {rec.cta}
+                    <ArrowRightIcon className="w-4 h-4 ml-2" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Available Products */}
+        {availableProducts.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              {context?.isAuthenticated ? 'Available Products' : 'Choose Your AI Products'}
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {availableProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-gray-800 rounded-xl p-6 hover:shadow-2xl transition-all duration-300 border border-gray-700 hover:border-blue-500"
+                >
+                  <div className={`inline-flex p-3 rounded-lg bg-gradient-to-br ${product.gradient} mb-4`}>
+                    {product.icon}
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
+                  <p className="text-gray-400 mb-4">{product.description}</p>
+                  
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-2">Includes:</p>
+                    <ul className="space-y-1">
+                      <li className="flex items-center text-sm text-gray-300">
+                        <CheckIcon className="w-4 h-4 text-green-400 mr-2" />
+                        {product.coreSkills} core skills
+                      </li>
+                      {product.customizations.slice(0, 2).map((custom, idx) => (
+                        <li key={idx} className="flex items-center text-sm text-gray-300">
+                          <CheckIcon className="w-4 h-4 text-green-400 mr-2" />
+                          {custom}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex items-baseline mb-4">
+                    <span className="text-3xl font-bold text-white">
+                      £{selectedBilling === 'annual' ? Math.round(product.basePrice * 0.8) : product.basePrice}
+                    </span>
+                    <span className="text-gray-400 ml-2">/month</span>
+                  </div>
+
+                  <button
+                    onClick={() => handleProductClick(product.id)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition font-semibold"
+                  >
+                    Customize & Deploy
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Owned Products - Show upgrade options */}
+        {ownedProducts.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6">Your Products</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {ownedProducts.map((product) => {
+                const config = context.currentProducts.find((cp: any) => cp.productType === product.id);
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-gray-800 rounded-xl p-6 border border-green-500/30 relative"
+                  >
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">Active</span>
+                    </div>
+                    
+                    <div className={`inline-flex p-3 rounded-lg bg-gradient-to-br ${product.gradient} mb-4`}>
+                      {product.icon}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {config?.customization?.name || product.name}
+                    </h3>
+                    <p className="text-gray-400 mb-4">
+                      {config?.customization?.skillsCount || product.coreSkills} skills active
+                    </p>
+                    
+                    <button
+                      onClick={() => router.push(`/dashboard/products/${config?.productKey}/customize`)}
+                      className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition"
+                    >
+                      Manage & Customize
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Platform Intelligence Section */}
+        <section className="mb-12">
+          <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-2xl p-8 border border-purple-500/30">
+            <div className="md:flex items-center justify-between">
+              <div className="mb-6 md:mb-0">
+                <div className="flex items-center mb-4">
+                  <BoltIcon className="w-10 h-10 text-yellow-400 mr-3" />
+                  <h2 className="text-3xl font-bold text-white">Platform Intelligence</h2>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  Connect all your products into one intelligent system. 
+                  Unlock cross-product insights, workflow automation, and 10x efficiency.
+                </p>
+                
+                {context?.platformIntelligence?.eligible ? (
+                  <div className="space-y-2">
+                    <p className="text-green-400 font-semibold">✓ You're eligible!</p>
+                    <p className="text-sm text-gray-400">
+                      Connect your {context.platformIntelligence.currentProductCount} products for unified intelligence
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-yellow-400">
+                    {context?.isAuthenticated 
+                      ? `Add ${2 - (context?.currentProducts?.length || 0)} more product(s) to unlock`
+                      : 'Available with 2+ products'}
+                  </p>
+                )}
+              </div>
+              
+              <div className="text-center">
+                <p className="text-4xl font-bold text-white mb-2">
+                  £{selectedBilling === 'annual' ? '799' : '999'}
+                  <span className="text-lg text-gray-400">/month</span>
+                </p>
+                <button
+                  onClick={handlePlatformUpgrade}
+                  className={`px-6 py-3 rounded-lg font-semibold transition ${
+                    context?.platformIntelligence?.eligible
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                      : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={!context?.platformIntelligence?.eligible && context?.isAuthenticated}
+                >
+                  {context?.platformIntelligence?.eligible ? 'Upgrade Now' : 'Learn More'}
                 </button>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section style={{
-        padding: '80px 40px',
-        textAlign: 'center'
-      }}>
-        <h2 style={{
-          fontSize: '36px',
-          fontWeight: 'bold',
-          marginBottom: '16px'
-        }}>
-          Ready to Transform Your Business?
-        </h2>
-        <p style={{
-          fontSize: '18px',
-          color: 'rgba(229, 227, 220, 0.7)',
-          marginBottom: '32px'
-        }}>
-          Join thousands of businesses already using AI to grow faster
-        </p>
-        <button
-          onClick={() => router.push('/register')}
-          style={{
-            padding: '16px 40px',
-            backgroundColor: 'rgb(169, 189, 203)',
-            color: 'rgb(48, 54, 54)',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '18px',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          Start Your Free Trial
-        </button>
-        <p style={{
-          marginTop: '16px',
-          fontSize: '14px',
-          color: 'rgba(229, 227, 220, 0.6)'
-        }}>
-          No credit card required • 14-day free trial • Cancel anytime
-        </p>
-      </section>
+        {/* Custom Agent Builder */}
+        <section>
+          <div className="bg-gradient-to-r from-orange-900/50 to-red-900/50 rounded-2xl p-8 border border-orange-500/30">
+            <div className="md:flex items-center justify-between">
+              <div className="mb-6 md:mb-0">
+                <div className="flex items-center mb-4">
+                  <StarIcon className="w-10 h-10 text-orange-400 mr-3" />
+                  <h2 className="text-3xl font-bold text-white">Custom Agent Builder</h2>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  Build completely custom AI agents using our library of {context?.customAgentBuilder?.skillsAvailable || '300+'} skills.
+                  Perfect for unique business processes.
+                </p>
+                <ul className="space-y-2">
+                  <li className="flex items-center text-gray-300">
+                    <CheckIcon className="w-5 h-5 text-green-400 mr-2" />
+                    Choose from use-case templates or build from scratch
+                  </li>
+                  <li className="flex items-center text-gray-300">
+                    <CheckIcon className="w-5 h-5 text-green-400 mr-2" />
+                    Pay only for the skills you use
+                  </li>
+                  <li className="flex items-center text-gray-300">
+                    <CheckIcon className="w-5 h-5 text-green-400 mr-2" />
+                    Full customization and control
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="text-center">
+                <p className="text-4xl font-bold text-white mb-2">
+                  From £{selectedBilling === 'annual' ? '639' : '799'}
+                  <span className="text-lg text-gray-400">/month</span>
+                </p>
+                <button
+                  onClick={handleCustomAgent}
+                  className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition"
+                >
+                  Start Building
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      {/* Footer */}
-      <footer style={{
-        padding: '40px',
-        borderTop: '1px solid rgba(169, 189, 203, 0.2)',
-        backgroundColor: 'rgba(58, 64, 64, 0.95)'
-      }}>
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto',
-          textAlign: 'center',
-          color: 'rgba(229, 227, 220, 0.6)',
-          fontSize: '14px'
-        }}>
-          © 2025 Intelagent Studios. All rights reserved.
-        </div>
-      </footer>
+        {/* Potential Savings for authenticated users */}
+        {context?.isAuthenticated && context.pricing?.potentialSavings && (
+          <section className="mt-12">
+            <div className="bg-green-900/30 border border-green-500/30 rounded-xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4">💰 Potential Savings</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {context.pricing.potentialSavings.annual && (
+                  <div>
+                    <p className="text-gray-300">Switch to annual billing</p>
+                    <p className="text-2xl font-bold text-green-400">
+                      Save £{context.pricing.potentialSavings.annual.amount.toFixed(0)}/year
+                    </p>
+                  </div>
+                )}
+                {context.pricing.potentialSavings.bundle && (
+                  <div>
+                    <p className="text-gray-300">Bundle your products</p>
+                    <p className="text-2xl font-bold text-green-400">
+                      Save £{context.pricing.potentialSavings.bundle.amount.toFixed(0)}/month
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
