@@ -11,12 +11,8 @@ export class LeadManagementSkill extends BaseSkill {
     description: 'Manages leads, scoring, qualification, and lifecycle tracking',
     category: SkillCategory.DATA_PROCESSING,
     version: '1.0.0',
-    tags: ['leads', 'sales', 'crm', 'scoring', 'qualification'],
-    requiresAuth: true,
-    rateLimit: {
-      requests: 200,
-      period: 60000
-    }
+    author: 'Intelagent Platform',
+    tags: ['leads', 'sales', 'crm', 'scoring', 'qualification']
   };
 
   async executeImpl(params: SkillParams): Promise<SkillResult> {
