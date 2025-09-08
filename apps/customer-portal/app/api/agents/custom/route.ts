@@ -81,28 +81,34 @@ export async function POST(request: NextRequest) {
       data: {
         product_key: agentId,
         license_key: user.license_key,
-        product_type: 'custom_agent',
-        product_name: name,
-        is_activated: false,
+        product: 'custom_agent',
         assigned_skills: skills,
-        monthly_price: pricing.monthlyPrice / 100,
+        metadata: {
+          name: name,
+          description: description,
+          monthlyPrice: pricing.monthlyPrice / 100,
+          isActivated: false
+        },
         created_at: new Date(),
-        activated_at: null
+        status: 'active'
       }
     });
 
-    // Log the agent creation
-    await prisma.activity_logs.create({
+    // Log the agent creation in audit logs
+    await prisma.audit_logs.create({
       data: {
+        license_key: user.license_key,
         user_id: user.id,
         action: 'custom_agent_created',
-        details: {
-          agentId,
+        resource_type: 'custom_agent',
+        resource_id: agentId,
+        changes: {
           name,
           skillCount: skills.length,
           monthlyPrice: pricing.monthlyPrice
         },
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown'
+        ip_address: request.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: request.headers.get('user-agent') || 'unknown'
       }
     });
 
@@ -160,7 +166,7 @@ export async function GET(request: NextRequest) {
     const productKeys = await prisma.product_keys.findMany({
       where: {
         license_key: user.license_key,
-        product_type: 'custom_agent'
+        product: 'custom_agent'
       }
     });
 
@@ -179,9 +185,9 @@ export async function GET(request: NextRequest) {
         complexity: agent.complexity_score,
         monthlyPrice: agent.total_price_pence / 100,
         isActive: customSettings?.is_active || false,
-        isActivated: productKey?.is_activated || false,
+        isActivated: (productKey?.metadata as any)?.isActivated || false,
         createdAt: agent.created_at,
-        activatedAt: productKey?.activated_at
+        activatedAt: productKey?.last_used_at
       };
     });
 
