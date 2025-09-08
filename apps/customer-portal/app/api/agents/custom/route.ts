@@ -66,12 +66,12 @@ export async function POST(request: NextRequest) {
           requirements,
           created_by: user.id,
           created_at: new Date().toISOString(),
-          skill_count: skills.length // Store skill count in custom_settings instead
+          skill_count: skills.length, // Store skill count in custom_settings
+          setup_fee: pricing.setupFee || 0 // Store setup fee in custom_settings
         },
         complexity_score: pricing.complexity,
         base_price_pence: pricing.monthlyPrice,
         total_price_pence: pricing.monthlyPrice,
-        setup_fee_pence: pricing.setupFee || 0,
         is_active: false // Will be activated after payment
       }
     });
