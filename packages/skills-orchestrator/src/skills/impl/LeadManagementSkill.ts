@@ -416,11 +416,23 @@ export class LeadManagementSkill extends BaseSkill {
 
   private async assignLead(leadId: string, assigneeId: string): Promise<SkillResult> {
     try {
+      // Get existing lead to preserve custom_fields
+      const existingLead = await prisma.sales_leads.findUnique({
+        where: { id: leadId }
+      });
+      
+      if (!existingLead) {
+        return this.error('Lead not found');
+      }
+
       const lead = await prisma.sales_leads.update({
         where: { id: leadId },
         data: {
-          assigned_to: assigneeId,
-          assigned_at: new Date(),
+          custom_fields: {
+            ...(existingLead.custom_fields as any || {}),
+            assigned_to: assigneeId,
+            assigned_at: new Date().toISOString()
+          },
           updated_at: new Date()
         }
       });
