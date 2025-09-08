@@ -41,12 +41,12 @@ export default function LoginPage() {
           const oldResponse = await fetch('/api/auth/simple', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password }),
+            body: JSON.stringify({ email, password }),
             credentials: 'include'
           });
           
           const oldData = await oldResponse.json();
-          if (oldData.authenticated) {
+          if (oldData.success) {
             router.push('/dashboard');
             return;
           }
