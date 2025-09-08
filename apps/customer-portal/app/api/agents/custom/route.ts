@@ -67,12 +67,12 @@ export async function POST(request: NextRequest) {
           created_by: user.id,
           created_at: new Date().toISOString(),
           skill_count: skills.length, // Store skill count in custom_settings
-          setup_fee: pricing.setupFee || 0 // Store setup fee in custom_settings
+          setup_fee: pricing.setupFee || 0, // Store setup fee in custom_settings
+          is_active: false // Will be activated after payment
         },
         complexity_score: pricing.complexity,
         base_price_pence: pricing.monthlyPrice,
-        total_price_pence: pricing.monthlyPrice,
-        is_active: false // Will be activated after payment
+        total_price_pence: pricing.monthlyPrice
       }
     });
 
@@ -167,17 +167,18 @@ export async function GET(request: NextRequest) {
     const agentsWithStatus = customAgents.map(agent => {
       const productKey = productKeys.find(pk => pk.product_key === agent.product_key);
       const skillsArray = agent.skills_enabled as string[];
+      const customSettings = agent.custom_settings as any;
       return {
         id: agent.id,
         agentId: agent.product_key,
         name: agent.custom_name || 'Unnamed Agent',
         description: agent.description || '',
-        industry: (agent.custom_settings as any)?.industry || '',
+        industry: customSettings?.industry || '',
         skills: skillsArray,
-        skillCount: (agent.custom_settings as any)?.skill_count || skillsArray.length,
+        skillCount: customSettings?.skill_count || skillsArray.length,
         complexity: agent.complexity_score,
         monthlyPrice: agent.total_price_pence / 100,
-        isActive: agent.is_active,
+        isActive: customSettings?.is_active || false,
         isActivated: productKey?.is_activated || false,
         createdAt: agent.created_at,
         activatedAt: productKey?.activated_at
