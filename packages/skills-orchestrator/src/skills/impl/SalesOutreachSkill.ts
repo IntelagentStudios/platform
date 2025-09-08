@@ -63,23 +63,24 @@ export class SalesOutreachSkill extends BaseSkill {
       const campaign = await prisma.sales_campaigns.create({
         data: {
           license_key: licenseKey,
+          product_key: campaignData.productKey || 'sales_outreach',
           name: campaignData.name,
           description: campaignData.description,
-          type: campaignData.type || 'email',
+          campaign_type: campaignData.type || 'cold_outreach',
           status: 'draft',
-          settings: campaignData.settings || {},
           email_templates: campaignData.emailTemplates || [],
-          target_criteria: campaignData.targetCriteria || {},
-          schedule_settings: campaignData.scheduleSettings || {},
-          total_leads: 0,
-          emails_sent: 0,
-          emails_opened: 0,
-          emails_clicked: 0,
-          replies_received: 0,
-          meetings_booked: 0,
-          deals_created: 0,
-          created_at: new Date(),
-          updated_at: new Date()
+          target_industry: campaignData.targetIndustry,
+          target_company_size: campaignData.targetCompanySize,
+          target_personas: campaignData.targetPersonas || [],
+          daily_send_limit: campaignData.dailySendLimit || 50,
+          from_email: campaignData.fromEmail,
+          from_name: campaignData.fromName,
+          reply_to_email: campaignData.replyToEmail,
+          start_date: campaignData.startDate ? new Date(campaignData.startDate) : null,
+          end_date: campaignData.endDate ? new Date(campaignData.endDate) : null,
+          send_times: campaignData.sendTimes || [],
+          timezone: campaignData.timezone || 'UTC',
+          enabled_skills: ['sales_outreach', 'lead_management']
         }
       });
 
@@ -312,13 +313,14 @@ export class SalesOutreachSkill extends BaseSkill {
               last_name: leadData.lastName,
               full_name: leadData.fullName || `${leadData.firstName || ''} ${leadData.lastName || ''}`.trim(),
               company_name: leadData.companyName,
+              company_domain: leadData.companyDomain,
               job_title: leadData.jobTitle,
+              department: leadData.department,
               phone: leadData.phone,
               linkedin_url: leadData.linkedinUrl,
               status: 'new',
               custom_fields: leadData.customFields || {},
-              tags: leadData.tags || [],
-              created_at: new Date()
+              tags: leadData.tags || []
             }
           });
           createdLeads.push(lead);

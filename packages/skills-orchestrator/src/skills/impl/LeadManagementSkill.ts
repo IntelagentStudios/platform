@@ -94,15 +94,16 @@ export class LeadManagementSkill extends BaseSkill {
           industry: leadData.industry,
           linkedin_url: leadData.linkedinUrl,
           company_linkedin: leadData.companyLinkedin,
-          location: leadData.location,
-          timezone: leadData.timezone,
-          source: leadData.source || 'manual',
           status: 'new',
           lead_score: 0,
-          custom_fields: leadData.customFields || {},
+          custom_fields: {
+            ...leadData.customFields,
+            location: leadData.location,
+            timezone: leadData.timezone,
+            source: leadData.source || 'manual'
+          },
           tags: leadData.tags || [],
-          notes: leadData.notes,
-          created_at: new Date()
+          notes: leadData.notes
         }
       });
 
