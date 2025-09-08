@@ -34,24 +34,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for account lockout (rate limiting per license)
+    // Check for account lockout (rate limiting per license) - with graceful fallback
     if (user.license_key) {
-      const loginAttempts = await licenseCache.checkRateLimit(
-        user.license_key,
-        'login_attempts',
-        MAX_LOGIN_ATTEMPTS,
-        LOCKOUT_DURATION
-      );
-
-      if (!loginAttempts.allowed) {
-        const minutesRemaining = Math.ceil((loginAttempts.resetAt - Date.now()) / 60000);
-        return NextResponse.json(
-          { 
-            error: `Account temporarily locked due to too many failed attempts. Try again in ${minutesRemaining} minutes.`,
-            resetAt: new Date(loginAttempts.resetAt).toISOString()
-          },
-          { status: 429 }
+      try {
+        const loginAttempts = await licenseCache.checkRateLimit(
+          user.license_key,
+          'login_attempts',
+          MAX_LOGIN_ATTEMPTS,
+          LOCKOUT_DURATION
         );
+
+        if (!loginAttempts.allowed) {
+          const minutesRemaining = Math.ceil((loginAttempts.resetAt - Date.now()) / 60000);
+          return NextResponse.json(
+            { 
+              error: `Account temporarily locked due to too many failed attempts. Try again in ${minutesRemaining} minutes.`,
+              resetAt: new Date(loginAttempts.resetAt).toISOString()
+            },
+            { status: 429 }
+          );
+        }
+      } catch (cacheError) {
+        console.warn('Rate limiting check failed, continuing without rate limiting:', cacheError);
+        // Continue without rate limiting if cache fails
       }
     }
 
@@ -59,13 +64,17 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
     if (!isValidPassword) {
-      // Increment failed login attempts
+      // Increment failed login attempts - with graceful fallback
       if (user.license_key) {
-        await licenseCache.incrementCounter(
-          user.license_key,
-          `login_attempts:${Math.floor(Date.now() / (LOCKOUT_DURATION * 1000))}`,
-          1
-        );
+        try {
+          await licenseCache.incrementCounter(
+            user.license_key,
+            `login_attempts:${Math.floor(Date.now() / (LOCKOUT_DURATION * 1000))}`,
+            1
+          );
+        } catch (cacheError) {
+          console.warn('Failed to increment login attempts counter:', cacheError);
+        }
       }
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -73,13 +82,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clear failed login attempts on successful login
+    // Clear failed login attempts on successful login - with graceful fallback
     if (user.license_key) {
-      await licenseCache.delete(
-        user.license_key,
-        'counter',
-        `login_attempts:${Math.floor(Date.now() / (LOCKOUT_DURATION * 1000))}`
-      );
+      try {
+        await licenseCache.delete(
+          user.license_key,
+          'counter',
+          `login_attempts:${Math.floor(Date.now() / (LOCKOUT_DURATION * 1000))}`
+        );
+      } catch (cacheError) {
+        console.warn('Failed to clear login attempts counter:', cacheError);
+      }
     }
 
     // Fetch license information separately
@@ -220,10 +233,42 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Login error:', error);
+    console.error('Full error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'An error occurred during login';
+    let errorDetails = '';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('P2002')) {
+        errorMessage = 'Database constraint error';
+        errorDetails = 'Duplicate entry detected';
+      } else if (error.message.includes('P2025')) {
+        errorMessage = 'Database record error';
+        errorDetails = 'Required record not found';
+      } else if (error.message.includes('ECONNREFUSED')) {
+        errorMessage = 'Database connection failed';
+        errorDetails = 'Cannot connect to database';
+      } else if (error.message.includes('Redis') || error.message.includes('redis')) {
+        errorMessage = 'Cache service error';
+        errorDetails = 'Redis connection issue - login may still work';
+      } else if (error.message.includes('licenseCache')) {
+        errorMessage = 'License cache error';
+        errorDetails = 'Cache service unavailable - continuing without cache';
+      } else {
+        errorDetails = error.message;
+      }
+    }
+    
     return NextResponse.json(
       { 
-        error: 'An error occurred during login',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage,
+        details: errorDetails,
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );
