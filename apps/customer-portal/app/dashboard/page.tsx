@@ -11,13 +11,20 @@ import {
   BarChart3,
   Zap,
   FileText,
-  Package
+  Package,
+  ShoppingCart,
+  Cpu,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
   const [productConfigs, setProductConfigs] = useState<any>({});
+  const [userTier, setUserTier] = useState<string>('starter');
 
   useEffect(() => {
     console.log('[dashboard] Checking authentication...');
@@ -31,6 +38,20 @@ export default function DashboardPage() {
           console.log(`[dashboard] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
           setIsAuthenticated(true);
           setUser(data.user);
+          
+          // Check user tier
+          if (data.user.license_key) {
+            fetch('/api/licenses/check', {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            })
+              .then(res => res.json())
+              .then(licenseData => {
+                if (licenseData.tier) {
+                  setUserTier(licenseData.tier);
+                }
+              })
+              .catch(err => console.error('Failed to fetch license tier:', err));
+          }
           
           // Fetch product configurations
           console.log('[dashboard] Fetching product configurations...');
@@ -126,6 +147,71 @@ export default function DashboardPage() {
 
       {/* Content */}
       <div className="p-8">
+          {/* Quick Actions */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                onClick={() => router.push('/marketplace')}
+                className="p-4 rounded-lg border hover:border-blue-500 transition-all group"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <ShoppingCart className="h-8 w-8 mb-2 group-hover:text-blue-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Marketplace</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Browse AI products</div>
+              </button>
+              
+              <button
+                onClick={() => router.push('/dashboard/products/customize')}
+                className="p-4 rounded-lg border hover:border-green-500 transition-all group"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <Settings className="h-8 w-8 mb-2 group-hover:text-green-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Customize Products</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Configure skills & features</div>
+              </button>
+              
+              <button
+                onClick={() => router.push('/dashboard/platform/upgrade')}
+                className="p-4 rounded-lg border hover:border-purple-500 transition-all group"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <Sparkles className="h-8 w-8 mb-2 group-hover:text-purple-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Platform Intelligence</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Connect all products</div>
+              </button>
+              
+              <button
+                onClick={() => router.push('/dashboard/agent-builder')}
+                className="p-4 rounded-lg border hover:border-orange-500 transition-all group relative"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                {userTier !== 'enterprise' && (
+                  <div className="absolute top-2 right-2 text-xs px-2 py-1 rounded bg-orange-500 text-white">
+                    Enterprise
+                  </div>
+                )}
+                <Cpu className="h-8 w-8 mb-2 group-hover:text-orange-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Agent Builder</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Build custom agents</div>
+              </button>
+            </div>
+          </div>
+
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
