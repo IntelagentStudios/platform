@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { SkillExecutor } from '../../../../../packages/skills-orchestrator/src/executor';
-import { SkillRegistry } from '../../../../../packages/skills-orchestrator/src/registry';
+import { SkillExecutor } from '../../../../../../../packages/skills-orchestrator/src/executor';
+import { SkillRegistry } from '../../../../../../../packages/skills-orchestrator/src/registry';
 
 // Initialize executor with registry
 const registry = SkillRegistry.getInstance();
