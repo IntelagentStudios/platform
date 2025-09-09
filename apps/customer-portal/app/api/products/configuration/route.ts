@@ -7,11 +7,13 @@ export async function GET(request: NextRequest) {
   // Check for simple auth first
   const simpleAuth = cookies().get('auth');
   if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+    // Use real product key for Harry's account
+    const realProductKey = 'chat_intl_master_2024';
     return NextResponse.json({
       chatbot: {
         configured: true,
-        product_key: 'CHATBOT-KEY-MOCK',
-        site_key: 'CHATBOT-KEY-MOCK'
+        product_key: realProductKey,
+        site_key: realProductKey
       }
     });
   }
