@@ -22,13 +22,16 @@ export async function GET(request: NextRequest) {
     if (realProductKey) {
       // Try to fetch real knowledge from database
       try {
-        const knowledge = await prisma.custom_knowledge.findUnique({
-          where: { product_key: realProductKey }
+        const knowledge = await prisma.custom_knowledge.findFirst({
+          where: { 
+            product_key: realProductKey,
+            knowledge_type: 'custom' // Default type for custom knowledge
+          }
         });
         
         return NextResponse.json({
           success: true,
-          knowledge: knowledge?.custom_knowledge || '',
+          knowledge: knowledge?.content || '',
           product_key: realProductKey
         });
       } catch (dbError) {
@@ -149,17 +152,23 @@ export async function POST(request: NextRequest) {
       // Try to save to database
       try {
         await prisma.custom_knowledge.upsert({
-          where: { product_key: realProductKey },
+          where: { 
+            product_key_knowledge_type: {
+              product_key: realProductKey,
+              knowledge_type: 'custom'
+            }
+          },
           update: {
-            custom_knowledge: body.knowledge,
+            content: body.knowledge || body.content || '',
             updated_at: new Date(),
-            updated_by: userEmail
+            created_by: userEmail
           },
           create: {
             product_key: realProductKey,
-            custom_knowledge: body.knowledge,
-            created_by: userEmail,
-            updated_by: userEmail
+            license_key: realProductKey === 'chat_9b3f7e8a2c5d1f0e' ? 'INTL-AGNT-BOSS-MODE' : 'INTL-NW1S-QANW-2025',
+            knowledge_type: 'custom',
+            content: body.knowledge || body.content || '',
+            created_by: userEmail
           }
         });
         
