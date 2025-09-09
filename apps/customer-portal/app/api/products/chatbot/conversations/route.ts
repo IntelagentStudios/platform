@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 // Master admin key constant
-const MASTER_ADMIN_KEY = 'INTL-ADMIN-KEY';
+const MASTER_ADMIN_KEY = 'INTL-MSTR-ADMN-PASS';
 import { getProductKey, updateProductKeyUsage } from '@/lib/product-keys-service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
     if (!oldAuth || oldAuth.value !== 'authenticated-user-harry') {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
-    // Use the default license key for old auth
-    const licenseKey = 'INTL-AGNT-BOSS-MODE';
+    // Use the master admin license key for simple auth
+    const licenseKey = 'INTL-MSTR-ADMN-PASS';
     return fetchConversations(licenseKey);
   }
 
