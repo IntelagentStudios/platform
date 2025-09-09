@@ -1124,6 +1124,63 @@ function ChatbotDashboardContent() {
                   <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
+              
+              {/* API Help Section */}
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowApiHelp(!showApiHelp)}
+                  className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
+                  style={{ color: 'rgb(169, 189, 203)' }}
+                >
+                  <ChevronDown 
+                    className={`w-4 h-4 transition-transform ${showApiHelp ? 'rotate-180' : ''}`} 
+                  />
+                  API Documentation & Examples
+                </button>
+                
+                {showApiHelp && (
+                  <div className="mt-4 rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                    <div className="space-y-4 text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      <div>
+                        <p className="font-medium mb-2">Authentication:</p>
+                        <p className="mb-2">Include your product key in the Authorization header:</p>
+                        <code className="block p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+                          Authorization: Bearer {productKey || 'YOUR_PRODUCT_KEY'}
+                        </code>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium mb-2">Example GET Request (cURL):</p>
+                        <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+{`curl -X GET \\
+  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/conversations \\
+  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}"`}
+                        </pre>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium mb-2">Example POST Request (cURL):</p>
+                        <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+{`curl -X POST \\
+  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/knowledge \\
+  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"content": "Your custom knowledge here"}'`}
+                        </pre>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium mb-2">Rate Limits:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>100 requests per minute for GET endpoints</li>
+                          <li>10 requests per minute for POST endpoints</li>
+                          <li>Responses include X-RateLimit headers</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1231,39 +1288,54 @@ function ChatbotDashboardContent() {
                   </div>
                 </div>
                 
-                {/* Advanced Settings */}
+                {/* Business Information */}
                 <div>
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Advanced
+                    Business Information
                   </h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Response Delay (ms)
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="1000"
-                        min="0"
-                        max="5000"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Allowed Domains (one per line)
+                        Welcome Message
                       </label>
                       <textarea
                         rows={3}
-                        placeholder="example.com
-app.example.com"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                        defaultValue="Hello! How can I help you today?"
+                        placeholder="Enter the first message visitors will see"
+                        className="w-full px-3 py-2 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
                       />
+                      <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        This message appears when a visitor opens the chat for the first time
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Business Hours Message
+                      </label>
+                      <textarea
+                        rows={2}
+                        defaultValue="We're currently offline but will respond as soon as possible."
+                        placeholder="Message shown outside business hours"
+                        className="w-full px-3 py-2 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                      />
+                      <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        Displayed when your team is not available (configured in n8n workflow)
+                      </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
                   <button className="px-4 py-2 rounded-lg hover:opacity-80" style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}>
                     Save Settings
                   </button>

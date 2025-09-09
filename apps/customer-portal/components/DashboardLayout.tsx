@@ -74,9 +74,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const breadcrumbs = [];
     
     for (let i = 0; i < paths.length; i++) {
+      const currentPath = paths[i];
+      
+      // Skip 'dashboard' and other intermediate paths for chatbot
+      if (currentPath === 'dashboard' && paths[i-1] === 'chatbot') {
+        continue;
+      }
+      
       const path = '/' + paths.slice(0, i + 1).join('/');
-      const label = paths[i].charAt(0).toUpperCase() + paths[i].slice(1).replace(/-/g, ' ');
-      breadcrumbs.push({ label, path });
+      const label = currentPath.charAt(0).toUpperCase() + currentPath.slice(1).replace(/-/g, ' ');
+      
+      // Special handling for chatbot - should go to dashboard
+      if (currentPath === 'chatbot') {
+        breadcrumbs.push({ label, path: '/products/chatbot/dashboard' });
+      } else {
+        breadcrumbs.push({ label, path });
+      }
     }
     
     return breadcrumbs;
