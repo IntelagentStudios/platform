@@ -89,6 +89,9 @@ function ChatbotDashboardContent() {
   const [knowledgeSaved, setKnowledgeSaved] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
+  const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
+  const [showApiHelp, setShowApiHelp] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -1055,19 +1058,134 @@ function ChatbotDashboardContent() {
                     </pre>
                   </div>
                   
-                  <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                        <p className="font-medium mb-1">Integration Tips:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                          <li>Add the code just before the closing &lt;/body&gt; tag</li>
-                          <li>The widget will automatically appear on all pages</li>
-                          <li>Customize appearance in the Settings tab</li>
-                          <li>Test the integration in a staging environment first</li>
-                        </ul>
+                  {/* Integration Help Section */}
+                  <div>
+                    <button
+                      onClick={() => setShowIntegrationHelp(!showIntegrationHelp)}
+                      className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
+                      style={{ color: 'rgb(169, 189, 203)' }}
+                    >
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform ${showIntegrationHelp ? 'rotate-180' : ''}`} 
+                      />
+                      Integration Help & Platform-Specific Tips
+                    </button>
+                    
+                    {showIntegrationHelp && (
+                      <div className="mt-4 space-y-4">
+                        {/* Website Type Selector */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                            Select Your Website Type
+                          </label>
+                          <select
+                            value={selectedWebsiteType}
+                            onChange={(e) => setSelectedWebsiteType(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg"
+                            style={{
+                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                              border: '1px solid rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(229, 227, 220)'
+                            }}
+                          >
+                            <option value="general">General Website</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="shopify">Shopify</option>
+                            <option value="wix">Wix</option>
+                            <option value="squarespace">Squarespace</option>
+                            <option value="react">React App</option>
+                            <option value="nextjs">Next.js</option>
+                            <option value="vue">Vue.js</option>
+                            <option value="angular">Angular</option>
+                          </select>
+                        </div>
+                        
+                        {/* Platform-specific instructions */}
+                        <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                              <p className="font-medium mb-2">Instructions for {selectedWebsiteType === 'general' ? 'General Websites' : selectedWebsiteType.charAt(0).toUpperCase() + selectedWebsiteType.slice(1)}:</p>
+                              {selectedWebsiteType === 'wordpress' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Appearance → Theme Editor</li>
+                                  <li>Select footer.php from the file list</li>
+                                  <li>Paste the code just before &lt;/body&gt;</li>
+                                  <li>Click "Update File" to save</li>
+                                  <li>Alternative: Use a plugin like "Insert Headers and Footers"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'shopify' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Online Store → Themes</li>
+                                  <li>Click "Actions" → "Edit code"</li>
+                                  <li>Find theme.liquid in Layout folder</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Save the file</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'wix' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Settings → Custom Code</li>
+                                  <li>Click "+ Add Custom Code"</li>
+                                  <li>Paste the integration code</li>
+                                  <li>Set "Add Code to Pages" to "All pages"</li>
+                                  <li>Set "Place Code in" to "Body - end"</li>
+                                  <li>Click "Apply"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'squarespace' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Settings → Advanced → Code Injection</li>
+                                  <li>Paste code in the "Footer" section</li>
+                                  <li>Click "Save"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'react' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open your public/index.html file</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to App.js using useEffect hook</li>
+                                  <li>Rebuild and deploy your app</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'nextjs' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open pages/_document.js (or app/layout.js for App Router)</li>
+                                  <li>Import Script from 'next/script'</li>
+                                  <li>Add Script component with strategy="lazyOnload"</li>
+                                  <li>Deploy your application</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'vue' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open public/index.html</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to App.vue mounted() hook</li>
+                                  <li>Build and deploy</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'angular' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open src/index.html</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to app.component.ts ngOnInit()</li>
+                                  <li>Build with ng build</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'general' && (
+                                <ul className="list-disc list-inside space-y-1">
+                                  <li>Add the code just before the closing &lt;/body&gt; tag</li>
+                                  <li>The widget will automatically appear on all pages</li>
+                                  <li>Customize appearance in the Settings tab</li>
+                                  <li>Test the integration in a staging environment first</li>
+                                </ul>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ) : (
