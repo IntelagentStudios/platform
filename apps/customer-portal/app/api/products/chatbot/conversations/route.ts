@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-// Master admin key constant
-const MASTER_ADMIN_KEY = 'INTL-MSTR-ADMN-PASS';
+// Master admin key constant - Harry's actual license key
+const MASTER_ADMIN_KEY = 'INTL-AGNT-BOSS-MODE';
 import { getProductKey, updateProductKeyUsage } from '@/lib/product-keys-service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
@@ -15,11 +15,20 @@ export async function GET(request: NextRequest) {
   if (!authToken) {
     // Fall back to old auth for backward compatibility
     const oldAuth = cookies().get('auth');
-    if (!oldAuth || oldAuth.value !== 'authenticated-user-harry') {
+    if (!oldAuth) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
-    // Use the master admin license key for simple auth
-    const licenseKey = 'INTL-MSTR-ADMN-PASS';
+    
+    // Handle different simple auth users
+    let licenseKey = '';
+    if (oldAuth.value === 'authenticated-user-harry') {
+      licenseKey = 'INTL-AGNT-BOSS-MODE';
+    } else if (oldAuth.value === 'authenticated-test-friend') {
+      licenseKey = 'INTL-NW1S-QANW-2025'; // James's license key
+    } else {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+    
     return fetchConversations(licenseKey);
   }
 
@@ -62,7 +71,7 @@ async function fetchConversations(licenseKey: string) {
         orderBy: { timestamp: 'desc' },
         take: 500 // More for admin
       });
-      siteKeyUsed = 'chat_intl_master_2024'; // Real product key for master admin
+      siteKeyUsed = 'chat_9b3f7e8a2c5d1f0e'; // Harry's actual product key
       
       // Get all licenses for admin stats
       const allLicenses = await prisma.licenses.findMany({
@@ -79,7 +88,7 @@ async function fetchConversations(licenseKey: string) {
         active_sites: activeProductKeys
       };
     } else {
-      // Auto-migrate: Create product key if it doesn't exist
+      // Auto-migrate: Create product keys if they don't exist
       if (licenseKey === 'INTL-AGNT-BOSS-MODE') {
         await prisma.product_keys.upsert({
           where: {
@@ -95,6 +104,25 @@ async function fetchConversations(licenseKey: string) {
             status: 'active',
             metadata: {
               domain: 'intelagentstudios.com'
+            }
+          }
+        });
+      } else if (licenseKey === 'INTL-NW1S-QANW-2025') {
+        // Create James's product key if it doesn't exist
+        await prisma.product_keys.upsert({
+          where: {
+            product_key: 'chat_james_nw1s_2025'
+          },
+          update: {
+            status: 'active'
+          },
+          create: {
+            product_key: 'chat_james_nw1s_2025',
+            license_key: 'INTL-NW1S-QANW-2025',
+            product: 'chatbot',
+            status: 'active',
+            metadata: {
+              domain: 'testbusiness.com'
             }
           }
         });

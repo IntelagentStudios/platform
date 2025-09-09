@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
             id: '1',
             email: 'harry@intelagentstudios.com',
             name: 'Harry',
-            license_key: 'INTL-MSTR-ADMN-PASS',
+            license_key: 'INTL-AGNT-BOSS-MODE',
             license_type: 'pro_platform',
             site_key: null,
             role: 'master_admin',
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
             next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
           },
           license: {
-            key: 'INTL-MSTR-ADMN-PASS',
+            key: 'INTL-AGNT-BOSS-MODE',
             products: ['chatbot'],
             is_pro: true,
             site_key: null,

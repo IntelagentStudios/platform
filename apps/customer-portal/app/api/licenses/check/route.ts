@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       success: true,
       tier: 'pro',
       license: {
-        key: 'INTL-MSTR-ADMN-PASS',
+        key: 'INTL-AGNT-BOSS-MODE',
         status: 'active',
         plan: 'pro',
         is_pro: true,

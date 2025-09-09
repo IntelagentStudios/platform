@@ -11,10 +11,15 @@ export async function GET(request: NextRequest) {
   try {
     // Check for simple auth first
     const simpleAuth = request.cookies.get('auth');
+    let realProductKey = '';
+    
     if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
-      // Use real product key for Harry's account
-      const realProductKey = 'chat_intl_master_2024';
-      
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
+    } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
+      realProductKey = 'chat_james_nw1s_2025';
+    }
+    
+    if (realProductKey) {
       // Try to fetch real knowledge from database
       try {
         const knowledge = await prisma.product_custom_knowledge.findUnique({
@@ -127,10 +132,19 @@ export async function POST(request: NextRequest) {
   try {
     // Check for simple auth first
     const simpleAuth = request.cookies.get('auth');
+    let realProductKey = '';
+    let userEmail = '';
+    
     if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
+      userEmail = 'harry@intelagentstudios.com';
+    } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
+      realProductKey = 'chat_james_nw1s_2025';
+      userEmail = 'james@testbusiness.com';
+    }
+    
+    if (realProductKey) {
       const body = await request.json();
-      // Use real product key for Harry's account
-      const realProductKey = 'chat_intl_master_2024';
       
       // Try to save to database
       try {
@@ -139,13 +153,13 @@ export async function POST(request: NextRequest) {
           update: {
             custom_knowledge: body.knowledge,
             updated_at: new Date(),
-            updated_by: 'harry@intelagentstudios.com'
+            updated_by: userEmail
           },
           create: {
             product_key: realProductKey,
             custom_knowledge: body.knowledge,
-            created_by: 'harry@intelagentstudios.com',
-            updated_by: 'harry@intelagentstudios.com'
+            created_by: userEmail,
+            updated_by: userEmail
           }
         });
         
