@@ -740,41 +740,40 @@ function ChatbotDashboardContent() {
                                   {dateSeparator}
                                 </div>
                               )}
-                              <
                               <div
                                 onClick={() => setSelectedConversation(conversation)}
-                            className="p-4 cursor-pointer transition"
-                            style={{
-                              backgroundColor: isSelected ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
-                              borderLeft: isSelected ? '4px solid rgb(169, 189, 203)' : 'none',
-                              paddingLeft: isSelected ? '12px' : '16px'
-                            }}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm font-medium truncate" style={{ color: 'rgb(229, 227, 220)' }}>
-                                    {convInfo.title}
-                                  </span>
-                                  {conversation.domain && (
-                                    <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                      {conversation.domain}
-                                    </span>
-                                  )}
+                                className="p-4 cursor-pointer transition"
+                                style={{
+                                  backgroundColor: isSelected ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
+                                  borderLeft: isSelected ? '4px solid rgb(169, 189, 203)' : 'none',
+                                  paddingLeft: isSelected ? '12px' : '16px'
+                                }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-sm font-medium truncate" style={{ color: 'rgb(229, 227, 220)' }}>
+                                        {convInfo.title}
+                                      </span>
+                                      {conversation.domain && (
+                                        <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                          {conversation.domain}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                                      {convInfo.subtitle}
+                                    </p>
+                                    {conversation.messages[0] && (
+                                      <p className="text-xs mt-1 truncate" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                        {conversation.messages[0].content}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                    {convInfo.time}
+                                  </div>
                                 </div>
-                                <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                                  {convInfo.subtitle}
-                                </p>
-                                {conversation.messages[0] && (
-                                  <p className="text-xs mt-1 truncate" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                                    {conversation.messages[0].content}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                {convInfo.time}
-                              </div>
-                            </div>
                               </div>
                             </div>
                           );
@@ -949,8 +948,7 @@ function ChatbotDashboardContent() {
                     style={{
                       backgroundColor: 'rgba(48, 54, 54, 0.5)',
                       border: '1px solid rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(229, 227, 220)',
-                      focusRingColor: 'rgba(169, 189, 203, 0.5)'
+                      color: 'rgb(229, 227, 220)'
                     }}
                   />
                   <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
