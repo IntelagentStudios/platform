@@ -347,20 +347,41 @@ function ChatbotDashboardContent() {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Invalid date';
     
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    // Always show both date and time for clarity
+    const dateStr = date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+    });
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
     
-    if (diffHours < 1) {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-    } else if (diffHours < 24) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    } else if (diffDays < 7) {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    return `${dateStr} at ${timeStr}`;
+  };
+  
+  const getDateSeparator = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const convDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    if (convDate.getTime() === today.getTime()) {
+      return 'Today';
+    } else if (convDate.getTime() === yesterday.getTime()) {
+      return 'Yesterday';
     } else {
-      return date.toLocaleDateString();
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        month: 'long', 
+        day: 'numeric',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      });
     }
   };
 
@@ -702,13 +723,26 @@ function ChatbotDashboardContent() {
                     </div>
                   ) : (
                     <div className="divide-y" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                      {filteredConversations.map((conversation) => {
-                        const convInfo = formatConversationTitle(conversation);
-                        const isSelected = selectedConversation?.id === conversation.id;
-                        return (
-                          <div
-                            key={conversation.id}
-                            onClick={() => setSelectedConversation(conversation)}
+                      {(() => {
+                        let lastDateSeparator = '';
+                        return filteredConversations.map((conversation) => {
+                          const convInfo = formatConversationTitle(conversation);
+                          const isSelected = selectedConversation?.id === conversation.id;
+                          const dateSeparator = getDateSeparator(conversation.first_message_at);
+                          const showSeparator = dateSeparator !== lastDateSeparator;
+                          lastDateSeparator = dateSeparator;
+                          
+                          return (
+                            <div key={conversation.id}>
+                              {showSeparator && (
+                                <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider" 
+                                     style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgba(169, 189, 203, 0.8)' }}>
+                                  {dateSeparator}
+                                </div>
+                              )}
+                              <
+                              <div
+                                onClick={() => setSelectedConversation(conversation)}
                             className="p-4 cursor-pointer transition"
                             style={{
                               backgroundColor: isSelected ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
@@ -741,9 +775,11 @@ function ChatbotDashboardContent() {
                                 {convInfo.time}
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   )}
                 </div>
@@ -851,19 +887,57 @@ function ChatbotDashboardContent() {
         {/* Knowledge Base Tab */}
         {activeTab === 'knowledge' && (
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="rounded-lg shadow-sm border p-6" 
+                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                   Custom Knowledge Base
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                   Add custom information that your chatbot should know about your business, products, or services.
                 </p>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* PDF Upload Section */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Upload PDF Document
+                  </label>
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center"
+                       style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // TODO: Implement PDF processing
+                          console.log('PDF selected:', file.name);
+                          alert('PDF upload functionality coming soon!');
+                        }
+                      }}
+                      className="hidden"
+                      id="pdf-upload"
+                    />
+                    <label htmlFor="pdf-upload" className="cursor-pointer">
+                      <div className="flex flex-col items-center">
+                        <svg className="w-12 h-12 mb-3" style={{ color: 'rgba(169, 189, 203, 0.5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="text-sm mb-1" style={{ color: 'rgb(229, 227, 220)' }}>Click to upload a PDF document</p>
+                        <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>or drag and drop</p>
+                      </div>
+                    </label>
+                  </div>
+                  <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    Upload PDFs containing product manuals, FAQs, or other documentation
+                  </p>
+                </div>
+                
+                {/* Text Input Section */}
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                     Knowledge Content
                   </label>
                   <textarea
@@ -873,12 +947,13 @@ function ChatbotDashboardContent() {
                     rows={10}
                     className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
                     style={{
-                      backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                      backgroundColor: 'rgba(48, 54, 54, 0.5)',
                       border: '1px solid rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(229, 227, 220)'
+                      color: 'rgb(229, 227, 220)',
+                      focusRingColor: 'rgba(169, 189, 203, 0.5)'
                     }}
                   />
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                     Examples: Business hours, pricing information, FAQs, product details, contact information
                   </p>
                 </div>
@@ -886,7 +961,7 @@ function ChatbotDashboardContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     {knowledgeSaved && (
-                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <div className="flex items-center gap-2" style={{ color: 'rgb(144, 238, 144)' }}>
                         <CheckCircle className="w-5 h-5" />
                         <span>Knowledge saved successfully!</span>
                       </div>
@@ -895,7 +970,7 @@ function ChatbotDashboardContent() {
                   <button
                     onClick={saveCustomKnowledge}
                     disabled={savingKnowledge}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     style={{
                       backgroundColor: 'rgb(169, 189, 203)',
                       color: 'rgb(48, 54, 54)'
@@ -917,12 +992,13 @@ function ChatbotDashboardContent() {
         {/* Integration Tab */}
         {activeTab === 'integration' && (
           <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="rounded-lg shadow-sm border p-6" 
+                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                   Widget Integration
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                   Copy and paste this code into your website to add the chatbot widget
                 </p>
               </div>
@@ -930,7 +1006,7 @@ function ChatbotDashboardContent() {
               {productKey ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       Your Product Key
                     </label>
                     <div className="flex items-center gap-2">
@@ -938,11 +1014,20 @@ function ChatbotDashboardContent() {
                         type="text"
                         value={productKey}
                         readOnly
-                        className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg font-mono text-sm"
+                        className="flex-1 px-4 py-2 rounded-lg font-mono text-sm"
+                        style={{
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
                       />
                       <button
                         onClick={copyToClipboard}
-                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                        className="px-4 py-2 rounded-lg hover:opacity-80 transition flex items-center"
+                        style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
                       >
                         {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                       </button>
@@ -950,10 +1035,15 @@ function ChatbotDashboardContent() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       Integration Code
                     </label>
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                    <pre className="p-4 rounded-lg overflow-x-auto text-sm font-mono" 
+                         style={{ 
+                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
+                           color: 'rgb(229, 227, 220)',
+                           border: '1px solid rgba(169, 189, 203, 0.2)'
+                         }}>
 {`<!-- Intelagent Chatbot Widget -->
 <script>
   (function() {
@@ -1003,24 +1093,26 @@ function ChatbotDashboardContent() {
             </div>
             
             {/* API Access */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="rounded-lg shadow-sm border p-6" 
+                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                 API Access
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="mb-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                 Access chatbot data programmatically via our REST API
               </p>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between p-3 rounded-lg" 
+                     style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)', border: '1px solid rgba(169, 189, 203, 0.15)' }}>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
                       GET /api/chatbot/{productKey}/conversations
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                       Retrieve conversation history
                     </p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>

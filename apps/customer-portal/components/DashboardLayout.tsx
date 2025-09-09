@@ -86,9 +86,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen flex" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
-      {/* Sidebar Navigation - More subtle colors */}
+      {/* Sidebar Navigation - Fixed position */}
       <aside 
-        className={`${(sidebarCollapsed && !isHovering) ? 'w-20' : 'w-64'} min-h-screen transition-all duration-300 relative`} 
+        className={`${(sidebarCollapsed && !isHovering) ? 'w-20' : 'w-64'} fixed left-0 top-0 h-full z-40 transition-all duration-300`} 
         style={{ backgroundColor: 'rgb(58, 64, 64)' }} // Slightly lighter than main background
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -165,13 +165,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
-        {/* Breadcrumbs */}
+      {/* Main Content Area - Add margin for fixed sidebar */}
+      <main className={`flex-1 overflow-y-auto ${(sidebarCollapsed && !isHovering) ? 'ml-20' : 'ml-64'} transition-all duration-300`}>
+        {/* Breadcrumbs - Sticky position */}
         {breadcrumbs.length > 0 && (
-          <div className="px-8 py-3 border-b" style={{ 
+          <div className="sticky top-0 z-30 px-8 py-3 border-b backdrop-blur-sm" style={{ 
             borderColor: 'rgba(169, 189, 203, 0.1)',
-            backgroundColor: 'rgba(58, 64, 64, 0.3)'
+            backgroundColor: 'rgba(58, 64, 64, 0.95)'
           }}>
             <div className="flex items-center space-x-2 text-sm">
               {breadcrumbs.map((crumb, index) => (
