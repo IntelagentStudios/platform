@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     if (realProductKey) {
       // Try to fetch real knowledge from database
       try {
-        const knowledge = await prisma.product_custom_knowledge.findUnique({
+        const knowledge = await prisma.custom_knowledge.findUnique({
           where: { product_key: realProductKey }
         });
         
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       
       // Try to save to database
       try {
-        await prisma.product_custom_knowledge.upsert({
+        await prisma.custom_knowledge.upsert({
           where: { product_key: realProductKey },
           update: {
             custom_knowledge: body.knowledge,
