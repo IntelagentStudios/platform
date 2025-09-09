@@ -49,6 +49,61 @@ export async function GET(request: NextRequest) {
  */
 async function fetchConversations(licenseKey: string) {
   try {
+    // For simple auth, return mock conversations
+    if (licenseKey === MASTER_ADMIN_KEY) {
+      return NextResponse.json({
+        conversations: [
+          {
+            id: 'conv-1',
+            session_id: 'session-1',
+            domain: 'example.com',
+            product_key: 'CHATBOT-KEY-MOCK',
+            messages: [
+              { role: 'user', content: 'Hello, I need help with my order', timestamp: new Date('2024-01-15T10:00:00Z') },
+              { role: 'assistant', content: 'I\'d be happy to help you with your order. Can you provide your order number?', timestamp: new Date('2024-01-15T10:00:30Z') },
+              { role: 'user', content: 'It\'s #12345', timestamp: new Date('2024-01-15T10:01:00Z') },
+              { role: 'assistant', content: 'Thank you! I can see your order #12345 is currently being processed and should ship within 2 business days.', timestamp: new Date('2024-01-15T10:01:30Z') }
+            ],
+            first_message_at: '2024-01-15T10:00:00Z',
+            last_message_at: '2024-01-15T10:01:30Z'
+          },
+          {
+            id: 'conv-2',
+            session_id: 'session-2',
+            domain: 'example.com',
+            product_key: 'CHATBOT-KEY-MOCK',
+            messages: [
+              { role: 'user', content: 'What are your business hours?', timestamp: new Date('2024-01-14T14:30:00Z') },
+              { role: 'assistant', content: 'Our business hours are Monday through Friday, 9 AM to 6 PM EST.', timestamp: new Date('2024-01-14T14:30:30Z') }
+            ],
+            first_message_at: '2024-01-14T14:30:00Z',
+            last_message_at: '2024-01-14T14:30:30Z'
+          },
+          {
+            id: 'conv-3',
+            session_id: 'session-3',
+            domain: 'example.com',
+            product_key: 'CHATBOT-KEY-MOCK',
+            messages: [
+              { role: 'user', content: 'How do I reset my password?', timestamp: new Date('2024-01-13T09:15:00Z') },
+              { role: 'assistant', content: 'To reset your password, click on the "Forgot Password" link on the login page. You\'ll receive an email with reset instructions.', timestamp: new Date('2024-01-13T09:15:30Z') },
+              { role: 'user', content: 'Thanks!', timestamp: new Date('2024-01-13T09:16:00Z') },
+              { role: 'assistant', content: 'You\'re welcome! Is there anything else I can help you with?', timestamp: new Date('2024-01-13T09:16:30Z') }
+            ],
+            first_message_at: '2024-01-13T09:15:00Z',
+            last_message_at: '2024-01-13T09:16:30Z'
+          }
+        ],
+        stats: {
+          total: 3,
+          today: 1,
+          week: 2,
+          month: 3
+        },
+        product_key: 'CHATBOT-KEY-MOCK'
+      });
+    }
+
     // Check if master admin - they see all conversations
     const isMasterAdmin = licenseKey === MASTER_ADMIN_KEY;
     

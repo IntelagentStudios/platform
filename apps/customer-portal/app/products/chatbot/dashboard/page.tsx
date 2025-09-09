@@ -871,7 +871,12 @@ function ChatbotDashboardContent() {
                     onChange={(e) => setCustomKnowledge(e.target.value)}
                     placeholder="Enter custom information for your chatbot..."
                     rows={10}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
+                    style={{
+                      backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                      border: '1px solid rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(229, 227, 220)'
+                    }}
                   />
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                     Examples: Business hours, pricing information, FAQs, product details, contact information
@@ -890,7 +895,11 @@ function ChatbotDashboardContent() {
                   <button
                     onClick={saveCustomKnowledge}
                     disabled={savingKnowledge}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      backgroundColor: 'rgb(169, 189, 203)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
                   >
                     {savingKnowledge ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -958,10 +967,10 @@ function ChatbotDashboardContent() {
                     </pre>
                   </div>
                   
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                      <div className="text-sm text-blue-800 dark:text-blue-300">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
                         <p className="font-medium mb-1">Integration Tips:</p>
                         <ul className="list-disc list-inside space-y-1">
                           <li>Add the code just before the closing &lt;/body&gt; tag</li>
@@ -981,7 +990,11 @@ function ChatbotDashboardContent() {
                   </p>
                   <button
                     onClick={() => router.push('/products/chatbot/setup')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 rounded-lg hover:opacity-80"
+                    style={{
+                      backgroundColor: 'rgb(169, 189, 203)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
                   >
                     Configure Chatbot
                   </button>
@@ -1028,33 +1041,56 @@ function ChatbotDashboardContent() {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+            <div className="rounded-lg p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+              <h2 className="text-xl font-semibold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
                 Chatbot Settings
               </h2>
               
               <div className="space-y-6">
                 {/* Widget Appearance */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                     Widget Appearance
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Primary Color
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Widget Button Color
                       </label>
                       <input
                         type="color"
-                        defaultValue="#3B82F6"
-                        className="w-full h-10 rounded border border-gray-300 dark:border-gray-600"
+                        defaultValue="#FFFFFF"
+                        className="w-full h-10 rounded"
+                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Chat Window Header Color
+                      </label>
+                      <input
+                        type="color"
+                        defaultValue="#FFFFFF"
+                        className="w-full h-10 rounded"
+                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Chat Window Background
+                      </label>
+                      <input
+                        type="color"
+                        defaultValue="#FFFFFF"
+                        className="w-full h-10 rounded"
+                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                         Widget Position
                       </label>
-                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white">
+                      <select className="w-full px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}>
                         <option>Bottom Right</option>
                         <option>Bottom Left</option>
                         <option>Top Right</option>
@@ -1066,7 +1102,7 @@ function ChatbotDashboardContent() {
                 
                 {/* Behavior Settings */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                     Behavior
                   </h3>
                   <div className="space-y-3">
@@ -1074,9 +1110,10 @@ function ChatbotDashboardContent() {
                       <input
                         type="checkbox"
                         defaultChecked
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: 'rgb(169, 189, 203)' }}
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
                         Show welcome message on first visit
                       </span>
                     </label>
@@ -1084,18 +1121,20 @@ function ChatbotDashboardContent() {
                       <input
                         type="checkbox"
                         defaultChecked
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: 'rgb(169, 189, 203)' }}
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
                         Play notification sound for new messages
                       </span>
                     </label>
                     <label className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: 'rgb(169, 189, 203)' }}
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
                         Collect visitor email before starting chat
                       </span>
                     </label>
@@ -1104,12 +1143,12 @@ function ChatbotDashboardContent() {
                 
                 {/* Advanced Settings */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                     Advanced
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                         Response Delay (ms)
                       </label>
                       <input
@@ -1121,7 +1160,7 @@ function ChatbotDashboardContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                         Allowed Domains (one per line)
                       </label>
                       <textarea
@@ -1135,7 +1174,7 @@ app.example.com"
                 </div>
                 
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  <button className="px-4 py-2 rounded-lg hover:opacity-80" style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}>
                     Save Settings
                   </button>
                 </div>
