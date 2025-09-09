@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
     if (authCookie?.value === 'authenticated-user-harry') {
       licenseKey = 'INTL-AGNT-BOSS-MODE';
     } else if (authCookie?.value === 'authenticated-test-friend') {
-      licenseKey = 'INTL-8K3M-QB7X-2024';
+      licenseKey = 'INTL-NW1S-QANW-2025';
     } else {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
