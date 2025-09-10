@@ -28,18 +28,37 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     const userId = decoded.userId;
 
-    // Get user
+    // Get user and their license
     const user = await prisma.users.findUnique({
       where: { id: userId }
     });
 
-    if (!user || !user.stripe_customer_id) {
+    if (!user) {
+      return NextResponse.json({ invoices: [] });
+    }
+
+    // Get the user's license to find their subscription
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: user.license_key }
+    });
+
+    if (!license || !license.subscription_id) {
+      return NextResponse.json({ invoices: [] });
+    }
+
+    // Get the subscription from Stripe to find the customer ID
+    let customerId: string | null = null;
+    try {
+      const subscription = await getStripe().subscriptions.retrieve(license.subscription_id);
+      customerId = subscription.customer as string;
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
       return NextResponse.json({ invoices: [] });
     }
 
     // Get invoices from Stripe
     const invoices = await getStripe().invoices.list({
-      customer: user.stripe_customer_id,
+      customer: customerId,
       limit: 100,
     });
 
