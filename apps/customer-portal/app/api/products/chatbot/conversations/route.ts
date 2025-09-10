@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
-// Master admin key constant - Harry's actual license key
-const MASTER_ADMIN_KEY = 'INTL-AGNT-BOSS-MODE';
+// Master admin key is disabled in customer portal
+// Admin functionality should be accessed through /admin routes
+const MASTER_ADMIN_KEY = 'DISABLED-USE-ADMIN-PORTAL';
 import { getProductKey, updateProductKeyUsage } from '@/lib/product-keys-service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';

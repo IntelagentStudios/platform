@@ -37,13 +37,8 @@ export function extractTopic(messages: any[]): string {
     }
   }
   
-  // If no pattern matches, try to extract first few words as topic
-  const words = content.split(' ').slice(0, 3).join(' ');
-  if (words.length > 20) {
-    return words.substring(0, 20) + '...';
-  }
-  
-  return words || 'General Inquiry';
+  // If no pattern matches, return Undefined
+  return 'Undefined';
 }
 
 /**

@@ -600,26 +600,6 @@ function ChatbotDashboardContent() {
               </div>
             </div>
 
-            {/* Domain Distribution */}
-            {stats?.domains && stats.domains.length > 0 && (
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Active Domains
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {stats.domains.map((domain) => (
-                    <div
-                      key={domain}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm"
-                      style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)', color: 'rgb(169, 189, 203)' }}
-                    >
-                      <Globe className="w-3 h-3" />
-                      {domain}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
