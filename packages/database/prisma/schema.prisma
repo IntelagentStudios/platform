@@ -155,27 +155,6 @@ model chatbot_logs {
   @@schema("public")
 }
 
-model skill_logs {
-  id           Int       @id @default(autoincrement())
-  skill_id     String    @db.VarChar(100)
-  skill_name   String    @db.VarChar(255)
-  session_id   String    @db.VarChar(255)
-  user_id      String?   @db.VarChar(255)
-  product_key  String?   @db.VarChar(255)
-  domain       String?   @db.VarChar(255)
-  log_type     String    @db.VarChar(50) // 'request', 'response', 'error'
-  data         Json?
-  timestamp    DateTime? @default(now()) @db.Timestamp(6)
-  created_at   DateTime? @default(now()) @db.Timestamp(6)
-
-  @@index([session_id], map: "idx_skill_logs_session")
-  @@index([skill_id], map: "idx_skill_logs_skill")
-  @@index([product_key], map: "idx_skill_logs_product")
-  @@index([timestamp], map: "idx_skill_logs_timestamp")
-  @@index([domain], map: "idx_skill_logs_domain")
-  @@schema("public")
-}
-
 model credentials_entity {
   name               String               @db.VarChar(128)
   data               String
@@ -374,46 +353,31 @@ model invalid_auth_token {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model licenses {
-  license_key         String         @id @db.VarChar(20)
-  email               String?        @db.VarChar(255)
+  license_key         String    @id @db.VarChar(20)
+  email               String?   @db.VarChar(255)
   created_at          DateTime?
   used_at             DateTime?
-  domain              String?        @db.VarChar(255)
-  site_key            String?        @unique @db.VarChar(255) // Legacy - migrating to product_keys
-  status              String?        @db.VarChar(20)
-  subscription_id     String?        @db.VarChar(255)
+  domain              String?   @db.VarChar(255)
+  site_key            String?   @unique @db.VarChar(255)
+  status              String?   @db.VarChar(20)
+  subscription_id     String?   @db.VarChar(255)
   last_payment_date   DateTime?
   next_billing_date   DateTime?
-  subscription_status String?        @db.VarChar(50)
-  customer_name       String?        @db.VarChar(255)
+  subscription_status String?   @db.VarChar(50)
+  customer_name       String?   @db.VarChar(255)
   last_indexed        DateTime?
-  plan                String?        @db.VarChar(50)
-  products            String[]       @default([])
-  is_pro              Boolean?       @default(false)
-  currency            String?        @default("GBP") @db.VarChar(3)
-  schema_name         String?        @db.VarChar(255)
-  subtotal_pence      Int?           @default(0)
-  discount_pence      Int?           @default(0)
-  
-  product_keys        product_keys[]
-  custom_knowledge    custom_knowledge[]
-  executions          executions[]
-  data_flows          data_flows[]
-  skill_executions    skill_executions[]
-  product_configurations product_configurations[]
-  custom_agents       custom_agents[]
-  platform_subscriptions platform_subscriptions?
-  pro_addon_pence     Int?           @default(0)
-  total_pence         Int?           @default(0)
-  activated_at        DateTime?      @db.Timestamptz(6)
-  suspended_at        DateTime?      @db.Timestamptz(6)
-  cancelled_at        DateTime?      @db.Timestamptz(6)
-  tier                String?        @db.VarChar(50)
-  stripe_subscription_id String?     @db.VarChar(255)
-  stripe_price_id     String?        @db.VarChar(255)
-  current_period_end  DateTime?      @db.Timestamptz(6)
-  user_id             String?        @db.VarChar(36)
-  metadata            Json?
+  plan                String?   @db.VarChar(50)
+  products            String[]  @default([])
+  is_pro              Boolean?  @default(false)
+  currency            String?   @default("GBP") @db.VarChar(3)
+  schema_name         String?   @db.VarChar(255)
+  subtotal_pence      Int?      @default(0)
+  discount_pence      Int?      @default(0)
+  pro_addon_pence     Int?      @default(0)
+  total_pence         Int?      @default(0)
+  activated_at        DateTime? @db.Timestamptz(6)
+  suspended_at        DateTime? @db.Timestamptz(6)
+  cancelled_at        DateTime? @db.Timestamptz(6)
 
   @@index([domain], map: "idx_licenses_domain")
   @@index([email], map: "idx_licenses_email")
@@ -533,7 +497,7 @@ model setup_agent_logs {
   session_id     String   @db.VarChar(255)
   user_message   String?
   agent_response String?
-  site_key       String?  @db.VarChar(255)
+  product_key    String?  @db.VarChar(255)
   domain         String?  @db.VarChar(255)
   timestamp      DateTime @db.Timestamp(6)
 
@@ -577,19 +541,6 @@ model shared_workflow {
   workflow_entity workflow_entity @relation(fields: [workflowId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_daa206a04983d47d0a9c34649ce")
 
   @@id([workflowId, projectId], map: "PK_5ba87620386b847201c9531c58f")
-  @@schema("public")
-}
-
-model site_keys {
-  id         Int       @id @default(autoincrement())
-  site_key   String    @unique @db.VarChar(255)
-  domain     String?   @db.VarChar(255)
-  status     String?   @default("active") @db.VarChar(50)
-  plan       String?   @default("free") @db.VarChar(50)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-
-  @@index([domain], map: "idx_site_keys_domain")
-  @@index([status], map: "idx_site_keys_status")
   @@schema("public")
 }
 
@@ -709,7 +660,7 @@ model user_api_keys {
 model user_sessions {
   id         String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
   user_id    String    @db.VarChar(36)
-  token      String    @unique @db.VarChar(255)
+  token      String    @unique
   ip_address String?   @db.VarChar(45)
   user_agent String?
   expires_at DateTime  @db.Timestamptz(6)
@@ -731,7 +682,6 @@ model users {
   updated_at        DateTime? @default(now()) @db.Timestamptz(6)
   email_verified    Boolean?  @default(false)
   email_verified_at DateTime? @db.Timestamp(6)
-  stripe_customer_id String?  @db.VarChar(255)
 
   @@index([email], map: "idx_users_email")
   @@index([license_key], map: "idx_users_license")
@@ -830,24 +780,14 @@ model workflows_tags {
 }
 
 model product_keys {
-  id               String             @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
-  license_key      String             @db.VarChar(20)
-  product          String             @db.VarChar(50)
-  product_key      String             @unique @db.VarChar(255)
-  
-  // Skills-based configuration
-  assigned_skills  Json?              @default("[]") // Skills assigned to this product instance
-  skill_limits     Json?              @default("{}") // Per-skill usage limits
-  custom_workflows Json?              @default("[]") // Custom skill workflows
-  skill_config     Json?              @default("{}") // Skill-specific configuration
-  
-  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
-  last_used_at     DateTime?          @db.Timestamptz(6)
-  status           String?            @default("active") @db.VarChar(20)
-  metadata         Json?              @default("{}")
-  licenses         licenses           @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  custom_knowledge custom_knowledge[]
-  product_configurations product_configurations[]
+  id           String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key  String    @db.VarChar(20)
+  product      String    @db.VarChar(50)
+  product_key  String    @unique @db.VarChar(255)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  last_used_at DateTime? @db.Timestamptz(6)
+  status       String?   @default("active") @db.VarChar(20)
+  metadata     Json?     @default("{}")
 
   @@index([license_key], map: "idx_product_keys_license")
   @@index([product], map: "idx_product_keys_product")
@@ -856,623 +796,216 @@ model product_keys {
   @@schema("public")
 }
 
-model custom_knowledge {
-  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  product_key   String       @db.VarChar(255)
-  license_key   String       @db.VarChar(20)
-  knowledge_type String      @default("general") @db.VarChar(50)
-  content       String       @db.Text
-  is_active     Boolean      @default(true)
-  expires_at    DateTime?    @db.Timestamptz(6)
-  created_at    DateTime?    @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime?    @default(now()) @db.Timestamptz(6)
-  created_by    String?      @db.VarChar(255)
-  product_keys  product_keys @relation(fields: [product_key], references: [product_key], onDelete: Cascade)
-  licenses      licenses     @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-
-  @@unique([product_key, knowledge_type])
-  @@index([product_key], map: "idx_custom_knowledge_product_key")
-  @@index([license_key], map: "idx_custom_knowledge_license_key")
-  @@index([is_active], map: "idx_custom_knowledge_active")
-  @@schema("public")
-}
-
-// ==========================================
-// EXECUTION MONITORING TABLES
-// ==========================================
-
 model executions {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  license_key       String    @db.VarChar(20)
-  product_key       String?   @db.VarChar(255)
-  user_id           String?   @db.VarChar(255)
-  execution_type    String    @db.VarChar(50) // 'skill', 'workflow', 'api', 'chatbot', 'enrichment'
-  execution_name    String    @db.VarChar(255)
-  status            String    @db.VarChar(20) // 'pending', 'running', 'completed', 'failed', 'cancelled'
-  
-  // Request tracking
-  request_id        String?   @unique @db.VarChar(255)
-  parent_execution_id String? @db.VarChar(36)
-  session_id        String?   @db.VarChar(255)
-  
-  // Timing
-  started_at        DateTime  @default(now()) @db.Timestamptz(6)
-  completed_at      DateTime? @db.Timestamptz(6)
-  duration_ms       Int?
-  
-  // Data tracking
-  input_data        Json?
-  output_data       Json?
-  error_data        Json?
-  metadata          Json?     @default("{}")
-  
-  // Billing & Usage
-  tokens_used       Int?      @default(0)
-  api_calls_made    Int?      @default(0)
-  data_processed_kb Float?    @default(0)
-  cost_usd          Float?    @default(0)
-  
-  // Performance metrics
-  cpu_time_ms       Int?
-  memory_used_mb    Float?
-  
-  // Relationships
-  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  execution_events  execution_events[]
-  execution_metrics execution_metrics[]
-  data_flows        data_flows[]
-  
-  @@index([license_key], map: "idx_executions_license")
-  @@index([user_id], map: "idx_executions_user")
-  @@index([execution_type], map: "idx_executions_type")
-  @@index([status], map: "idx_executions_status")
-  @@index([started_at], map: "idx_executions_started")
-  @@index([session_id], map: "idx_executions_session")
-  @@index([parent_execution_id], map: "idx_executions_parent")
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  run_id         String    @db.Uuid
+  license_key    String    @db.VarChar(255)
+  organization   String?   @db.VarChar(255)
+  plan           Json
+  state          String    @default("planning") @db.VarChar(50)
+  intent         String?
+  input_data     Json?
+  started_at     DateTime? @db.Timestamptz(6)
+  completed_at   DateTime? @db.Timestamptz(6)
+  cost_breakdown Json?     @default("{}")
+  resource_usage Json?     @default("{}")
+  result_summary Json?
+  error_details  Json?
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_executions_license_key")
   @@schema("public")
 }
 
-model execution_events {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  execution_id  String    @db.VarChar(36)
-  event_type    String    @db.VarChar(50) // 'start', 'progress', 'error', 'warning', 'complete', 'data_transfer'
-  event_name    String    @db.VarChar(255)
-  event_data    Json?
-  severity      String?   @db.VarChar(20) // 'info', 'warning', 'error', 'critical'
-  timestamp     DateTime  @default(now()) @db.Timestamptz(6)
-  
-  executions    executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
-  
-  @@index([execution_id], map: "idx_execution_events_execution")
-  @@index([event_type], map: "idx_execution_events_type")
-  @@index([timestamp], map: "idx_execution_events_timestamp")
-  @@schema("public")
-}
-
-model execution_metrics {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  execution_id  String    @db.VarChar(36)
-  metric_name   String    @db.VarChar(100)
-  metric_value  Float
-  metric_unit   String?   @db.VarChar(50)
-  recorded_at   DateTime  @default(now()) @db.Timestamptz(6)
-  
-  executions    executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
-  
-  @@index([execution_id], map: "idx_execution_metrics_execution")
-  @@index([metric_name], map: "idx_execution_metrics_name")
-  @@index([recorded_at], map: "idx_execution_metrics_recorded")
-  @@schema("public")
-}
-
-model data_flows {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  execution_id    String    @db.VarChar(36)
-  license_key     String    @db.VarChar(20)
-  
-  // Flow tracking
-  source_service  String    @db.VarChar(100)
-  target_service  String    @db.VarChar(100)
-  data_type       String    @db.VarChar(100) // 'user_input', 'api_response', 'db_query', 'llm_prompt', 'llm_response'
-  
-  // Data details
-  data_size_bytes Int?
-  data_hash       String?   @db.VarChar(255) // For integrity checking
-  data_sample     Json?     // Sample of the data for inspection
-  
-  // Security & Compliance
-  contains_pii    Boolean   @default(false)
-  encryption_used Boolean   @default(true)
-  data_classification String? @db.VarChar(50) // 'public', 'internal', 'confidential', 'restricted'
-  
-  // Timing
-  transferred_at  DateTime  @default(now()) @db.Timestamptz(6)
-  
-  executions      executions @relation(fields: [execution_id], references: [id], onDelete: Cascade)
-  licenses        licenses   @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  
-  @@index([execution_id], map: "idx_data_flows_execution")
-  @@index([license_key], map: "idx_data_flows_license")
-  @@index([source_service], map: "idx_data_flows_source")
-  @@index([target_service], map: "idx_data_flows_target")
-  @@index([transferred_at], map: "idx_data_flows_transferred")
-  @@schema("public")
-}
-
-// Skills system tables
 model skills {
-  id              String    @id @db.VarChar(100)
-  name            String    @db.VarChar(255)
-  description     String    @db.Text
-  category        String    @db.VarChar(50)
-  version         String    @db.VarChar(20)
-  author          String    @db.VarChar(100)
-  active          Boolean   @default(true)
-  is_premium      Boolean   @default(false)
-  
-  // Product applicability
-  applicable_products Json?  @default("[\"all\"]") // Which products can use this skill
-  is_core_skill   Boolean   @default(false) // Core skills cannot be removed
-  skill_tier      String    @default("standard") @db.VarChar(50) // 'basic', 'standard', 'premium', 'enterprise'
-  management_agent String?   @db.VarChar(50) // Which agent manages this skill
-  
-  // Configuration and requirements
-  configuration   Json      @default("{}")
-  required_params Json?
-  optional_params Json?
-  dependencies    Json?     @default("[]") // Other skills this depends on
-  
-  // Resource estimates
-  token_usage_estimate Int? @default(100) // Estimated tokens per execution
-  execution_time_ms Int?    @default(1000) // Estimated execution time
-  
-  // Pricing impact
-  base_cost_pence Int       @default(0) // Additional cost for using this skill
-  value_multiplier Decimal  @default(1.0) @db.Decimal(3, 2) // Value impact
-  
-  created_at      DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
-  
-  skill_executions skill_executions[]
-  skill_product_mappings skill_product_mappings[]
-  
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                String    @db.VarChar(255)
+  version             String    @db.VarChar(50)
+  category            String    @db.VarChar(100)
+  description         String?
+  author              String?   @db.VarChar(255)
+  metadata            Json      @default("{}")
+  contract            Json      @default("{}")
+  requirements        Json      @default("{}")
+  implementation_type String    @db.VarChar(50)
+  implementation_ref  String
+  configuration       Json?     @default("{}")
+  tags                String[]  @default([])
+  certified           Boolean?  @default(false)
+  active              Boolean?  @default(true)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([name, version])
   @@index([category], map: "idx_skills_category")
-  @@index([active], map: "idx_skills_active")
-  @@index([skill_tier], map: "idx_skills_tier")
-  @@index([management_agent], map: "idx_skills_agent")
   @@schema("public")
 }
 
 model skill_executions {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  skill_id        String    @db.VarChar(100)
-  license_key     String    @db.VarChar(20)
-  user_id         String?   @db.VarChar(255)
-  tenant_id       String?   @db.VarChar(100)
-  
-  // Execution details
-  status          String    @db.VarChar(20) // 'pending', 'running', 'completed', 'failed'
-  input_params    Json?
-  output_result   Json?
-  error_message   String?   @db.Text
-  
-  // Timing
-  started_at      DateTime  @default(now()) @db.Timestamptz(6)
-  completed_at    DateTime? @db.Timestamptz(6)
-  execution_time_ms Int?
-  
-  // Usage tracking
-  tokens_used     Int?      @default(0)
-  api_calls_made  Int?      @default(0)
-  
-  skills          skills    @relation(fields: [skill_id], references: [id], onDelete: Cascade)
-  licenses        licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  
-  @@index([skill_id], map: "idx_skill_executions_skill")
-  @@index([license_key], map: "idx_skill_executions_license")
-  @@index([user_id], map: "idx_skill_executions_user")
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  execution_id        String    @db.Uuid
+  skill_id            String    @db.Uuid
+  node_id             String    @db.VarChar(50)
+  status              String    @default("pending") @db.VarChar(50)
+  started_at          DateTime? @db.Timestamptz(6)
+  completed_at        DateTime? @db.Timestamptz(6)
+  input_data          Json?
+  input_hash          String?   @db.VarChar(64)
+  output_data         Json?
+  output_location     String?
+  cost_units          Decimal?  @default(0) @db.Decimal(10, 4)
+  retry_count         Int?      @default(0)
+  error_details       Json?
+  performance_metrics Json?     @default("{}")
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+
   @@index([status], map: "idx_skill_executions_status")
-  @@index([started_at], map: "idx_skill_executions_started")
+  @@index([skill_id], map: "idx_skill_executions_skill_id")
   @@schema("public")
 }
 
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model execution_cache {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  cache_key       String    @unique @db.VarChar(512)
+  skill_name      String    @db.VarChar(255)
+  skill_version   String    @db.VarChar(50)
+  input_hash      String    @db.VarChar(64)
+  output_data     Json?
+  output_location String?
+  metadata        Json?     @default("{}")
+  hit_count       Int?      @default(0)
+  last_accessed   DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at      DateTime  @db.Timestamptz(6)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
 
-// Vector embeddings for in-house vector store
-model vector_embeddings {
-  id          String    @id @db.VarChar(255)
-  collection  String    @db.VarChar(100)
-  embedding   Json      // Stored as JSONB in PostgreSQL
-  metadata    Json?     @default("{}")
-  dimension   Int
-  created_at  DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime? @default(now()) @db.Timestamptz(6)
-
-  @@index([collection], map: "idx_vector_collection")
-  @@index([created_at], map: "idx_vector_created")
+  @@index([expires_at], map: "idx_execution_cache_expires")
+  @@index([cache_key], map: "idx_execution_cache_key")
+  @@index([last_accessed(sort: Desc)], map: "idx_execution_cache_last_accessed")
+  @@index([skill_name, skill_version], map: "idx_execution_cache_skill")
   @@schema("public")
 }
 
-// ==========================================
-// MODULAR PRODUCT ARCHITECTURE V2 TABLES
-// ==========================================
+model product_keys_lookup {
+  id         Int       @id(map: "site_keys_pkey") @default(autoincrement())
+  site_key   String    @unique(map: "site_keys_site_key_key") @db.VarChar(255)
+  domain     String?   @db.VarChar(255)
+  status     String?   @default("active") @db.VarChar(50)
+  plan       String?   @default("free") @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
 
-// Configuration for customized products
-model product_configurations {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  product_key         String    @unique @db.VarChar(255)
-  license_key         String    @db.VarChar(20)
-  
-  // Product details
-  base_product        String    @db.VarChar(50) // 'chatbot', 'sales_outreach', 'onboarding'
-  customization_type  String    @db.VarChar(100) // e.g., 'support_bot', 'lead_generator', 'employee_onboarding'
-  custom_name         String?   @db.VarChar(255)
-  description         String?   @db.Text
-  
-  // Configuration
-  skills_enabled      Json      @default("[]") // Array of skill IDs
-  custom_settings     Json      @default("{}") // Product-specific settings
-  ui_preferences      Json?     @default("{}") // UI customization
-  integrations        Json?     @default("[]") // Third-party integrations
-  
-  // Complexity and pricing
-  complexity_score    Int       @default(1) // 1-10 scale
-  estimated_tokens    Int       @default(100000) // Monthly estimate
-  base_price_pence    Int       // Base monthly price in pence
-  addon_price_pence   Int       @default(0) // Additional features price
-  total_price_pence   Int       // Total monthly price
-  
-  // Status
-  status              String    @default("draft") @db.VarChar(20) // 'draft', 'active', 'paused', 'cancelled'
-  activated_at        DateTime? @db.Timestamptz(6)
-  paused_at           DateTime? @db.Timestamptz(6)
-  cancelled_at        DateTime? @db.Timestamptz(6)
-  
-  // Metadata
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  created_by          String?   @db.VarChar(255)
-  
-  product_keys        product_keys @relation(fields: [product_key], references: [product_key], onDelete: Cascade)
-  licenses            licenses     @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  
-  @@index([license_key], map: "idx_product_config_license")
-  @@index([base_product], map: "idx_product_config_base")
-  @@index([status], map: "idx_product_config_status")
+  @@index([domain], map: "idx_site_keys_domain")
+  @@index([status], map: "idx_site_keys_status")
   @@schema("public")
 }
 
-// Custom agents built by customers
-model custom_agents {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  license_key         String    @db.VarChar(20)
-  
-  // Agent details
-  agent_name          String    @db.VarChar(255)
-  agent_key           String    @unique @db.VarChar(255) // Generated unique key
-  description         String?   @db.Text
-  icon_url            String?   @db.VarChar(500)
-  category            String?   @db.VarChar(100) // User-defined category
-  
-  // Build configuration
-  build_approach      String    @db.VarChar(50) // 'use_case' or 'skills_based'
-  use_case_template   String?   @db.VarChar(100) // If use_case approach
-  selected_skills     Json      @default("[]") // Array of skill IDs
-  skill_count         Int       @default(0)
-  
-  // Agent configuration
-  configuration       Json      @default("{}") // Complete agent config
-  triggers            Json?     @default("[]") // Event triggers
-  schedules           Json?     @default("[]") // Scheduled runs
-  webhooks            Json?     @default("[]") // Webhook endpoints
-  
-  // Complexity and pricing
-  complexity_score    Int       @default(1) // 1-10 scale
-  estimated_tokens    Int       @default(100000) // Monthly estimate
-  base_price_pence    Int       @default(79900) // Starting at £799
-  skill_price_pence   Int       @default(0) // Skills × £20
-  total_price_pence   Int       // Total monthly price
-  
-  // Usage tracking
-  execution_count     Int       @default(0)
-  last_executed_at    DateTime? @db.Timestamptz(6)
-  total_tokens_used   Int       @default(0)
-  
-  // Status
-  status              String    @default("draft") @db.VarChar(20) // 'draft', 'testing', 'active', 'paused'
-  published_at        DateTime? @db.Timestamptz(6)
-  
-  // Metadata
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  created_by          String?   @db.VarChar(255)
-  
-  licenses            licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  
-  @@index([license_key], map: "idx_custom_agents_license")
-  @@index([status], map: "idx_custom_agents_status")
-  @@index([build_approach], map: "idx_custom_agents_approach")
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model skill_audit_log {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  event_type   String    @db.VarChar(50)
+  execution_id String?   @db.Uuid
+  skill_id     String?   @db.Uuid
+  license_key  String?   @db.VarChar(255)
+  user_id      String?   @db.VarChar(255)
+  event_data   Json
+  ip_address   String?   @db.Inet
+  user_agent   String?
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at(sort: Desc)], map: "idx_skill_audit_created")
+  @@index([event_type], map: "idx_skill_audit_event_type")
+  @@index([execution_id], map: "idx_skill_audit_execution")
+  @@index([license_key], map: "idx_skill_audit_license")
+  @@index([skill_id], map: "idx_skill_audit_skill")
   @@schema("public")
 }
 
-// Platform intelligence subscriptions
-model platform_subscriptions {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  license_key         String    @unique @db.VarChar(20)
-  
-  // Subscription details
-  subscription_tier   String    @default("standard") @db.VarChar(50) // 'standard', 'premium', 'enterprise'
-  monthly_price_pence Int       @default(99900) // £999 base
-  
-  // Connected products
-  products_connected  Json      @default("[]") // Array of product_keys
-  product_count       Int       @default(0)
-  
-  // Intelligence features
-  intelligence_features Json    @default("{\"unified_analytics\":true,\"cross_product_insights\":true,\"predictive_analytics\":false,\"workflow_orchestration\":true,\"intelligent_routing\":true,\"custom_reporting\":false,\"api_access\":false}")
-  
-  // Data sharing settings
-  unified_data        Boolean   @default(true)
-  data_sync_frequency String    @default("realtime") @db.VarChar(50) // 'realtime', 'hourly', 'daily'
-  
-  // Usage limits
-  max_products        Int       @default(10)
-  max_workflows       Int       @default(100)
-  max_api_calls       Int       @default(10000)
-  
-  // Status
-  status              String    @default("active") @db.VarChar(20) // 'active', 'paused', 'cancelled'
-  activated_at        DateTime  @default(now()) @db.Timestamptz(6)
-  expires_at          DateTime? @db.Timestamptz(6)
-  
-  // Metadata
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  
-  licenses            licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
-  
-  @@index([status], map: "idx_platform_sub_status")
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model skill_combinations {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name              String    @unique @db.VarChar(255)
+  description       String?
+  category          String?   @db.VarChar(100)
+  skills            String[]  @db.Uuid
+  connection_map    Json
+  validated         Boolean?  @default(false)
+  performance_stats Json?     @default("{}")
+  usage_count       Int?      @default(0)
+  created_by        String?   @db.VarChar(255)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([name], map: "idx_skill_combinations_name")
+  @@index([skills], map: "idx_skill_combinations_skills", type: Gin)
   @@schema("public")
 }
 
-// Mapping of skills to products
-model skill_product_mappings {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  skill_id            String    @db.VarChar(100)
-  base_product        String    @db.VarChar(50) // 'chatbot', 'sales_outreach', 'onboarding'
-  
-  // Categorization
-  is_core             Boolean   @default(false) // Core to the product
-  is_optional         Boolean   @default(true) // Can be added/removed
-  skill_category      String?   @db.VarChar(100) // Grouping for UI
-  
-  // Pricing impact
-  price_impact_pence  Int       @default(2000) // £20 per skill default
-  complexity_impact   Int       @default(1) // 1-3 impact on complexity
-  
-  // Usage estimates
-  avg_tokens_per_use  Int       @default(100)
-  avg_calls_per_month Int       @default(1000)
-  
-  // Metadata
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  
-  skills              skills    @relation(fields: [skill_id], references: [id], onDelete: Cascade)
-  
-  @@unique([skill_id, base_product])
-  @@index([base_product], map: "idx_skill_product_base")
-  @@index([skill_category], map: "idx_skill_product_category")
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model skill_metrics {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  skill_id          String    @db.Uuid
+  license_key       String?   @db.VarChar(255)
+  metric_date       DateTime  @db.Date
+  execution_count   Int?      @default(0)
+  success_count     Int?      @default(0)
+  failure_count     Int?      @default(0)
+  total_duration_ms BigInt?   @default(0)
+  avg_duration_ms   Int?      @default(0)
+  min_duration_ms   Int?
+  max_duration_ms   Int?
+  total_cost_units  Decimal?  @default(0) @db.Decimal(12, 4)
+  error_types       Json?     @default("{}")
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([skill_id, license_key, metric_date])
+  @@index([metric_date(sort: Desc)], map: "idx_skill_metrics_date")
+  @@index([license_key], map: "idx_skill_metrics_license")
+  @@index([skill_id], map: "idx_skill_metrics_skill")
+  @@index([skill_id, metric_date(sort: Desc)], map: "idx_skill_metrics_skill_date")
   @@schema("public")
 }
 
-// Dynamic skill-based pricing rules
-model skill_pricing_rules {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  rule_name           String    @db.VarChar(255)
-  rule_type           String    @db.VarChar(50) // 'skill_count', 'skill_complexity', 'skill_usage', 'skill_tier'
-  
-  // Skill conditions
-  skill_id            String?   @db.VarChar(100) // Specific skill or null for all
-  skill_category      String?   @db.VarChar(100) // Apply to skill category
-  min_skill_count     Int?      // Minimum number of skills
-  max_skill_count     Int?      // Maximum number of skills
-  
-  // Pricing impact
-  price_per_skill     Int       @default(2000) // £20 per skill default
-  complexity_multiplier Decimal @default(1.0) @db.Decimal(3, 2)
-  
-  // Status
-  is_active           Boolean   @default(true)
-  valid_from          DateTime  @default(now()) @db.Timestamptz(6)
-  valid_until         DateTime? @db.Timestamptz(6)
-  
-  // Metadata
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  
-  @@index([rule_type], map: "idx_skill_pricing_type")
-  @@index([skill_category], map: "idx_skill_pricing_category")
-  @@index([is_active], map: "idx_skill_pricing_active")
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tenant_skill_access {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  license_key   String    @db.VarChar(255)
+  skill_id      String    @db.Uuid
+  enabled       Boolean?  @default(true)
+  custom_limits Json?     @default("{}")
+  custom_config Json?     @default("{}")
+  granted_at    DateTime? @default(now()) @db.Timestamptz(6)
+  granted_by    String?   @db.VarChar(255)
+  expires_at    DateTime? @db.Timestamptz(6)
+
+  @@unique([license_key, skill_id])
+  @@index([license_key], map: "idx_tenant_skill_access_license")
+  @@index([skill_id], map: "idx_tenant_skill_access_skill")
   @@schema("public")
 }
 
-// Sales Campaign Management
-model sales_campaigns {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  license_key         String    @db.VarChar(20)
-  product_key         String    @db.VarChar(255)
-  
-  // Campaign details
-  name                String    @db.VarChar(255)
-  description         String?   @db.Text
-  status              String    @default("draft") @db.VarChar(50) // draft, active, paused, completed
-  campaign_type       String    @db.VarChar(100) // cold_outreach, nurture, follow_up, etc.
-  
-  // Target settings
-  target_industry     String?   @db.VarChar(100)
-  target_company_size String?   @db.VarChar(50)
-  target_personas     Json?     // Array of target personas
-  daily_send_limit    Int       @default(50)
-  
-  // Email settings
-  from_email          String?   @db.VarChar(255)
-  from_name           String?   @db.VarChar(255)
-  reply_to_email      String?   @db.VarChar(255)
-  email_templates     Json?     // Array of email templates with sequences
-  
-  // Performance metrics
-  total_leads         Int       @default(0)
-  leads_contacted     Int       @default(0)
-  emails_sent         Int       @default(0)
-  emails_opened       Int       @default(0)
-  emails_clicked      Int       @default(0)
-  responses_received  Int       @default(0)
-  meetings_booked     Int       @default(0)
-  deals_created       Int       @default(0)
-  
-  // Scheduling
-  start_date          DateTime? @db.Date
-  end_date            DateTime? @db.Date
-  send_times          Json?     // Preferred send times
-  timezone            String    @default("UTC") @db.VarChar(50)
-  
-  // Integration settings
-  crm_integration     String?   @db.VarChar(50) // salesforce, hubspot, etc.
-  crm_campaign_id     String?   @db.VarChar(255)
-  webhook_url         String?   @db.Text
-  
-  // Skills used
-  enabled_skills      Json?     // Array of skill IDs used in this campaign
-  
-  // Timestamps
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  last_activity_at    DateTime? @db.Timestamptz(6)
-  
-  // Relations
-  leads               sales_leads[]
-  activities          sales_activities[]
-  
-  @@index([license_key], map: "idx_campaign_license")
-  @@index([status], map: "idx_campaign_status")
-  @@index([campaign_type], map: "idx_campaign_type")
-  @@schema("public")
-}
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model workflow_templates {
+  id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name               String    @unique @db.VarChar(255)
+  description        String?
+  category           String?   @db.VarChar(100)
+  intent_patterns    String[]
+  plan_template      Json
+  required_inputs    Json?     @default("{}")
+  expected_outputs   Json?     @default("{}")
+  estimated_duration Int?
+  estimated_cost     Decimal?  @db.Decimal(10, 4)
+  tags               String[]  @default([])
+  active             Boolean?  @default(true)
+  usage_count        Int?      @default(0)
+  success_rate       Decimal?  @db.Decimal(5, 2)
+  created_by         String?   @db.VarChar(255)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
 
-// Sales Leads Management
-model sales_leads {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  campaign_id         String    @db.VarChar(36)
-  license_key         String    @db.VarChar(20)
-  
-  // Lead information
-  email               String    @db.VarChar(255)
-  first_name          String?   @db.VarChar(100)
-  last_name           String?   @db.VarChar(100)
-  full_name           String?   @db.VarChar(255)
-  phone               String?   @db.VarChar(50)
-  linkedin_url        String?   @db.Text
-  
-  // Company information
-  company_name        String?   @db.VarChar(255)
-  company_domain      String?   @db.VarChar(255)
-  job_title           String?   @db.VarChar(255)
-  department          String?   @db.VarChar(100)
-  company_size        String?   @db.VarChar(50)
-  industry            String?   @db.VarChar(100)
-  company_linkedin    String?   @db.Text
-  
-  // Lead status
-  status              String    @default("new") @db.VarChar(50) // new, contacted, responded, qualified, meeting_scheduled, opportunity, lost
-  lead_score          Int       @default(0) // 0-100
-  is_verified         Boolean   @default(false)
-  is_bounced          Boolean   @default(false)
-  is_unsubscribed     Boolean   @default(false)
-  
-  // Engagement metrics
-  emails_sent         Int       @default(0)
-  emails_opened       Int       @default(0)
-  emails_clicked      Int       @default(0)
-  last_email_sent     DateTime? @db.Timestamptz(6)
-  last_email_opened   DateTime? @db.Timestamptz(6)
-  last_response       DateTime? @db.Timestamptz(6)
-  
-  // Enrichment data
-  enrichment_data     Json?     // Additional data from enrichment services
-  social_profiles     Json?     // Twitter, Facebook, etc.
-  technologies_used   Json?     // Tech stack of the company
-  
-  // Custom fields
-  custom_fields       Json?     // User-defined custom fields
-  tags                Json?     // Array of tags
-  notes               String?   @db.Text
-  
-  // CRM sync
-  crm_id              String?   @db.VarChar(255)
-  crm_type            String?   @db.VarChar(50)
-  crm_sync_status     String?   @db.VarChar(50)
-  crm_last_synced     DateTime? @db.Timestamptz(6)
-  
-  // Timestamps
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime  @default(now()) @db.Timestamptz(6)
-  contacted_at        DateTime? @db.Timestamptz(6)
-  qualified_at        DateTime? @db.Timestamptz(6)
-  
-  // Relations
-  campaign            sales_campaigns @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  activities          sales_activities[]
-  
-  @@unique([campaign_id, email])
-  @@index([license_key], map: "idx_lead_license")
-  @@index([status], map: "idx_lead_status")
-  @@index([lead_score], map: "idx_lead_score")
-  @@index([email], map: "idx_lead_email")
-  @@schema("public")
-}
-
-// Sales Activity Tracking
-model sales_activities {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.VarChar(36)
-  campaign_id         String    @db.VarChar(36)
-  lead_id             String    @db.VarChar(36)
-  license_key         String    @db.VarChar(20)
-  
-  // Activity details
-  activity_type       String    @db.VarChar(50) // email_sent, email_opened, email_clicked, response_received, meeting_scheduled, call_made, etc.
-  activity_subtype    String?   @db.VarChar(50) // cold_email, follow_up, nurture, etc.
-  
-  // Email specific
-  email_subject       String?   @db.VarChar(500)
-  email_template_id   String?   @db.VarChar(100)
-  email_content       String?   @db.Text
-  email_sequence_num  Int?      // Which email in the sequence
-  
-  // Response/Interaction
-  response_content    String?   @db.Text
-  sentiment_score     Decimal?  @db.Decimal(3, 2) // -1 to 1
-  intent_detected     String?   @db.VarChar(100) // interested, not_interested, need_info, etc.
-  
-  // Meeting specific
-  meeting_date        DateTime? @db.Timestamptz(6)
-  meeting_duration    Int?      // in minutes
-  meeting_outcome     String?   @db.VarChar(255)
-  
-  // Metadata
-  skill_used          String?   @db.VarChar(100) // Which skill was used
-  automation_id       String?   @db.VarChar(100) // ID of automation that triggered this
-  metadata            Json?     // Additional activity data
-  
-  // Timestamps
-  activity_date       DateTime  @default(now()) @db.Timestamptz(6)
-  created_at          DateTime  @default(now()) @db.Timestamptz(6)
-  
-  // Relations
-  campaign            sales_campaigns @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  lead                sales_leads @relation(fields: [lead_id], references: [id], onDelete: Cascade)
-  
-  @@index([license_key], map: "idx_activity_license")
-  @@index([activity_type], map: "idx_activity_type")
-  @@index([activity_date], map: "idx_activity_date")
-  @@index([lead_id], map: "idx_activity_lead")
+  @@index([category], map: "idx_workflow_templates_category")
+  @@index([name], map: "idx_workflow_templates_name")
+  @@index([tags], map: "idx_workflow_templates_tags", type: Gin)
   @@schema("public")
 }

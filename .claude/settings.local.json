@@ -96,7 +96,9 @@
       "Bash(npx prisma generate:*)",
       "Bash(npx depcheck:*)",
       "WebFetch(domain:dashboard.intelagentstudios.com)",
-      "Bash(npx prisma migrate dev:*)"
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npx prisma:*)"
     ],
     "deny": [],
     "ask": []

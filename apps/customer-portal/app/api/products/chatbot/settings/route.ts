@@ -100,7 +100,8 @@ async function fetchSettings(licenseKey: string) {
     }
     
     // Get settings from metadata or return defaults
-    const settings = productKey.metadata?.settings || getDefaultSettings();
+    const metadata = productKey.metadata as any;
+    const settings = metadata?.settings || getDefaultSettings();
     
     return NextResponse.json({ 
       settings,
@@ -133,13 +134,14 @@ async function saveSettings(licenseKey: string, settings: any) {
     }
     
     // Update settings in metadata
+    const currentMetadata = (productKey.metadata as any) || {};
     const updatedProductKey = await prisma.product_keys.update({
       where: {
         product_key: productKey.product_key
       },
       data: {
         metadata: {
-          ...productKey.metadata,
+          ...currentMetadata,
           settings: {
             ...getDefaultSettings(),
             ...settings
@@ -172,10 +174,11 @@ async function saveSettings(licenseKey: string, settings: any) {
       }
     }
     
+    const updatedMetadata = updatedProductKey.metadata as any;
     return NextResponse.json({ 
       success: true,
       message: 'Settings saved successfully',
-      settings: updatedProductKey.metadata?.settings
+      settings: updatedMetadata?.settings
     });
   } catch (error) {
     console.error('Failed to save settings:', error);
