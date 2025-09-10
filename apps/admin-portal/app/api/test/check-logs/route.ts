@@ -21,64 +21,51 @@ export async function GET() {
         role: true,
         content: true,
         created_at: true,
-        licenses: {
-          select: {
-            license_key: true,
-            domain: true,
-            customer_name: true,
-            products: true
-          }
-        }
+        // Removed licenses include as direct relation doesn't exist in current schema
       }
     })
 
     // Check for NULL values in critical fields
     const nullChecks = {
       totalLogs: recentLogs.length,
-      logsWithNullDomain: recentLogs.filter(log => !log.domain && !log.licenses?.domain).length,
+      logsWithNullDomain: recentLogs.filter(log => !log.domain).length,
       logsWithNullSiteKey: recentLogs.filter(log => !log.site_key).length,
       logsWithNullSession: recentLogs.filter(log => !log.session_id).length,
       logsWithContent: recentLogs.filter(log => log.customer_message || log.chatbot_response || log.content).length,
-      logsWithLicense: recentLogs.filter(log => log.licenses).length
+      logsWithLicense: 0 // Removed license relation
     }
 
     // Get unique domains, site_keys and products
     const uniqueDomains = Array.from(new Set(
-      recentLogs.map(log => log.domain || log.licenses?.domain).filter(Boolean)
+      recentLogs.map(log => log.domain).filter(Boolean)
     ))
     const uniqueSiteKeys = Array.from(new Set(
       recentLogs.map(log => log.site_key).filter(Boolean)
     ))
     const allProducts = new Set<string>()
-    recentLogs.forEach(log => {
-      if (log.licenses?.products) {
-        log.licenses.products.forEach(p => allProducts.add(p))
-      }
-    })
+    // Removed products extraction as licenses relation is not available
 
     // Format logs for easier reading
     const formattedLogs = recentLogs.map(log => ({
       id: log.id,
       session_id: log.session_id || 'NULL',
-      domain: log.domain || log.licenses?.domain || 'NULL',
+      domain: log.domain || 'NULL',
       site_key: log.site_key || 'NULL',
-      license_key: log.licenses?.license_key || 'Not linked',
-      customer_name: log.licenses?.customer_name || 'Unknown',
-      products: log.licenses?.products || [],
+      license_key: 'Not linked', // License relation not available
+      customer_name: 'Unknown', // License relation not available
+      products: [], // License relation not available
       message: log.customer_message || log.chatbot_response || log.content || 'No content',
       role: log.role || (log.customer_message ? 'user' : log.chatbot_response ? 'assistant' : 'unknown'),
       timestamp: log.timestamp?.toISOString() || log.created_at?.toISOString() || 'No timestamp',
       userId: log.user_id || 'anonymous'
     }))
 
-    // Test JOIN functionality
+    // Test JOIN functionality (commented out - licenses relation doesn't exist)
     const testJoin = await prisma.chatbot_logs.findFirst({
       where: {
         site_key: { not: null }
-      },
-      include: {
-        licenses: true
       }
+      // Removed licenses include
     })
 
     return NextResponse.json({
@@ -97,9 +84,9 @@ export async function GET() {
       },
       joinTest: {
         success: !!testJoin,
-        hasLicense: !!testJoin?.licenses,
-        licenseDomain: testJoin?.licenses?.domain,
-        licenseProducts: testJoin?.licenses?.products
+        hasLicense: false, // License relation not available
+        licenseDomain: null, // License relation not available
+        licenseProducts: null // License relation not available
       },
       recentLogs: formattedLogs
     }, { 

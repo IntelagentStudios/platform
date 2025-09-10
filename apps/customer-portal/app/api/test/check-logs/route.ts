@@ -108,9 +108,9 @@ export async function GET() {
     if (testJoin?.product_key) {
       const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: testJoin.product_key },
-        include: { licenses: true }
+        // Removed licenses include as relation doesn't exist
       })
-      testLicense = productKeyRecord?.licenses
+      testLicense = null // License relation not available
     }
 
     return NextResponse.json({

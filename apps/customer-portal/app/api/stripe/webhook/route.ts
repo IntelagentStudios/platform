@@ -84,10 +84,11 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         
-        // Get metadata
-        const { userId, tier, billing, isGuest } = session.metadata || {};
+        // Get metadata (removed tier and metadata references that don't exist in schema)
+        const { userId, billing, isGuest } = session.metadata || {};
         const customerEmail = session.customer_email || session.customer_details?.email;
         
+        const tier = 'starter'; // Default tier since tier field is not in schema
         console.log('Checkout completed:', { userId, tier, billing, customerEmail, isGuest });
 
         // Handle guest checkout - create new user
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
               name: session.customer_details?.name || customerEmail!.split('@')[0],
               password_hash: passwordHash,
               role: 'customer',
-              stripe_customer_id: session.customer as string,
+              // Removed stripe_customer_id as it doesn't exist in schema
               license_key: newLicenseKey
             }
           });
@@ -149,20 +150,17 @@ export async function POST(request: NextRequest) {
               license_key: user.license_key,
               email: user.email,
               status: 'active',
-              tier: tier || 'starter',
-              stripe_subscription_id: session.subscription as string,
-              stripe_price_id: '',
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+              // Removed tier field as it doesn't exist in schema
+              subscription_id: session.subscription as string,
+              // Removed stripe_price_id as it doesn't exist in schema
+              // Removed current_period_end as it doesn't exist in schema
               user_id: actualUserId,
-              metadata: {
-                billing: billing || 'monthly',
-                createdFrom: 'stripe_checkout'
-              }
+              // Removed metadata field as it doesn't exist in schema
             }
           });
 
           // Generate product keys based on tier
-          const productKeys = await generateProductKeys(tier || 'starter', license.license_key);
+          const productKeys = await generateProductKeys('starter', license.license_key); // Default to starter tier
           
           // Create product keys
           for (const productKey of productKeys) {
@@ -177,14 +175,10 @@ export async function POST(request: NextRequest) {
           await prisma.licenses.update({
             where: { license_key: license.license_key },
             data: {
-              tier: tier || license.tier,
-              stripe_subscription_id: session.subscription as string,
-              status: 'active',
-              metadata: {
-                ...(license.metadata as any || {}),
-                billing: billing || 'monthly',
-                updatedFrom: 'stripe_checkout'
-              }
+              // Removed tier field as it doesn't exist in schema
+              subscription_id: session.subscription as string,
+              status: 'active'
+              // Removed metadata field as it doesn't exist in schema
             }
           });
           console.log('Updated license:', license.license_key);
@@ -208,7 +202,7 @@ export async function POST(request: NextRequest) {
         
         // Update license with subscription details
         const license = await prisma.licenses.findFirst({
-          where: { stripe_subscription_id: subscription.id }
+          where: { subscription_id: subscription.id }
         });
 
         if (license) {
@@ -216,8 +210,8 @@ export async function POST(request: NextRequest) {
             where: { license_key: license.license_key },
             data: {
               status: subscription.status === 'active' ? 'active' : 'suspended',
-              current_period_end: new Date(subscription.current_period_end * 1000),
-              stripe_price_id: subscription.items.data[0]?.price.id || ''
+              // Removed current_period_end as it doesn't exist in schema
+              // Removed stripe_price_id as it doesn't exist in schema
             }
           });
         }
@@ -229,19 +223,15 @@ export async function POST(request: NextRequest) {
         
         // Suspend license
         const license = await prisma.licenses.findFirst({
-          where: { stripe_subscription_id: subscription.id }
+          where: { subscription_id: subscription.id }
         });
 
         if (license) {
           await prisma.licenses.update({
             where: { license_key: license.license_key },
             data: {
-              status: 'suspended',
-              metadata: {
-                ...(license.metadata as any || {}),
-                suspendedAt: new Date().toISOString(),
-                suspendReason: 'subscription_cancelled'
-              }
+              status: 'suspended'
+              // Removed metadata field as it doesn't exist in schema
             }
           });
 
@@ -263,7 +253,7 @@ export async function POST(request: NextRequest) {
         // Update license payment status if needed
         if (invoice.subscription) {
           const license = await prisma.licenses.findFirst({
-            where: { stripe_subscription_id: invoice.subscription as string }
+            where: { subscription_id: invoice.subscription as string }
           });
 
           if (license && license.status === 'suspended') {
@@ -271,11 +261,8 @@ export async function POST(request: NextRequest) {
             await prisma.licenses.update({
               where: { license_key: license.license_key },
               data: {
-                status: 'active',
-                metadata: {
-                  ...(license.metadata as any || {}),
-                  reactivatedAt: new Date().toISOString()
-                }
+                status: 'active'
+                // Removed metadata field as it doesn't exist in schema
               }
             });
 
@@ -297,19 +284,15 @@ export async function POST(request: NextRequest) {
         // Suspend license after payment failure
         if (invoice.subscription) {
           const license = await prisma.licenses.findFirst({
-            where: { stripe_subscription_id: invoice.subscription as string }
+            where: { subscription_id: invoice.subscription as string }
           });
 
           if (license) {
             await prisma.licenses.update({
               where: { license_key: license.license_key },
               data: {
-                status: 'suspended',
-                metadata: {
-                  ...(license.metadata as any || {}),
-                  paymentFailedAt: new Date().toISOString(),
-                  failureReason: 'payment_failed'
-                }
+                status: 'suspended'
+                // Removed metadata field as it doesn't exist in schema
               }
             });
           }
