@@ -122,43 +122,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get all custom agents for this user
-    const customAgents = await prisma.product_configurations.findMany({
+    // Get all custom agents for this user from product_keys table
+    const customAgents = await prisma.product_keys.findMany({
       where: {
         license_key: user.license_key,
-        base_product: 'custom_agent'
+        product: 'custom_agent'
       },
       orderBy: {
         created_at: 'desc'
       }
     });
 
-    // Get product keys for activation status
-    const productKeys = await prisma.product_keys.findMany({
-      where: {
-        license_key: user.license_key,
-        product: 'custom_agent'
-      }
-    });
-
     const agentsWithStatus = customAgents.map(agent => {
-      const productKey = productKeys.find(pk => pk.product_key === agent.product_key);
-      const skillsArray = agent.skills_enabled as string[];
-      const customSettings = agent.custom_settings as any;
+      const metadata = agent.metadata as any;
       return {
         id: agent.id,
         agentId: agent.product_key,
-        name: agent.custom_name || 'Unnamed Agent',
-        description: agent.description || '',
-        industry: customSettings?.industry || '',
-        skills: skillsArray,
-        skillCount: customSettings?.skill_count || skillsArray.length,
-        complexity: agent.complexity_score,
-        monthlyPrice: agent.total_price_pence / 100,
-        isActive: customSettings?.is_active || false,
-        isActivated: (productKey?.metadata as any)?.isActivated || false,
+        name: metadata?.name || 'Unnamed Agent',
+        description: metadata?.description || '',
+        industry: metadata?.industry || '',
+        skills: metadata?.skills || [],
+        skillCount: metadata?.skills?.length || 0,
+        complexity: metadata?.pricing?.complexity || 0,
+        monthlyPrice: metadata?.pricing?.monthlyPrice || 0,
+        setupFee: metadata?.pricing?.setupFee || 0,
+        isActive: agent.status === 'active',
+        isActivated: metadata?.isActivated || false,
         createdAt: agent.created_at,
-        activatedAt: productKey?.last_used_at
+        activatedAt: agent.last_used_at
       };
     });
 
