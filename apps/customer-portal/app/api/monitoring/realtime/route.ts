@@ -205,28 +205,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle different event types
+    // TODO: Implement when database tables exist
     switch (event_type) {
       case 'progress':
-        await prisma.execution_events.create({
-          data: {
-            execution_id,
-            event_type: 'progress',
-            event_name: data.message || 'Progress update',
-            event_data: data,
-            severity: 'info'
-          }
-        });
+        // await prisma.execution_events.create({
+        //   data: {
+        //     execution_id,
+        //     event_type: 'progress',
+        //     event_name: data.message || 'Progress update',
+        //     event_data: data,
+        //     severity: 'info'
+        //   }
+        // });
+        console.log('Progress event:', { execution_id, data });
         break;
 
       case 'metric':
-        await prisma.execution_metrics.create({
-          data: {
-            execution_id,
-            metric_name: data.name,
-            metric_value: data.value,
-            metric_unit: data.unit
-          }
-        });
+        // await prisma.execution_metrics.create({
+        //   data: {
+        //     execution_id,
+        //     metric_name: data.name,
+        //     metric_value: data.value,
+        //     metric_unit: data.unit
+        //   }
+        // });
+        console.log('Metric event:', { execution_id, data });
         break;
 
       case 'data_transfer':
@@ -238,62 +241,65 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        await prisma.data_flows.create({
-          data: {
-            execution_id,
-            license_key: userLicenseKey,
-            source_service: data.source,
-            target_service: data.target,
-            data_type: data.type,
-            data_size_bytes: data.size,
-            contains_pii: data.contains_pii || false
-          }
-        });
+        // await prisma.data_flows.create({
+        //   data: {
+        //     execution_id,
+        //     license_key: userLicenseKey,
+        //     source_service: data.source,
+        //     target_service: data.target,
+        //     data_type: data.type,
+        //     data_size_bytes: data.size,
+        //     contains_pii: data.contains_pii || false
+        //   }
+        // });
         
-        await prisma.execution_events.create({
-          data: {
-            execution_id,
-            event_type: 'data_transfer',
-            event_name: `Data transferred from ${data.source} to ${data.target}`,
-            event_data: data,
-            severity: 'info'
-          }
-        });
+        // await prisma.execution_events.create({
+        //   data: {
+        //     execution_id,
+        //     event_type: 'data_transfer',
+        //     event_name: `Data transferred from ${data.source} to ${data.target}`,
+        //     event_data: data,
+        //     severity: 'info'
+        //   }
+        // });
+        console.log('Data transfer event:', { execution_id, data });
         break;
 
       case 'error':
-        await prisma.execution_events.create({
-          data: {
-            execution_id,
-            event_type: 'error',
-            event_name: data.error || 'Error occurred',
-            event_data: data,
-            severity: data.severity || 'error'
-          }
-        });
+        // await prisma.execution_events.create({
+        //   data: {
+        //     execution_id,
+        //     event_type: 'error',
+        //     event_name: data.error || 'Error occurred',
+        //     event_data: data,
+        //     severity: data.severity || 'error'
+        //   }
+        // });
         
         if (data.fatal) {
           await prisma.executions.update({
             where: { id: execution_id },
             data: {
-              status: 'failed',
-              error_data: data,
-              completed_at: new Date()
+              state: 'failed',
+              error_details: data,
+              updated_at: new Date()
             }
           });
         }
+        console.log('Error event:', { execution_id, data });
         break;
 
       default:
-        await prisma.execution_events.create({
-          data: {
-            execution_id,
-            event_type,
-            event_name: data.name || event_type,
-            event_data: data,
-            severity: data.severity || 'info'
-          }
-        });
+        // await prisma.execution_events.create({
+        //   data: {
+        //     execution_id,
+        //     event_type,
+        //     event_name: data.name || event_type,
+        //     event_data: data,
+        //     severity: data.severity || 'info'
+        //   }
+        // });
+        console.log('Default event:', { execution_id, event_type, data });
     }
 
     return NextResponse.json({
