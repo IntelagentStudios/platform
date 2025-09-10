@@ -33,24 +33,8 @@ export async function POST(request: NextRequest) {
       pricing
     } = body;
 
-    // Validate enterprise tier for custom agents
-    const license = await prisma.licenses.findUnique({
-      where: { license_key: user.license_key }
-    });
-
-    // Check if user has enterprise plan (based on plan field or high total price)
-    const isEnterprise = license?.plan === 'enterprise' || 
-                         (license?.total_pence && license.total_pence >= 9900); // £99+ is enterprise
-    
-    if (!isEnterprise) {
-      return NextResponse.json(
-        { 
-          error: 'Custom Agent Builder requires Enterprise tier',
-          upgradeRequired: true 
-        },
-        { status: 403 }
-      );
-    }
+    // Custom agents are available to all authenticated users for now
+    // TODO: Implement proper plan-based restrictions when plan structure is finalized
 
     // Create the custom agent configuration
     const agentId = `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
