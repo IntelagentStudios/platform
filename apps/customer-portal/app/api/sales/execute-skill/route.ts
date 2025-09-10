@@ -11,8 +11,9 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
     
     // Get campaign details
     const campaign = await prisma.sales_campaigns.findUnique({
-      where: { id: campaignId },
-      include: { leads: { where: { id: { in: leadIds || [] } } } }
+      where: { id: campaignId }
+      // TODO: Include leads when relation is set up
+      // include: { leads: { where: { id: { in: leadIds || [] } } } }
     });
 
     if (!campaign) throw new Error('Campaign not found');
@@ -24,7 +25,10 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
 
     // Process each lead
     const results = [];
-    const leadsToProcess = leadIds ? campaign.leads : await prisma.sales_leads.findMany({
+    // Fetch leads separately since we can't include them in the campaign query yet
+    const leadsToProcess = leadIds ? await prisma.sales_leads.findMany({
+      where: { id: { in: leadIds } }
+    }) : await prisma.sales_leads.findMany({
       where: { 
         campaign_id: campaignId,
         status: 'new',

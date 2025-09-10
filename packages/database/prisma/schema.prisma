@@ -367,6 +367,7 @@ model licenses {
   customer_name       String?   @db.VarChar(255)
   last_indexed        DateTime?
   plan                String?   @db.VarChar(50)
+  tier                String?   @default("starter") @db.VarChar(50)
   products            String[]  @default([])
   is_pro              Boolean?  @default(false)
   currency            String?   @default("GBP") @db.VarChar(3)
@@ -788,6 +789,8 @@ model product_keys {
   last_used_at DateTime? @db.Timestamptz(6)
   status       String?   @default("active") @db.VarChar(20)
   metadata     Json?     @default("{}")
+  assigned_skills Json?  @default("[]")
+  skill_config Json?     @default("{}")
 
   @@index([license_key], map: "idx_product_keys_license")
   @@index([product], map: "idx_product_keys_product")
@@ -834,6 +837,14 @@ model skills {
   tags                String[]  @default([])
   certified           Boolean?  @default(false)
   active              Boolean?  @default(true)
+  is_core_skill       Boolean?  @default(false)
+  base_cost_pence     Int?      @default(2000)
+  token_usage_estimate Int?     @default(100)
+  execution_time_ms    Int?     @default(100)
+  value_multiplier    Decimal?  @default(1.0) @db.Decimal(10, 2)
+  skill_tier          String?   @default("standard") @db.VarChar(50)
+  applicable_products String[]  @default(["all"])
+  dependencies        String[]  @default([])
   created_at          DateTime? @default(now()) @db.Timestamptz(6)
   updated_at          DateTime? @default(now()) @db.Timestamptz(6)
 
@@ -1007,5 +1018,167 @@ model workflow_templates {
   @@index([category], map: "idx_workflow_templates_category")
   @@index([name], map: "idx_workflow_templates_name")
   @@index([tags], map: "idx_workflow_templates_tags", type: Gin)
+  @@schema("public")
+}
+
+model platform_subscriptions {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key           String    @unique @db.VarChar(20)
+  subscription_tier     String    @db.VarChar(50)
+  monthly_price_pence   Int
+  products_connected    Json      @default("[]")
+  product_count         Int       @default(0)
+  intelligence_features Json      @default("{}")
+  max_products          Int       @default(10)
+  max_workflows         Int       @default(100)
+  max_api_calls         Int       @default(10000)
+  status                String    @default("active") @db.VarChar(20)
+  activated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_platform_subscriptions_license")
+  @@schema("public")
+}
+
+model product_configurations {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  product_key           String    @unique @db.VarChar(255)
+  license_key           String    @db.VarChar(20)
+  product_type          String?   @db.VarChar(50)
+  product_name          String?   @db.VarChar(255)
+  base_product          String?   @db.VarChar(50)
+  customization_type    String?   @db.VarChar(50)
+  custom_name           String?   @db.VarChar(255)
+  description           String?   @db.Text
+  configuration         Json      @default("{}")
+  skills_enabled        Json      @default("[]")
+  custom_settings       Json      @default("{}")
+  ui_preferences        Json      @default("{}")
+  integrations          Json      @default("[]")
+  complexity_score      Int       @default(1)
+  estimated_tokens      Int       @default(0)
+  base_price_pence      Int       @default(0)
+  addon_price_pence     Int       @default(0)
+  total_price_pence     Int       @default(0)
+  status                String    @default("active") @db.VarChar(20)
+  created_by            String?   @db.VarChar(255)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_product_configurations_license")
+  @@index([product_type], map: "idx_product_configurations_type")
+  @@schema("public")
+}
+
+model skill_product_mappings {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  skill_id              String    @db.Uuid
+  base_product          String    @db.VarChar(50)
+  is_required           Boolean   @default(false)
+  is_recommended        Boolean   @default(false)
+  dependency_level      Int       @default(0)
+  price_impact_pence    Int       @default(2000)
+  complexity_impact     Decimal   @default(1.0) @db.Decimal(10, 2)
+  avg_tokens_per_use    Int       @default(100)
+  avg_calls_per_month   Int       @default(1000)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([skill_id, base_product])
+  @@index([base_product], map: "idx_skill_product_mappings_product")
+  @@schema("public")
+}
+
+model skill_pricing_rules {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  rule_type             String    @db.VarChar(50)
+  condition             Json      @default("{}")
+  action                Json      @default("{}")
+  priority              Int       @default(0)
+  active                Boolean   @default(true)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([rule_type], map: "idx_skill_pricing_rules_type")
+  @@index([priority], map: "idx_skill_pricing_rules_priority")
+  @@schema("public")
+}
+
+model custom_knowledge {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  product_key           String    @db.VarChar(255)
+  license_key           String    @db.VarChar(20)
+  knowledge_type        String    @default("custom") @db.VarChar(50)
+  content               String    @db.Text
+  is_active             Boolean   @default(true)
+  expires_at            DateTime? @db.Timestamptz(6)
+  created_by            String?   @db.VarChar(255)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([product_key, knowledge_type], name: "product_key_knowledge_type")
+  @@index([license_key], map: "idx_custom_knowledge_license")
+  @@index([product_key], map: "idx_custom_knowledge_product")
+  @@schema("public")
+}
+
+model sales_campaigns {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key           String    @db.VarChar(20)
+  product_key           String?   @db.VarChar(255)
+  name                  String    @db.VarChar(255)
+  description           String?   @db.Text
+  status                String    @default("draft") @db.VarChar(50)
+  campaign_type         String?   @db.VarChar(50)
+  target_audience       Json      @default("{}")
+  settings              Json      @default("{}")
+  metrics               Json      @default("{}")
+  total_leads           Int       @default(0)
+  meetings_booked       Int       @default(0)
+  emails_sent           Int       @default(0)
+  responses_received    Int       @default(0)
+  target_industry       String?   @db.VarChar(255)
+  target_company_size   String?   @db.VarChar(255)
+  target_personas       Json      @default("[]")
+  daily_send_limit      Int       @default(50)
+  from_email            String?   @db.VarChar(255)
+  from_name             String?   @db.VarChar(255)
+  reply_to_email        String?   @db.VarChar(255)
+  email_templates       Json      @default("[]")
+  start_date            DateTime? @db.Timestamptz(6)
+  end_date              DateTime? @db.Timestamptz(6)
+  send_times            Json      @default("{}")
+  timezone              String    @default("UTC") @db.VarChar(50)
+  crm_integration       String?   @db.VarChar(255)
+  webhook_url           String?   @db.Text
+  enabled_skills        Json      @default("[]")
+  created_by            String?   @db.VarChar(255)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+  started_at            DateTime? @db.Timestamptz(6)
+  ended_at              DateTime? @db.Timestamptz(6)
+
+  @@index([license_key], map: "idx_sales_campaigns_license")
+  @@index([status], map: "idx_sales_campaigns_status")
+  @@schema("public")
+}
+
+model sales_leads {
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  campaign_id           String    @db.VarChar(36)
+  license_key           String    @db.VarChar(20)
+  email                 String    @db.VarChar(255)
+  name                  String?   @db.VarChar(255)
+  company               String?   @db.VarChar(255)
+  status                String    @default("new") @db.VarChar(50)
+  score                 Int       @default(0)
+  data                  Json      @default("{}")
+  is_bounced            Boolean   @default(false)
+  is_unsubscribed       Boolean   @default(false)
+  emails_sent           Int       @default(0)
+  created_at            DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([campaign_id], map: "idx_sales_leads_campaign")
+  @@index([license_key], map: "idx_sales_leads_license")
+  @@index([status], map: "idx_sales_leads_status")
   @@schema("public")
 }

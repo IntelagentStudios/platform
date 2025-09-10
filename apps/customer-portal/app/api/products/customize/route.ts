@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
       where: {
         active: true,
         OR: [
-          { applicable_products: { array_contains: [baseProduct] } },
-          { applicable_products: { array_contains: ['all'] } }
+          { applicable_products: { has: baseProduct } },
+          { applicable_products: { has: 'all' } }
         ]
       },
       orderBy: [

@@ -63,8 +63,8 @@ export async function GET(request: NextRequest) {
       where: {
         active: true,
         OR: [
-          { applicable_products: { array_contains: [productType] } },
-          { applicable_products: { array_contains: ['all'] } }
+          { applicable_products: { has: productType } },
+          { applicable_products: { has: 'all' } }
         ]
       }
     });

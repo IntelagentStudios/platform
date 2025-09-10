@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
         // Apply value multiplier for premium skills
         if (skill.value_multiplier) {
-          valueMultiplier = Math.max(valueMultiplier, parseFloat(skill.value_multiplier.toString()));
+          valueMultiplier = Math.max(valueMultiplier, Number(skill.value_multiplier));
         }
 
         // Calculate complexity
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
             skillsPricePence += (mapping.price_impact_pence - 2000);
           }
         }
-        complexityScore += mapping.complexity_impact * 0.2;
+        complexityScore += Number(mapping.complexity_impact) * 0.2;
       }
     }
 
@@ -109,26 +109,27 @@ export async function POST(request: NextRequest) {
     // Check for active pricing rules
     const pricingRules = await prisma.skill_pricing_rules.findMany({
       where: {
-        is_active: true,
-        OR: [
-          { 
-            AND: [
-              { min_skill_count: { lte: selectedSkills.length } },
-              { max_skill_count: { gte: selectedSkills.length } }
-            ]
-          },
-          { skill_category: { in: ['all', baseProduct] } }
-        ]
+        active: true,
+        rule_type: { in: ['skill_count', 'base_product', 'complexity'] }
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { priority: 'desc' }
     });
 
     // Apply pricing rules
     for (const rule of pricingRules) {
-      if (rule.rule_type === 'skill_count' && selectedSkills.length >= (rule.min_skill_count || 0)) {
-        // Volume discount for many skills
-        const volumeDiscount = Math.round(skillsPricePence * 0.1);
-        subtotalPence -= volumeDiscount;
+      const condition = rule.condition as any;
+      const action = rule.action as any;
+      
+      if (rule.rule_type === 'skill_count') {
+        // Check if skill count matches condition
+        const minSkills = condition.min_skill_count || 0;
+        const maxSkills = condition.max_skill_count || 999;
+        
+        if (selectedSkills.length >= minSkills && selectedSkills.length <= maxSkills) {
+          // Apply discount
+          const volumeDiscount = Math.round(skillsPricePence * 0.1);
+          subtotalPence -= volumeDiscount;
+        }
       }
     }
 
