@@ -118,16 +118,17 @@ export async function POST(request: NextRequest) {
               console.log(`Error deleting chatbot logs for ${key.product_key}:`, logErr);
             }
             
-            // Delete custom knowledge
-            try {
-              const knowledgeDeleted = await prisma.custom_knowledge.deleteMany({
-                where: { product_key: key.product_key }
-              });
-              deletedKnowledge += knowledgeDeleted.count;
-              console.log(`Deleted ${knowledgeDeleted.count} custom knowledge entries for ${key.product_key}`);
-            } catch (knowledgeErr) {
-              console.log(`Error deleting custom knowledge for ${key.product_key}:`, knowledgeErr);
-            }
+            // Delete custom knowledge (table doesn't exist yet)
+            // TODO: Uncomment when custom_knowledge table is added to schema
+            // try {
+            //   const knowledgeDeleted = await prisma.custom_knowledge.deleteMany({
+            //     where: { product_key: key.product_key }
+            //   });
+            //   deletedKnowledge += knowledgeDeleted.count;
+            //   console.log(`Deleted ${knowledgeDeleted.count} custom knowledge entries for ${key.product_key}`);
+            // } catch (knowledgeErr) {
+            //   console.log(`Error deleting custom knowledge for ${key.product_key}:`, knowledgeErr);
+            // }
           }
           
           // Now delete all product keys for this license
