@@ -21,21 +21,20 @@ export async function POST(request: NextRequest) {
     if (productKey) {
       // First try to find by product_key
       const productKeyRecord = await prisma.product_keys.findUnique({
-        where: { product_key: productKey },
-        include: {
-          licenses: {
-            select: {
-              license_key: true,
-              status: true,
-              domain: true,
-              customer_name: true
-            }
-          }
-        }
+        where: { product_key: productKey }
       })
       
-      if (productKeyRecord) {
-        license = productKeyRecord.licenses
+      if (productKeyRecord && productKeyRecord.license_key) {
+        // Get license separately
+        license = await prisma.licenses.findUnique({
+          where: { license_key: productKeyRecord.license_key },
+          select: {
+            license_key: true,
+            status: true,
+            domain: true,
+            customer_name: true
+          }
+        })
       }
       
       // Log warning if not found but don't reject the webhook
