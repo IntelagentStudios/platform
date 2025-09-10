@@ -39,46 +39,29 @@ export async function POST(request: NextRequest) {
     // Create the custom agent configuration
     const agentId = `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Store in product_configurations as a custom product
-    const configuration = await prisma.product_configurations.create({
-      data: {
-        product_key: agentId,
-        license_key: user.license_key,
-        base_product: 'custom_agent',
-        custom_name: name,
-        customization_type: 'custom',
-        description,
-        skills_enabled: skills,
-        custom_settings: {
-          industry,
-          requirements,
-          created_by: user.id,
-          created_at: new Date().toISOString(),
-          skill_count: skills.length, // Store skill count in custom_settings
-          setup_fee: pricing.setupFee || 0, // Store setup fee in custom_settings
-          is_active: false // Will be activated after payment
-        },
-        complexity_score: pricing.complexity,
-        base_price_pence: pricing.monthlyPrice,
-        total_price_pence: pricing.monthlyPrice
-      }
-    });
-
-    // Create a product key for the agent
-    await prisma.product_keys.create({
+    // Store custom agent configuration in product_keys table
+    const configuration = await prisma.product_keys.create({
       data: {
         product_key: agentId,
         license_key: user.license_key,
         product: 'custom_agent',
-        assigned_skills: skills,
+        status: 'pending', // Will be activated after payment
         metadata: {
           name: name,
           description: description,
-          monthlyPrice: pricing.monthlyPrice / 100,
+          industry: industry,
+          requirements: requirements,
+          skills: skills,
+          pricing: {
+            monthlyPrice: pricing.monthlyPrice,
+            setupFee: pricing.setupFee || 0,
+            complexity: pricing.complexity
+          },
+          created_by: user.id,
+          created_at: new Date().toISOString(),
           isActivated: false
         },
-        created_at: new Date(),
-        status: 'active'
+        created_at: new Date()
       }
     });
 
