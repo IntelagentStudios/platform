@@ -53,11 +53,16 @@ export async function POST(request: NextRequest) {
             product_key: productKey,
             product: 'chatbot',
             status: 'active'
-          },
-          include: {
-            licenses: true
           }
         });
+
+        // Get license separately if needed
+        let license = null;
+        if (productKeyRecord?.license_key) {
+          license = await prisma.licenses.findUnique({
+            where: { license_key: productKeyRecord.license_key }
+          });
+        }
 
         if (productKeyRecord) {
           // Cast metadata to proper type to avoid TypeScript JsonValue error
@@ -67,9 +72,9 @@ export async function POST(request: NextRequest) {
             product_key: productKey,
             license_key: productKeyRecord.license_key,
             domain: metadata?.domain || 
-                   productKeyRecord.licenses?.domain || 
+                   license?.domain || 
                    'intelagentstudios.com',
-            customer_name: productKeyRecord.licenses?.customer_name
+            customer_name: license?.customer_name
           };
         }
 

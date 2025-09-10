@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
           });
 
           if (license) {
-            context.userTier = license.tier || 'starter';
+            context.userTier = 'pro_platform'; // Default tier
             context.pricing.hasActiveSubscription = license.status === 'active';
             context.pricing.currentMonthlySpend = (license.total_pence || 0) / 100;
 
@@ -66,27 +66,19 @@ export async function GET(request: NextRequest) {
               }
             });
 
-            // Get product configurations
-            const configurations = await prisma.product_configurations.findMany({
-              where: {
-                license_key: user.license_key,
-                status: { in: ['active', 'draft'] }
-              }
-            });
-
-            // Map current products with their configurations
+            // Map current products (product_configurations table doesn't exist)
             context.currentProducts = productKeys.map(pk => {
-              const config = configurations.find(c => c.product_key === pk.product_key);
+              const metadata = pk.metadata as any;
               return {
                 productKey: pk.product_key,
                 productType: pk.product,
                 status: pk.status,
-                hasCustomization: !!config,
-                customization: config ? {
-                  name: config.custom_name,
-                  type: config.customization_type,
-                  skillsCount: (config.skills_enabled as any[]).length,
-                  monthlyPrice: config.total_price_pence / 100
+                hasCustomization: !!metadata?.customization,
+                customization: metadata?.customization ? {
+                  name: metadata.customization.name,
+                  type: metadata.customization.type,
+                  skillsCount: metadata.customization.skills?.length || 0,
+                  monthlyPrice: metadata.customization.price || 0
                 } : null,
                 canUpgrade: true
               };
@@ -94,12 +86,11 @@ export async function GET(request: NextRequest) {
 
             context.platformIntelligence.currentProductCount = context.currentProducts.length;
 
-            // Check Platform Intelligence eligibility
-            const hasPlatformSubscription = await prisma.platform_subscriptions.findUnique({
-              where: { license_key: user.license_key }
-            });
+            // Check Platform Intelligence eligibility (platform_subscriptions table doesn't exist)
+            // Check if they have platform intelligence in their products array
+            const hasPlatformIntelligence = license.products?.includes('platform_intelligence');
 
-            if (!hasPlatformSubscription && context.currentProducts.length >= 2) {
+            if (!hasPlatformIntelligence && context.currentProducts.length >= 2) {
               context.platformIntelligence.eligible = true;
               context.platformIntelligence.hasMinimumProducts = true;
               context.platformIntelligence.potentialValue = {
@@ -142,7 +133,7 @@ export async function GET(request: NextRequest) {
             context.recommendedUpgrades = generateUpgradeRecommendations(
               context.currentProducts,
               context.platformIntelligence.eligible,
-              hasPlatformSubscription !== null
+              hasPlatformIntelligence
             );
 
             // Calculate potential savings with annual billing or bundles

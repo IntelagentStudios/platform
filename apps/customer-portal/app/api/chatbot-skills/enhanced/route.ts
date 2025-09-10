@@ -529,11 +529,16 @@ async function getProductConfiguration(productKey: string) {
       where: { 
         product_key: productKey,
         status: 'active'
-      },
-      include: {
-        licenses: true
       }
     });
+
+    // Get license separately if needed
+    let license = null;
+    if (config?.license_key) {
+      license = await prisma.licenses.findUnique({
+        where: { license_key: config.license_key }
+      });
+    }
     
     return config;
   } catch (error) {

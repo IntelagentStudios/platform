@@ -339,16 +339,21 @@ export async function POST(request: NextRequest) {
             product_key: productKey,
             product: 'chatbot',
             status: 'active'
-          },
-          include: {
-            licenses: true
           }
         });
 
+        // Get license separately if needed
+        let license = null;
+        if (productKeyRecord?.license_key) {
+          license = await prisma.licenses.findUnique({
+            where: { license_key: productKeyRecord.license_key }
+          });
+        }
+
         if (productKeyRecord) {
           const metadata = productKeyRecord.metadata as any;
-          domain = metadata?.domain || productKeyRecord.licenses?.domain || domain;
-          companyName = metadata?.company_name || productKeyRecord.licenses?.customer_name || companyName;
+          domain = metadata?.domain || license?.domain || domain;
+          companyName = metadata?.company_name || license?.customer_name || companyName;
           customKnowledge = metadata?.custom_knowledge || null;
         }
       } catch (error) {

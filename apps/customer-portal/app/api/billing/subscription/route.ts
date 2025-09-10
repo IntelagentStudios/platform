@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       where: { license_key: user.license_key }
     });
 
-    if (!license || !license.stripe_subscription_id) {
+    if (!license || !license.subscription_id) {
       return NextResponse.json({
         subscription: null,
         paymentMethod: null
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get subscription from Stripe
-    const subscription = await getStripe().subscriptions.retrieve(license.stripe_subscription_id);
+    const subscription = await getStripe().subscriptions.retrieve(license.subscription_id);
     
     // Get payment method
     let paymentMethod = null;
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       subscription: {
         id: subscription.id,
-        tier: license.tier || 'starter',
+        tier: 'pro_platform', // Using default tier since field doesn't exist
         status: subscription.status,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         price: subscription.items.data[0]?.price.unit_amount || 0,

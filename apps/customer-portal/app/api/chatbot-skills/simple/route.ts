@@ -68,15 +68,20 @@ export async function POST(request: NextRequest) {
             product_key: productKey,
             product: 'chatbot',
             status: 'active'
-          },
-          include: {
-            licenses: true
           }
         });
 
+        // Get license separately if needed
+        let license = null;
+        if (productKeyRecord?.license_key) {
+          license = await prisma.licenses.findUnique({
+            where: { license_key: productKeyRecord.license_key }
+          });
+        }
+
         if (productKeyRecord) {
           const metadata = productKeyRecord.metadata as any;
-          domain = metadata?.domain || productKeyRecord.licenses?.domain || domain;
+          domain = metadata?.domain || license?.domain || domain;
           
           // TODO: Get custom knowledge when table exists
           const customKnowledge: any[] = [];
@@ -88,7 +93,7 @@ export async function POST(request: NextRequest) {
             const productsData = customKnowledge.find((k: any) => k.type === 'products');
             
             COMPANY_INFO = {
-              name: companyData?.data?.name || metadata?.company_name || productKeyRecord.licenses?.customer_name || domain,
+              name: companyData?.data?.name || metadata?.company_name || license?.customer_name || domain,
               description: companyData?.data?.description || `Welcome to ${domain}. How can I help you today?`,
               services: servicesData?.data?.services || [`Visit our website at ${domain} for our services`],
               products: productsData?.data?.products || [`Check out our products at ${domain}`],
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
           } else {
             // Use domain-based defaults
             COMPANY_INFO = {
-              name: metadata?.company_name || productKeyRecord.licenses?.customer_name || domain,
+              name: metadata?.company_name || license?.customer_name || domain,
               description: `Welcome to ${domain}. I'm here to help answer your questions and provide information about our services.`,
               services: [`Visit ${domain} to learn more about our services`],
               products: [`Explore our products at ${domain}`],

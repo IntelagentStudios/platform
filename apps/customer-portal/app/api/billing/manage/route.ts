@@ -37,36 +37,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get or create Stripe customer
-    let customerId = user.stripe_customer_id;
+    // Get the user's license to find their subscription
+    const license = await prisma.licenses.findUnique({
+      where: { license_key: user.license_key }
+    });
 
-    if (!customerId) {
-      // Check if customer exists in Stripe
-      const customers = await getStripe().customers.list({
-        email: user.email,
-        limit: 1
-      });
+    if (!license || !license.subscription_id) {
+      return NextResponse.json(
+        { error: 'No active subscription found' },
+        { status: 404 }
+      );
+    }
 
-      if (customers.data.length > 0) {
-        customerId = customers.data[0].id;
-      } else {
-        // Create new customer
-        const customer = await getStripe().customers.create({
-          email: user.email,
-          name: user.name || undefined,
-          metadata: {
-            userId: user.id,
-            licenseKey: user.license_key
-          }
-        });
-        customerId = customer.id;
-      }
-
-      // Update user record
-      await prisma.users.update({
-        where: { id: userId },
-        data: { stripe_customer_id: customerId }
-      });
+    // Get the subscription from Stripe to find the customer ID
+    let customerId: string;
+    try {
+      const subscription = await getStripe().subscriptions.retrieve(license.subscription_id);
+      customerId = subscription.customer as string;
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      return NextResponse.json(
+        { error: 'Failed to retrieve subscription details' },
+        { status: 500 }
+      );
     }
 
     // Create billing portal session

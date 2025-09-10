@@ -22,6 +22,7 @@ export function registerSalesSkills(): void {
 }
 
 // Auto-register on import
-if (process.env.NODE_ENV !== 'test') {
-  registerSalesSkills();
-}
+// TODO: Uncomment when sales database tables are implemented
+// if (process.env.NODE_ENV !== 'test') {
+//   registerSalesSkills();
+// }

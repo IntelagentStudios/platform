@@ -56,21 +56,25 @@ export async function GET(
       }
     }
 
-    // Get all active custom knowledge for this product
-    const knowledge = await prisma.custom_knowledge.findMany({
-      where: {
-        product_key: productKey,
-        is_active: true,
-        OR: [
-          { expires_at: null },
-          { expires_at: { gt: new Date() } }
-        ]
-      },
-      select: {
-        content: true,
-        knowledge_type: true
-      }
-    });
+    // TODO: Implement custom_knowledge when table is added to schema
+    // For now, return empty knowledge
+    const knowledge: any[] = [];
+    
+    // // Get all active custom knowledge for this product
+    // const knowledge = await prisma.custom_knowledge.findMany({
+    //   where: {
+    //     product_key: productKey,
+    //     is_active: true,
+    //     OR: [
+    //       { expires_at: null },
+    //       { expires_at: { gt: new Date() } }
+    //     ]
+    //   },
+    //   select: {
+    //     content: true,
+    //     knowledge_type: true
+    //   }
+    // });
 
     // Combine all knowledge into a single response
     const combinedKnowledge = knowledge.map(k => k.content).join('\n\n');
