@@ -130,26 +130,28 @@ export async function GET(request: NextRequest) {
     });
 
     // Get system health metrics
-    const systemHealth = await prisma.execution_metrics.groupBy({
-      by: ['metric_name'],
-      where: {
-        recorded_at: {
-          gte: new Date(Date.now() - 5 * 60 * 1000)
-        },
-        execution_id: {
-          in: runningExecutions.map(e => e.id)
-        }
-      },
-      _avg: {
-        metric_value: true
-      },
-      _max: {
-        metric_value: true
-      },
-      _min: {
-        metric_value: true
-      }
-    });
+    // TODO: Implement when execution_metrics table exists
+    const systemHealth: any[] = [];
+    // const systemHealth = await prisma.execution_metrics.groupBy({
+    //   by: ['metric_name'],
+    //   where: {
+    //     recorded_at: {
+    //       gte: new Date(Date.now() - 5 * 60 * 1000)
+    //     },
+    //     execution_id: {
+    //       in: runningExecutions.map(e => e.id)
+    //     }
+    //   },
+    //   _avg: {
+    //     metric_value: true
+    //   },
+    //   _max: {
+    //     metric_value: true
+    //   },
+    //   _min: {
+    //     metric_value: true
+    //   }
+    // });
 
     return NextResponse.json({
       running_executions: runningExecutions,
