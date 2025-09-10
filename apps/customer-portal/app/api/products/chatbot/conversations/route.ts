@@ -191,17 +191,37 @@ async function fetchConversations(licenseKey: string) {
 
       // Step 4: Fetch chatbot logs ONLY for product keys this license OWNS
       const productKeysList = ownedProductKeys.map(k => k.product_key);
+      
+      // For backward compatibility, also match by domain for old logs without product_key
+      // Harry's domain is intelagentstudios.com, James's is testbusiness.com
+      const domainToMatch = licenseKey === 'INTL-AGNT-BOSS-MODE' ? 'intelagentstudios.com' : 
+                           licenseKey === 'INTL-NW1S-QANW-2025' ? 'testbusiness.com' : 
+                           license.domain;
+      
       logs = await prisma.chatbot_logs.findMany({
         where: { 
-          product_key: {
-            in: productKeysList // Only get logs from product keys owned by this license
-          }
+          OR: [
+            // New logs with product_key
+            {
+              product_key: {
+                in: productKeysList
+              }
+            },
+            // Old logs without product_key - match by domain
+            {
+              AND: [
+                { product_key: null },
+                { domain: domainToMatch }
+              ]
+            }
+          ]
         },
         orderBy: { timestamp: 'desc' },
         take: 100 // Limit to last 100 messages
       });
       
       console.log('Fetching logs for owned product keys:', productKeysList);
+      console.log('Also matching domain for old logs:', domainToMatch);
       console.log('Found logs:', logs.length);
       
       // Update usage timestamp for the product key

@@ -94,6 +94,21 @@ function ChatbotDashboardContent() {
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
+  
+  // Settings state
+  const [settings, setSettings] = useState({
+    welcomeMessage: "Hello! How can I help you today?",
+    primaryColor: "#0070f3",
+    headerColor: "#0070f3",
+    backgroundColor: "#ffffff",
+    position: "bottom-right",
+    playNotificationSound: true,
+    showWelcomeMessage: true,
+    collectEmail: false,
+    businessHoursMessage: "We're currently offline but will respond as soon as possible."
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -162,6 +177,51 @@ function ChatbotDashboardContent() {
       console.error('Auth check failed:', error);
       setIsAuthenticated(false);
       router.push('/login');
+    }
+  };
+
+  // Fetch settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/products/chatbot/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.settings) {
+            setSettings(prev => ({ ...prev, ...data.settings }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // Save settings function
+  const saveSettings = async () => {
+    setIsSavingSettings(true);
+    setSettingsSaved(false);
+    
+    try {
+      const response = await fetch('/api/products/chatbot/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      });
+      
+      if (response.ok) {
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 3000);
+      } else {
+        console.error('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    } finally {
+      setIsSavingSettings(false);
     }
   };
 
@@ -1353,7 +1413,8 @@ function ChatbotDashboardContent() {
                       </label>
                       <input
                         type="color"
-                        defaultValue="#FFFFFF"
+                        value={settings.primaryColor}
+                        onChange={(e) => setSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
                         className="w-full h-10 rounded"
                         style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
                       />
@@ -1364,7 +1425,8 @@ function ChatbotDashboardContent() {
                       </label>
                       <input
                         type="color"
-                        defaultValue="#FFFFFF"
+                        value={settings.headerColor}
+                        onChange={(e) => setSettings(prev => ({ ...prev, headerColor: e.target.value }))}
                         className="w-full h-10 rounded"
                         style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
                       />
@@ -1375,7 +1437,8 @@ function ChatbotDashboardContent() {
                       </label>
                       <input
                         type="color"
-                        defaultValue="#FFFFFF"
+                        value={settings.backgroundColor}
+                        onChange={(e) => setSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
                         className="w-full h-10 rounded"
                         style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
                       />
@@ -1384,11 +1447,16 @@ function ChatbotDashboardContent() {
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                         Widget Position
                       </label>
-                      <select className="w-full px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}>
-                        <option>Bottom Right</option>
-                        <option>Bottom Left</option>
-                        <option>Top Right</option>
-                        <option>Top Left</option>
+                      <select 
+                        value={settings.position}
+                        onChange={(e) => setSettings(prev => ({ ...prev, position: e.target.value }))}
+                        className="w-full px-3 py-2 rounded-lg" 
+                        style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
+                      >
+                        <option value="bottom-right">Bottom Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="top-left">Top Left</option>
                       </select>
                     </div>
                   </div>
@@ -1403,7 +1471,8 @@ function ChatbotDashboardContent() {
                     <label className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        defaultChecked
+                        checked={settings.showWelcomeMessage}
+                        onChange={(e) => setSettings(prev => ({ ...prev, showWelcomeMessage: e.target.checked }))}
                         className="w-4 h-4 rounded"
                         style={{ accentColor: 'rgb(169, 189, 203)' }}
                       />
@@ -1411,20 +1480,29 @@ function ChatbotDashboardContent() {
                         Show welcome message on first visit
                       </span>
                     </label>
+                    <div>
+                      <label className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={settings.playNotificationSound}
+                          onChange={(e) => setSettings(prev => ({ ...prev, playNotificationSound: e.target.checked }))}
+                          className="w-4 h-4 rounded"
+                          style={{ accentColor: 'rgb(169, 189, 203)' }}
+                        />
+                        <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                          Play notification sound for customers when they receive a message
+                        </span>
+                        <AlertCircle className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                      </label>
+                      <p className="text-xs ml-7 mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        This plays a sound on the customer's device when they receive a new message from the chatbot
+                      </p>
+                    </div>
                     <label className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        defaultChecked
-                        className="w-4 h-4 rounded"
-                        style={{ accentColor: 'rgb(169, 189, 203)' }}
-                      />
-                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                        Play notification sound for new messages
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
+                        checked={settings.collectEmail}
+                        onChange={(e) => setSettings(prev => ({ ...prev, collectEmail: e.target.checked }))}
                         className="w-4 h-4 rounded"
                         style={{ accentColor: 'rgb(169, 189, 203)' }}
                       />
@@ -1447,7 +1525,8 @@ function ChatbotDashboardContent() {
                       </label>
                       <textarea
                         rows={3}
-                        defaultValue="Hello! How can I help you today?"
+                        value={settings.welcomeMessage}
+                        onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
                         placeholder="Enter the first message visitors will see"
                         className="w-full px-3 py-2 rounded-lg"
                         style={{
@@ -1466,7 +1545,8 @@ function ChatbotDashboardContent() {
                       </label>
                       <textarea
                         rows={2}
-                        defaultValue="We're currently offline but will respond as soon as possible."
+                        value={settings.businessHoursMessage}
+                        onChange={(e) => setSettings(prev => ({ ...prev, businessHoursMessage: e.target.value }))}
                         placeholder="Message shown outside business hours"
                         className="w-full px-3 py-2 rounded-lg"
                         style={{
@@ -1483,9 +1563,28 @@ function ChatbotDashboardContent() {
                 </div>
                 
                 <div className="pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                  <button className="px-4 py-2 rounded-lg hover:opacity-80" style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}>
-                    Save Settings
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={saveSettings}
+                      disabled={isSavingSettings}
+                      className="px-4 py-2 rounded-lg hover:opacity-80 flex items-center gap-2 disabled:opacity-50" 
+                      style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}
+                    >
+                      {isSavingSettings ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                      ) : (
+                        <><Save className="w-4 h-4" /> Save Settings</>
+                      )}
+                    </button>
+                    {settingsSaved && (
+                      <span className="flex items-center gap-1 text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                        <CheckCircle className="w-4 h-4" /> Settings saved successfully!
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    Changes will be applied to your chatbot widget immediately via the n8n workflow
+                  </p>
                 </div>
               </div>
             </div>
