@@ -38,7 +38,11 @@ export async function POST(request: NextRequest) {
       where: { license_key: user.license_key }
     });
 
-    if (license?.tier !== 'enterprise') {
+    // Check if user has enterprise plan (based on plan field or high total price)
+    const isEnterprise = license?.plan === 'enterprise' || 
+                         (license?.total_pence && license.total_pence >= 9900); // £99+ is enterprise
+    
+    if (!isEnterprise) {
       return NextResponse.json(
         { 
           error: 'Custom Agent Builder requires Enterprise tier',
