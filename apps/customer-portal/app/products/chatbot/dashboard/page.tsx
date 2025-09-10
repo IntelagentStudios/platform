@@ -80,8 +80,10 @@ function ChatbotDashboardContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
-  const [domainFilter, setDomainFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const [topicFilter, setTopicFilter] = useState('all');
+  const [availableProductKeys, setAvailableProductKeys] = useState<{key: string, domain?: string}[]>([]);
+  const [selectedProductKey, setSelectedProductKey] = useState<string>('all');
   const [groupBy, setGroupBy] = useState('time');
   const [customKnowledge, setCustomKnowledge] = useState('');
   const [uniqueTopics, setUniqueTopics] = useState<string[]>([]);
@@ -117,7 +119,7 @@ function ChatbotDashboardContent() {
 
   useEffect(() => {
     filterConversations();
-  }, [conversations, searchQuery, dateFilter, domainFilter, topicFilter]);
+  }, [conversations, searchQuery, dateFilter, selectedDate, topicFilter, selectedProductKey]);
 
   useEffect(() => {
     // Extract unique topics when conversations change
@@ -177,6 +179,25 @@ function ChatbotDashboardContent() {
         // Extract unique topics for filtering
         const topics = getUniqueTopics(data.conversations);
         setUniqueTopics(topics);
+        
+        // Extract unique product keys if user has multiple
+        const uniqueKeys = new Map<string, string>();
+        data.conversations.forEach((conv: Conversation) => {
+          if (conv.product_key) {
+            uniqueKeys.set(conv.product_key, conv.domain || '');
+          }
+        });
+        
+        const keysArray = Array.from(uniqueKeys.entries()).map(([key, domain]) => ({
+          key,
+          domain
+        }));
+        
+        if (keysArray.length > 1) {
+          setAvailableProductKeys(keysArray);
+        } else {
+          setAvailableProductKeys([]); // Clear if only one key
+        }
         
         // Auto-select first conversation if none selected
         if (!selectedConversation && data.conversations.length > 0) {
@@ -274,9 +295,13 @@ function ChatbotDashboardContent() {
       );
     }
 
-    // Domain filter
-    if (domainFilter !== 'all') {
-      filtered = filtered.filter(conv => conv.domain === domainFilter);
+    // Custom date filter
+    if (dateFilter === 'custom' && selectedDate) {
+      const selectedDateObj = new Date(selectedDate);
+      filtered = filtered.filter(conv => {
+        const convDate = new Date(conv.first_message_at);
+        return convDate.toDateString() === selectedDateObj.toDateString();
+      });
     }
 
     // Topic filter
@@ -285,6 +310,11 @@ function ChatbotDashboardContent() {
         const topic = extractTopic(conv.messages || []);
         return topic === topicFilter;
       });
+    }
+    
+    // Product key filter (for accounts with multiple keys)
+    if (selectedProductKey !== 'all' && availableProductKeys.length > 1) {
+      filtered = filtered.filter(conv => conv.product_key === selectedProductKey);
     }
 
     setFilteredConversations(filtered);
@@ -636,7 +666,7 @@ function ChatbotDashboardContent() {
                       >
                         <Filter className="w-4 h-4" />
                         Filters
-                        {(dateFilter !== 'all' || domainFilter !== 'all' || topicFilter !== 'all') && (
+                        {(dateFilter !== 'all' || topicFilter !== 'all' || selectedProductKey !== 'all') && (
                           <span className="ml-1 rounded-full w-2 h-2" style={{ backgroundColor: 'rgb(169, 189, 203)' }} />
                         )}
                       </button>
@@ -653,31 +683,34 @@ function ChatbotDashboardContent() {
                     
                     {showFilters && (
                       <div className="space-y-2 pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                        <select
-                          value={dateFilter}
-                          onChange={(e) => setDateFilter(e.target.value)}
-                          className="w-full px-3 py-1.5 text-sm border rounded-lg"
-                          style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="all">All time</option>
-                          <option value="today">Today</option>
-                          <option value="week">Last 7 days</option>
-                          <option value="month">Last 30 days</option>
-                        </select>
-                        
-                        {stats?.domains && stats.domains.length > 0 && (
+                        <div className="flex gap-2">
                           <select
-                            value={domainFilter}
-                            onChange={(e) => setDomainFilter(e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                            value={dateFilter}
+                            onChange={(e) => {
+                              setDateFilter(e.target.value);
+                              if (e.target.value !== 'custom') {
+                                setSelectedDate('');
+                              }
+                            }}
+                            className="flex-1 px-3 py-1.5 text-sm border rounded-lg"
                             style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
                           >
-                            <option value="all">All domains</option>
-                            {stats.domains.map((domain) => (
-                              <option key={domain} value={domain}>{domain}</option>
-                            ))}
+                            <option value="all">All time</option>
+                            <option value="today">Today</option>
+                            <option value="week">Last 7 days</option>
+                            <option value="month">Last 30 days</option>
+                            <option value="custom">Custom date</option>
                           </select>
-                        )}
+                          {dateFilter === 'custom' && (
+                            <input
+                              type="date"
+                              value={selectedDate}
+                              onChange={(e) => setSelectedDate(e.target.value)}
+                              className="px-3 py-1.5 text-sm border rounded-lg"
+                              style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                            />
+                          )}
+                        </div>
                         
                         {uniqueTopics.length > 0 && (
                           <select
@@ -689,6 +722,22 @@ function ChatbotDashboardContent() {
                             <option value="all">All topics</option>
                             {uniqueTopics.map((topic) => (
                               <option key={topic} value={topic}>{topic}</option>
+                            ))}
+                          </select>
+                        )}
+                        
+                        {availableProductKeys.length > 1 && (
+                          <select
+                            value={selectedProductKey}
+                            onChange={(e) => setSelectedProductKey(e.target.value)}
+                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
+                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                          >
+                            <option value="all">All chatbots</option>
+                            {availableProductKeys.map((pk) => (
+                              <option key={pk.key} value={pk.key}>
+                                {pk.domain || pk.key.substring(0, 20) + '...'}
+                              </option>
                             ))}
                           </select>
                         )}
