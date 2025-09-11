@@ -1155,14 +1155,8 @@ function ChatbotDashboardContent() {
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
 {`<!-- Intelagent Chatbot Widget -->
-<script>
-  (function() {
-    var script = document.createElement('script');
-    script.src = 'https://cdn.intelagent.ai/chatbot.js';
-    script.setAttribute('data-site-key', '${productKey}');
-    script.async = true;
-    document.head.appendChild(script);
-  })();
+<script src="https://dashboard.intelagentstudios.com/chatbot-widget-v3.js" 
+        data-product-key="${productKey}">
 </script>`}
                     </pre>
                   </div>
