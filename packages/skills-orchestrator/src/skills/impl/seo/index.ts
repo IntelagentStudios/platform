@@ -19,6 +19,14 @@ export { VisualSearchOptimizerSkill } from './VisualSearchOptimizerSkill';
 
 // E-E-A-T & Authority Skills
 export { EEATScorerSkill } from './EEATScorerSkill';
+export { AuthorAuthorityBuilderSkill } from './AuthorAuthorityBuilderSkill';
 
-// Additional skills (Performance, Content Intelligence, Monitoring) 
-// will be implemented as needed based on customer requirements
+// Performance & Technical Skills
+export { CoreWebVitalsOptimizerSkill } from './CoreWebVitalsOptimizerSkill';
+export { JavaScriptSEOAnalyzerSkill } from './JavaScriptSEOAnalyzerSkill';
+
+// Content Intelligence Skills
+export { ContentGapAnalyzerSkill } from './ContentGapAnalyzerSkill';
+export { ContentOptimizerAISkill } from './ContentOptimizerAISkill';
+
+// Additional monitoring skills will be implemented as needed
