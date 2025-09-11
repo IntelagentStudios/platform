@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Get saved settings (if any) from metadata or a settings table
-    const settings = productKeyInfo.metadata?.settings || {};
+    const metadata = productKeyInfo.metadata as any;
+    const settings = metadata?.settings || {};
 
     // Return configuration for the widget
     return NextResponse.json({
