@@ -56,34 +56,68 @@ export async function GET(
       }
     }
 
-    // TODO: Implement custom_knowledge when table is added to schema
-    // For now, return empty knowledge
-    const knowledge: any[] = [];
+    // Get all active custom knowledge (text-based) for this product
+    let customKnowledge = [];
+    try {
+      customKnowledge = await prisma.custom_knowledge.findMany({
+        where: {
+          product_key: productKey,
+          is_active: true,
+          OR: [
+            { expires_at: null },
+            { expires_at: { gt: new Date() } }
+          ]
+        },
+        select: {
+          content: true,
+          knowledge_type: true
+        }
+      });
+    } catch (error) {
+      console.log('Custom knowledge fetch error (non-critical):', error);
+    }
     
-    // // Get all active custom knowledge for this product
-    // const knowledge = await prisma.custom_knowledge.findMany({
-    //   where: {
-    //     product_key: productKey,
-    //     is_active: true,
-    //     OR: [
-    //       { expires_at: null },
-    //       { expires_at: { gt: new Date() } }
-    //     ]
-    //   },
-    //   select: {
-    //     content: true,
-    //     knowledge_type: true
-    //   }
-    // });
+    // Get all knowledge files for this product
+    let knowledgeFiles = [];
+    try {
+      knowledgeFiles = await prisma.knowledge_files.findMany({
+        where: {
+          product_key: productKey
+        },
+        select: {
+          content: true,
+          filename: true
+        }
+      });
+    } catch (error) {
+      console.log('Knowledge files fetch error (non-critical):', error);
+    }
 
     // Combine all knowledge into a single response
-    const combinedKnowledge = knowledge.map(k => k.content).join('\n\n');
+    let combinedKnowledge = '';
+    
+    // Add custom knowledge
+    if (customKnowledge.length > 0) {
+      combinedKnowledge += customKnowledge.map(k => 
+        `[${k.knowledge_type}]\n${k.content}`
+      ).join('\n\n---\n\n');
+    }
+    
+    // Add knowledge files
+    if (knowledgeFiles.length > 0) {
+      if (combinedKnowledge) combinedKnowledge += '\n\n---\n\n';
+      combinedKnowledge += knowledgeFiles.map(f => 
+        `[File: ${f.filename}]\n${f.content}`
+      ).join('\n\n---\n\n');
+    }
 
     return NextResponse.json({
       success: true,
       knowledge: combinedKnowledge,
-      has_knowledge: knowledge.length > 0,
-      types: knowledge.map(k => k.knowledge_type)
+      has_knowledge: combinedKnowledge.length > 0,
+      types: customKnowledge.map(k => k.knowledge_type),
+      files_count: knowledgeFiles.length,
+      custom_count: customKnowledge.length
     });
 
   } catch (error) {

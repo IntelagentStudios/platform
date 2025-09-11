@@ -6,13 +6,56 @@ import { cookies } from 'next/headers';
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const simpleAuth = cookieStore.get('simple-auth');
     
-    if (!simpleAuth || simpleAuth.value !== 'authenticated-user-harry') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check for simple auth first
+    const simpleAuth = cookieStore.get('auth');
+    let productKey = '';
+    
+    if (simpleAuth) {
+      if (simpleAuth.value === 'authenticated-user-harry') {
+        productKey = 'chat_9b3f7e8a2c5d1f0e';
+      } else if (simpleAuth.value === 'authenticated-test-friend') {
+        productKey = 'chat_james_nw1s_2025';
+      }
     }
-
-    const productKey = 'chat_9b3f7e8a2c5d1f0e';
+    
+    // If no simple auth, check JWT
+    if (!productKey) {
+      const authToken = cookieStore.get('auth_token');
+      if (!authToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      try {
+        const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+        const licenseKey = decoded.licenseKey;
+        
+        if (!licenseKey) {
+          return NextResponse.json({ error: 'No license key in token' }, { status: 401 });
+        }
+        
+        // Get product key from license
+        const productKeyRecord = await prisma.product_keys.findFirst({
+          where: {
+            license_key: licenseKey,
+            product: 'chatbot',
+            status: 'active'
+          },
+          select: { product_key: true }
+        });
+        
+        if (!productKeyRecord) {
+          return NextResponse.json({ error: 'No chatbot configured' }, { status: 404 });
+        }
+        
+        productKey = productKeyRecord.product_key;
+      } catch (error) {
+        console.error('JWT verification error:', error);
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+    }
     
     // Get all knowledge files for this product
     const files = await prisma.knowledge_files.findMany({
@@ -45,15 +88,60 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const simpleAuth = cookieStore.get('simple-auth');
     
-    if (!simpleAuth || simpleAuth.value !== 'authenticated-user-harry') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check for simple auth first
+    const simpleAuth = cookieStore.get('auth');
+    let defaultProductKey = '';
+    
+    if (simpleAuth) {
+      if (simpleAuth.value === 'authenticated-user-harry') {
+        defaultProductKey = 'chat_9b3f7e8a2c5d1f0e';
+      } else if (simpleAuth.value === 'authenticated-test-friend') {
+        defaultProductKey = 'chat_james_nw1s_2025';
+      }
+    }
+    
+    // If no simple auth, check JWT
+    if (!defaultProductKey) {
+      const authToken = cookieStore.get('auth_token');
+      if (!authToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      try {
+        const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+        const licenseKey = decoded.licenseKey;
+        
+        if (!licenseKey) {
+          return NextResponse.json({ error: 'No license key in token' }, { status: 401 });
+        }
+        
+        // Get product key from license
+        const productKeyRecord = await prisma.product_keys.findFirst({
+          where: {
+            license_key: licenseKey,
+            product: 'chatbot',
+            status: 'active'
+          },
+          select: { product_key: true }
+        });
+        
+        if (!productKeyRecord) {
+          return NextResponse.json({ error: 'No chatbot configured' }, { status: 404 });
+        }
+        
+        defaultProductKey = productKeyRecord.product_key;
+      } catch (error) {
+        console.error('JWT verification error:', error);
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
     }
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const productKey = formData.get('productKey') as string || 'chat_9b3f7e8a2c5d1f0e';
+    const productKey = formData.get('productKey') as string || defaultProductKey;
     
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -124,9 +212,36 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const simpleAuth = cookieStore.get('simple-auth');
     
-    if (!simpleAuth || simpleAuth.value !== 'authenticated-user-harry') {
+    // Check for simple auth first
+    const simpleAuth = cookieStore.get('auth');
+    let authorized = false;
+    
+    if (simpleAuth && (simpleAuth.value === 'authenticated-user-harry' || simpleAuth.value === 'authenticated-test-friend')) {
+      authorized = true;
+    }
+    
+    // If no simple auth, check JWT
+    if (!authorized) {
+      const authToken = cookieStore.get('auth_token');
+      if (!authToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      try {
+        const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+        if (decoded.licenseKey) {
+          authorized = true;
+        }
+      } catch (error) {
+        console.error('JWT verification error:', error);
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+    }
+    
+    if (!authorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -155,9 +270,36 @@ export async function DELETE(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const simpleAuth = cookieStore.get('simple-auth');
     
-    if (!simpleAuth || simpleAuth.value !== 'authenticated-user-harry') {
+    // Check for simple auth first
+    const simpleAuth = cookieStore.get('auth');
+    let authorized = false;
+    
+    if (simpleAuth && (simpleAuth.value === 'authenticated-user-harry' || simpleAuth.value === 'authenticated-test-friend')) {
+      authorized = true;
+    }
+    
+    // If no simple auth, check JWT
+    if (!authorized) {
+      const authToken = cookieStore.get('auth_token');
+      if (!authToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      try {
+        const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+        const jwt = await import('jsonwebtoken');
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
+        if (decoded.licenseKey) {
+          authorized = true;
+        }
+      } catch (error) {
+        console.error('JWT verification error:', error);
+        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      }
+    }
+    
+    if (!authorized) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
