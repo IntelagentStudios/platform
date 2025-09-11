@@ -9,6 +9,16 @@ export { AISearchOptimizerSkill } from './AISearchOptimizerSkill';
 export { LLMTrainingOptimizerSkill } from './LLMTrainingOptimizerSkill';
 export { RAGOptimizationSkill } from './RAGOptimizationSkill';
 
-// Additional SEO skills will be implemented as needed
-// Structured Data, Voice Search, E-E-A-T, Performance, Content Intelligence, and Monitoring skills
-// are planned for future implementation based on customer requirements
+// Structured Data & Knowledge Graph Skills
+export { SchemaMarkupGeneratorSkill } from './SchemaMarkupGeneratorSkill';
+export { EntityExtractorSkill } from './EntityExtractorSkill';
+
+// Voice & Visual Search Skills
+export { VoiceSearchOptimizerSkill } from './VoiceSearchOptimizerSkill';
+export { VisualSearchOptimizerSkill } from './VisualSearchOptimizerSkill';
+
+// E-E-A-T & Authority Skills
+export { EEATScorerSkill } from './EEATScorerSkill';
+
+// Additional skills (Performance, Content Intelligence, Monitoring) 
+// will be implemented as needed based on customer requirements
