@@ -36,8 +36,7 @@ export async function GET(request: NextRequest) {
         is_active: true
       },
       select: {
-        content: true,
-        instructions: true
+        content: true
       }
     });
 
@@ -65,7 +64,7 @@ export async function GET(request: NextRequest) {
         // Custom knowledge for AI context
         customKnowledge: customKnowledge ? {
           content: customKnowledge.content,
-          instructions: customKnowledge.instructions
+          instructions: 'Use the provided knowledge base content to answer user questions accurately.'
         } : null,
         
         // Product key for tracking

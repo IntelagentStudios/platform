@@ -72,23 +72,34 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       // Append to existing knowledge
+      const updatedContent = existing.content + '\n\n--- Document Upload ---\n' + 
+                            `File: ${file.name}\n` +
+                            `Uploaded: ${new Date().toISOString()}\n` +
+                            '---\n\n' + content;
+      
       await prisma.custom_knowledge.update({
         where: { id: existing.id },
         data: {
-          content: existing.content + '\n\n---\n\n' + content,
-          instructions: existing.instructions + `\nLast upload: ${file.name} at ${new Date().toISOString()}`
+          content: updatedContent,
+          updated_at: new Date()
         }
       });
     } else {
       // Create new knowledge entry
+      const documentContent = `--- Document Upload ---\n` +
+                             `File: ${file.name}\n` +
+                             `Uploaded: ${new Date().toISOString()}\n` +
+                             `Instructions: Use this document content to answer user questions accurately.\n` +
+                             '---\n\n' + content;
+      
       await prisma.custom_knowledge.create({
         data: {
           license_key: licenseKey,
-          product_key: productKey,
+          product_key: productKey || 'default',
           knowledge_type: 'document',
-          content: content,
-          instructions: `Use this document content to answer user questions accurately.\nFirst upload: ${file.name} at ${new Date().toISOString()}`,
-          is_active: true
+          content: documentContent,
+          is_active: true,
+          created_by: licenseKey
         }
       });
     }
