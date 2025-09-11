@@ -693,7 +693,7 @@ export default function SettingsPage() {
                 }}
               >
                 <h2 className="text-xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Chatbot Widget Configuration
+                  Chatbot Widget Configuration (v2 - Simplified)
                 </h2>
                 <div className="space-y-6">
                   <div>
