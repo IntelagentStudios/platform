@@ -116,12 +116,13 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
         campaign_id: campaignId,
         ...(leadIds ? { id: { in: leadIds } } : {})
       },
-      include: {
-        activities: {
-          orderBy: { activity_date: 'desc' },
-          take: 10
-        }
-      }
+      // TODO: Add include when relations are set up
+      // include: {
+      //   activities: {
+      //     orderBy: { activity_date: 'desc' },
+      //     take: 10
+      //   }
+      // }
     });
 
     const scoredLeads = [];
@@ -138,17 +139,17 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       if (lead.job_title) score += 5;
       if (lead.company_size === '201-1000' || lead.company_size === '1000+') score += 10;
       
-      // Score based on activities
-      const recentActivities = lead.activities.filter(a => 
-        new Date(a.activity_date) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      );
-      score += recentActivities.length * 5;
+      // Score based on activities (simplified without relation)
+      // const recentActivities = lead.activities?.filter(a => 
+      //   new Date(a.activity_date) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      // ) || [];
+      // score += recentActivities.length * 5;
       
-      // Check for positive intent
-      const positiveActivity = lead.activities.find(a => 
-        a.intent_detected === 'interested' || a.activity_type === 'meeting_scheduled'
-      );
-      if (positiveActivity) score += 20;
+      // Check for positive intent (simplified)
+      // const positiveActivity = lead.activities?.find(a => 
+      //   a.intent_detected === 'interested' || a.activity_type === 'meeting_scheduled'
+      // );
+      // if (positiveActivity) score += 20;
       
       // Cap score at 100
       score = Math.min(100, score);
@@ -211,7 +212,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       data: {
         status: intent === 'interested' ? 'qualified' : 
                 intent === 'not_interested' ? 'lost' : 'responded',
-        last_response: new Date(),
+        last_response: responseContent,
         lead_score: Math.min(100, lead.lead_score + (intent === 'interested' ? 20 : 5))
       }
     });

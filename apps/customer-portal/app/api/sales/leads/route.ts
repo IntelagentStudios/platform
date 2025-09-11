@@ -57,20 +57,21 @@ export async function GET(request: NextRequest) {
     // Fetch leads with activity counts
     const leads = await prisma.sales_leads.findMany({
       where,
-      include: {
-        campaign: {
-          select: {
-            id: true,
-            name: true,
-            status: true
-          }
-        },
-        _count: {
-          select: {
-            activities: true
-          }
-        }
-      },
+      // TODO: Add includes when relations are set up
+      // include: {
+      //   campaign: {
+      //     select: {
+      //       id: true,
+      //       name: true,
+      //       status: true
+      //     }
+      //   },
+      //   _count: {
+      //     select: {
+      //       activities: true
+      //     }
+      //   }
+      // },
       orderBy: {
         [sortBy]: sortOrder
       },

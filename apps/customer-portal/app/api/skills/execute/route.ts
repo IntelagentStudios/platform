@@ -80,10 +80,12 @@ export async function POST(request: NextRequest) {
     const execution = await prisma.executions.create({
       data: {
         id: executionId,
+        run_id: uuidv4(),
         license_key: license.license_key,
         execution_type: 'skill',
         execution_name: `Skill: ${skillId}`,
         status: 'running',
+        plan: {},
         input_data: {
           skillId,
           params
@@ -96,19 +98,20 @@ export async function POST(request: NextRequest) {
     });
 
     // Log execution start event
-    await prisma.execution_events.create({
-      data: {
-        execution_id: executionId,
-        event_type: 'start',
-        event_name: `Starting skill: ${skillId}`,
-        event_data: {
-          skillId,
-          params,
-          user: session.user.email
-        },
-        severity: 'info'
-      }
-    });
+    // TODO: Re-enable when execution_events table is added
+    // await prisma.execution_events.create({
+    //   data: {
+    //     execution_id: executionId,
+    //     event_type: 'start',
+    //     event_name: `Starting skill: ${skillId}`,
+    //     event_data: {
+    //       skillId,
+    //       params,
+    //       user: session.user.email
+    //     },
+    //     severity: 'info'
+    //   }
+    // });
 
     // Use Orchestrator Agent - Single point of contact
     const { OrchestratorAgent } = await import('@intelagent/skills-orchestrator');
@@ -151,30 +154,32 @@ export async function POST(request: NextRequest) {
       });
 
       // Log execution completion
-      await prisma.execution_events.create({
-        data: {
-          execution_id: executionId,
-          event_type: result.success ? 'complete' : 'error',
-          event_name: result.success ? `Skill completed: ${skillId}` : `Skill failed: ${skillId}`,
-          event_data: {
-            skillId,
-            success: result.success,
-            executionTime,
-            error: result.error
-          },
-          severity: result.success ? 'info' : 'error'
-        }
-      });
+      // TODO: Re-enable when execution_events table is added
+      // await prisma.execution_events.create({
+      //   data: {
+      //     execution_id: executionId,
+      //     event_type: result.success ? 'complete' : 'error',
+      //     event_name: result.success ? `Skill completed: ${skillId}` : `Skill failed: ${skillId}`,
+      //     event_data: {
+      //       skillId,
+      //       success: result.success,
+      //       executionTime,
+      //       error: result.error
+      //     },
+      //     severity: result.success ? 'info' : 'error'
+      //   }
+      // });
 
       // Track metrics
-      await prisma.execution_metrics.create({
-        data: {
-          execution_id: executionId,
-          metric_name: 'skill_execution_time',
-          metric_value: executionTime,
-          metric_unit: 'ms'
-        }
-      });
+      // TODO: Re-enable when execution_metrics table is added
+      // await prisma.execution_metrics.create({
+      //   data: {
+      //     execution_id: executionId,
+      //     metric_name: 'skill_execution_time',
+      //     metric_value: executionTime,
+      //     metric_unit: 'ms'
+      //   }
+      // });
 
       // Stats are now handled by the orchestrator internally
       
@@ -195,19 +200,20 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       await updateExecutionStatus(executionId, 'failed', error.message);
       
-      await prisma.execution_events.create({
-        data: {
-          execution_id: executionId,
-          event_type: 'error',
-          event_name: `Skill error: ${skillId}`,
-          event_data: {
-            skillId,
-            error: error.message,
-            stack: error.stack
-          },
-          severity: 'error'
-        }
-      });
+      // TODO: Re-enable when execution_events table is added
+      // await prisma.execution_events.create({
+      //   data: {
+      //     execution_id: executionId,
+      //     event_type: 'error',
+      //     event_name: `Skill error: ${skillId}`,
+      //     event_data: {
+      //       skillId,
+      //       error: error.message,
+      //       stack: error.stack
+      //     },
+      //     severity: 'error'
+      //   }
+      // });
 
       return NextResponse.json(
         { 
