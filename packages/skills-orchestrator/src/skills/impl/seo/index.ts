@@ -28,5 +28,9 @@ export { JavaScriptSEOAnalyzerSkill } from './JavaScriptSEOAnalyzerSkill';
 // Content Intelligence Skills
 export { ContentGapAnalyzerSkill } from './ContentGapAnalyzerSkill';
 export { ContentOptimizerAISkill } from './ContentOptimizerAISkill';
+export { ContentCannibalizationDetectorSkill } from './ContentCannibalizationDetectorSkill';
 
-// Additional monitoring skills will be implemented as needed
+// Monitoring & Analytics Skills
+export { SERPMonitorSkill } from './SERPMonitorSkill';
+export { AISearchVisibilityTrackerSkill } from './AISearchVisibilityTrackerSkill';
+export { ConversionOptimizerSkill } from './ConversionOptimizerSkill';

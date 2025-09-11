@@ -522,8 +522,8 @@ export class SkillsRegistry {
       
       // ============ NEW SKILLS FROM DATA PROCESSING BATCH ============
       case 'csv_processor':
-        const { CsvProcessorSkill } = await import('./impl/CsvProcessorSkill');
-        return new CsvProcessorSkill();
+        const { CsvParserSkill } = await import('./impl/CsvParserSkill');
+        return new CsvParserSkill();
       
       case 'data_cleaner':
         const { DataCleanerSkill } = await import('./impl/DataCleanerSkill');
