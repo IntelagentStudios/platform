@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     let realProductKey = '';
     
     if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
-      realProductKey = 'PK-INTL-AGNT-BOSS-MODE';
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
     } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
       realProductKey = 'chat_1d37512c82d10c04';
     }
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     let userEmail = '';
     
     if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
-      realProductKey = 'PK-INTL-AGNT-BOSS-MODE';
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
       userEmail = 'harry@intelagentstudios.com';
     } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
       realProductKey = 'chat_1d37512c82d10c04';
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
           },
           create: {
             product_key: realProductKey,
-            license_key: realProductKey === 'PK-INTL-AGNT-BOSS-MODE' ? 'INTL-AGNT-BOSS-MODE' : 'INTL-NW1S-QANW-2025',
+            license_key: realProductKey === 'chat_9b3f7e8a2c5d1f0e' ? 'INTL-AGNT-BOSS-MODE' : 'INTL-NW1S-QANW-2025',
             knowledge_type: 'general',
             content: body.knowledge || body.content || '',
             created_by: userEmail

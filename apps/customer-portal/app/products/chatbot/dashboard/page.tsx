@@ -526,17 +526,6 @@ function ChatbotDashboardContent() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* VERSION BANNER - Remove after confirming deployment */}
-        <div 
-          className="rounded-lg p-4 mb-6 text-center font-bold text-lg"
-          style={{ 
-            backgroundColor: '#10B981', 
-            color: 'white'
-          }}
-        >
-          ✅ SIMPLIFIED SETTINGS V2 - Single Theme Color Active
-        </div>
-        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1454,10 +1443,10 @@ function ChatbotDashboardContent() {
               </h2>
               
               <div className="space-y-6">
-                {/* Widget Appearance - SIMPLIFIED */}
+                {/* Widget Appearance */}
                 <div>
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Widget Appearance (Simplified)
+                    Widget Appearance
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

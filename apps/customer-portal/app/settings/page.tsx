@@ -327,19 +327,6 @@ export default function SettingsPage() {
 
       {/* Content */}
       <div className="p-8">
-        {/* DEBUG BANNER - Remove this after confirming deployment */}
-        <div 
-          className="rounded-lg p-4 mb-6 text-center"
-          style={{ 
-            backgroundColor: '#10B981', 
-            color: 'white',
-            fontSize: '18px',
-            fontWeight: 'bold'
-          }}
-        >
-          🚀 VERSION 2 DEPLOYED - SIMPLIFIED SETTINGS ACTIVE
-        </div>
-        
         {saveMessage && (
           <div 
             className="rounded-lg p-4 mb-6 flex items-center space-x-3"
@@ -706,7 +693,7 @@ export default function SettingsPage() {
                 }}
               >
                 <h2 className="text-xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Chatbot Widget Configuration (v2 - Simplified)
+                  Chatbot Widget Configuration
                 </h2>
                 <div className="space-y-6">
                   <div>
