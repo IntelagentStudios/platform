@@ -246,17 +246,17 @@ export default function SettingsPage() {
       // Get the product key from user's license
       const productKey = user?.productKey || 'DEFAULT_KEY';
       
-      // Prepare settings object
+      // Prepare settings object - using chatbotConfig state
       const settings = {
-        primaryColor: formData.primaryColor,
-        headerColor: formData.headerColor || formData.primaryColor,
-        backgroundColor: formData.backgroundColor,
-        position: formData.position,
-        welcomeMessage: formData.welcomeMessage,
-        responseStyle: formData.responseStyle,
-        playNotificationSound: formData.playNotificationSound,
-        showWelcomeMessage: formData.showWelcomeMessage,
-        collectEmail: formData.collectEmail
+        primaryColor: chatbotConfig.primaryColor,
+        headerColor: chatbotConfig.headerColor || chatbotConfig.primaryColor,
+        backgroundColor: chatbotConfig.backgroundColor,
+        position: chatbotConfig.position,
+        welcomeMessage: chatbotConfig.welcomeMessage,
+        responseStyle: chatbotConfig.responseStyle,
+        playNotificationSound: chatbotConfig.playNotificationSound,
+        showWelcomeMessage: chatbotConfig.showWelcomeMessage,
+        collectEmail: chatbotConfig.collectEmail
       };
       
       // Save to backend
