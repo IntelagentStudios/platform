@@ -39,7 +39,9 @@ import {
   Loader2,
   ExternalLink,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  File,
+  FileText
 } from 'lucide-react';
 
 interface Conversation {
@@ -89,6 +91,8 @@ function ChatbotDashboardContent() {
   const [uniqueTopics, setUniqueTopics] = useState<string[]>([]);
   const [savingKnowledge, setSavingKnowledge] = useState(false);
   const [knowledgeSaved, setKnowledgeSaved] = useState(false);
+  const [knowledgeFiles, setKnowledgeFiles] = useState<any[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
@@ -400,6 +404,16 @@ function ChatbotDashboardContent() {
 
   const loadCustomKnowledge = async () => {
     try {
+      // Load knowledge files
+      const filesRes = await fetch('/api/products/chatbot/knowledge-files', {
+        credentials: 'include'
+      });
+      if (filesRes.ok) {
+        const filesData = await filesRes.json();
+        setKnowledgeFiles(filesData.files || []);
+      }
+      
+      // Load legacy text knowledge
       const res = await fetch('/api/products/chatbot/custom-knowledge', {
         credentials: 'include'
       });
@@ -1008,119 +1022,127 @@ function ChatbotDashboardContent() {
 
         {/* Knowledge Base Tab */}
         {activeTab === 'knowledge' && (
-          <div className="max-w-4xl mx-auto">
-            <div className="rounded-lg shadow-sm border p-6" 
-                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Custom Knowledge Base
-                </h2>
-                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                  Add custom information that your chatbot should know about your business, products, or services.
-                </p>
-              </div>
-              
-              <div className="space-y-6">
-                {/* PDF Upload Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Upload Documents
-                  </label>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Upload Section */}
+              <div className="rounded-lg shadow-sm border p-6" 
+                   style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Upload Knowledge Files
+                  </h2>
+                  <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Upload documents with information about your business
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
                   <div className="border-2 border-dashed rounded-lg p-6 text-center"
                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx"
+                      accept=".txt,.md,.json,.pdf,.doc,.docx,.csv"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          setUploadingFile(true);
                           const formData = new FormData();
                           formData.append('file', file);
                           formData.append('productKey', productKey || siteKey || '');
                           
                           try {
-                            const res = await fetch('/api/products/chatbot/upload-document', {
+                            const res = await fetch('/api/products/chatbot/knowledge-files', {
                               method: 'POST',
-                              body: formData
+                              body: formData,
+                              credentials: 'include'
                             });
                             
                             if (res.ok) {
-                              alert(`Document "${file.name}" uploaded successfully!`);
-                              // Don't add to text box, just refresh to show in knowledge base
+                              await loadCustomKnowledge();
+                              e.target.value = '';
                             } else {
-                              alert('Failed to upload document. Please try again.');
+                              alert('Failed to upload file');
                             }
                           } catch (error) {
                             console.error('Upload error:', error);
-                            alert('Error uploading document.');
+                            alert('Error uploading file');
+                          } finally {
+                            setUploadingFile(false);
                           }
                         }
                       }}
                       className="hidden"
-                      id="pdf-upload"
+                      id="file-upload"
+                      disabled={uploadingFile}
                     />
-                    <label htmlFor="pdf-upload" className="cursor-pointer">
+                    <label htmlFor="file-upload" className="cursor-pointer">
                       <div className="flex flex-col items-center">
-                        <svg className="w-12 h-12 mb-3" style={{ color: 'rgba(169, 189, 203, 0.5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <p className="text-sm mb-1" style={{ color: 'rgb(229, 227, 220)' }}>Click to upload documents</p>
-                        <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>PDF, Word, Excel, PowerPoint, Text, CSV</p>
+                        {uploadingFile ? (
+                          <Loader2 className="w-12 h-12 mb-3 animate-spin" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                        ) : (
+                          <svg className="w-12 h-12 mb-3" style={{ color: 'rgba(169, 189, 203, 0.5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                        )}
+                        <p className="text-sm mb-1" style={{ color: 'rgb(229, 227, 220)' }}>
+                          {uploadingFile ? 'Uploading...' : 'Click to upload files'}
+                        </p>
+                        <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                          Text, Markdown, JSON (PDF support coming soon)
+                        </p>
                       </div>
                     </label>
                   </div>
-                  <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                    Upload documents containing product info, FAQs, manuals, or company data
-                  </p>
-                </div>
-                
-                {/* Text Input Section */}
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Knowledge Content
-                  </label>
-                  <textarea
-                    value={customKnowledge}
-                    onChange={(e) => setCustomKnowledge(e.target.value)}
-                    placeholder="Enter custom information for your chatbot..."
-                    rows={10}
-                    className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2"
-                    style={{
-                      backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                      border: '1px solid rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(229, 227, 220)'
-                    }}
-                  />
-                  <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                    Examples: Business hours, pricing information, FAQs, product details, contact information
-                  </p>
-                </div>
-                
-                <div className="flex items-center justify-between">
+                  
+                  {/* Quick Add Section */}
                   <div>
-                    {knowledgeSaved && (
-                      <div className="flex items-center gap-2" style={{ color: 'rgb(144, 238, 144)' }}>
-                        <CheckCircle className="w-5 h-5" />
-                        <span>Knowledge saved successfully!</span>
-                      </div>
-                    )}
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Quick Add (Optional)
+                    </label>
+                    <textarea
+                      value={customKnowledge}
+                      onChange={(e) => setCustomKnowledge(e.target.value)}
+                      placeholder="Paste or type quick info here..."
+                      rows={6}
+                      className="w-full px-3 py-2 rounded-lg"
+                      style={{
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                        border: '1px solid rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    />
+                    <div className="mt-2 flex justify-between items-center">
+                      <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        For quick updates without uploading files
+                      </p>
+                      <button
+                        onClick={saveCustomKnowledge}
+                        disabled={savingKnowledge || !customKnowledge}
+                        className="text-sm px-3 py-1.5 rounded hover:opacity-80 disabled:opacity-50"
+                        style={{
+                          backgroundColor: 'rgb(169, 189, 203)',
+                          color: 'rgb(48, 54, 54)'
+                        }}
+                      >
+                        {savingKnowledge ? 'Saving...' : 'Add'}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={saveCustomKnowledge}
-                    disabled={savingKnowledge}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    style={{
-                      backgroundColor: 'rgb(169, 189, 203)',
-                      color: 'rgb(48, 54, 54)'
-                    }}
-                  >
-                    {savingKnowledge ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    {savingKnowledge ? 'Saving...' : 'Save Knowledge'}
-                  </button>
+                </div>
+              </div>
+              
+              {/* Files List Section */}
+              <div className="rounded-lg shadow-sm border p-6" 
+                   style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Knowledge Library
+                    </h2>
+                    <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      {knowledgeFiles.length} file{knowledgeFiles.length !== 1 ? 's' : ''} uploaded
+                    </p>
+                  </div>
                   <button 
                     onClick={async () => {
                       try {
@@ -1133,24 +1155,93 @@ function ChatbotDashboardContent() {
                           })
                         });
                         if (res.ok) {
-                          alert('Embeddings regenerated! The chatbot will now use your custom knowledge.');
-                        } else {
-                          alert('Failed to regenerate embeddings');
+                          alert('AI memory regenerated successfully!');
                         }
                       } catch (error) {
-                        alert('Error regenerating embeddings');
+                        console.error('Error:', error);
                       }
                     }}
-                    className="px-4 py-2 rounded-lg hover:opacity-80 flex items-center gap-2" 
-                    style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}
+                    className="px-3 py-1.5 rounded-lg flex items-center gap-2 hover:opacity-80 text-sm"
+                    style={{ backgroundColor: 'rgb(144, 238, 144)', color: 'rgb(48, 54, 54)' }}
                   >
                     <RefreshCw className="w-4 h-4" />
-                    Regenerate AI Memory
+                    Sync AI Memory
                   </button>
                 </div>
-                <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  Click "Regenerate AI Memory" after saving to ensure the chatbot uses your latest knowledge (clears old website scrapes)
-                </p>
+                
+                <div className="space-y-2">
+                  {knowledgeFiles.length === 0 ? (
+                    <div className="text-center py-12">
+                      <BookOpen className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+                      <p style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        No knowledge files uploaded yet
+                      </p>
+                      <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                        Upload files to teach your chatbot about your business
+                      </p>
+                    </div>
+                  ) : (
+                    knowledgeFiles.map((file) => (
+                      <div 
+                        key={file.id}
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{ 
+                          backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                          border: '1px solid rgba(169, 189, 203, 0.1)'
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded flex items-center justify-center"
+                               style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+                            {file.type === 'text' ? (
+                              <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            ) : (
+                              <File className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {file.name}
+                            </p>
+                            <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                              {file.size ? `${(file.size / 1024).toFixed(1)} KB • ` : ''}
+                              {new Date(file.uploadedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Delete "${file.name}"?`)) {
+                              try {
+                                const res = await fetch(`/api/products/chatbot/knowledge-files?id=${file.id}`, {
+                                  method: 'DELETE',
+                                  credentials: 'include'
+                                });
+                                if (res.ok) {
+                                  await loadCustomKnowledge();
+                                }
+                              } catch (error) {
+                                console.error('Delete error:', error);
+                              }
+                            }
+                          }}
+                          className="p-1.5 rounded hover:opacity-80"
+                          style={{ color: 'rgba(169, 189, 203, 0.6)' }}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                
+                {knowledgeFiles.length > 0 && (
+                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                      Files are processed and indexed for AI retrieval. Click "Sync AI Memory" after making changes.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

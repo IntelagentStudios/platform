@@ -1,0 +1,10 @@
+# Knowledge base files
+*.txt
+*.md
+*.json
+*.pdf
+*.docx
+
+# Keep directory structure
+!.gitignore
+!README.md

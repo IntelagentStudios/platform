@@ -48,10 +48,27 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Combine all knowledge
-    const combinedKnowledge = customKnowledge
-      .map(k => `[${k.knowledge_type}]\n${k.content}`)
-      .join('\n\n---\n\n');
+    // Process knowledge entries
+    const knowledgePieces: string[] = [];
+    
+    for (const k of customKnowledge) {
+      if (k.knowledge_type === 'file') {
+        // Try to parse as file metadata
+        try {
+          const metadata = JSON.parse(k.content);
+          // For files, add filename as context
+          knowledgePieces.push(`[File: ${metadata.filename}]\n${metadata.content || 'File uploaded: ' + metadata.filename}`);
+        } catch {
+          // Not file metadata, treat as text
+          knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
+        }
+      } else {
+        // Regular text knowledge
+        knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
+      }
+    }
+    
+    const combinedKnowledge = knowledgePieces.join('\n\n---\n\n');
 
     // Call the embeddings generation endpoint
     const embeddingResponse = await fetch(`${request.nextUrl.origin}/api/embeddings/generate`, {
