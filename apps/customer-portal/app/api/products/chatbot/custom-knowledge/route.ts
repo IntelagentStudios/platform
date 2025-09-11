@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
       realProductKey = 'chat_9b3f7e8a2c5d1f0e';
     } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
-      realProductKey = 'chat_test_3f8a2c5d';
+      realProductKey = 'chat_1d37512c82d10c04';
     }
     
     if (realProductKey) {
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       realProductKey = 'chat_9b3f7e8a2c5d1f0e';
       userEmail = 'harry@intelagentstudios.com';
     } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
-      realProductKey = 'chat_test_3f8a2c5d';
+      realProductKey = 'chat_1d37512c82d10c04';
       userEmail = 'james@testbusiness.com';
     }
     
