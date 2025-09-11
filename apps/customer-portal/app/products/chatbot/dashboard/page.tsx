@@ -1193,7 +1193,7 @@ function ChatbotDashboardContent() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded flex items-center justify-center"
                                style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
-                            {file.type === 'text' ? (
+                            {file.file_type?.includes('text') || file.filename?.endsWith('.txt') ? (
                               <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
                             ) : (
                               <File className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1201,11 +1201,11 @@ function ChatbotDashboardContent() {
                           </div>
                           <div>
                             <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {file.name}
+                              {file.filename}
                             </p>
                             <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                              {file.size ? `${(file.size / 1024).toFixed(1)} KB • ` : ''}
-                              {new Date(file.uploadedAt).toLocaleDateString()}
+                              {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB • ` : ''}
+                              {new Date(file.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>

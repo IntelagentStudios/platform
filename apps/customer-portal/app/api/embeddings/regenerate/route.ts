@@ -23,7 +23,21 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Get all custom knowledge for this product
+    // Get all knowledge files for this product
+    const knowledgeFiles = await prisma.knowledge_files.findMany({
+      where: { 
+        product_key: key
+      },
+      select: {
+        filename: true,
+        content: true
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+
+    // Also get legacy custom knowledge
     const customKnowledge = await prisma.custom_knowledge.findMany({
       where: { 
         OR: [
@@ -41,29 +55,24 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (customKnowledge.length === 0) {
+    if (knowledgeFiles.length === 0 && customKnowledge.length === 0) {
       return NextResponse.json({ 
-        error: 'No custom knowledge found',
+        error: 'No knowledge found',
         productKey: key 
       }, { status: 404 });
     }
 
-    // Process knowledge entries
+    // Combine all knowledge
     const knowledgePieces: string[] = [];
     
+    // Add files
+    for (const file of knowledgeFiles) {
+      knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
+    }
+    
+    // Add legacy custom knowledge
     for (const k of customKnowledge) {
-      if (k.knowledge_type === 'file') {
-        // Try to parse as file metadata
-        try {
-          const metadata = JSON.parse(k.content);
-          // For files, add filename as context
-          knowledgePieces.push(`[File: ${metadata.filename}]\n${metadata.content || 'File uploaded: ' + metadata.filename}`);
-        } catch {
-          // Not file metadata, treat as text
-          knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
-        }
-      } else {
-        // Regular text knowledge
+      if (k.knowledge_type !== 'file') {
         knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
       }
     }
@@ -118,15 +127,16 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Embeddings regenerated successfully',
       productKey: key,
-      knowledgeEntries: customKnowledge.length,
+      knowledgeFiles: knowledgeFiles.length,
+      customKnowledgeEntries: customKnowledge.length,
       totalCharacters: combinedKnowledge.length,
       result: result,
       namespace: key,
       instructions: [
         '1. Old embeddings have been cleared from Pinecone',
-        '2. New embeddings generated from your custom knowledge',
-        '3. The chatbot should now use your custom knowledge',
-        '4. Test by asking about store hours'
+        '2. New embeddings generated from your knowledge files',
+        '3. The chatbot will now use your uploaded knowledge',
+        '4. Test by asking questions about your uploaded content'
       ]
     });
   } catch (error) {
