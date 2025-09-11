@@ -88,8 +88,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get Pinecone index
-    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    // Get Pinecone index with namespace for user separation
+    const indexName = process.env.PINECONE_INDEX_NAME || 'chatbot';
+    const namespace = licenseKey; // Use license key as namespace
+    const index = pineconeClient.index(indexName).namespace(namespace);
     
     // Chunk the content
     const chunks = chunkText(content);
@@ -188,8 +190,10 @@ export async function DELETE(request: NextRequest) {
       }, { status: 404 });
     }
     
-    // Delete from Pinecone
-    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    // Delete from Pinecone using namespace
+    const indexName = process.env.PINECONE_INDEX_NAME || 'chatbot';
+    const namespace = licenseKey; // Use license key as namespace
+    const index = pineconeClient.index(indexName).namespace(namespace);
     await index.deleteMany(embeddings.embedding_ids);
     
     // Delete from database

@@ -70,15 +70,16 @@ export async function POST(request: NextRequest) {
       input: query,
     });
     
-    // Search Pinecone
-    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    // Search Pinecone using namespace for user separation
+    const indexName = process.env.PINECONE_INDEX_NAME || 'chatbot';
+    const namespace = productKeyInfo.license_key; // Use license key as namespace
+    const index = pineconeClient.index(indexName).namespace(namespace);
+    
     const searchResults = await index.query({
       vector: queryEmbedding.data[0].embedding,
       topK,
-      includeMetadata: true,
-      filter: {
-        licenseKey: productKeyInfo.license_key
-      }
+      includeMetadata: true
+      // No filter needed - namespace handles separation
     });
     
     // Extract relevant text from results

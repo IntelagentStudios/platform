@@ -197,6 +197,8 @@ export class SkillFactory {
       tags: ['tts', 'speech', 'audio']
     });
     
+    // ============ COMPREHENSIVE SEO SUITE ============
+    
     // Multilingual/SEO skills
     this.addSkill({
       id: 'translate-content_v1',
@@ -228,6 +230,245 @@ export class SkillFactory {
       tags: ['hreflang', 'seo', 'multilingual', 'localization', 'international'],
       requiredParams: ['url', 'locales'],
       optionalParams: ['currentLocale'],
+      isPremium: true
+    });
+    
+    // Traditional SEO Skills
+    this.addSkill({
+      id: 'technical-seo-audit_v1',
+      name: 'Technical SEO Audit',
+      description: 'Comprehensive technical SEO analysis including crawlability, indexability, performance, and security',
+      category: 'seo',
+      tags: ['seo', 'technical', 'audit', 'crawlability', 'performance', 'core-web-vitals'],
+      requiredParams: ['url'],
+      optionalParams: ['crawlDepth', 'includeSubdomains', 'checkRedirects', 'analyzeJavaScript'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'keyword-research-pro_v1',
+      name: 'Advanced Keyword Research',
+      description: 'Advanced keyword research with competitor analysis and AI search visibility scoring',
+      category: 'seo',
+      tags: ['keywords', 'research', 'competition', 'search-volume', 'intent'],
+      requiredParams: ['seedKeywords', 'locale'],
+      optionalParams: ['competitors', 'includeQuestions', 'includeLongTail', 'searchIntent'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'backlink-analyzer_v1',
+      name: 'Backlink Analyzer',
+      description: 'Comprehensive backlink analysis with toxic link detection and opportunity identification',
+      category: 'seo',
+      tags: ['backlinks', 'link-building', 'domain-authority', 'toxic-links'],
+      requiredParams: ['domain'],
+      optionalParams: ['competitors', 'includeNew', 'includeLost'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'local-seo-optimizer_v1',
+      name: 'Local SEO Optimizer',
+      description: 'Local search optimization and Google My Business management',
+      category: 'seo',
+      tags: ['local-seo', 'gmb', 'citations', 'reviews', 'map-pack'],
+      requiredParams: ['businessName', 'location'],
+      optionalParams: ['categories', 'competitors'],
+      isPremium: true
+    });
+    
+    // AI Search Optimization Skills
+    this.addSkill({
+      id: 'ai-search-optimizer_v1',
+      name: 'AI Search Optimizer',
+      description: 'Optimize content for AI chatbots and answer engines like ChatGPT, Perplexity, Claude, and Bard',
+      category: 'seo',
+      tags: ['ai-seo', 'chatgpt', 'perplexity', 'claude', 'bard', 'answer-engine', 'llm-optimization'],
+      requiredParams: ['content'],
+      optionalParams: ['url', 'targetSystems', 'optimizationGoals'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'llm-training-optimizer_v1',
+      name: 'LLM Training Data Optimizer',
+      description: 'Ensure content is optimized for LLM training datasets',
+      category: 'seo',
+      tags: ['llm', 'training-data', 'dataset', 'ai-optimization'],
+      requiredParams: ['content'],
+      optionalParams: ['format', 'includeMetadata'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'rag-optimization_v1',
+      name: 'RAG Optimization',
+      description: 'Optimize content for Retrieval-Augmented Generation systems',
+      category: 'seo',
+      tags: ['rag', 'retrieval', 'embeddings', 'vector-search', 'semantic'],
+      requiredParams: ['content'],
+      optionalParams: ['chunkSize', 'overlapRatio'],
+      isPremium: true
+    });
+    
+    // Structured Data & Knowledge Graph Skills
+    this.addSkill({
+      id: 'schema-markup-generator_v1',
+      name: 'Schema Markup Generator',
+      description: 'Generate comprehensive schema.org markup for rich results',
+      category: 'seo',
+      tags: ['schema', 'structured-data', 'rich-results', 'json-ld', 'knowledge-graph'],
+      requiredParams: ['url'],
+      optionalParams: ['schemaTypes', 'includeNested'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'entity-extractor_v1',
+      name: 'Entity Extractor',
+      description: 'Extract and link entities for knowledge graphs',
+      category: 'seo',
+      tags: ['entities', 'ner', 'knowledge-graph', 'wikidata', 'relationships'],
+      requiredParams: ['content'],
+      optionalParams: ['entityTypes', 'includeRelationships'],
+      isPremium: true
+    });
+    
+    // Voice & Visual Search Skills
+    this.addSkill({
+      id: 'voice-search-optimizer_v1',
+      name: 'Voice Search Optimizer',
+      description: 'Optimize for voice assistants and smart speakers',
+      category: 'seo',
+      tags: ['voice-search', 'alexa', 'siri', 'google-assistant', 'conversational'],
+      requiredParams: ['content'],
+      optionalParams: ['targetAssistants', 'locale'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'visual-search-optimizer_v1',
+      name: 'Visual Search Optimizer',
+      description: 'Optimize images and videos for visual search',
+      category: 'seo',
+      tags: ['visual-search', 'image-seo', 'video-seo', 'google-lens', 'pinterest'],
+      requiredParams: ['mediaUrls'],
+      optionalParams: ['generateAltText', 'optimizeFiles'],
+      isPremium: true
+    });
+    
+    // E-E-A-T & Authority Skills
+    this.addSkill({
+      id: 'eeat-scorer_v1',
+      name: 'E-E-A-T Scorer',
+      description: 'Evaluate and improve Experience, Expertise, Authoritativeness, and Trustworthiness signals',
+      category: 'seo',
+      tags: ['eeat', 'authority', 'trust', 'expertise', 'google-quality'],
+      requiredParams: ['url'],
+      optionalParams: ['authorProfile', 'competitorComparison'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'author-authority-builder_v1',
+      name: 'Author Authority Builder',
+      description: 'Build author profiles and authority signals',
+      category: 'seo',
+      tags: ['author', 'authority', 'expertise', 'thought-leadership', 'byline'],
+      requiredParams: ['authorName'],
+      optionalParams: ['expertiseAreas', 'publications'],
+      isPremium: true
+    });
+    
+    // Performance & Technical Skills
+    this.addSkill({
+      id: 'core-web-vitals-optimizer_v1',
+      name: 'Core Web Vitals Optimizer',
+      description: 'Optimize Core Web Vitals metrics (LCP, FID, CLS, INP)',
+      category: 'seo',
+      tags: ['core-web-vitals', 'performance', 'lcp', 'fid', 'cls', 'page-speed'],
+      requiredParams: ['url'],
+      optionalParams: ['device', 'throttling'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'javascript-seo-analyzer_v1',
+      name: 'JavaScript SEO Analyzer',
+      description: 'Analyze JavaScript rendering and SEO impact',
+      category: 'seo',
+      tags: ['javascript', 'spa', 'ssr', 'rendering', 'crawlability'],
+      requiredParams: ['url'],
+      optionalParams: ['framework', 'userAgent'],
+      isPremium: true
+    });
+    
+    // Content Intelligence Skills
+    this.addSkill({
+      id: 'content-gap-analyzer_v1',
+      name: 'Content Gap Analyzer',
+      description: 'Identify content gaps and opportunities',
+      category: 'seo',
+      tags: ['content-gap', 'opportunity', 'competitor-analysis', 'topics'],
+      requiredParams: ['domain'],
+      optionalParams: ['competitors', 'topics', 'contentTypes'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'content-optimizer-ai_v1',
+      name: 'AI Content Optimizer',
+      description: 'AI-powered content optimization for engagement and SEO',
+      category: 'seo',
+      tags: ['content', 'optimization', 'ai-writing', 'readability', 'engagement'],
+      requiredParams: ['content'],
+      optionalParams: ['targetKeywords', 'tone', 'audience'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'content-cannibalization-detector_v1',
+      name: 'Content Cannibalization Detector',
+      description: 'Identify and resolve content cannibalization issues',
+      category: 'seo',
+      tags: ['cannibalization', 'duplicate-content', 'consolidation', 'internal-competition'],
+      requiredParams: ['domain'],
+      optionalParams: ['keywords', 'threshold'],
+      isPremium: true
+    });
+    
+    // Monitoring & Analytics Skills
+    this.addSkill({
+      id: 'serp-monitor_v1',
+      name: 'SERP Monitor',
+      description: 'Monitor SERP features and ranking changes',
+      category: 'seo',
+      tags: ['serp', 'rankings', 'monitoring', 'featured-snippets', 'serp-features'],
+      requiredParams: ['keywords', 'domain'],
+      optionalParams: ['location', 'device', 'frequency'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'ai-search-visibility-tracker_v1',
+      name: 'AI Search Visibility Tracker',
+      description: 'Track visibility in AI search systems',
+      category: 'seo',
+      tags: ['ai-visibility', 'chatgpt', 'perplexity', 'monitoring', 'citations'],
+      requiredParams: ['domain'],
+      optionalParams: ['aiSystems', 'topics'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'conversion-optimizer_v1',
+      name: 'Conversion Optimizer',
+      description: 'Optimize for conversions from organic traffic',
+      category: 'seo',
+      tags: ['cro', 'conversion', 'funnel', 'optimization', 'landing-pages'],
+      requiredParams: ['url'],
+      optionalParams: ['goals', 'audience', 'testVariations'],
       isPremium: true
     });
     

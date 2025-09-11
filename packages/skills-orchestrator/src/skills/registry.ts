@@ -286,6 +286,98 @@ export class SkillsRegistry {
         const { InjectHreflangSkill } = await import('./impl/InjectHreflangSkill');
         return new InjectHreflangSkill();
       
+      // Traditional SEO Skills
+      case 'technical-seo-audit_v1':
+        const { TechnicalSEOAuditSkill } = await import('./impl/seo/TechnicalSEOAuditSkill');
+        return new TechnicalSEOAuditSkill();
+      
+      case 'keyword-research-pro_v1':
+        const { KeywordResearchProSkill } = await import('./impl/seo/KeywordResearchProSkill');
+        return new KeywordResearchProSkill();
+      
+      case 'backlink-analyzer_v1':
+        const { BacklinkAnalyzerSkill } = await import('./impl/seo/BacklinkAnalyzerSkill');
+        return new BacklinkAnalyzerSkill();
+      
+      case 'local-seo-optimizer_v1':
+        const { LocalSEOOptimizerSkill } = await import('./impl/seo/LocalSEOOptimizerSkill');
+        return new LocalSEOOptimizerSkill();
+      
+      // AI Search Optimization Skills
+      case 'ai-search-optimizer_v1':
+        const { AISearchOptimizerSkill } = await import('./impl/seo/AISearchOptimizerSkill');
+        return new AISearchOptimizerSkill();
+      
+      case 'llm-training-optimizer_v1':
+        const { LLMTrainingOptimizerSkill } = await import('./impl/seo/LLMTrainingOptimizerSkill');
+        return new LLMTrainingOptimizerSkill();
+      
+      case 'rag-optimization_v1':
+        const { RAGOptimizationSkill } = await import('./impl/seo/RAGOptimizationSkill');
+        return new RAGOptimizationSkill();
+      
+      // Structured Data & Knowledge Graph Skills
+      case 'schema-markup-generator_v1':
+        const { SchemaMarkupGeneratorSkill } = await import('./impl/seo/SchemaMarkupGeneratorSkill');
+        return new SchemaMarkupGeneratorSkill();
+      
+      case 'entity-extractor_v1':
+        const { EntityExtractorSkill } = await import('./impl/seo/EntityExtractorSkill');
+        return new EntityExtractorSkill();
+      
+      // Voice & Visual Search Skills
+      case 'voice-search-optimizer_v1':
+        const { VoiceSearchOptimizerSkill } = await import('./impl/seo/VoiceSearchOptimizerSkill');
+        return new VoiceSearchOptimizerSkill();
+      
+      case 'visual-search-optimizer_v1':
+        const { VisualSearchOptimizerSkill } = await import('./impl/seo/VisualSearchOptimizerSkill');
+        return new VisualSearchOptimizerSkill();
+      
+      // E-E-A-T & Authority Skills
+      case 'eeat-scorer_v1':
+        const { EEATScorerSkill } = await import('./impl/seo/EEATScorerSkill');
+        return new EEATScorerSkill();
+      
+      case 'author-authority-builder_v1':
+        const { AuthorAuthorityBuilderSkill } = await import('./impl/seo/AuthorAuthorityBuilderSkill');
+        return new AuthorAuthorityBuilderSkill();
+      
+      // Performance & Technical Skills
+      case 'core-web-vitals-optimizer_v1':
+        const { CoreWebVitalsOptimizerSkill } = await import('./impl/seo/CoreWebVitalsOptimizerSkill');
+        return new CoreWebVitalsOptimizerSkill();
+      
+      case 'javascript-seo-analyzer_v1':
+        const { JavaScriptSEOAnalyzerSkill } = await import('./impl/seo/JavaScriptSEOAnalyzerSkill');
+        return new JavaScriptSEOAnalyzerSkill();
+      
+      // Content Intelligence Skills
+      case 'content-gap-analyzer_v1':
+        const { ContentGapAnalyzerSkill } = await import('./impl/seo/ContentGapAnalyzerSkill');
+        return new ContentGapAnalyzerSkill();
+      
+      case 'content-optimizer-ai_v1':
+        const { ContentOptimizerAISkill } = await import('./impl/seo/ContentOptimizerAISkill');
+        return new ContentOptimizerAISkill();
+      
+      case 'content-cannibalization-detector_v1':
+        const { ContentCannibalizationDetectorSkill } = await import('./impl/seo/ContentCannibalizationDetectorSkill');
+        return new ContentCannibalizationDetectorSkill();
+      
+      // Monitoring & Analytics Skills
+      case 'serp-monitor_v1':
+        const { SERPMonitorSkill } = await import('./impl/seo/SERPMonitorSkill');
+        return new SERPMonitorSkill();
+      
+      case 'ai-search-visibility-tracker_v1':
+        const { AISearchVisibilityTrackerSkill } = await import('./impl/seo/AISearchVisibilityTrackerSkill');
+        return new AISearchVisibilityTrackerSkill();
+      
+      case 'conversion-optimizer_v1':
+        const { ConversionOptimizerSkill } = await import('./impl/seo/ConversionOptimizerSkill');
+        return new ConversionOptimizerSkill();
+      
       default:
         // For unimplemented skills, return a mock implementation
         return this.createMockSkill(id);
