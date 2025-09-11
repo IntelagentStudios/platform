@@ -11,7 +11,10 @@
       "Read(//c//**)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(node:*)",
+      "Bash(npx tsx:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

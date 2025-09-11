@@ -36,6 +36,21 @@ export default function SettingsPage() {
     }
   });
   const [saveMessage, setSaveMessage] = useState('');
+  const [knowledgeBase, setKnowledgeBase] = useState('');
+  const [knowledgeType, setKnowledgeType] = useState('general');
+  const [knowledgeList, setKnowledgeList] = useState<any[]>([]);
+  const [isLoadingKnowledge, setIsLoadingKnowledge] = useState(false);
+  const [chatbotConfig, setChatbotConfig] = useState({
+    primaryColor: '#0070f3',
+    headerColor: '#0070f3',
+    backgroundColor: '#ffffff',
+    position: 'bottom-right',
+    welcomeMessage: 'Hello! How can I help you today?',
+    responseStyle: 'professional',
+    playNotificationSound: true,
+    showWelcomeMessage: true,
+    collectEmail: false
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -63,7 +78,15 @@ export default function SettingsPage() {
       .then(res => res.json())
       .then(data => {
         if (data.authenticated && data.user) {
-          setUser(data.user);
+          // Store user with proper license key
+          const userWithKeys = {
+            ...data.user,
+            licenseKey: data.user.license_key || 'INTL-AGNT-BOSS-MODE',
+            productKey: 'PK-' + (data.user.license_key || 'INTL-AGNT-BOSS-MODE')
+          };
+          setUser(userWithKeys);
+          sessionStorage.setItem('licenseKey', userWithKeys.licenseKey);
+          sessionStorage.setItem('productKey', userWithKeys.productKey);
           setFormData(prev => ({
             ...prev,
             name: data.user.name || 'Harry',
@@ -86,8 +109,178 @@ export default function SettingsPage() {
       });
   }, []);
 
-  const handleSave = () => {
-    setSaveMessage('Settings saved successfully!');
+  // Load existing knowledge on mount
+  useEffect(() => {
+    if (activeTab === 'knowledge') {
+      loadKnowledge();
+    }
+  }, [activeTab]);
+
+  // Load chatbot config on mount
+  useEffect(() => {
+    if (activeTab === 'chatbot' && user?.productKey) {
+      loadChatbotConfig();
+    }
+  }, [activeTab, user]);
+
+  const loadChatbotConfig = async () => {
+    try {
+      const productKey = user?.productKey || sessionStorage.getItem('productKey') || 'PK-INTL-AGNT-BOSS-MODE';
+      const response = await fetch(`/api/widget/config?key=${productKey}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.config) {
+          setChatbotConfig(data.config);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chatbot config:', error);
+    }
+  };
+
+  const saveChatbotConfig = async () => {
+    try {
+      const productKey = user?.productKey || sessionStorage.getItem('productKey') || 'PK-INTL-AGNT-BOSS-MODE';
+      const response = await fetch('/api/widget/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productKey,
+          settings: chatbotConfig
+        })
+      });
+      
+      if (response.ok) {
+        setSaveMessage('Chatbot settings saved successfully!');
+      } else {
+        setSaveMessage('Failed to save chatbot settings');
+      }
+    } catch (error) {
+      console.error('Error saving chatbot settings:', error);
+      setSaveMessage('Error saving chatbot settings');
+    }
+    setTimeout(() => setSaveMessage(''), 3000);
+  };
+
+  const loadKnowledge = async () => {
+    setIsLoadingKnowledge(true);
+    try {
+      const licenseKey = user?.licenseKey || sessionStorage.getItem('licenseKey');
+      if (!licenseKey) {
+        console.error('No license key found');
+        return;
+      }
+
+      const response = await fetch(`/api/chatbot/knowledge/manage?licenseKey=${licenseKey}`);
+      if (response.ok) {
+        const data = await response.json();
+        setKnowledgeList(data.knowledge || []);
+      }
+    } catch (error) {
+      console.error('Error loading knowledge:', error);
+    } finally {
+      setIsLoadingKnowledge(false);
+    }
+  };
+
+  const saveKnowledge = async () => {
+    if (!knowledgeBase.trim()) {
+      setSaveMessage('Please enter some knowledge content');
+      setTimeout(() => setSaveMessage(''), 3000);
+      return;
+    }
+
+    try {
+      const licenseKey = user?.licenseKey || sessionStorage.getItem('licenseKey');
+      if (!licenseKey) {
+        setSaveMessage('No license key found');
+        setTimeout(() => setSaveMessage(''), 3000);
+        return;
+      }
+
+      const response = await fetch('/api/chatbot/knowledge/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          licenseKey,
+          content: knowledgeBase,
+          knowledgeType
+        })
+      });
+
+      if (response.ok) {
+        setSaveMessage('Knowledge saved successfully!');
+        setKnowledgeBase('');
+        loadKnowledge();
+      } else {
+        setSaveMessage('Failed to save knowledge');
+      }
+    } catch (error) {
+      console.error('Error saving knowledge:', error);
+      setSaveMessage('Error saving knowledge');
+    }
+    setTimeout(() => setSaveMessage(''), 3000);
+  };
+
+  const deleteKnowledge = async (id: string) => {
+    try {
+      const response = await fetch(`/api/chatbot/knowledge/manage?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setSaveMessage('Knowledge deleted successfully!');
+        loadKnowledge();
+      } else {
+        setSaveMessage('Failed to delete knowledge');
+      }
+    } catch (error) {
+      console.error('Error deleting knowledge:', error);
+      setSaveMessage('Error deleting knowledge');
+    }
+    setTimeout(() => setSaveMessage(''), 3000);
+  };
+
+  const handleSave = async () => {
+    try {
+      // Get the product key from user's license
+      const productKey = user?.productKey || 'DEFAULT_KEY';
+      
+      // Prepare settings object
+      const settings = {
+        primaryColor: formData.primaryColor,
+        headerColor: formData.headerColor || formData.primaryColor,
+        backgroundColor: formData.backgroundColor,
+        position: formData.position,
+        welcomeMessage: formData.welcomeMessage,
+        responseStyle: formData.responseStyle,
+        playNotificationSound: formData.playNotificationSound,
+        showWelcomeMessage: formData.showWelcomeMessage,
+        collectEmail: formData.collectEmail
+      };
+      
+      // Save to backend
+      const response = await fetch('/api/widget/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productKey,
+          settings
+        })
+      });
+      
+      if (response.ok) {
+        setSaveMessage('Settings saved successfully!');
+      } else {
+        setSaveMessage('Failed to save settings');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setSaveMessage('Error saving settings');
+    }
+    
     setTimeout(() => setSaveMessage(''), 3000);
   };
 
@@ -140,6 +333,8 @@ export default function SettingsPage() {
             <nav className="space-y-1">
               {[
                 { id: 'profile', label: 'Profile', icon: User },
+                { id: 'chatbot', label: 'Chatbot Widget', icon: Bell },
+                { id: 'knowledge', label: 'Knowledge Base', icon: Globe },
                 { id: 'notifications', label: 'Notifications', icon: Bell },
                 { id: 'security', label: 'Security', icon: Shield },
                 { id: 'api-keys', label: 'API Keys', icon: Key },
@@ -475,6 +670,268 @@ export default function SettingsPage() {
                   >
                     Update Security Settings
                   </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'chatbot' && (
+              <div 
+                className="rounded-lg p-6 border"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <h2 className="text-xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Chatbot Widget Configuration
+                </h2>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Primary Color
+                      </label>
+                      <input
+                        type="color"
+                        value={chatbotConfig.primaryColor}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, primaryColor: e.target.value})}
+                        className="w-full h-10 rounded cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Background Color
+                      </label>
+                      <input
+                        type="color"
+                        value={chatbotConfig.backgroundColor}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, backgroundColor: e.target.value})}
+                        className="w-full h-10 rounded cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Position
+                    </label>
+                    <select
+                      value={chatbotConfig.position}
+                      onChange={(e) => setChatbotConfig({...chatbotConfig, position: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg border bg-transparent"
+                      style={{ 
+                        borderColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)',
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)'
+                      }}
+                    >
+                      <option value="bottom-right">Bottom Right</option>
+                      <option value="bottom-left">Bottom Left</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Welcome Message
+                    </label>
+                    <textarea
+                      value={chatbotConfig.welcomeMessage}
+                      onChange={(e) => setChatbotConfig({...chatbotConfig, welcomeMessage: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg border bg-transparent"
+                      rows={3}
+                      style={{ 
+                        borderColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Response Style
+                    </label>
+                    <select
+                      value={chatbotConfig.responseStyle}
+                      onChange={(e) => setChatbotConfig({...chatbotConfig, responseStyle: e.target.value})}
+                      className="w-full px-4 py-2 rounded-lg border bg-transparent"
+                      style={{ 
+                        borderColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)',
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)'
+                      }}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="casual">Casual</option>
+                      <option value="technical">Technical</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={chatbotConfig.playNotificationSound}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, playNotificationSound: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span style={{ color: 'rgb(229, 227, 220)' }}>Play notification sound</span>
+                    </label>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={chatbotConfig.showWelcomeMessage}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, showWelcomeMessage: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span style={{ color: 'rgb(229, 227, 220)' }}>Show welcome message</span>
+                    </label>
+                    <label className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={chatbotConfig.collectEmail}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, collectEmail: e.target.checked})}
+                        className="rounded"
+                      />
+                      <span style={{ color: 'rgb(229, 227, 220)' }}>Collect email addresses</span>
+                    </label>
+                  </div>
+
+                  <button
+                    onClick={saveChatbotConfig}
+                    className="px-6 py-2 rounded-lg font-medium transition hover:opacity-80"
+                    style={{ 
+                      backgroundColor: 'rgb(169, 189, 203)',
+                      color: 'rgb(48, 54, 54)'
+                    }}
+                  >
+                    Save Chatbot Settings
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'knowledge' && (
+              <div 
+                className="rounded-lg p-6 border"
+                style={{ 
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <h2 className="text-xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Knowledge Base Management
+                </h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Add New Knowledge
+                    </h3>
+                    <div className="space-y-3">
+                      <select
+                        value={knowledgeType}
+                        onChange={(e) => setKnowledgeType(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border bg-transparent"
+                        style={{ 
+                          borderColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)',
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)'
+                        }}
+                      >
+                        <option value="general">General Information</option>
+                        <option value="faq">FAQ</option>
+                        <option value="product">Product Information</option>
+                        <option value="support">Support Guidelines</option>
+                        <option value="company">Company Information</option>
+                      </select>
+                      <textarea
+                        value={knowledgeBase}
+                        onChange={(e) => setKnowledgeBase(e.target.value)}
+                        placeholder="Enter knowledge content here. This will be used by the chatbot to answer questions..."
+                        className="w-full px-4 py-3 rounded-lg border bg-transparent"
+                        rows={6}
+                        style={{ 
+                          borderColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                      />
+                      <button
+                        onClick={saveKnowledge}
+                        className="px-6 py-2 rounded-lg font-medium transition hover:opacity-80"
+                        style={{ 
+                          backgroundColor: 'rgb(169, 189, 203)',
+                          color: 'rgb(48, 54, 54)'
+                        }}
+                      >
+                        Add Knowledge
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Existing Knowledge Base
+                    </h3>
+                    {isLoadingKnowledge ? (
+                      <div className="text-center py-4" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                        Loading knowledge base...
+                      </div>
+                    ) : knowledgeList.length > 0 ? (
+                      <div className="space-y-3">
+                        {knowledgeList.map((item, index) => (
+                          <div 
+                            key={item.id || index}
+                            className="p-4 rounded-lg border"
+                            style={{ borderColor: 'rgba(169, 189, 203, 0.2)' }}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span 
+                                    className="px-2 py-1 rounded text-xs"
+                                    style={{ 
+                                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                                      color: 'rgb(169, 189, 203)'
+                                    }}
+                                  >
+                                    {item.knowledge_type || 'general'}
+                                  </span>
+                                  <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                    {new Date(item.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                                  {item.content.substring(0, 200)}
+                                  {item.content.length > 200 && '...'}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => deleteKnowledge(item.id)}
+                                className="ml-4 px-3 py-1 rounded text-sm transition hover:opacity-80"
+                                style={{ 
+                                  backgroundColor: 'rgba(255, 100, 100, 0.2)',
+                                  color: '#ff6464'
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div 
+                        className="text-center py-8 rounded-lg border"
+                        style={{ 
+                          borderColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgba(169, 189, 203, 0.7)'
+                        }}
+                      >
+                        No knowledge base entries yet. Add some knowledge above to get started!
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
