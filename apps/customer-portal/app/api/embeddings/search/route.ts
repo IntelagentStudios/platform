@@ -3,16 +3,46 @@ import { prisma } from '@/lib/prisma';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
+// Lazy initialization - only create clients when needed
+let pinecone: Pinecone | null = null;
+let openai: OpenAI | null = null;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+function getPinecone() {
+  if (!pinecone && process.env.PINECONE_API_KEY) {
+    pinecone = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY,
+    });
+  }
+  return pinecone;
+}
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if APIs are configured
+    const pineconeClient = getPinecone();
+    const openaiClient = getOpenAI();
+    
+    if (!pineconeClient || !openaiClient) {
+      // Return empty knowledge if not configured - graceful degradation
+      return NextResponse.json({ 
+        success: true,
+        relevantKnowledge: '',
+        matchCount: 0,
+        matchDetails: [],
+        message: 'Vector search not configured - using fallback',
+        configured: false
+      });
+    }
+    
     const body = await request.json();
     const { query, productKey, topK = 3 } = body;
     
@@ -35,13 +65,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate embedding for the query
-    const queryEmbedding = await openai.embeddings.create({
+    const queryEmbedding = await openaiClient.embeddings.create({
       model: 'text-embedding-3-small',
       input: query,
     });
     
     // Search Pinecone
-    const index = pinecone.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
     const searchResults = await index.query({
       vector: queryEmbedding.data[0].embedding,
       topK,

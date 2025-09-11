@@ -5,15 +5,27 @@ import { prisma } from '@/lib/prisma';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 
-// Initialize Pinecone
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
+// Lazy initialization - only create clients when needed
+let pinecone: Pinecone | null = null;
+let openai: OpenAI | null = null;
 
-// Initialize OpenAI for embeddings
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+function getPinecone() {
+  if (!pinecone && process.env.PINECONE_API_KEY) {
+    pinecone = new Pinecone({
+      apiKey: process.env.PINECONE_API_KEY,
+    });
+  }
+  return pinecone;
+}
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 // Helper to chunk text intelligently
 function chunkText(text: string, maxChunkSize: number = 500): string[] {
@@ -39,6 +51,17 @@ function chunkText(text: string, maxChunkSize: number = 500): string[] {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if APIs are configured
+    const pineconeClient = getPinecone();
+    const openaiClient = getOpenAI();
+    
+    if (!pineconeClient || !openaiClient) {
+      return NextResponse.json({ 
+        error: 'Vector search not configured. Pinecone and OpenAI API keys required.',
+        configured: false
+      }, { status: 503 });
+    }
+    
     const body = await request.json();
     const { licenseKey, content, knowledgeId, forceRegenerate = false } = body;
     
@@ -66,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Pinecone index
-    const index = pinecone.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
     
     // Chunk the content
     const chunks = chunkText(content);
@@ -80,7 +103,7 @@ export async function POST(request: NextRequest) {
       const chunk = chunks[i];
       
       // Generate embedding using OpenAI
-      const embedding = await openai.embeddings.create({
+      const embedding = await openaiClient.embeddings.create({
         model: 'text-embedding-3-small', // Cheaper and faster
         input: chunk,
       });
@@ -140,6 +163,14 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint to remove embeddings
 export async function DELETE(request: NextRequest) {
   try {
+    const pineconeClient = getPinecone();
+    if (!pineconeClient) {
+      return NextResponse.json({ 
+        error: 'Vector search not configured',
+        configured: false
+      }, { status: 503 });
+    }
+    
     const body = await request.json();
     const { licenseKey, knowledgeId } = body;
     
@@ -158,7 +189,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Delete from Pinecone
-    const index = pinecone.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
+    const index = pineconeClient.index(process.env.PINECONE_INDEX_NAME || 'chatbot-knowledge');
     await index.deleteMany(embeddings.embedding_ids);
     
     // Delete from database
