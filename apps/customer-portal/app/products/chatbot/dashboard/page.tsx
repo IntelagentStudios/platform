@@ -95,12 +95,10 @@ function ChatbotDashboardContent() {
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
   
-  // Settings state
+  // Settings state - simplified
   const [settings, setSettings] = useState({
     welcomeMessage: "Hello! How can I help you today?",
-    primaryColor: "#0070f3",
-    headerColor: "#0070f3",
-    backgroundColor: "#ffffff",
+    themeColor: "#0070f3",
     position: "bottom-right",
     playNotificationSound: true,
     showWelcomeMessage: true,
@@ -198,12 +196,20 @@ function ChatbotDashboardContent() {
     fetchSettings();
   }, []);
 
-  // Save settings function
+  // Save settings function - simplified
   const saveSettings = async () => {
     setIsSavingSettings(true);
     setSettingsSaved(false);
     
     try {
+      // Map to simplified settings format
+      const simplifiedSettings = {
+        themeColor: settings.themeColor,
+        position: settings.position,
+        welcomeMessage: settings.welcomeMessage,
+        responseStyle: settings.responseStyle
+      };
+      
       const response = await fetch('/api/widget/config', {
         method: 'POST',
         headers: {
@@ -211,7 +217,7 @@ function ChatbotDashboardContent() {
         },
         body: JSON.stringify({
           productKey: productKey || siteKey,
-          settings: settings
+          settings: simplifiedSettings
         }),
       });
       
@@ -520,6 +526,17 @@ function ChatbotDashboardContent() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* VERSION BANNER - Remove after confirming deployment */}
+        <div 
+          className="rounded-lg p-4 mb-6 text-center font-bold text-lg"
+          style={{ 
+            backgroundColor: '#10B981', 
+            color: 'white'
+          }}
+        >
+          ✅ SIMPLIFIED SETTINGS V2 - Single Theme Color Active
+        </div>
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1437,47 +1454,28 @@ function ChatbotDashboardContent() {
               </h2>
               
               <div className="space-y-6">
-                {/* Widget Appearance */}
+                {/* Widget Appearance - SIMPLIFIED */}
                 <div>
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Widget Appearance
+                    Widget Appearance (Simplified)
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Widget Button Color
+                        Theme Color
                       </label>
-                      <input
-                        type="color"
-                        value={settings.primaryColor}
-                        onChange={(e) => setSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                        className="w-full h-10 rounded"
-                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Chat Window Header Color
-                      </label>
-                      <input
-                        type="color"
-                        value={settings.headerColor}
-                        onChange={(e) => setSettings(prev => ({ ...prev, headerColor: e.target.value }))}
-                        className="w-full h-10 rounded"
-                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Chat Window Background
-                      </label>
-                      <input
-                        type="color"
-                        value={settings.backgroundColor}
-                        onChange={(e) => setSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
-                        className="w-full h-10 rounded"
-                        style={{ border: '1px solid rgba(169, 189, 203, 0.3)' }}
-                      />
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={settings.themeColor}
+                          onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
+                          className="h-12 w-24 rounded cursor-pointer"
+                          style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                        />
+                        <span style={{ color: 'rgba(229, 227, 220, 0.7)', fontSize: '13px' }}>
+                          Applied to button, header & user messages
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
