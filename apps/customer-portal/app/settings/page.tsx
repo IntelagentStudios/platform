@@ -41,15 +41,10 @@ export default function SettingsPage() {
   const [knowledgeList, setKnowledgeList] = useState<any[]>([]);
   const [isLoadingKnowledge, setIsLoadingKnowledge] = useState(false);
   const [chatbotConfig, setChatbotConfig] = useState({
-    primaryColor: '#0070f3',
-    headerColor: '#0070f3',
-    backgroundColor: '#ffffff',
+    themeColor: '#0070f3',
     position: 'bottom-right',
     welcomeMessage: 'Hello! How can I help you today?',
-    responseStyle: 'professional',
-    playNotificationSound: true,
-    showWelcomeMessage: true,
-    collectEmail: false
+    responseStyle: 'professional'
   });
   const router = useRouter();
 
@@ -130,7 +125,13 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.config) {
-          setChatbotConfig(data.config);
+          // Map the config to our simplified state
+          setChatbotConfig({
+            themeColor: data.config.themeColor || data.config.primaryColor || '#0070f3',
+            position: data.config.position || 'bottom-right',
+            welcomeMessage: data.config.welcomeMessage || 'Hello! How can I help you today?',
+            responseStyle: data.config.responseStyle || 'professional'
+          });
         }
       }
     } catch (error) {
@@ -141,17 +142,31 @@ export default function SettingsPage() {
   const saveChatbotConfig = async () => {
     try {
       const productKey = user?.productKey || sessionStorage.getItem('productKey') || 'PK-INTL-AGNT-BOSS-MODE';
+      
+      // Save simplified settings
+      const settings = {
+        themeColor: chatbotConfig.themeColor,
+        position: chatbotConfig.position,
+        welcomeMessage: chatbotConfig.welcomeMessage,
+        responseStyle: chatbotConfig.responseStyle
+      };
+      
       const response = await fetch('/api/widget/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           productKey,
-          settings: chatbotConfig
+          settings
         })
       });
       
       if (response.ok) {
-        setSaveMessage('Chatbot settings saved successfully!');
+        setSaveMessage('Chatbot settings saved successfully! Changes will appear in a few seconds.');
+        // Force a reload of the widget if it's on this page
+        const widget = document.getElementById('intelagent-chat-widget');
+        if (widget) {
+          widget.remove();
+        }
       } else {
         setSaveMessage('Failed to save chatbot settings');
       }
@@ -159,7 +174,7 @@ export default function SettingsPage() {
       console.error('Error saving chatbot settings:', error);
       setSaveMessage('Error saving chatbot settings');
     }
-    setTimeout(() => setSaveMessage(''), 3000);
+    setTimeout(() => setSaveMessage(''), 5000);
   };
 
   const loadKnowledge = async () => {
@@ -246,17 +261,12 @@ export default function SettingsPage() {
       // Get the product key from user's license
       const productKey = user?.productKey || 'DEFAULT_KEY';
       
-      // Prepare settings object - using chatbotConfig state
+      // Prepare settings object - simplified
       const settings = {
-        primaryColor: chatbotConfig.primaryColor,
-        headerColor: chatbotConfig.headerColor || chatbotConfig.primaryColor,
-        backgroundColor: chatbotConfig.backgroundColor,
+        themeColor: chatbotConfig.themeColor,
         position: chatbotConfig.position,
         welcomeMessage: chatbotConfig.welcomeMessage,
-        responseStyle: chatbotConfig.responseStyle,
-        playNotificationSound: chatbotConfig.playNotificationSound,
-        showWelcomeMessage: chatbotConfig.showWelcomeMessage,
-        collectEmail: chatbotConfig.collectEmail
+        responseStyle: chatbotConfig.responseStyle
       };
       
       // Save to backend
@@ -686,28 +696,20 @@ export default function SettingsPage() {
                   Chatbot Widget Configuration
                 </h2>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                        Primary Color
-                      </label>
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Theme Color
+                    </label>
+                    <div className="flex items-center gap-4">
                       <input
                         type="color"
-                        value={chatbotConfig.primaryColor}
-                        onChange={(e) => setChatbotConfig({...chatbotConfig, primaryColor: e.target.value})}
-                        className="w-full h-10 rounded cursor-pointer"
+                        value={chatbotConfig.themeColor}
+                        onChange={(e) => setChatbotConfig({...chatbotConfig, themeColor: e.target.value})}
+                        className="h-12 w-24 rounded cursor-pointer border-2 border-gray-300"
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                        Background Color
-                      </label>
-                      <input
-                        type="color"
-                        value={chatbotConfig.backgroundColor}
-                        onChange={(e) => setChatbotConfig({...chatbotConfig, backgroundColor: e.target.value})}
-                        className="w-full h-10 rounded cursor-pointer"
-                      />
+                      <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                        This color will be used for the chat button, header, and user messages
+                      </span>
                     </div>
                   </div>
 
@@ -765,36 +767,6 @@ export default function SettingsPage() {
                       <option value="casual">Casual</option>
                       <option value="technical">Technical</option>
                     </select>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={chatbotConfig.playNotificationSound}
-                        onChange={(e) => setChatbotConfig({...chatbotConfig, playNotificationSound: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span style={{ color: 'rgb(229, 227, 220)' }}>Play notification sound</span>
-                    </label>
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={chatbotConfig.showWelcomeMessage}
-                        onChange={(e) => setChatbotConfig({...chatbotConfig, showWelcomeMessage: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span style={{ color: 'rgb(229, 227, 220)' }}>Show welcome message</span>
-                    </label>
-                    <label className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        checked={chatbotConfig.collectEmail}
-                        onChange={(e) => setChatbotConfig({...chatbotConfig, collectEmail: e.target.checked})}
-                        className="rounded"
-                      />
-                      <span style={{ color: 'rgb(229, 227, 220)' }}>Collect email addresses</span>
-                    </label>
                   </div>
 
                   <button

@@ -44,23 +44,14 @@ export async function GET(request: NextRequest) {
     const metadata = productKeyInfo.metadata as any;
     const settings = metadata?.settings || {};
 
-    // Return configuration for the widget
+    // Return simplified configuration for the widget
     return NextResponse.json({
       config: {
-        // Appearance settings
-        primaryColor: settings.primaryColor || '#0070f3',
-        headerColor: settings.headerColor || '#0070f3',
-        backgroundColor: settings.backgroundColor || '#ffffff',
+        // Single theme color (backwards compatible)
+        themeColor: settings.themeColor || settings.primaryColor || '#0070f3',
         position: settings.position || 'bottom-right',
-        
-        // Messages
         welcomeMessage: settings.welcomeMessage || "Hello! How can I help you today?",
         responseStyle: settings.responseStyle || 'professional',
-        
-        // Features
-        playNotificationSound: settings.playNotificationSound !== false,
-        showWelcomeMessage: settings.showWelcomeMessage !== false,
-        collectEmail: settings.collectEmail || false,
         
         // Custom knowledge for AI context
         customKnowledge: customKnowledge ? {

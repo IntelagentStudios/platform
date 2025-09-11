@@ -54,17 +54,13 @@ export async function GET(request: NextRequest) {
     const metadata = productKeyInfo.metadata as any;
     const settings = metadata?.settings || {};
     
-    // Configuration with defaults
+    // Simplified configuration
+    const themeColor = settings.themeColor || settings.primaryColor || '#0070f3';
     const config = {
-      primaryColor: settings.primaryColor || '#0070f3',
-      headerColor: settings.headerColor || settings.primaryColor || '#0070f3',
-      backgroundColor: settings.backgroundColor || '#ffffff',
+      themeColor: themeColor,
       position: settings.position || 'bottom-right',
       welcomeMessage: settings.welcomeMessage || 'Hello! How can I help you today?',
-      responseStyle: settings.responseStyle || 'professional',
-      playNotificationSound: settings.playNotificationSound !== false,
-      showWelcomeMessage: settings.showWelcomeMessage !== false,
-      collectEmail: settings.collectEmail || false
+      responseStyle: settings.responseStyle || 'professional'
     };
 
     // Generate the complete dynamic widget script
@@ -115,7 +111,7 @@ export async function GET(request: NextRequest) {
           position: fixed;
           bottom: 28px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
-          background: \${WIDGET_CONFIG.primaryColor};
+          background: \${WIDGET_CONFIG.themeColor};
           border-radius: 50%;
           width: 68px;
           height: 68px;
@@ -146,7 +142,7 @@ export async function GET(request: NextRequest) {
           max-width: calc(100vw - 56px);
           height: 600px;
           max-height: calc(100vh - 150px);
-          background: \${WIDGET_CONFIG.backgroundColor};
+          background: white;
           border: 1px solid rgba(0, 0, 0, 0.1);
           border-radius: 20px;
           box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
@@ -173,7 +169,7 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-header {
-          background: \${WIDGET_CONFIG.headerColor};
+          background: \${WIDGET_CONFIG.themeColor};
           color: white;
           padding: 20px;
           display: flex;
@@ -215,7 +211,7 @@ export async function GET(request: NextRequest) {
           flex: 1;
           padding: 20px;
           overflow-y: auto;
-          background: \${WIDGET_CONFIG.backgroundColor};
+          background: white;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -270,12 +266,12 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-message.user .intelagent-chat-message-content {
-          background: \${WIDGET_CONFIG.primaryColor};
+          background: \${WIDGET_CONFIG.themeColor};
           color: white;
         }
         
         .intelagent-chat-message-content a {
-          color: \${WIDGET_CONFIG.primaryColor};
+          color: \${WIDGET_CONFIG.themeColor};
           text-decoration: underline;
         }
         
@@ -329,7 +325,7 @@ export async function GET(request: NextRequest) {
         .intelagent-chat-input-container {
           padding: 20px;
           border-top: 1px solid rgba(0, 0, 0, 0.05);
-          background: \${WIDGET_CONFIG.backgroundColor};
+          background: white;
           flex-shrink: 0;
         }
         
@@ -348,15 +344,15 @@ export async function GET(request: NextRequest) {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           outline: none;
           transition: border-color 0.2s;
-          background: \${WIDGET_CONFIG.backgroundColor};
+          background: white;
         }
         
         .intelagent-chat-input:focus {
-          border-color: \${WIDGET_CONFIG.primaryColor};
+          border-color: \${WIDGET_CONFIG.themeColor};
         }
         
         .intelagent-chat-send {
-          background: \${WIDGET_CONFIG.primaryColor};
+          background: \${WIDGET_CONFIG.themeColor};
           border: none;
           border-radius: 50%;
           width: 40px;
@@ -417,13 +413,11 @@ export async function GET(request: NextRequest) {
           </button>
         </div>
         <div class="intelagent-chat-messages" id="messages">
-          \${WIDGET_CONFIG.showWelcomeMessage ? \`
           <div class="intelagent-chat-message bot">
             <div class="intelagent-chat-message-content">
               \${WIDGET_CONFIG.welcomeMessage}
             </div>
           </div>
-          \` : ''}
           <div class="intelagent-typing" id="typingIndicator">
             <div class="intelagent-typing-dots">
               <div class="intelagent-typing-dot"></div>
@@ -468,11 +462,6 @@ export async function GET(request: NextRequest) {
       chatBox.classList.add('open');
       chatButton.style.display = 'none';
       messageInput.focus();
-      
-      // Play sound if enabled
-      if (WIDGET_CONFIG.playNotificationSound) {
-        playNotificationSound();
-      }
     });
     
     closeButton.addEventListener('click', () => {
@@ -586,11 +575,6 @@ export async function GET(request: NextRequest) {
         });
         
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        // Play notification sound if enabled
-        if (WIDGET_CONFIG.playNotificationSound && isOpen) {
-          playNotificationSound();
-        }
       } catch (error) {
         console.error('[IntelagentChat] Error sending message:', error);
         hideTypingIndicator();
@@ -619,13 +603,7 @@ export async function GET(request: NextRequest) {
       }
     });
     
-    // Handle email collection if enabled
-    if (WIDGET_CONFIG.collectEmail) {
-      // This can be implemented based on specific requirements
-      console.log('[IntelagentChat] Email collection is enabled');
-    }
-    
-    console.log('[IntelagentChat] Widget initialized successfully');
+    console.log('[IntelagentChat] Widget initialized successfully with theme color:', WIDGET_CONFIG.themeColor);
   }
 
   // Initialize widget when DOM is ready
