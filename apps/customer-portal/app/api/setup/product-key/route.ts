@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         data: {
           product_key: productKey,
           license_key: licenseKey,
+          product: 'chatbot',
           status: 'active',
           created_at: new Date(),
           metadata: {
