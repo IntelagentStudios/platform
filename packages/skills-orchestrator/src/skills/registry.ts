@@ -378,6 +378,353 @@ export class SkillsRegistry {
         const { ConversionOptimizerSkill } = await import('./impl/seo/ConversionOptimizerSkill');
         return new ConversionOptimizerSkill();
       
+      // Missing skills from first batch
+      case 'abandoned_cart_recovery':
+        const { AbandonedCartRecoverySkill } = await import('./impl/AbandonedCartRecoverySkill');
+        return new AbandonedCartRecoverySkill();
+      
+      case 'ai_vision_document':
+        const { AIVisionDocumentSkill } = await import('./impl/AIVisionDocumentSkill');
+        return new AIVisionDocumentSkill();
+      
+      case 'anomaly_predictor':
+        const { AnomalyPredictorSkill } = await import('./impl/AnomalyPredictorSkill');
+        return new AnomalyPredictorSkill();
+      
+      case 'api_gateway':
+        const { ApiGatewaySkill } = await import('./impl/ApiGatewaySkill');
+        return new ApiGatewaySkill();
+      
+      case 'appointment_scheduler':
+        const { AppointmentSchedulerSkill } = await import('./impl/AppointmentSchedulerSkill');
+        return new AppointmentSchedulerSkill();
+      
+      // Education skills
+      case 'assignment_grader':
+        const { AssignmentGraderSkill } = await import('./impl/AssignmentGraderSkill');
+        return new AssignmentGraderSkill();
+      
+      case 'attendance_manager':
+        const { AttendanceManagerSkill } = await import('./impl/AttendanceManagerSkill');
+        return new AttendanceManagerSkill();
+      
+      case 'course_creator':
+        const { CourseCreatorSkill } = await import('./impl/CourseCreatorSkill');
+        return new CourseCreatorSkill();
+      
+      // Media processing skills
+      case 'audio_mixer':
+        const { AudioMixerSkill } = await import('./impl/AudioMixerSkill');
+        return new AudioMixerSkill();
+      
+      case 'audio_processor':
+        const { AudioProcessorSkill } = await import('./impl/AudioProcessorSkill');
+        return new AudioProcessorSkill();
+      
+      // Blockchain & crypto skills
+      case 'blockchain_connector':
+        const { BlockchainConnectorSkill } = await import('./impl/BlockchainConnectorSkill');
+        return new BlockchainConnectorSkill();
+      
+      case 'blockchain_explorer':
+        const { BlockchainExplorerSkill } = await import('./impl/BlockchainExplorerSkill');
+        return new BlockchainExplorerSkill();
+      
+      case 'crypto_tracker':
+        const { CryptoTrackerSkill } = await import('./impl/CryptoTrackerSkill');
+        return new CryptoTrackerSkill();
+      
+      case 'crypto_trader':
+        const { CryptoTraderSkill } = await import('./impl/CryptoTraderSkill');
+        return new CryptoTraderSkill();
+      
+      // Financial skills
+      case 'financial_analyzer':
+        const { FinancialAnalyzerSkill } = await import('./impl/FinancialAnalyzerSkill');
+        return new FinancialAnalyzerSkill();
+      
+      case 'budget_planner':
+        const { BudgetPlannerSkill } = await import('./impl/BudgetPlannerSkill');
+        return new BudgetPlannerSkill();
+      
+      case 'expense_tracker':
+        const { ExpenseTrackerSkill } = await import('./impl/ExpenseTrackerSkill');
+        return new ExpenseTrackerSkill();
+      
+      // Additional utility skills
+      case 'file_converter':
+        const { FileConverterSkill } = await import('./impl/FileConverterSkill');
+        return new FileConverterSkill();
+      
+      case 'certificate_generator':
+        const { CertificateGeneratorSkill } = await import('./impl/CertificateGeneratorSkill');
+        return new CertificateGeneratorSkill();
+      
+      case 'cache_manager':
+        const { CacheManagerSkill } = await import('./impl/CacheManagerSkill');
+        return new CacheManagerSkill();
+      
+      case 'batch_processor':
+        const { BatchProcessorSkill } = await import('./impl/BatchProcessorSkill');
+        return new BatchProcessorSkill();
+      
+      // Additional automation skills
+      case 'backup_manager':
+        const { BackupManagerSkill } = await import('./impl/BackupManagerSkill');
+        return new BackupManagerSkill();
+      
+      case 'browser_automation':
+        const { BrowserAutomationSkill } = await import('./impl/BrowserAutomationSkill');
+        return new BrowserAutomationSkill();
+      
+      case 'calendar_scheduler':
+        const { CalendarSchedulerSkill } = await import('./impl/CalendarSchedulerSkill');
+        return new CalendarSchedulerSkill();
+      
+      case 'ci_cd_pipeline':
+        const { CiCdPipelineSkill } = await import('./impl/CiCdPipelineSkill');
+        return new CiCdPipelineSkill();
+      
+      case 'code_generator':
+        const { CodeGeneratorSkill } = await import('./impl/CodeGeneratorSkill');
+        return new CodeGeneratorSkill();
+      
+      case 'compliance_checker':
+        const { ComplianceCheckerSkill } = await import('./impl/ComplianceCheckerSkill');
+        return new ComplianceCheckerSkill();
+      
+      // Business & E-commerce skills
+      case 'billing_system':
+        const { BillingSystemSkill } = await import('./impl/BillingSystemSkill');
+        return new BillingSystemSkill();
+      
+      case 'checkout_processor':
+        const { CheckoutProcessorSkill } = await import('./impl/CheckoutProcessorSkill');
+        return new CheckoutProcessorSkill();
+      
+      // AI & Analytics skills
+      case 'clustering_engine':
+        const { ClusteringEngineSkill } = await import('./impl/ClusteringEngineSkill');
+        return new ClusteringEngineSkill();
+      
+      // Chatbot & Communication skills
+      case 'chatbot_analytics':
+        const { ChatbotAnalyticsSkill } = await import('./impl/ChatbotAnalyticsSkill');
+        return new ChatbotAnalyticsSkill();
+      
+      case 'chatbot_configuration':
+        const { ChatbotConfigurationSkill } = await import('./impl/ChatbotConfigurationSkill');
+        return new ChatbotConfigurationSkill();
+      
+      case 'chatbot_trainer':
+        const { ChatbotTrainerSkill } = await import('./impl/ChatbotTrainerSkill');
+        return new ChatbotTrainerSkill();
+      
+      // ============ NEW SKILLS FROM DATA PROCESSING BATCH ============
+      case 'csv_processor':
+        const { CsvProcessorSkill } = await import('./impl/CsvProcessorSkill');
+        return new CsvProcessorSkill();
+      
+      case 'data_cleaner':
+        const { DataCleanerSkill } = await import('./impl/DataCleanerSkill');
+        return new DataCleanerSkill();
+      
+      case 'data_enricher_pro':
+        const { DataEnricherProSkill } = await import('./impl/DataEnricherProSkill');
+        return new DataEnricherProSkill();
+      
+      case 'data_exporter':
+        const { DataExporterSkill } = await import('./impl/DataExporterSkill');
+        return new DataExporterSkill();
+      
+      case 'data_importer':
+        const { DataImporterSkill } = await import('./impl/DataImporterSkill');
+        return new DataImporterSkill();
+      
+      case 'data_mapper':
+        const { DataMapperSkill } = await import('./impl/DataMapperSkill');
+        return new DataMapperSkill();
+      
+      case 'data_merger':
+        const { DataMergerSkill } = await import('./impl/DataMergerSkill');
+        return new DataMergerSkill();
+      
+      case 'data_transformer_pro':
+        const { DataTransformerProSkill } = await import('./impl/DataTransformerProSkill');
+        return new DataTransformerProSkill();
+      
+      case 'data_validator_pro':
+        const { DataValidatorProSkill } = await import('./impl/DataValidatorProSkill');
+        return new DataValidatorProSkill();
+      
+      case 'database_connector_pro':
+        const { DatabaseConnectorProSkill } = await import('./impl/DatabaseConnectorProSkill');
+        return new DatabaseConnectorProSkill();
+      
+      case 'database_migrator':
+        const { DatabaseMigratorSkill } = await import('./impl/DatabaseMigratorSkill');
+        return new DatabaseMigratorSkill();
+      
+      case 'database_optimizer':
+        const { DatabaseOptimizerSkill } = await import('./impl/DatabaseOptimizerSkill');
+        return new DatabaseOptimizerSkill();
+      
+      // ============ NEW SKILLS FROM E-COMMERCE & MARKETING BATCH ============
+      case 'deal_finder':
+        const { DealFinderSkill } = await import('./impl/DealFinderSkill');
+        return new DealFinderSkill();
+      
+      case 'delivery_tracker':
+        const { DeliveryTrackerSkill } = await import('./impl/DeliveryTrackerSkill');
+        return new DeliveryTrackerSkill();
+      
+      case 'discount_calculator':
+        const { DiscountCalculatorSkill } = await import('./impl/DiscountCalculatorSkill');
+        return new DiscountCalculatorSkill();
+      
+      case 'domain_checker':
+        const { DomainCheckerSkill } = await import('./impl/DomainCheckerSkill');
+        return new DomainCheckerSkill();
+      
+      case 'dropshipping_manager':
+        const { DropshippingManagerSkill } = await import('./impl/DropshippingManagerSkill');
+        return new DropshippingManagerSkill();
+      
+      case 'dynamic_pricing':
+        const { DynamicPricingSkill } = await import('./impl/DynamicPricingSkill');
+        return new DynamicPricingSkill();
+      
+      case 'ecommerce_analytics':
+        const { EcommerceAnalyticsSkill } = await import('./impl/EcommerceAnalyticsSkill');
+        return new EcommerceAnalyticsSkill();
+      
+      case 'email_marketing':
+        const { EmailMarketingSkill } = await import('./impl/EmailMarketingSkill');
+        return new EmailMarketingSkill();
+      
+      case 'email_sender':
+        const { EmailSenderSkill } = await import('./impl/EmailSenderSkill');
+        return new EmailSenderSkill();
+      
+      case 'email_verifier':
+        const { EmailVerifierSkill } = await import('./impl/EmailVerifierSkill');
+        return new EmailVerifierSkill();
+      
+      // ============ NEW SKILLS FROM FILE & DOCUMENT BATCH ============
+      case 'file_compressor':
+        const { FileCompressorSkill } = await import('./impl/FileCompressorSkill');
+        return new FileCompressorSkill();
+      
+      case 'file_converter_pro':
+        const { FileConverterProSkill } = await import('./impl/FileConverterProSkill');
+        return new FileConverterProSkill();
+      
+      case 'file_encryptor':
+        const { FileEncryptorSkill } = await import('./impl/FileEncryptorSkill');
+        return new FileEncryptorSkill();
+      
+      case 'file_manager':
+        const { FileManagerSkill } = await import('./impl/FileManagerSkill');
+        return new FileManagerSkill();
+      
+      case 'file_organizer':
+        const { FileOrganizerSkill } = await import('./impl/FileOrganizerSkill');
+        return new FileOrganizerSkill();
+      
+      case 'file_sync':
+        const { FileSyncSkill } = await import('./impl/FileSyncSkill');
+        return new FileSyncSkill();
+      
+      case 'file_uploader':
+        const { FileUploaderSkill } = await import('./impl/FileUploaderSkill');
+        return new FileUploaderSkill();
+      
+      case 'document_generator':
+        const { DocumentGeneratorSkill } = await import('./impl/DocumentGeneratorSkill');
+        return new DocumentGeneratorSkill();
+      
+      case 'document_processor':
+        const { DocumentProcessorSkill } = await import('./impl/DocumentProcessorSkill');
+        return new DocumentProcessorSkill();
+      
+      case 'document_scanner':
+        const { DocumentScannerSkill } = await import('./impl/DocumentScannerSkill');
+        return new DocumentScannerSkill();
+      
+      // ============ NEW SKILLS FROM INTEGRATION & API BATCH ============
+      case 'graphql_client':
+        const { GraphqlClientSkill } = await import('./impl/GraphqlClientSkill');
+        return new GraphqlClientSkill();
+      
+      case 'grpc_client':
+        const { GrpcClientSkill } = await import('./impl/GrpcClientSkill');
+        return new GrpcClientSkill();
+      
+      case 'http_client':
+        const { HttpClientSkill } = await import('./impl/HttpClientSkill');
+        return new HttpClientSkill();
+      
+      case 'integration_hub':
+        const { IntegrationHubSkill } = await import('./impl/IntegrationHubSkill');
+        return new IntegrationHubSkill();
+      
+      case 'json_processor':
+        const { JsonProcessorSkill } = await import('./impl/JsonProcessorSkill');
+        return new JsonProcessorSkill();
+      
+      case 'jwt_generator':
+        const { JwtGeneratorSkill } = await import('./impl/JwtGeneratorSkill');
+        return new JwtGeneratorSkill();
+      
+      case 'kafka_connector':
+        const { KafkaConnectorSkill } = await import('./impl/KafkaConnectorSkill');
+        return new KafkaConnectorSkill();
+      
+      case 'mqtt_client':
+        const { MqttClientSkill } = await import('./impl/MqttClientSkill');
+        return new MqttClientSkill();
+      
+      // ============ NEW SKILLS FROM SECURITY & MONITORING BATCH ============
+      case 'log_analyzer':
+        const { LogAnalyzerSkill } = await import('./impl/LogAnalyzerSkill');
+        return new LogAnalyzerSkill();
+      
+      case 'logger':
+        const { LoggerSkill } = await import('./impl/LoggerSkill');
+        return new LoggerSkill();
+      
+      case 'metrics_collector':
+        const { MetricsCollectorSkill } = await import('./impl/MetricsCollectorSkill');
+        return new MetricsCollectorSkill();
+      
+      case 'monitoring_dashboard':
+        const { MonitoringDashboardSkill } = await import('./impl/MonitoringDashboardSkill');
+        return new MonitoringDashboardSkill();
+      
+      case 'network_monitor':
+        const { NetworkMonitorSkill } = await import('./impl/NetworkMonitorSkill');
+        return new NetworkMonitorSkill();
+      
+      case 'notification_engine':
+        const { NotificationEngineSkill } = await import('./impl/NotificationEngineSkill');
+        return new NotificationEngineSkill();
+      
+      case 'password_generator_pro':
+        const { PasswordGeneratorProSkill } = await import('./impl/PasswordGeneratorProSkill');
+        return new PasswordGeneratorProSkill();
+      
+      case 'password_manager':
+        const { PasswordManagerSkill } = await import('./impl/PasswordManagerSkill');
+        return new PasswordManagerSkill();
+      
+      case 'performance_analyzer':
+        const { PerformanceAnalyzerSkill } = await import('./impl/PerformanceAnalyzerSkill');
+        return new PerformanceAnalyzerSkill();
+      
+      case 'permission_manager':
+        const { PermissionManagerSkill } = await import('./impl/PermissionManagerSkill');
+        return new PermissionManagerSkill();
+      
       default:
         // For unimplemented skills, return a mock implementation
         return this.createMockSkill(id);
