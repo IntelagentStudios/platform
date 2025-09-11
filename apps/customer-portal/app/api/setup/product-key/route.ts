@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
           license_key: licenseKey,
           status: 'active',
           created_at: new Date(),
-          expires_at: new Date('2025-12-31'),
           metadata: {
             settings: {
               primaryColor: '#0070f3',
