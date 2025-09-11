@@ -9,6 +9,8 @@ import type { NextRequest } from 'next/server';
 // Define isolated chatbot routes
 const ISOLATED_CHATBOT_ROUTES = [
   '/api/chatbot',  // This now covers /api/chatbot/[siteKey] as well
+  '/api/widget',   // Widget configuration and dynamic scripts
+  '/api/webhook/chatbot', // Chatbot webhook endpoint
   '/chatbot-widget.js',
   '/chatbot-widget.css'
 ];
