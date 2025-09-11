@@ -76,12 +76,7 @@ export async function POST(request: NextRequest) {
         where: { id: existing.id },
         data: {
           content: existing.content + '\n\n---\n\n' + content,
-          metadata: {
-            ...(existing.metadata as any || {}),
-            lastUpload: file.name,
-            lastUploadDate: new Date().toISOString(),
-            totalDocuments: ((existing.metadata as any)?.totalDocuments || 0) + 1
-          }
+          instructions: existing.instructions + `\nLast upload: ${file.name} at ${new Date().toISOString()}`
         }
       });
     } else {
@@ -92,13 +87,8 @@ export async function POST(request: NextRequest) {
           product_key: productKey,
           knowledge_type: 'document',
           content: content,
-          instructions: 'Use this document content to answer user questions accurately.',
-          is_active: true,
-          metadata: {
-            firstUpload: file.name,
-            uploadDate: new Date().toISOString(),
-            totalDocuments: 1
-          }
+          instructions: `Use this document content to answer user questions accurately.\nFirst upload: ${file.name} at ${new Date().toISOString()}`,
+          is_active: true
         }
       });
     }
