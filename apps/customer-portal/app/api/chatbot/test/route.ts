@@ -88,16 +88,17 @@ export async function GET(request: NextRequest) {
 
     <h3>How to embed this widget:</h3>
     <div class="code-block">
-&lt;!-- Option 1: Static Widget --&gt;
+&lt;!-- Fully Dynamic Widget (Recommended) --&gt;
 &lt;script 
-  src="https://dashboard.intelagentstudios.com/chatbot-widget-v3.js"
-  data-product-key="${productKey}"&gt;
+  src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"&gt;
 &lt;/script&gt;
 
-&lt;!-- Option 2: Dynamic Widget (Recommended) --&gt;
-&lt;script 
-  src="https://dashboard.intelagentstudios.com/api/widget/script?key=${productKey}"&gt;
-&lt;/script&gt;
+&lt;!-- Each product key gets: --&gt;
+&lt;!-- ✅ Custom colors and positioning --&gt;
+&lt;!-- ✅ Personalized welcome messages --&gt;
+&lt;!-- ✅ Unique knowledge base --&gt;
+&lt;!-- ✅ Website-specific context --&gt;
+&lt;!-- ✅ Real-time configuration updates --&gt;
     </div>
 
     <h3>Widget Features:</h3>
@@ -136,10 +137,10 @@ export async function GET(request: NextRequest) {
       document.getElementById('status').className = 'status loading';
       document.getElementById('status').textContent = 'Loading...';
       
-      // Add new script
+      // Add new script - using fully dynamic endpoint
       const script = document.createElement('script');
       script.id = 'widget-script';
-      script.src = '/api/widget/script?key=${productKey}';
+      script.src = '/api/widget/dynamic?key=${productKey}';
       script.onload = () => {
         document.getElementById('status').className = 'status loaded';
         document.getElementById('status').textContent = '✅ Loaded';
