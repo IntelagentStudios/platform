@@ -1270,3 +1270,17 @@ model skill_logs {
   @@index([timestamp], map: "idx_skill_logs_timestamp")
   @@schema("public")
 }
+
+model knowledge_embeddings {
+  id             String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  knowledge_id   String    @db.VarChar(36)
+  license_key    String    @db.VarChar(50)
+  embedding_ids  String[]  // Array of Pinecone vector IDs
+  chunk_count    Int
+  model_used     String    @db.VarChar(100)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  
+  @@index([license_key], map: "idx_embeddings_license")
+  @@index([knowledge_id], map: "idx_embeddings_knowledge")
+  @@schema("public")
+}

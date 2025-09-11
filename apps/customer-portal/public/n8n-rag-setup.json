@@ -1,0 +1,45 @@
+{
+  "name": "RAG Vector Search for Chatbot",
+  "description": "Add this HTTP Request node after Input Validation to search for relevant knowledge using RAG",
+  "node": {
+    "type": "n8n-nodes-base.httpRequest",
+    "name": "RAG Vector Search",
+    "position": [-1750, -544],
+    "parameters": {
+      "method": "POST",
+      "url": "https://dashboard.intelagentstudios.com/api/embeddings/search",
+      "sendBody": true,
+      "bodyParameters": {
+        "parameters": [
+          {
+            "name": "query",
+            "value": "={{ $json.customer_message }}"
+          },
+          {
+            "name": "productKey",
+            "value": "={{ $json.product_key }}"
+          },
+          {
+            "name": "topK",
+            "value": "3"
+          }
+        ]
+      },
+      "options": {
+        "response": {
+          "response": {
+            "responseFormat": "json"
+          }
+        }
+      }
+    }
+  },
+  "connections": {
+    "connect_after": "Product Key Lookup",
+    "connect_to": "Process Domain"
+  },
+  "usage_in_agents": {
+    "agent1_system": "## Custom Knowledge from RAG:\n{{ $('RAG Vector Search').item.json.relevantKnowledge || 'No relevant knowledge found' }}\n\n## Your Resources:\n1. RAG-Retrieved Knowledge (above) - Most relevant to the query\n2. Website Structure Knowledge - Fallback for general navigation",
+    "agent2_prompt": "RELEVANT KNOWLEDGE (from RAG search):\n{{ $('RAG Vector Search').item.json.relevantKnowledge || 'No specific knowledge found' }}\n\nMatch Score: {{ $('RAG Vector Search').item.json.matchDetails?.[0]?.score || 'N/A' }}\n\nCustomer's question: {{ $json.customer_message }}\n\nUse the RAG-retrieved knowledge as the primary source for your response."
+  }
+}

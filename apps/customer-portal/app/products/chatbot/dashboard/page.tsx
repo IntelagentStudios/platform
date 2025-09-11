@@ -417,6 +417,7 @@ function ChatbotDashboardContent() {
     setKnowledgeSaved(false);
     
     try {
+      // First save the knowledge
       const res = await fetch('/api/products/chatbot/custom-knowledge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -428,6 +429,27 @@ function ChatbotDashboardContent() {
       });
       
       if (res.ok) {
+        const knowledgeData = await res.json();
+        
+        // Then generate embeddings for RAG
+        if (license && customKnowledge.length > 50) { // Only for substantial content
+          const embeddingRes = await fetch('/api/embeddings/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              licenseKey: license,
+              content: customKnowledge,
+              knowledgeId: knowledgeData.id || 'general',
+              forceRegenerate: true // Always regenerate when saving
+            })
+          });
+          
+          if (embeddingRes.ok) {
+            const embedData = await embeddingRes.json();
+            console.log(`Generated ${embedData.chunksProcessed} embeddings for knowledge`);
+          }
+        }
+        
         setKnowledgeSaved(true);
         setTimeout(() => setKnowledgeSaved(false), 3000);
       }
