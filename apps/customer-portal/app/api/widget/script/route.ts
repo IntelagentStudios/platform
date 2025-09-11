@@ -84,13 +84,13 @@ window.INTELAGENT_CONFIG = {
 
     // Replace the product key detection with the injected one
     widgetScript = widgetScript.replace(
-      /const productKey = script\.getAttribute.*?;/s,
+      /const productKey = script\.getAttribute[^;]*;/,
       `const productKey = window.INTELAGENT_CONFIG.productKey;`
     );
 
     // Replace the fetchConfig function to use injected config
     widgetScript = widgetScript.replace(
-      /async function fetchConfig\(\) \{[\s\S]*?\n  \}/,
+      /async function fetchConfig\(\) \{[^}]*\}[^}]*\}/g,
       `async function fetchConfig() {
     // Use injected configuration
     if (window.INTELAGENT_CONFIG && window.INTELAGENT_CONFIG.settings) {
@@ -123,7 +123,7 @@ window.INTELAGENT_CONFIG = {
 
     // Replace the fetchCustomKnowledge function to use injected knowledge
     widgetScript = widgetScript.replace(
-      /async function fetchCustomKnowledge\(\) \{[\s\S]*?\n  \}/,
+      /async function fetchCustomKnowledge\(\) \{[^}]*\}[^}]*\}/g,
       `async function fetchCustomKnowledge() {
     // Use injected knowledge
     if (window.INTELAGENT_CONFIG && window.INTELAGENT_CONFIG.knowledge) {
