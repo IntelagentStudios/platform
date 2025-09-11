@@ -69,37 +69,55 @@ function hashInputs(inputs: any): string {
   return Math.abs(hash).toString(36);
 }
 
+function addCorsHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-License-Key, X-User-Id, X-Tier');
+  headers.set('Access-Control-Max-Age', '86400');
+  
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
 export async function handleTranslateContent(
   request: Request,
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return addCorsHeaders(new Response(null, { status: 204 }));
+  }
+  
   const startTime = Date.now();
   const config = configData as Config;
   
   const auth = await validateAuth(request);
   if (!auth) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   if (auth.tier === 'Base') {
-    return new Response(JSON.stringify({ error: 'Translation skills require Custom or Pro tier' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Translation skills require Custom or Pro tier' }), {
       status: 403,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   const body = await request.json() as any;
   const { url, html, locale } = body;
 
   if (!locale || (!url && !html)) {
-    return new Response(JSON.stringify({ error: 'Invalid parameters' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Invalid parameters' }), {
       status: 400,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   try {
@@ -154,7 +172,7 @@ export async function handleTranslateContent(
 
     ctx.waitUntil(logExecution(env, executionLog));
 
-    return new Response(JSON.stringify({
+    return addCorsHeaders(new Response(JSON.stringify({
       html_handle: outputHandle,
       html: translatedHtml,
       meta: {
@@ -166,12 +184,12 @@ export async function handleTranslateContent(
     }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 }
 
@@ -180,32 +198,36 @@ export async function handleGenerateSitemap(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return addCorsHeaders(new Response(null, { status: 204 }));
+  }
+  
   const startTime = Date.now();
   const config = configData as Config;
   
   const auth = await validateAuth(request);
   if (!auth) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   if (auth.tier !== 'Pro') {
-    return new Response(JSON.stringify({ error: 'Sitemap generation requires Pro tier' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Sitemap generation requires Pro tier' }), {
       status: 403,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   const body = await request.json() as any;
   const { locales, baseUrl = env.ORIGIN_URL, urls = ['/'] } = body;
 
   if (!locales || !Array.isArray(locales) || locales.length === 0) {
-    return new Response(JSON.stringify({ error: 'Invalid locales parameter' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Invalid locales parameter' }), {
       status: 400,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   try {
@@ -234,7 +256,7 @@ export async function handleGenerateSitemap(
 
     ctx.waitUntil(logExecution(env, executionLog));
 
-    return new Response(JSON.stringify({
+    return addCorsHeaders(new Response(JSON.stringify({
       sitemap_handle: outputHandle,
       sitemap_index: sitemapIndex,
       localized_sitemaps: sitemaps,
@@ -246,12 +268,12 @@ export async function handleGenerateSitemap(
     }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 }
 
@@ -260,32 +282,36 @@ export async function handleInjectHreflang(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
+  if (request.method === 'OPTIONS') {
+    return addCorsHeaders(new Response(null, { status: 204 }));
+  }
+  
   const startTime = Date.now();
   const config = configData as Config;
   
   const auth = await validateAuth(request);
   if (!auth) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   if (auth.tier === 'Base') {
-    return new Response(JSON.stringify({ error: 'Hreflang injection requires Custom or Pro tier' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Hreflang injection requires Custom or Pro tier' }), {
       status: 403,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   const body = await request.json() as any;
   const { url, locales, currentLocale = config.defaultLocale } = body;
 
   if (!url || !locales || !Array.isArray(locales)) {
-    return new Response(JSON.stringify({ error: 'Invalid parameters' }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Invalid parameters' }), {
       status: 400,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 
   try {
@@ -311,7 +337,7 @@ export async function handleInjectHreflang(
 
     ctx.waitUntil(logExecution(env, executionLog));
 
-    return new Response(JSON.stringify({
+    return addCorsHeaders(new Response(JSON.stringify({
       head_fragment: headFragment,
       meta: {
         url,
@@ -322,11 +348,11 @@ export async function handleInjectHreflang(
     }), {
       status: 200,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return addCorsHeaders(new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'content-type': 'application/json' }
-    });
+    }));
   }
 }

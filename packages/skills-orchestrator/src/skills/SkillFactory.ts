@@ -197,6 +197,40 @@ export class SkillFactory {
       tags: ['tts', 'speech', 'audio']
     });
     
+    // Multilingual/SEO skills
+    this.addSkill({
+      id: 'translate-content_v1',
+      name: 'Translate Content',
+      description: 'Translate web pages or HTML content with advanced caching and translation memory',
+      category: 'communication',
+      tags: ['translation', 'multilingual', 'i18n', 'localization', 'seo'],
+      requiredParams: ['locale'],
+      optionalParams: ['url', 'html'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'generate-sitemap_v1',
+      name: 'Generate Multilingual Sitemap',
+      description: 'Generate localized sitemaps for SEO optimization across multiple languages',
+      category: 'seo',
+      tags: ['sitemap', 'seo', 'multilingual', 'localization', 'indexing'],
+      requiredParams: ['locales'],
+      optionalParams: ['baseUrl', 'urls'],
+      isPremium: true
+    });
+    
+    this.addSkill({
+      id: 'inject-hreflang_v1',
+      name: 'Inject Hreflang Tags',
+      description: 'Generate and inject hreflang tags for multilingual SEO optimization',
+      category: 'seo',
+      tags: ['hreflang', 'seo', 'multilingual', 'localization', 'international'],
+      requiredParams: ['url', 'locales'],
+      optionalParams: ['currentLocale'],
+      isPremium: true
+    });
+    
     this.addSkill({
       id: 'signature_generator',
       name: 'Email Signature Generator',

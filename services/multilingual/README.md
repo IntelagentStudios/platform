@@ -1,6 +1,22 @@
-# Intelaglot - Production-Grade Multilingual Website Proxy
+# Multilingual Service (Intelaglot) - Production-Grade Multilingual Website Proxy
+
+> Part of the Intelagent Platform monorepo
 
 A self-hosted alternative to Weglot that acts as a reverse proxy to serve localized versions of websites at static URLs. Built for Cloudflare Workers with enterprise-grade features.
+
+## Integration with Intelagent Platform
+
+This service is now integrated with the Intelagent Platform skills orchestrator and exposes three primary skills:
+
+### Available Skills
+
+1. **translate-content_v1** - Translate web pages or HTML content with caching
+2. **generate-sitemap_v1** - Generate localized sitemaps for SEO
+3. **inject-hreflang_v1** - Inject hreflang tags for multilingual SEO
+
+### Squarespace Integration
+
+The service includes CORS headers for seamless integration with Squarespace websites. You can call the skill endpoints directly from your Squarespace custom code blocks.
 
 ## Features
 
@@ -27,10 +43,30 @@ A self-hosted alternative to Weglot that acts as a reverse proxy to serve locali
 - **Batch Operations**: Crawl sitemaps and prewarm cache
 - **Translation Analytics**: Track provider usage and review status
 
+## Monorepo Setup
+
+### Building from Root
+```bash
+# From repository root
+cd services/multilingual
+npm install
+npm run build
+```
+
+### Deployment
+```bash
+# Deploy to staging
+npm run deploy:staging
+
+# Deploy to production
+npm run deploy:production
+```
+
 ## Quick Start
 
 ### 1. Install Dependencies
 ```bash
+# From services/multilingual directory
 npm install
 ```
 
@@ -46,6 +82,20 @@ SUPPORTED_LOCALES = "en,fr,es,de"
 [secrets]
 OPENAI_API_KEY = "your-key"
 DEEPL_API_KEY = "your-key"
+```
+
+### 3. Skills API Configuration
+
+The service exposes skill endpoints at:
+- `POST /api/skills/translate-content`
+- `POST /api/skills/generate-sitemap`
+- `POST /api/skills/inject-hreflang`
+
+Required headers for skill endpoints:
+```
+X-License-Key: your-license-key
+X-User-Id: user-id
+X-Tier: Base|Custom|Pro
 ```
 
 ### 3. Create KV Namespaces

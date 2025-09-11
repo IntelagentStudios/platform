@@ -5,12 +5,26 @@ import { CacheManager, EdgeCache } from './services/cache';
 import { SEOManager } from './services/seo';
 import { LanguageSwitcher } from './services/language-switcher';
 import { GlossaryProcessor } from './services/glossary';
+import { handleTranslateContent, handleGenerateSitemap, handleInjectHreflang } from './skills-api';
 import configData from '../config.json';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const config = configData as Config;
+    
+    // Skills API endpoints
+    if ((request.method === 'POST' || request.method === 'OPTIONS') && url.pathname === '/api/skills/translate-content') {
+      return handleTranslateContent(request, env, ctx);
+    }
+    
+    if ((request.method === 'POST' || request.method === 'OPTIONS') && url.pathname === '/api/skills/generate-sitemap') {
+      return handleGenerateSitemap(request, env, ctx);
+    }
+    
+    if ((request.method === 'POST' || request.method === 'OPTIONS') && url.pathname === '/api/skills/inject-hreflang') {
+      return handleInjectHreflang(request, env, ctx);
+    }
     
     if (url.pathname === '/api/admin/export' || url.pathname === '/api/admin/import') {
       return handleAdminAPI(request, env, url.pathname);

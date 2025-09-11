@@ -273,6 +273,19 @@ export class SkillsRegistry {
         const { WebScraperSkill } = await import('./impl/WebScraperSkill');
         return new WebScraperSkill();
       
+      // Multilingual/SEO skills
+      case 'translate-content_v1':
+        const { TranslateContentSkill } = await import('./impl/TranslateContentSkill');
+        return new TranslateContentSkill();
+      
+      case 'generate-sitemap_v1':
+        const { GenerateSitemapSkill } = await import('./impl/GenerateSitemapSkill');
+        return new GenerateSitemapSkill();
+      
+      case 'inject-hreflang_v1':
+        const { InjectHreflangSkill } = await import('./impl/InjectHreflangSkill');
+        return new InjectHreflangSkill();
+      
       default:
         // For unimplemented skills, return a mock implementation
         return this.createMockSkill(id);

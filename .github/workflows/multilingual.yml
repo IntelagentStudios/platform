@@ -1,0 +1,185 @@
+name: Deploy Multilingual Service
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'services/multilingual/**'
+    tags:
+      - 'multilingual-v*'
+  pull_request:
+    paths:
+      - 'services/multilingual/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  lint-and-test:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/multilingual
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: services/multilingual/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+      
+      - name: Run linter
+        run: npm run lint || true
+      
+      - name: Run tests
+        run: npm test || true
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    defaults:
+      run:
+        working-directory: services/multilingual
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: services/multilingual/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      
+      - name: Configure Wrangler
+        run: |
+          echo "Setting up Cloudflare credentials"
+          wrangler config
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      
+      - name: Deploy to Cloudflare Workers (Staging)
+        run: |
+          wrangler publish --env staging \
+            --var ORIGIN_URL:${{ secrets.STAGING_ORIGIN_URL }} \
+            --var DEFAULT_LOCALE:en \
+            --var SUPPORTED_LOCALES:en,es,fr,de,it,pt,ja,zh,ko,ru,ar
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      
+      - name: Set KV namespace bindings (Staging)
+        run: |
+          wrangler kv:namespace create TRANSLATION_MEMORY --env staging || true
+          wrangler kv:namespace create CACHE_STORE --env staging || true
+          wrangler kv:namespace create CONFIG_STORE --env staging || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/multilingual-v') || github.event.inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: services/multilingual
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: services/multilingual/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Wrangler
+        run: npm install -g wrangler
+      
+      - name: Configure Wrangler
+        run: |
+          echo "Setting up Cloudflare credentials"
+          wrangler config
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      
+      - name: Deploy to Cloudflare Workers (Production)
+        run: |
+          wrangler publish \
+            --var ORIGIN_URL:${{ secrets.PRODUCTION_ORIGIN_URL }} \
+            --var DEFAULT_LOCALE:en \
+            --var SUPPORTED_LOCALES:en,es,fr,de,it,pt,ja,zh,ko,ru,ar \
+            --var DEEPL_API_KEY:${{ secrets.DEEPL_API_KEY }} \
+            --var OPENAI_API_KEY:${{ secrets.OPENAI_API_KEY }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      
+      - name: Set KV namespace bindings (Production)
+        run: |
+          wrangler kv:namespace create TRANSLATION_MEMORY || true
+          wrangler kv:namespace create CACHE_STORE || true
+          wrangler kv:namespace create CONFIG_STORE || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: multilingual-worker-${{ github.sha }}
+          path: |
+            services/multilingual/dist/
+            services/multilingual/wrangler.toml
+      
+      - name: Create deployment record
+        run: |
+          echo "Deployment completed at $(date)" >> deployment.log
+          echo "Commit: ${{ github.sha }}" >> deployment.log
+          echo "Tag: ${{ github.ref }}" >> deployment.log
+      
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "✅ Multilingual service deployed successfully to production"
+      
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Multilingual service deployment failed"

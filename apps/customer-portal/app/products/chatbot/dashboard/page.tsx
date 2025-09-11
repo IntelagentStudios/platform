@@ -432,12 +432,12 @@ function ChatbotDashboardContent() {
         const knowledgeData = await res.json();
         
         // Then generate embeddings for RAG
-        if (license && customKnowledge.length > 50) { // Only for substantial content
+        if (productKey && customKnowledge.length > 50) { // Only for substantial content
           const embeddingRes = await fetch('/api/embeddings/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              licenseKey: license,
+              licenseKey: productKey, // Using productKey as license identifier
               content: customKnowledge,
               knowledgeId: knowledgeData.id || 'general',
               forceRegenerate: true // Always regenerate when saving
