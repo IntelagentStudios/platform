@@ -112,13 +112,13 @@ async function fetchConversations(licenseKey: string) {
         // Create James's product key if it doesn't exist
         await prisma.product_keys.upsert({
           where: {
-            product_key: 'chat_james_nw1s_2025'
+            product_key: 'chat_test_3f8a2c5d'
           },
           update: {
             status: 'active'
           },
           create: {
-            product_key: 'chat_james_nw1s_2025',
+            product_key: 'chat_test_3f8a2c5d',
             license_key: 'INTL-NW1S-QANW-2025',
             product: 'chatbot',
             status: 'active',

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     });
   } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
     // Return James's configuration with his actual product key
-    const jamesProductKey = 'chat_james_nw1s_2025';
+    const jamesProductKey = 'chat_test_3f8a2c5d';
     return NextResponse.json({
       chatbot: {
         configured: true,
