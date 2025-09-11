@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const licenseKey = 'INTL-AGNT-BOSS-MODE';
+    const productKey = 'PK-INTL-AGNT-BOSS-MODE';
     
     // Create sample knowledge base entries
     const knowledgeCount = await prisma.custom_knowledge.count({
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
         data: [
           {
             license_key: licenseKey,
+            product_key: productKey,
             content: 'Intelagent Studios is a cutting-edge AI platform that provides intelligent automation solutions for businesses. We specialize in chatbot development, process automation, and AI-powered analytics.',
             knowledge_type: 'company',
             is_active: true,
@@ -102,6 +104,7 @@ export async function POST(request: NextRequest) {
           },
           {
             license_key: licenseKey,
+            product_key: productKey,
             content: 'Our main products include: 1) AI Chatbot Widget - An intelligent customer support chatbot that can be embedded on any website. 2) Skills Orchestration Platform - A system for managing and executing various AI-powered skills. 3) Platform Intelligence - Advanced analytics and insights for your business operations.',
             knowledge_type: 'product',
             is_active: true,
@@ -110,6 +113,7 @@ export async function POST(request: NextRequest) {
           },
           {
             license_key: licenseKey,
+            product_key: productKey,
             content: 'FAQ: Q: How do I integrate the chatbot on my website? A: Simply add the chatbot script tag to your website with your product key. Q: Can I customize the chatbot appearance? A: Yes, you can customize colors, position, and messages from the settings page. Q: Is my data secure? A: Yes, we use enterprise-grade encryption and security measures.',
             knowledge_type: 'faq',
             is_active: true,

@@ -47,10 +47,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Get or create product key for this license
+    const productKey = 'PK-' + licenseKey;
+    
     // Create new knowledge entry
     const newKnowledge = await prisma.custom_knowledge.create({
       data: {
         license_key: licenseKey,
+        product_key: productKey,
         content: content,
         knowledge_type: knowledgeType,
         is_active: true,
