@@ -993,19 +993,36 @@ function ChatbotDashboardContent() {
                 {/* PDF Upload Section */}
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Upload PDF Document
+                    Upload Documents
                   </label>
                   <div className="border-2 border-dashed rounded-lg p-6 text-center"
                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
                     <input
                       type="file"
-                      accept=".pdf"
-                      onChange={(e) => {
+                      accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.ppt,.pptx"
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          // TODO: Implement PDF processing
-                          console.log('PDF selected:', file.name);
-                          alert('PDF upload functionality coming soon!');
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          formData.append('productKey', productKey || siteKey || '');
+                          
+                          try {
+                            const res = await fetch('/api/products/chatbot/upload-document', {
+                              method: 'POST',
+                              body: formData
+                            });
+                            
+                            if (res.ok) {
+                              alert(`Document "${file.name}" uploaded successfully!`);
+                              setCustomKnowledge(prev => prev + `\n\n[Uploaded: ${file.name}]`);
+                            } else {
+                              alert('Failed to upload document. Please try again.');
+                            }
+                          } catch (error) {
+                            console.error('Upload error:', error);
+                            alert('Error uploading document.');
+                          }
                         }
                       }}
                       className="hidden"
@@ -1016,13 +1033,13 @@ function ChatbotDashboardContent() {
                         <svg className="w-12 h-12 mb-3" style={{ color: 'rgba(169, 189, 203, 0.5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p className="text-sm mb-1" style={{ color: 'rgb(229, 227, 220)' }}>Click to upload a PDF document</p>
-                        <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>or drag and drop</p>
+                        <p className="text-sm mb-1" style={{ color: 'rgb(229, 227, 220)' }}>Click to upload documents</p>
+                        <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>PDF, Word, Excel, PowerPoint, Text, CSV</p>
                       </div>
                     </label>
                   </div>
                   <p className="mt-2 text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                    Upload PDFs containing product manuals, FAQs, or other documentation
+                    Upload documents containing product info, FAQs, manuals, or company data
                   </p>
                 </div>
                 
