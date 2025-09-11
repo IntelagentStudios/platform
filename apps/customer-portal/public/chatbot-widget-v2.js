@@ -309,7 +309,22 @@
     
     // Generate session ID
     const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    const customKnowledge = ${JSON.stringify(config.customKnowledge || null)};
+    
+    // Fetch fresh custom knowledge for each session
+    async function fetchCustomKnowledge() {
+      try {
+        const response = await fetch('https://dashboard.intelagentstudios.com/api/widget/config?key=${productKey}');
+        if (response.ok) {
+          const data = await response.json();
+          return data.config?.customKnowledge || null;
+        }
+      } catch (error) {
+        console.error('Failed to fetch custom knowledge:', error);
+      }
+      return null;
+    }
+    
+    let customKnowledge = ${JSON.stringify(config.customKnowledge || null)};
     
     chatButton.addEventListener('click', () => {
       chatBox.style.display = 'flex';
@@ -335,6 +350,12 @@
       messageInput.value = '';
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       
+      // Fetch fresh custom knowledge before sending
+      const latestKnowledge = await fetchCustomKnowledge();
+      if (latestKnowledge) {
+        customKnowledge = latestKnowledge;
+      }
+      
       // Send to n8n webhook with custom knowledge
       try {
         const webhookData = {
@@ -343,7 +364,8 @@
           productKey: '${productKey}',
           timestamp: new Date().toISOString(),
           customKnowledge: customKnowledge,
-          responseStyle: '${config.responseStyle}'
+          responseStyle: '${config.responseStyle}',
+          domain: window.location.hostname
         };
         
         const response = await fetch('https://n8n.intelagentstudios.com/webhook/chatbot', {
@@ -357,8 +379,28 @@
         // Add bot response to chat
         const botMessageDiv = document.createElement('div');
         botMessageDiv.className = 'intelagent-chat-message bot';
-        botMessageDiv.innerHTML = '<div class="intelagent-chat-message-content">' + (data.response || 'I understand your message. How else can I help you?') + '</div>';
+        
+        // Process response to handle links properly
+        let processedResponse = data.response || 'I understand your message. How else can I help you?';
+        
+        // Convert URLs to proper links that open in new window
+        processedResponse = processedResponse.replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: ${config.primaryColor}; text-decoration: underline;">$1</a>'
+        );
+        
+        botMessageDiv.innerHTML = '<div class="intelagent-chat-message-content">' + processedResponse + '</div>';
         messagesContainer.appendChild(botMessageDiv);
+        
+        // Add click handlers to prevent iframe navigation
+        const links = botMessageDiv.querySelectorAll('a');
+        links.forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open(link.href, '_blank');
+          });
+        });
+        
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
       } catch (error) {
         console.error('Error sending message:', error);

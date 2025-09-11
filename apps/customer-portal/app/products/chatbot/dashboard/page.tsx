@@ -204,12 +204,15 @@ function ChatbotDashboardContent() {
     setSettingsSaved(false);
     
     try {
-      const response = await fetch('/api/products/chatbot/settings', {
+      const response = await fetch('/api/widget/config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          productKey: productKey || siteKey,
+          settings: settings
+        }),
       });
       
       if (response.ok) {
@@ -1015,7 +1018,7 @@ function ChatbotDashboardContent() {
                             
                             if (res.ok) {
                               alert(`Document "${file.name}" uploaded successfully!`);
-                              setCustomKnowledge(prev => prev + `\n\n[Uploaded: ${file.name}]`);
+                              // Don't add to text box, just refresh to show in knowledge base
                             } else {
                               alert('Failed to upload document. Please try again.');
                             }
@@ -1511,9 +1514,6 @@ function ChatbotDashboardContent() {
                         </span>
                         <AlertCircle className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
                       </label>
-                      <p className="text-xs ml-7 mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                        This plays a sound on the customer's device when they receive a new message from the chatbot
-                      </p>
                     </div>
                     <label className="flex items-center gap-3">
                       <input
