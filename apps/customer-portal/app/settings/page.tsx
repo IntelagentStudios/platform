@@ -327,6 +327,19 @@ export default function SettingsPage() {
 
       {/* Content */}
       <div className="p-8">
+        {/* DEBUG BANNER - Remove this after confirming deployment */}
+        <div 
+          className="rounded-lg p-4 mb-6 text-center"
+          style={{ 
+            backgroundColor: '#10B981', 
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: 'bold'
+          }}
+        >
+          🚀 VERSION 2 DEPLOYED - SIMPLIFIED SETTINGS ACTIVE
+        </div>
+        
         {saveMessage && (
           <div 
             className="rounded-lg p-4 mb-6 flex items-center space-x-3"
