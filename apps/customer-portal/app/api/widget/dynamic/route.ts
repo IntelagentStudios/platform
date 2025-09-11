@@ -30,7 +30,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get custom knowledge
+    // Get knowledge files from new table
+    const knowledgeFiles = await prisma.knowledge_files.findMany({
+      where: { 
+        product_key: productKey
+      },
+      select: {
+        filename: true,
+        content: true
+      }
+    });
+
+    // Get legacy custom knowledge
     const customKnowledge = await prisma.custom_knowledge.findMany({
       where: { 
         license_key: productKeyInfo.license_key,
@@ -42,18 +53,31 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Combine knowledge
-    let combinedKnowledge = '';
-    if (customKnowledge.length > 0) {
-      combinedKnowledge = customKnowledge
-        .map(k => `[${k.knowledge_type}]\n${k.content}`)
-        .join('\n\n---\n\n');
+    // Combine all knowledge
+    const knowledgePieces: string[] = [];
+    
+    // Add files
+    for (const file of knowledgeFiles) {
+      knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
     }
+    
+    // Add legacy custom knowledge
+    for (const k of customKnowledge) {
+      if (k.knowledge_type !== 'file') {
+        knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
+      }
+    }
+    
+    const combinedKnowledge = knowledgePieces.join('\n\n---\n\n');
 
     // Get settings from metadata - handle nested structure
     const metadata = productKeyInfo.metadata as any;
     // The structure is metadata.settings based on your config check
     const settings = metadata?.settings || {};
+    
+    // Debug logging
+    console.log('[Widget Dynamic] Raw metadata:', metadata);
+    console.log('[Widget Dynamic] Extracted settings:', settings);
     
     // Simplified configuration - use the actual saved settings
     const config = {
@@ -63,7 +87,7 @@ export async function GET(request: NextRequest) {
       responseStyle: settings.responseStyle || 'professional'
     };
     
-    console.log('[Widget Dynamic] Loading config for', productKey, ':', config);
+    console.log('[Widget Dynamic] Final config for', productKey, ':', config);
 
     // Generate the complete dynamic widget script
     const widgetScript = `
@@ -72,7 +96,7 @@ export async function GET(request: NextRequest) {
   const WIDGET_CONFIG = ${JSON.stringify(config, null, 2)};
   const PRODUCT_KEY = '${productKey}';
   const CUSTOM_KNOWLEDGE = ${JSON.stringify(combinedKnowledge)};
-  const HAS_KNOWLEDGE = ${customKnowledge.length > 0};
+  const HAS_KNOWLEDGE = ${combinedKnowledge.length > 0};
   
   console.log('[IntelagentChat] Initializing with product key:', PRODUCT_KEY);
   console.log('[IntelagentChat] Custom knowledge loaded:', HAS_KNOWLEDGE ? 'Yes (' + CUSTOM_KNOWLEDGE.length + ' chars)' : 'No');
