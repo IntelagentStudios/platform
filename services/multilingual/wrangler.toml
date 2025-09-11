@@ -1,0 +1,30 @@
+name = "intelaglot"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+node_compat = true
+
+[vars]
+ORIGIN_URL = "https://your-site.squarespace.com"
+DEFAULT_LOCALE = "en"
+SUPPORTED_LOCALES = "en,fr,es,de,it,pt,ja,zh"
+
+[[kv_namespaces]]
+binding = "TRANSLATION_MEMORY"
+id = "your-tm-kv-namespace-id"
+preview_id = "your-tm-kv-preview-id"
+
+[[kv_namespaces]]
+binding = "CACHE_STORE"
+id = "your-cache-kv-namespace-id"
+preview_id = "your-cache-kv-preview-id"
+
+[[kv_namespaces]]
+binding = "CONFIG_STORE"
+id = "your-config-kv-namespace-id"
+preview_id = "your-config-kv-preview-id"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+vars = { ENVIRONMENT = "staging" }

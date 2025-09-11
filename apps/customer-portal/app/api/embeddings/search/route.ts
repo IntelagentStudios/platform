@@ -54,15 +54,18 @@ export async function POST(request: NextRequest) {
     // Extract relevant text from results
     const relevantKnowledge = searchResults.matches
       .filter(match => match.score && match.score > 0.7) // Only high-relevance matches
-      .map(match => match.metadata?.text || '')
+      .map(match => {
+        const text = match.metadata?.text;
+        return typeof text === 'string' ? text : '';
+      })
       .filter(text => text.length > 0)
       .join('\n\n---\n\n');
     
     // Also return match details for debugging
     const matchDetails = searchResults.matches.map(match => ({
       score: match.score,
-      preview: match.metadata?.contentPreview,
-      chunkIndex: match.metadata?.chunkIndex
+      preview: typeof match.metadata?.contentPreview === 'string' ? match.metadata.contentPreview : undefined,
+      chunkIndex: typeof match.metadata?.chunkIndex === 'number' ? match.metadata.chunkIndex : undefined
     }));
     
     return NextResponse.json({

@@ -1,0 +1,52 @@
+{
+  "locales": {
+    "en": { "name": "English", "flag": "🇬🇧" },
+    "fr": { "name": "Français", "flag": "🇫🇷" },
+    "es": { "name": "Español", "flag": "🇪🇸" },
+    "de": { "name": "Deutsch", "flag": "🇩🇪" },
+    "it": { "name": "Italiano", "flag": "🇮🇹" },
+    "pt": { "name": "Português", "flag": "🇵🇹" },
+    "ja": { "name": "日本語", "flag": "🇯🇵" },
+    "zh": { "name": "中文", "flag": "🇨🇳" }
+  },
+  "defaultLocale": "en",
+  "translationProvider": "openai",
+  "glossary": {
+    "Intelaglot": "Intelaglot",
+    "API": "API",
+    "SDK": "SDK",
+    "OAuth": "OAuth",
+    "HTTP": "HTTP",
+    "HTTPS": "HTTPS",
+    "URL": "URL",
+    "JSON": "JSON",
+    "XML": "XML"
+  },
+  "doNotTranslate": [
+    "code",
+    "pre",
+    "script",
+    "style",
+    "noscript",
+    ".notranslate",
+    "[data-no-translate]",
+    "#footer-credits"
+  ],
+  "translateAttributes": [
+    "alt",
+    "title",
+    "placeholder",
+    "aria-label",
+    "aria-description",
+    "data-tooltip"
+  ],
+  "cache": {
+    "ttl": 3600,
+    "staleWhileRevalidate": 86400
+  },
+  "seo": {
+    "generateSitemaps": true,
+    "injectHreflang": true,
+    "localizeMetaTags": true
+  }
+}

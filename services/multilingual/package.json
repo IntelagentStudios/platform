@@ -1,0 +1,31 @@
+{
+  "name": "intelaglot",
+  "version": "1.0.0",
+  "description": "Production-grade multilingual website proxy - self-hosted Weglot alternative",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "test": "vitest",
+    "export-tm": "tsx scripts/export-tm.ts",
+    "import-tm": "tsx scripts/import-tm.ts",
+    "crawl": "tsx scripts/crawl-and-prewarm.ts"
+  },
+  "keywords": ["translation", "i18n", "cloudflare-worker", "proxy", "weglot"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^3.99.0"
+  },
+  "dependencies": {
+    "deepl-node": "^1.14.0",
+    "openai": "^4.73.1"
+  }
+}
