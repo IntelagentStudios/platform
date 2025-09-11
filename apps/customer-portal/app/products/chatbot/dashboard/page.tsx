@@ -1182,9 +1182,8 @@ function ChatbotDashboardContent() {
                            color: 'rgb(229, 227, 220)',
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
-{`<!-- Intelagent Chatbot Widget -->
-<script src="https://dashboard.intelagentstudios.com/chatbot-widget-v3.js" 
-        data-product-key="${productKey}">
+{`<!-- Intelagent Chatbot Widget (Dynamic) -->
+<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}">
 </script>`}
                     </pre>
                   </div>

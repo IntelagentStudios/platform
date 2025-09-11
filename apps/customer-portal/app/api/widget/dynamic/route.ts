@@ -50,18 +50,20 @@ export async function GET(request: NextRequest) {
         .join('\n\n---\n\n');
     }
 
-    // Get settings from metadata
+    // Get settings from metadata - handle nested structure
     const metadata = productKeyInfo.metadata as any;
+    // The structure is metadata.settings based on your config check
     const settings = metadata?.settings || {};
     
-    // Simplified configuration
-    const themeColor = settings.themeColor || settings.primaryColor || '#0070f3';
+    // Simplified configuration - use the actual saved settings
     const config = {
-      themeColor: themeColor,
+      themeColor: settings.themeColor || '#0070f3',
       position: settings.position || 'bottom-right',
       welcomeMessage: settings.welcomeMessage || 'Hello! How can I help you today?',
       responseStyle: settings.responseStyle || 'professional'
     };
+    
+    console.log('[Widget Dynamic] Loading config for', productKey, ':', config);
 
     // Generate the complete dynamic widget script
     const widgetScript = `
