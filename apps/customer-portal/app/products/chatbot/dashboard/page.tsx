@@ -105,7 +105,7 @@ function ChatbotDashboardContent() {
     playNotificationSound: true,
     showWelcomeMessage: true,
     collectEmail: false,
-    businessHoursMessage: "We're currently offline but will respond as soon as possible."
+    responseStyle: "professional"
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -1541,22 +1541,26 @@ function ChatbotDashboardContent() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Business Hours Message
+                        AI Response Style
                       </label>
-                      <textarea
-                        rows={2}
-                        value={settings.businessHoursMessage}
-                        onChange={(e) => setSettings(prev => ({ ...prev, businessHoursMessage: e.target.value }))}
-                        placeholder="Message shown outside business hours"
+                      <select
+                        value={settings.responseStyle || 'professional'}
+                        onChange={(e) => setSettings(prev => ({ ...prev, responseStyle: e.target.value }))}
                         className="w-full px-3 py-2 rounded-lg"
                         style={{
                           backgroundColor: 'rgba(48, 54, 54, 0.5)',
                           border: '1px solid rgba(169, 189, 203, 0.2)',
                           color: 'rgb(229, 227, 220)'
                         }}
-                      />
-                      <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                        Displayed when your team is not available (configured in n8n workflow)
+                      >
+                        <option value="professional">Professional</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="casual">Casual</option>
+                        <option value="technical">Technical</option>
+                      </select>
+                      <p className="text-xs mt-1 flex items-center gap-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        <Activity className="w-3 h-3" />
+                        AI chatbot is available 24/7 to assist your customers instantly
                       </p>
                     </div>
                   </div>
