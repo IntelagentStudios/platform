@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function TestWidgetPage() {
+function TestWidgetContent() {
   const searchParams = useSearchParams();
   const [productKey, setProductKey] = useState('');
   const [widgetLoaded, setWidgetLoaded] = useState(false);
@@ -185,5 +185,26 @@ export default function TestWidgetPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense
+function LoadingTestWidget() {
+  return (
+    <div className="min-h-screen p-8 flex items-center justify-center" style={{ backgroundColor: 'rgb(41, 46, 46)', color: 'rgb(229, 227, 220)' }}>
+      <div className="text-center">
+        <div className="text-2xl mb-4">Loading Widget Test...</div>
+        <div className="text-sm opacity-60">Initializing test environment</div>
+      </div>
+    </div>
+  );
+}
+
+// Main export with Suspense wrapper
+export default function TestWidgetPage() {
+  return (
+    <Suspense fallback={<LoadingTestWidget />}>
+      <TestWidgetContent />
+    </Suspense>
   );
 }
