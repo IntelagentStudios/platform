@@ -28,15 +28,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Get custom knowledge for this license
+    // Get custom knowledge for this product key first, then fallback to license
     const customKnowledge = await prisma.custom_knowledge.findMany({
       where: { 
-        license_key: productKeyInfo.license_key,
+        OR: [
+          { product_key: productKey },
+          { license_key: productKeyInfo.license_key }
+        ],
         is_active: true
       },
       select: {
         content: true,
         knowledge_type: true
+      },
+      orderBy: {
+        updated_at: 'desc'
       }
     });
 
