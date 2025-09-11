@@ -1121,7 +1121,36 @@ function ChatbotDashboardContent() {
                     )}
                     {savingKnowledge ? 'Saving...' : 'Save Knowledge'}
                   </button>
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/embeddings/regenerate', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            productKey: productKey || siteKey,
+                            forceRegenerate: true
+                          })
+                        });
+                        if (res.ok) {
+                          alert('Embeddings regenerated! The chatbot will now use your custom knowledge.');
+                        } else {
+                          alert('Failed to regenerate embeddings');
+                        }
+                      } catch (error) {
+                        alert('Error regenerating embeddings');
+                      }
+                    }}
+                    className="px-4 py-2 rounded-lg hover:opacity-80 flex items-center gap-2" 
+                    style={{ backgroundColor: 'rgb(169, 189, 203)', color: 'rgb(48, 54, 54)' }}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerate AI Memory
+                  </button>
                 </div>
+                <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                  Click "Regenerate AI Memory" after saving to ensure the chatbot uses your latest knowledge (clears old website scrapes)
+                </p>
               </div>
             </div>
           </div>
