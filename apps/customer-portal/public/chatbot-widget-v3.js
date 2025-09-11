@@ -36,7 +36,11 @@
   // Fetch configuration from API
   async function fetchConfig() {
     try {
-      const response = await fetch(`https://dashboard.intelagentstudios.com/api/widget/config?key=${productKey}`);
+      // Use relative URL to work with any domain
+      const baseUrl = window.location.origin.includes('localhost') 
+        ? window.location.origin 
+        : 'https://dashboard.intelagentstudios.com';
+      const response = await fetch(`${baseUrl}/api/widget/config?key=${productKey}`);
       if (response.ok) {
         const data = await response.json();
         return data.config;
@@ -59,7 +63,11 @@
   // Fetch custom knowledge
   async function fetchCustomKnowledge() {
     try {
-      const response = await fetch('https://dashboard.intelagentstudios.com/api/chatbot/knowledge', {
+      // Use relative URL to work with any domain
+      const baseUrl = window.location.origin.includes('localhost') 
+        ? window.location.origin 
+        : 'https://dashboard.intelagentstudios.com';
+      const response = await fetch(`${baseUrl}/api/chatbot/knowledge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productKey })
@@ -67,6 +75,7 @@
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched knowledge:', data.knowledge ? 'Yes (' + data.knowledgeCount + ' entries)' : 'No');
         return data.knowledge || null;
       }
     } catch (error) {
@@ -106,7 +115,11 @@
     
     // Fetch custom knowledge
     customKnowledge = await fetchCustomKnowledge();
-    console.log('Custom knowledge loaded:', customKnowledge ? 'Yes' : 'No');
+    if (customKnowledge) {
+      console.log('Custom knowledge loaded successfully:', customKnowledge.substring(0, 100) + '...');
+    } else {
+      console.log('No custom knowledge found for product key:', productKey);
+    }
     
     // Create widget HTML
     widgetContainer.innerHTML = `
@@ -412,7 +425,12 @@
           domain: window.location.hostname
         };
         
-        console.log('Sending to webhook with custom knowledge:', webhookData);
+        console.log('Sending to webhook:', {
+          message: message,
+          hasKnowledge: !!customKnowledge,
+          knowledgeLength: customKnowledge ? customKnowledge.length : 0,
+          responseStyle: webhookData.responseStyle
+        });
         
         const response = await fetch('https://n8n.intelagentstudios.com/webhook/chatbot', {
           method: 'POST',
@@ -464,7 +482,7 @@
       }
     });
 
-    // Refresh configuration every 30 seconds
+    // Refresh configuration every 10 seconds for faster updates
     setInterval(async () => {
       const newConfig = await fetchConfig();
       if (JSON.stringify(newConfig) !== JSON.stringify(currentConfig)) {
@@ -494,7 +512,7 @@
         console.log('Custom knowledge updated');
         customKnowledge = newKnowledge;
       }
-    }, 30000);
+    }, 10000); // Check every 10 seconds instead of 30
   }
 
   // Initialize widget when DOM is ready
