@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
     
     console.log('[Widget Dynamic] Final config for', productKey, ':', config);
 
-    // Generate the complete dynamic widget script
+    // Generate the complete dynamic widget script matching static widget exactly
     const widgetScript = `
 (function() {
   // Configuration for ${productKey}
@@ -145,9 +145,50 @@ export async function GET(request: NextRequest) {
   document.body.appendChild(widgetContainer);
 
   // Generate session ID
-  const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  function getOrCreateSessionId() {
+    const lastActivity = localStorage.getItem('intelagent_last_activity');
+    const existingSessionId = localStorage.getItem('intelagent_session_id');
+    const thirtyMinutes = 30 * 60 * 1000;
+    
+    if (!existingSessionId || !lastActivity || 
+        (Date.now() - parseInt(lastActivity)) > thirtyMinutes) {
+      const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem('intelagent_session_id', newSessionId);
+      localStorage.setItem('intelagent_last_activity', Date.now().toString());
+      localStorage.removeItem('intelagent_chat_history');
+      return newSessionId;
+    }
+    
+    localStorage.setItem('intelagent_last_activity', Date.now().toString());
+    return existingSessionId;
+  }
+  
+  let sessionId = getOrCreateSessionId();
+  let chatHistory = loadChatHistory();
 
-  // Initialize widget HTML with all styles
+  // Load chat history from localStorage
+  function loadChatHistory() {
+    const savedHistory = localStorage.getItem('intelagent_chat_history');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  }
+
+  // Save chat history to localStorage
+  function saveChatHistory(messages) {
+    localStorage.setItem('intelagent_chat_history', JSON.stringify(messages));
+    localStorage.setItem('intelagent_last_activity', Date.now().toString());
+  }
+
+  // Clear chat history and start new conversation
+  function startNewConversation() {
+    localStorage.removeItem('intelagent_chat_history');
+    localStorage.removeItem('intelagent_session_id');
+    localStorage.removeItem('intelagent_last_activity');
+    chatHistory = [];
+    sessionId = getOrCreateSessionId();
+    renderMessages();
+  }
+
+  // Initialize widget HTML with exact styles from static widget
   function initWidget() {
     widgetContainer.innerHTML = \`
       <style>
@@ -175,6 +216,7 @@ export async function GET(request: NextRequest) {
           align-items: center;
           cursor: pointer;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          z-index: 1000000;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
@@ -186,7 +228,7 @@ export async function GET(request: NextRequest) {
         .intelagent-chat-button svg {
           width: 30px;
           height: 30px;
-          fill: \${WIDGET_CONFIG.themeColor};
+          fill: #666;
         }
         
         .intelagent-chat-box {
@@ -194,9 +236,7 @@ export async function GET(request: NextRequest) {
           bottom: 120px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
           width: 380px;
-          max-width: calc(100vw - 56px);
-          height: 600px;
-          max-height: calc(100vh - 150px);
+          max-height: 600px;
           background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(24px) saturate(150%);
           -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -206,11 +246,9 @@ export async function GET(request: NextRequest) {
           display: none;
           flex-direction: column;
           overflow: hidden;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        .intelagent-chat-box.open {
-          display: flex;
+          z-index: 999999;
+          font-family: 'Inter', sans-serif;
+          transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           animation: smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
@@ -229,50 +267,70 @@ export async function GET(request: NextRequest) {
           background-color: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          color: #333;
           padding: 20px 24px;
+          font-size: 20px;
+          color: #1a1a1a;
+          font-weight: 600;
+          border-bottom: none;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          flex-shrink: 0;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
-        .intelagent-chat-header h3 {
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0;
-          color: \${WIDGET_CONFIG.themeColor};
-        }
-        
-        .intelagent-chat-close {
-          cursor: pointer;
-          background: rgba(0, 0, 0, 0.05);
+        .intelagent-close-button {
+          background: none;
           border: none;
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          font-size: 20px;
+          color: #888;
+          cursor: pointer;
+          padding: 0;
+          width: 30px;
+          height: 30px;
           display: flex;
-          justify-content: center;
           align-items: center;
-          transition: background 0.2s;
+          justify-content: center;
+          border-radius: 6px;
+          transition: all 0.2s;
         }
         
-        .intelagent-chat-close:hover {
-          background: rgba(0, 0, 0, 0.1);
+        .intelagent-close-button:hover {
+          background: rgba(0, 0, 0, 0.06);
+          color: #333;
+          transform: scale(1.1);
         }
         
-        .intelagent-chat-close svg {
-          width: 16px;
-          height: 16px;
-          fill: #666;
+        .intelagent-new-button {
+          background: none;
+          border: none;
+          color: #888;
+          font-size: 18px;
+          cursor: pointer;
+          padding: 0;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          transition: all 0.2s;
+          font-weight: normal;
+        }
+        
+        .intelagent-new-button:hover {
+          background: rgba(0, 0, 0, 0.06);
+          color: #333;
+          transform: rotate(-45deg);
         }
         
         .intelagent-chat-messages {
-          flex: 1;
-          padding: 20px;
+          flex-grow: 1;
+          padding: 24px;
           overflow-y: auto;
-          background: rgba(255, 255, 255, 0.5);
+          font-size: 16px;
+          color: #333;
+          line-height: 1.6;
+          scroll-behavior: smooth;
+          background: transparent;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -280,24 +338,27 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-messages::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.05);
+          background: rgba(241, 241, 241, 0.3);
           border-radius: 3px;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar-thumb {
-          background: rgba(0, 0, 0, 0.2);
+          background: rgba(136, 136, 136, 0.4);
           border-radius: 3px;
         }
         
-        .intelagent-chat-message {
-          margin-bottom: 16px;
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          animation: messageSlide 0.3s ease-out;
+        .intelagent-chat-messages::-webkit-scrollbar-thumb:hover {
+          background: rgba(85, 85, 85, 0.6);
         }
         
-        @keyframes messageSlide {
+        .intelagent-message {
+          margin: 16px 0;
+          display: flex;
+          align-items: flex-start;
+          animation: fadeInUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeInUp {
           from {
             opacity: 0;
             transform: translateY(10px);
@@ -308,160 +369,201 @@ export async function GET(request: NextRequest) {
           }
         }
         
-        .intelagent-chat-message.user {
-          flex-direction: row-reverse;
+        .intelagent-message.user {
+          justify-content: flex-end;
         }
         
-        .intelagent-chat-message-content {
-          max-width: 70%;
-          padding: 12px 16px;
+        .intelagent-message.bot {
+          justify-content: flex-start;
+        }
+        
+        .intelagent-message-content {
+          max-width: 75%;
+          padding: 12px 18px;
           border-radius: 18px;
-          font-size: 14px;
-          line-height: 1.5;
           word-wrap: break-word;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
         
-        .intelagent-chat-message.bot .intelagent-chat-message-content {
-          background: rgba(255, 255, 255, 0.75);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: #333;
-        }
-        
-        .intelagent-chat-message.user .intelagent-chat-message-content {
-          background: \${WIDGET_CONFIG.themeColor};
+        .intelagent-message.user .intelagent-message-content {
+          background: linear-gradient(135deg, rgba(59, 59, 59, 0.95) 0%, rgba(41, 41, 41, 0.95) 100%);
           color: white;
+          border-bottom-right-radius: 6px;
         }
         
-        .intelagent-chat-message-content a {
-          color: \${WIDGET_CONFIG.themeColor};
+        .intelagent-message.bot .intelagent-message-content {
+          background: rgba(243, 243, 243, 0.9);
+          color: #1a1a1a;
+          border-bottom-left-radius: 6px;
+        }
+        
+        .intelagent-message.bot .intelagent-message-content a {
+          color: #0066cc;
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.2s;
+        }
+        
+        .intelagent-message.bot .intelagent-message-content a:hover {
+          color: #0052a3;
           text-decoration: underline;
         }
         
-        .intelagent-chat-message.user .intelagent-chat-message-content a {
-          color: white;
-        }
-        
-        .intelagent-typing {
-          display: none;
-          margin-bottom: 16px;
-          padding: 12px 16px;
-          background: rgba(255, 255, 255, 0.75);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 18px;
-          width: fit-content;
-        }
-        
-        .intelagent-typing.active {
+        .intelagent-message strong {
           display: block;
-        }
-        
-        .intelagent-typing-dots {
-          display: flex;
-          gap: 4px;
-        }
-        
-        .intelagent-typing-dot {
-          width: 8px;
-          height: 8px;
-          background: #666;
-          border-radius: 50%;
-          animation: typingDot 1.4s infinite;
-        }
-        
-        .intelagent-typing-dot:nth-child(2) {
-          animation-delay: 0.2s;
-        }
-        
-        .intelagent-typing-dot:nth-child(3) {
-          animation-delay: 0.4s;
-        }
-        
-        @keyframes typingDot {
-          0%, 60%, 100% {
-            opacity: 0.3;
-          }
-          30% {
-            opacity: 1;
-          }
-        }
-        
-        .intelagent-chat-input-container {
-          padding: 20px;
-          border-top: 1px solid rgba(0, 0, 0, 0.05);
-          background: rgba(255, 255, 255, 0.75);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          flex-shrink: 0;
-        }
-        
-        .intelagent-chat-input-wrapper {
-          display: flex;
-          gap: 12px;
-          align-items: center;
+          font-size: 13px;
+          margin-bottom: 6px;
+          opacity: 0.6;
+          font-weight: 500;
         }
         
         .intelagent-chat-input {
-          flex: 1;
+          display: flex;
+          border-top: none;
           padding: 12px 16px;
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          gap: 10px;
+          align-items: center;
+        }
+        
+        .intelagent-chat-input textarea {
+          flex-grow: 1;
+          padding: 6px 12px;
+          border: 1px solid rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
           font-size: 14px;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           outline: none;
-          transition: border-color 0.2s;
-          background: rgba(255, 255, 255, 0.9);
+          font-family: 'Inter', sans-serif;
+          background: white;
+          resize: none;
+          height: 32px;
+          overflow: hidden;
+          line-height: 20px;
+          transition: border-color 0.2s, background 0.2s;
         }
         
-        .intelagent-chat-input:focus {
-          border-color: \${WIDGET_CONFIG.themeColor};
+        .intelagent-chat-input textarea:focus {
+          border-color: rgba(0, 0, 0, 0.4);
+          background: white;
         }
         
-        .intelagent-chat-send {
-          background: \${WIDGET_CONFIG.themeColor};
+        .intelagent-send-button {
+          background: none;
+          color: #666;
           border: none;
           border-radius: 50%;
-          width: 40px;
-          height: 40px;
+          width: 36px;
+          height: 36px;
           display: flex;
-          justify-content: center;
           align-items: center;
+          justify-content: center;
           cursor: pointer;
-          transition: transform 0.2s, opacity 0.2s;
+          transition: all 0.2s;
+          flex-shrink: 0;
         }
         
-        .intelagent-chat-send:hover {
+        .intelagent-send-button:hover {
+          background: rgba(0, 0, 0, 0.05);
           transform: scale(1.05);
         }
         
-        .intelagent-chat-send:disabled {
+        .intelagent-send-button:hover svg {
+          fill: #333;
+        }
+        
+        .intelagent-send-button:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
         
-        .intelagent-chat-send svg {
+        .intelagent-send-button svg {
           width: 20px;
           height: 20px;
-          fill: white;
+          fill: #666;
+        }
+        
+        .intelagent-ai-disclaimer {
+          font-size: 10px;
+          text-align: center;
+          color: #888;
+          padding: 8px 16px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-top: none;
+          line-height: 1.4;
+        }
+        
+        .intelagent-chat-footer {
+          font-size: 11px;
+          text-align: center;
+          color: #999;
+          padding: 10px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .intelagent-typing-indicator {
+          display: inline-block;
+          padding: 12px 18px;
+          background: rgba(243, 243, 243, 0.9);
+          border-radius: 18px;
+          border-bottom-left-radius: 6px;
+          margin: 16px 0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        
+        .intelagent-typing-indicator span {
+          display: inline-block;
+          width: 8px;
+          height: 8px;
+          margin: 0 3px;
+          background: rgba(153, 153, 153, 0.6);
+          border-radius: 50%;
+          animation: intelagent-blink 1.4s infinite both;
+        }
+        
+        .intelagent-typing-indicator span:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        
+        .intelagent-typing-indicator span:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        
+        @keyframes intelagent-blink {
+          0%, 80%, 100% { 
+            transform: scale(0.8);
+            opacity: 0.5;
+          }
+          40% { 
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        
+        pre {
+          background: rgba(244, 244, 244, 0.9);
+          padding: 12px;
+          border-radius: 8px;
+          overflow-x: auto;
+          font-size: 14px;
+          margin: 8px 0;
         }
         
         @media (max-width: 480px) {
           .intelagent-chat-box {
             width: calc(100vw - 32px);
-            height: calc(100vh - 100px);
-            bottom: 90px;
-            left: 16px !important;
-            right: 16px !important;
+            right: 16px;
+            bottom: 100px;
+            max-height: 70vh;
           }
-          
           .intelagent-chat-button {
-            width: 60px;
-            height: 60px;
-            bottom: 20px;
-            \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 20px;' : 'right: 20px;'}
+            right: 16px;
+            bottom: 16px;
           }
         }
       </style>
@@ -474,98 +576,88 @@ export async function GET(request: NextRequest) {
 
       <div class="intelagent-chat-box" id="chatBox">
         <div class="intelagent-chat-header">
-          <h3>Chat Support</h3>
-          <button class="intelagent-chat-close" id="closeButton">
-            <svg viewBox="0 0 24 24">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
+          <span>Chat Assistant</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="intelagent-new-button" aria-label="New conversation" title="Start new conversation">↺</button>
+            <button class="intelagent-close-button" aria-label="Close chat">⨯</button>
+          </div>
+        </div>
+        <div class="intelagent-chat-messages" id="intelagent-messages"></div>
+        <div class="intelagent-chat-input">
+          <textarea id="intelagent-input" placeholder="Type your message..." rows="1"></textarea>
+          <button class="intelagent-send-button" id="intelagent-send" aria-label="Send message">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
-        <div class="intelagent-chat-messages" id="messages">
-          <div class="intelagent-chat-message bot">
-            <div class="intelagent-chat-message-content">
-              \${WIDGET_CONFIG.welcomeMessage}
-            </div>
-          </div>
-          <div class="intelagent-typing" id="typingIndicator">
-            <div class="intelagent-typing-dots">
-              <div class="intelagent-typing-dot"></div>
-              <div class="intelagent-typing-dot"></div>
-              <div class="intelagent-typing-dot"></div>
-            </div>
-          </div>
-        </div>
-        <div class="intelagent-chat-input-container">
-          <div class="intelagent-chat-input-wrapper">
-            <input 
-              type="text" 
-              class="intelagent-chat-input" 
-              id="messageInput"
-              placeholder="Type your message..."
-              autocomplete="off"
-            />
-            <button class="intelagent-chat-send" id="sendButton">
-              <svg viewBox="0 0 24 24">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+        <div class="intelagent-ai-disclaimer">AI can make mistakes. Please confirm important information with the company.</div>
+        <div class="intelagent-chat-footer">Powered by Intelagent Studios</div>
       </div>
     \`;
+
+    // Function to render all messages
+    function renderMessages() {
+      const messagesDiv = document.getElementById('intelagent-messages');
+      messagesDiv.innerHTML = '';
+      
+      // Add initial bot message if no history
+      if (chatHistory.length === 0) {
+        const initialMsg = {
+          type: 'bot',
+          content: WIDGET_CONFIG.welcomeMessage,
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(initialMsg);
+        saveChatHistory(chatHistory);
+      }
+      
+      // Render all messages
+      chatHistory.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'intelagent-message ' + msg.type;
+        messageDiv.innerHTML = '<div class="intelagent-message-content">' + msg.content + '</div>';
+        messagesDiv.appendChild(messageDiv);
+      });
+      
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
 
     // Add event listeners
     const chatButton = document.getElementById('chatButton');
     const chatBox = document.getElementById('chatBox');
-    const closeButton = document.getElementById('closeButton');
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-    const messagesContainer = document.getElementById('messages');
-    const typingIndicator = document.getElementById('typingIndicator');
+    const closeButton = document.querySelector('.intelagent-close-button');
+    const newButton = document.querySelector('.intelagent-new-button');
+    const messageInput = document.getElementById('intelagent-input');
+    const sendButton = document.getElementById('intelagent-send');
+    const messagesContainer = document.getElementById('intelagent-messages');
     
     let isOpen = false;
     let isSending = false;
     
     chatButton.addEventListener('click', () => {
       isOpen = true;
-      chatBox.classList.add('open');
+      chatBox.style.display = 'flex';
       chatButton.style.display = 'none';
+      renderMessages();
       messageInput.focus();
     });
     
     closeButton.addEventListener('click', () => {
       isOpen = false;
-      chatBox.classList.remove('open');
+      chatBox.style.display = 'none';
       chatButton.style.display = 'flex';
     });
     
-    function playNotificationSound() {
-      // Create a simple beep sound
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    }
+    newButton.addEventListener('click', () => {
+      if (confirm('Start a new conversation? This will clear the current chat history.')) {
+        startNewConversation();
+      }
+    });
     
-    function showTypingIndicator() {
-      typingIndicator.classList.add('active');
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    
-    function hideTypingIndicator() {
-      typingIndicator.classList.remove('active');
-    }
+    // Auto-resize textarea
+    messageInput.addEventListener('input', function() {
+      this.style.height = '32px';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
     
     async function sendMessage() {
       const message = messageInput.value.trim();
@@ -574,131 +666,106 @@ export async function GET(request: NextRequest) {
       isSending = true;
       sendButton.disabled = true;
       
-      // Add user message to chat
-      const userMessageDiv = document.createElement('div');
-      userMessageDiv.className = 'intelagent-chat-message user';
-      userMessageDiv.innerHTML = \`<div class="intelagent-chat-message-content">\${escapeHtml(message)}</div>\`;
-      messagesContainer.insertBefore(userMessageDiv, typingIndicator);
+      // Add user message
+      const userMsg = {
+        type: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+      };
+      chatHistory.push(userMsg);
+      saveChatHistory(chatHistory);
+      renderMessages();
       
+      // Clear input
       messageInput.value = '';
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      messageInput.style.height = '32px';
       
       // Show typing indicator
-      showTypingIndicator();
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'intelagent-typing-indicator';
+      typingDiv.innerHTML = '<span></span><span></span><span></span>';
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
       
-      // Send to webhook with custom knowledge
       try {
-        const webhookData = {
-          message: message,
-          session_id: sessionId,  // n8n expects snake_case
-          product_key: PRODUCT_KEY,  // n8n expects snake_case
-          site_key: PRODUCT_KEY,  // backward compatibility
-          timestamp: new Date().toISOString(),
-          customKnowledge: CUSTOM_KNOWLEDGE,
-          responseStyle: WIDGET_CONFIG.responseStyle,
-          domain: window.location.hostname,
-          pageUrl: window.location.href,
-          userAgent: navigator.userAgent
-        };
-        
-        console.log('[IntelagentChat] Sending message:', {
-          message: message,
-          hasKnowledge: HAS_KNOWLEDGE,
-          knowledgeLength: CUSTOM_KNOWLEDGE ? CUSTOM_KNOWLEDGE.length : 0,
-          responseStyle: WIDGET_CONFIG.responseStyle
-        });
-        
-        const response = await fetch('https://n8n.intelagentstudios.com/webhook/chatbot', {
+        const response = await fetch('https://dashboard.intelagentstudios.com/api/chatbot-skills/modular', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(webhookData)
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            sessionId: sessionId,
+            productKey: PRODUCT_KEY,
+            chatHistory: chatHistory.slice(-10).map(m => ({
+              role: m.type === 'user' ? 'user' : 'assistant',
+              content: m.content
+            }))
+          })
         });
-        
+
         const data = await response.json();
         
-        // Hide typing indicator
-        hideTypingIndicator();
+        // Remove typing indicator
+        typingDiv.remove();
         
-        // Add bot response to chat
-        const botMessageDiv = document.createElement('div');
-        botMessageDiv.className = 'intelagent-chat-message bot';
+        // Add bot response
+        const botMsg = {
+          type: 'bot',
+          content: data.response || 'I apologize, but I couldn\\'t process your request. Please try again.',
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(botMsg);
+        saveChatHistory(chatHistory);
+        renderMessages();
         
-        // Process response to handle links properly
-        let processedResponse = data.response || 'I understand your message. How else can I help you?';
-        
-        // Convert URLs to proper links that open in new window
-        processedResponse = processedResponse.replace(
-          /(https?:\\/\\/[^\\s]+)/g,
-          '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-        );
-        
-        botMessageDiv.innerHTML = \`<div class="intelagent-chat-message-content">\${processedResponse}</div>\`;
-        messagesContainer.insertBefore(botMessageDiv, typingIndicator);
-        
-        // Add click handlers to prevent navigation
-        const links = botMessageDiv.querySelectorAll('a');
-        links.forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.open(link.href, '_blank');
-          });
-        });
-        
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
       } catch (error) {
-        console.error('[IntelagentChat] Error sending message:', error);
-        hideTypingIndicator();
+        console.error('Error sending message:', error);
+        typingDiv.remove();
         
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'intelagent-chat-message bot';
-        errorDiv.innerHTML = '<div class="intelagent-chat-message-content">Sorry, I encountered an error. Please try again.</div>';
-        messagesContainer.insertBefore(errorDiv, typingIndicator);
+        const errorMsg = {
+          type: 'bot',
+          content: 'I\\'m having trouble connecting. Please check your internet connection and try again.',
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(errorMsg);
+        saveChatHistory(chatHistory);
+        renderMessages();
       } finally {
         isSending = false;
         sendButton.disabled = false;
+        messageInput.focus();
       }
     }
     
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-    
     sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
+    messageInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
       }
     });
-    
-    console.log('[IntelagentChat] Widget initialized successfully with theme color:', WIDGET_CONFIG.themeColor);
   }
 
-  // Initialize widget when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initWidget);
-  } else {
-    initWidget();
-  }
+  // Initialize the widget
+  initWidget();
+
 })();
 `;
 
+    // Return the script as JavaScript
     return new NextResponse(widgetScript, {
       status: 200,
       headers: {
         'Content-Type': 'application/javascript',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        'X-Product-Key': productKey,
-        'X-Has-Knowledge': String(customKnowledge.length > 0)
+        'Access-Control-Allow-Origin': '*'
       }
     });
+
   } catch (error) {
     console.error('Error generating dynamic widget:', error);
-    return new NextResponse(`// Error: Failed to generate widget for ${productKey}\n// ${error}`, {
+    return new NextResponse(`// Error generating widget: ${error}`, {
       status: 500,
       headers: { 'Content-Type': 'application/javascript' }
     });
