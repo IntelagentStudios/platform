@@ -171,11 +171,25 @@ export async function GET(request: NextRequest) {
     'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; font-family: "Inter", sans-serif; }',
     '.intelagent-chat-box.open { display: flex; }',
+    // Header with theme color
+    '.intelagent-chat-header {',
+    'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
+    'color: white !important; }',
+    // User messages with theme color
     '.intelagent-message.user .intelagent-message-content {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%) !important;',
     'color: white !important; border-bottom-right-radius: 6px; }',
-    '.intelagent-send-button:hover { background: ' + userMsgColor + '20 !important; }',
-    '.intelagent-send-button:hover svg { fill: ' + userMsgColor + ' !important; }'
+    // Send button with theme color
+    '.intelagent-send-button { background: ' + userMsgColor + '15 !important; }',
+    '.intelagent-send-button:hover { background: ' + userMsgColor + '30 !important; }',
+    '.intelagent-send-button svg { fill: ' + userMsgColor + ' !important; }',
+    // Chat button with theme accent
+    '.intelagent-chat-button {',
+    'background: linear-gradient(135deg, white 0%, ' + userMsgColor + '10 100%) !important; }',
+    '.intelagent-chat-button svg { fill: ' + userMsgColor + ' !important; }',
+    // Close and new buttons
+    '.intelagent-close-button { color: white !important; }',
+    '.intelagent-new-button { color: white !important; }'
   ].join(' ');
   
   // Append the style element to the head

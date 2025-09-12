@@ -1853,7 +1853,7 @@ Content-Type: application/json
                           style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
                         />
                         <span style={{ color: 'rgba(229, 227, 220, 0.7)', fontSize: '13px' }}>
-                          Applied to button, header & user messages
+                          Applied to header, buttons & user messages
                         </span>
                       </div>
                     </div>
