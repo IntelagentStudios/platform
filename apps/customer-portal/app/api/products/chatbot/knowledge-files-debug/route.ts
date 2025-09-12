@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
         const jwt = await import('jsonwebtoken');
-        const decoded = jwt.default.verify(authToken.value, JWT_SECRET) as any;
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         const licenseKey = decoded.licenseKey;
         
         debugInfo.licenseKey = licenseKey || 'no-license-key';

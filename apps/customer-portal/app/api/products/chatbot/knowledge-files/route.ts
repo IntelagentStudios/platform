@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 // GET - List all knowledge files for a product
 export async function GET(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const decoded = jwt.default.verify(authToken.value, JWT_SECRET) as any;
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         const licenseKey = decoded.licenseKey;
         
         if (!licenseKey) {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const decoded = jwt.default.verify(authToken.value, JWT_SECRET) as any;
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         const licenseKey = decoded.licenseKey;
         
         if (!licenseKey) {
@@ -239,7 +239,7 @@ export async function DELETE(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const decoded = jwt.default.verify(authToken.value, JWT_SECRET) as any;
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         if (decoded.licenseKey) {
           authorized = true;
         }
@@ -296,7 +296,7 @@ export async function PUT(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const decoded = jwt.default.verify(authToken.value, JWT_SECRET) as any;
+        const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         if (decoded.licenseKey) {
           authorized = true;
         }
