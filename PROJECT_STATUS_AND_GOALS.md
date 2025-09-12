@@ -100,11 +100,24 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
    - **Created unified config endpoint** - `/api/chatbot/[siteKey]/config` provides both knowledge and settings to the chatbot
    - **Fixed widget styling** - Created configurable widget endpoint that preserves glassmorphic design with improved spacing
    - **Enhanced n8n workflow prompts** - Updated Agent 2 prompt to properly prioritize custom knowledge over website content
+   - **Knowledge Management UI Overhaul**:
+     - Added view, edit, and delete functionality for custom knowledge entries
+     - Implemented inline editing with save/cancel options
+     - Created clean card-based layout with type badges (PDF, TXT, Text Entry)
+     - Fixed PDF detection to show actual filenames instead of "Custom Knowledge"
+     - Added proper file type icons and truncation for long filenames
+   - **Integration Page Improvements**:
+     - All code snippets now have copy buttons with consistent styling
+     - Fixed scrolling issues - code fits on one line without horizontal scroll
+     - Added custom scrollbar styling that blends with dark theme
+     - Simplified API documentation - removed verbose examples and emojis
+     - Clear distinction between GET (retrieve conversations) and POST (add knowledge) endpoints
    - **Working configuration**:
      - Custom knowledge stored in PostgreSQL and passed to n8n via custom_knowledge field
      - n8n workflow processes with dual-agent architecture
      - Agent 2 now correctly uses custom knowledge as authoritative source
      - Widget loads perfectly with `/api/widget/configurable?key=` endpoint
+     - Full CRUD operations for knowledge management working smoothly
 
 2. **Complete Stripe Payment Integration** ✅
    - Built public marketplace with tier-based pricing (Starter £299, Pro £699, Enterprise £1,499)
