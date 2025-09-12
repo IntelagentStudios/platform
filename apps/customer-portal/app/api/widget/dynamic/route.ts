@@ -236,7 +236,8 @@ export async function GET(request: NextRequest) {
           bottom: 120px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
           width: 380px;
-          max-height: 600px;
+          height: 600px;
+          max-height: calc(100vh - 150px);
           background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(24px) saturate(150%);
           -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -249,6 +250,10 @@ export async function GET(request: NextRequest) {
           z-index: 999999;
           font-family: 'Inter', sans-serif;
           transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .intelagent-chat-box.open {
+          display: flex;
           animation: smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
@@ -275,6 +280,7 @@ export async function GET(request: NextRequest) {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-shrink: 0;
         }
         
         .intelagent-close-button {
@@ -323,14 +329,16 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-messages {
-          flex-grow: 1;
+          flex: 1 1 auto;
           padding: 24px;
           overflow-y: auto;
+          overflow-x: hidden;
           font-size: 16px;
           color: #333;
           line-height: 1.6;
           scroll-behavior: smooth;
           background: transparent;
+          min-height: 0;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -426,6 +434,7 @@ export async function GET(request: NextRequest) {
           -webkit-backdrop-filter: blur(12px);
           gap: 10px;
           align-items: center;
+          flex-shrink: 0;
         }
         
         .intelagent-chat-input textarea {
@@ -494,6 +503,7 @@ export async function GET(request: NextRequest) {
           -webkit-backdrop-filter: blur(12px);
           border-top: none;
           line-height: 1.4;
+          flex-shrink: 0;
         }
         
         .intelagent-chat-footer {
@@ -504,6 +514,7 @@ export async function GET(request: NextRequest) {
           background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
+          flex-shrink: 0;
         }
         
         .intelagent-typing-indicator {
@@ -557,12 +568,13 @@ export async function GET(request: NextRequest) {
         @media (max-width: 480px) {
           .intelagent-chat-box {
             width: calc(100vw - 32px);
-            right: 16px;
+            \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 16px;' : 'right: 16px;'}
             bottom: 100px;
+            height: 70vh;
             max-height: 70vh;
           }
           .intelagent-chat-button {
-            right: 16px;
+            \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 16px;' : 'right: 16px;'}
             bottom: 16px;
           }
         }
