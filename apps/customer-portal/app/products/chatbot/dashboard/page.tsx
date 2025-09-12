@@ -1367,14 +1367,16 @@ function ChatbotDashboardContent() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                    Custom Knowledge
+                                    {entry.content?.includes('Document upload:') ? 
+                                      entry.content.split('Document upload:')[1]?.split('\n')[0]?.trim() || 'Document' :
+                                      'Custom Knowledge'}
                                   </span>
                                   <span className="text-xs px-2 py-0.5 rounded"
                                         style={{ 
                                           backgroundColor: 'rgba(169, 189, 203, 0.1)',
                                           color: 'rgba(169, 189, 203, 0.8)'
                                         }}>
-                                    Text Entry
+                                    {entry.content?.includes('Document upload:') ? 'PDF' : 'Text Entry'}
                                   </span>
                                 </div>
                                 <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
@@ -1703,27 +1705,15 @@ function ChatbotDashboardContent() {
             <div className="rounded-lg shadow-sm border p-6" 
                  style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                API Access - Connect External Systems
+                API Access
               </h3>
-              <div className="mb-6 p-4 rounded-lg" 
-                   style={{ 
-                     backgroundColor: 'rgba(144, 238, 144, 0.1)', 
-                     border: '1px solid rgba(144, 238, 144, 0.3)' 
-                   }}>
-                <p className="text-sm font-medium mb-2" style={{ color: 'rgb(144, 238, 144)' }}>
-                  🔗 Direct Knowledge Integration
-                </p>
-                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
-                  Connect your CRM, documentation, or any data source directly to your chatbot's knowledge base using the API below.
-                </p>
-              </div>
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    📊 Get Conversations - Retrieve Chat History
+                    Get Conversations
                   </label>
                   <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    Use this to fetch all conversations for analytics, export, or monitoring purposes
+                    Retrieve all chat history and conversations
                   </p>
                   <div className="relative">
                     <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
@@ -1732,21 +1722,7 @@ function ChatbotDashboardContent() {
                            color: 'rgb(229, 227, 220)',
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
-{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations
-
-Headers:
-  Authorization: Bearer YOUR_API_KEY
-
-Response:
-{
-  "conversations": [
-    {
-      "id": "conv_123",
-      "messages": [...],
-      "timestamp": "2024-01-01T12:00:00Z"
-    }
-  ]
-}`}
+{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`}
                     </pre>
                     <button
                       onClick={() => {
@@ -1768,10 +1744,10 @@ Response:
                 
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    ➕ Add Knowledge - Push Information from External Systems
+                    Update Knowledge Base
                   </label>
                   <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    Automatically sync information from your CRM, helpdesk, or docs. The chatbot will instantly learn this information.
+                    Add or update custom knowledge programmatically
                   </p>
                   <div className="relative">
                     <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
@@ -1781,22 +1757,12 @@ Response:
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
 {`POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge
+Content-Type: application/json
 
-Headers:
-  Content-Type: application/json
-  Authorization: Bearer YOUR_API_KEY
-
-Body:
 {
-  "content": "Our office is open Mon-Fri 9am-5pm. We offer premium support...",
+  "content": "Your custom knowledge here",
   "knowledge_type": "general"
-}
-
-Example Use Cases:
-• Sync product info from your database
-• Add FAQ answers from your helpdesk
-• Import documentation automatically
-• Update pricing/hours in real-time`}
+}`}
                     </pre>
                     <button
                       onClick={() => {
