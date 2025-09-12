@@ -22,23 +22,24 @@ export async function GET(request: NextRequest) {
     if (realProductKey) {
       // Try to fetch real knowledge from database
       try {
-        const knowledge = await prisma.custom_knowledge.findFirst({
+        const knowledge = await prisma.custom_knowledge.findMany({
           where: { 
             product_key: realProductKey,
-            knowledge_type: 'general' // Changed to match what dashboard saves
-          }
+            is_active: true
+          },
+          orderBy: { created_at: 'desc' }
         });
         
         return NextResponse.json({
           success: true,
-          knowledge: knowledge?.content || '',
+          knowledge: knowledge || [],
           product_key: realProductKey
         });
       } catch (dbError) {
-        // If database fails, return empty knowledge
+        // If database fails, return empty array
         return NextResponse.json({
           success: true,
-          knowledge: '',
+          knowledge: [],
           product_key: realProductKey
         });
       }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
 
 // GET - List all knowledge files for a product
 export async function GET(request: NextRequest) {
@@ -28,7 +29,6 @@ export async function GET(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         const licenseKey = decoded.licenseKey;
         
@@ -75,10 +75,11 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ files });
+    return NextResponse.json({ files: files || [] });
   } catch (error) {
     console.error('Error fetching knowledge files:', error);
     return NextResponse.json({ 
+      files: [],
       error: 'Failed to fetch knowledge files' 
     }, { status: 500 });
   }
@@ -110,7 +111,6 @@ export async function POST(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         const licenseKey = decoded.licenseKey;
         
@@ -230,7 +230,6 @@ export async function DELETE(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         if (decoded.licenseKey) {
           authorized = true;
@@ -288,7 +287,6 @@ export async function PUT(request: NextRequest) {
       
       try {
         const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-        const jwt = await import('jsonwebtoken');
         const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
         if (decoded.licenseKey) {
           authorized = true;
