@@ -424,15 +424,8 @@ function ChatbotDashboardContent() {
       if (res.ok) {
         const data = await res.json();
         if (data.knowledge && data.knowledge.length > 0) {
-          // Filter out entries that look like file imports (PDFs, etc)
-          // Only show actual text entries that were manually added
-          const textEntries = data.knowledge.filter(k => 
-            k.knowledge_type === 'general' && 
-            !k.content?.startsWith('File content from:') &&
-            !k.content?.includes('[PDF Content]') &&
-            !k.content?.includes('[Document Content]')
-          );
-          setKnowledgeEntries(textEntries);
+          // Show all active knowledge entries
+          setKnowledgeEntries(data.knowledge);
         }
       }
     } catch (error) {
@@ -1500,8 +1493,8 @@ function ChatbotDashboardContent() {
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
                              border: '1px solid rgba(169, 189, 203, 0.2)',
-                             whiteSpace: 'pre-wrap',
-                             wordBreak: 'break-all'
+                             whiteSpace: 'nowrap',
+                             overflowX: 'auto'
                            }}>
 {`<script src="https://dashboard.intelagentstudios.com/api/widget/configurable?key=${productKey}"></script>`}
                       </pre>
@@ -1533,8 +1526,8 @@ function ChatbotDashboardContent() {
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
                              border: '1px solid rgba(169, 189, 203, 0.2)',
-                             whiteSpace: 'pre-wrap',
-                             wordBreak: 'break-all'
+                             whiteSpace: 'nowrap',
+                             overflowX: 'auto'
                            }}>
 {`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`}
                       </pre>
@@ -1724,19 +1717,36 @@ function ChatbotDashboardContent() {
                   Connect your CRM, documentation, or any data source directly to your chatbot's knowledge base using the API below.
                 </p>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Get Conversations
+                    📊 Get Conversations - Retrieve Chat History
                   </label>
+                  <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Use this to fetch all conversations for analytics, export, or monitoring purposes
+                  </p>
                   <div className="relative">
-                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
                          style={{ 
                            backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                            color: 'rgb(229, 227, 220)',
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
-{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`}
+{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations
+
+Headers:
+  Authorization: Bearer YOUR_API_KEY
+
+Response:
+{
+  "conversations": [
+    {
+      "id": "conv_123",
+      "messages": [...],
+      "timestamp": "2024-01-01T12:00:00Z"
+    }
+  ]
+}`}
                     </pre>
                     <button
                       onClick={() => {
@@ -1758,25 +1768,35 @@ function ChatbotDashboardContent() {
                 
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Update Knowledge Base - Add Custom Knowledge from External Sources
+                    ➕ Add Knowledge - Push Information from External Systems
                   </label>
-                  <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    Use this endpoint to push knowledge from your CRM, helpdesk, documentation, or any other system
+                  <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Automatically sync information from your CRM, helpdesk, or docs. The chatbot will instantly learn this information.
                   </p>
                   <div className="relative">
-                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
                          style={{ 
                            backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                            color: 'rgb(229, 227, 220)',
                            border: '1px solid rgba(169, 189, 203, 0.2)'
                          }}>
 {`POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge
-Content-Type: application/json
 
+Headers:
+  Content-Type: application/json
+  Authorization: Bearer YOUR_API_KEY
+
+Body:
 {
-  "content": "Your custom knowledge here",
+  "content": "Our office is open Mon-Fri 9am-5pm. We offer premium support...",
   "knowledge_type": "general"
-}`}
+}
+
+Example Use Cases:
+• Sync product info from your database
+• Add FAQ answers from your helpdesk
+• Import documentation automatically
+• Update pricing/hours in real-time`}
                     </pre>
                     <button
                       onClick={() => {
