@@ -41,14 +41,15 @@ export class N8NChatbotSkill extends BaseSkill {
                         process.env.N8N_CHATBOT_WEBHOOK || 
                         'https://1ntelagent.up.railway.app/webhook/chatbot';  // Your working n8n instance
 
-      // Prepare payload for n8n workflow
+      // Prepare payload for n8n workflow (using snake_case for n8n compatibility)
       const payload = {
         message: message || query,
-        sessionId: sessionId || 'anonymous',
-        productKey: productKey,
+        session_id: sessionId || 'anonymous',  // n8n expects snake_case
+        product_key: productKey,  // n8n expects snake_case
+        site_key: productKey,  // backward compatibility
         domain: domain,
-        chatHistory: chatHistory,
-        customKnowledge: customKnowledge,
+        chat_history: chatHistory,  // n8n expects snake_case
+        custom_knowledge: customKnowledge,  // n8n expects snake_case
         timestamp: new Date().toISOString(),
         source: 'skills-orchestrator'
       };
