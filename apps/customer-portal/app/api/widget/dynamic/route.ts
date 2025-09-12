@@ -163,7 +163,10 @@ export async function GET(request: NextRequest) {
           position: fixed;
           bottom: 28px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
-          background: \${WIDGET_CONFIG.themeColor};
+          background-color: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(12px) saturate(150%);
+          -webkit-backdrop-filter: blur(12px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.4);
           border-radius: 50%;
           width: 68px;
           height: 68px;
@@ -183,7 +186,7 @@ export async function GET(request: NextRequest) {
         .intelagent-chat-button svg {
           width: 30px;
           height: 30px;
-          fill: white;
+          fill: \${WIDGET_CONFIG.themeColor};
         }
         
         .intelagent-chat-box {
@@ -194,8 +197,10 @@ export async function GET(request: NextRequest) {
           max-width: calc(100vw - 56px);
           height: 600px;
           max-height: calc(100vh - 150px);
-          background: white;
-          border: 1px solid rgba(0, 0, 0, 0.1);
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(24px) saturate(150%);
+          -webkit-backdrop-filter: blur(24px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 20px;
           box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
           display: none;
@@ -221,24 +226,28 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-header {
-          background: \${WIDGET_CONFIG.themeColor};
-          color: white;
-          padding: 20px;
+          background-color: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          color: #333;
+          padding: 20px 24px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-shrink: 0;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .intelagent-chat-header h3 {
-          font-size: 17px;
+          font-size: 20px;
           font-weight: 600;
           margin: 0;
+          color: \${WIDGET_CONFIG.themeColor};
         }
         
         .intelagent-chat-close {
           cursor: pointer;
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(0, 0, 0, 0.05);
           border: none;
           border-radius: 50%;
           width: 32px;
@@ -250,20 +259,20 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-close:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(0, 0, 0, 0.1);
         }
         
         .intelagent-chat-close svg {
           width: 16px;
           height: 16px;
-          fill: white;
+          fill: #666;
         }
         
         .intelagent-chat-messages {
           flex: 1;
           padding: 20px;
           overflow-y: auto;
-          background: white;
+          background: rgba(255, 255, 255, 0.5);
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -313,7 +322,10 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-message.bot .intelagent-chat-message-content {
-          background: rgba(0, 0, 0, 0.05);
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           color: #333;
         }
         
@@ -335,7 +347,10 @@ export async function GET(request: NextRequest) {
           display: none;
           margin-bottom: 16px;
           padding: 12px 16px;
-          background: rgba(0, 0, 0, 0.05);
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 18px;
           width: fit-content;
         }
@@ -377,7 +392,9 @@ export async function GET(request: NextRequest) {
         .intelagent-chat-input-container {
           padding: 20px;
           border-top: 1px solid rgba(0, 0, 0, 0.05);
-          background: white;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           flex-shrink: 0;
         }
         
@@ -396,7 +413,7 @@ export async function GET(request: NextRequest) {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           outline: none;
           transition: border-color 0.2s;
-          background: white;
+          background: rgba(255, 255, 255, 0.9);
         }
         
         .intelagent-chat-input:focus {
