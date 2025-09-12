@@ -132,7 +132,17 @@ export async function GET(request: NextRequest) {
   const buttonSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
   const boxPosition = WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 120px;' : 'top: 120px;';
   const boxSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
-  const userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
+  
+  // Ensure color is in proper format
+  let userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
+  // Remove # if present and ensure it's 6 characters
+  userMsgColor = userMsgColor.replace('#', '');
+  if (userMsgColor.length === 3) {
+    // Convert 3-char hex to 6-char (e.g., 'f00' -> 'ff0000')
+    userMsgColor = userMsgColor.split('').map(c => c + c).join('');
+  }
+  // Add back the # for use in CSS
+  userMsgColor = '#' + userMsgColor;
   
   // Create a style element with dynamic values
   const styleElement = document.createElement('style');
@@ -162,14 +172,17 @@ export async function GET(request: NextRequest) {
     'flex-direction: column; overflow: hidden; z-index: 999999; font-family: "Inter", sans-serif; }',
     '.intelagent-chat-box.open { display: flex; }',
     '.intelagent-message.user .intelagent-message-content {',
-    'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%);',
-    'color: white; border-bottom-right-radius: 6px; }'
+    'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%) !important;',
+    'color: white !important; border-bottom-right-radius: 6px; }',
+    '.intelagent-send-button:hover { background: ' + userMsgColor + '20 !important; }',
+    '.intelagent-send-button:hover svg { fill: ' + userMsgColor + ' !important; }'
   ].join(' ');
   
   // Append the style element to the head
   document.head.appendChild(styleElement);
   
   console.log('[IntelagentChat] Dynamic styles applied with color:', userMsgColor, 'position:', WIDGET_CONFIG.position);
+  console.log('[IntelagentChat] Full CSS for user messages:', '.intelagent-message.user .intelagent-message-content { background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%) !important; }');
   
   widgetContainer.innerHTML = \`
     <style>
