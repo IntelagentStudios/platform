@@ -2,20 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
- * GET /api/chatbot/[productKey]/config
+ * GET /api/chatbot/[siteKey]/config
  * Get complete configuration for a chatbot including knowledge and settings
  * This endpoint is designed for the n8n workflow to get everything in one call
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productKey: string } }
+  { params }: { params: { siteKey: string } }
 ) {
   try {
-    const { productKey } = params;
+    const { siteKey } = params;
+    const productKey = siteKey; // siteKey can be either a product_key or legacy site_key
     
     if (!productKey) {
       return NextResponse.json(
-        { error: 'Product key is required' },
+        { error: 'Site/Product key is required' },
         { status: 400 }
       );
     }
@@ -186,20 +187,21 @@ export async function GET(
 }
 
 /**
- * POST /api/chatbot/[productKey]/config
+ * POST /api/chatbot/[siteKey]/config
  * Update configuration for a chatbot (knowledge and/or settings)
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productKey: string } }
+  { params }: { params: { siteKey: string } }
 ) {
   try {
-    const { productKey } = params;
+    const { siteKey } = params;
+    const productKey = siteKey; // siteKey can be either a product_key or legacy site_key
     const body = await request.json();
     
     if (!productKey) {
       return NextResponse.json(
-        { error: 'Product key is required' },
+        { error: 'Site/Product key is required' },
         { status: 400 }
       );
     }
