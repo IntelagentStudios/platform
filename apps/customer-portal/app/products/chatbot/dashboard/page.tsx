@@ -1205,14 +1205,19 @@ function ChatbotDashboardContent() {
                             <div>
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                  {file.filename}
+                                  {file.filename.length > 30 ? `${file.filename.substring(0, 30)}...` : file.filename}
                                 </span>
                                 <span className="text-xs px-2 py-0.5 rounded"
                                       style={{ 
                                         backgroundColor: 'rgba(169, 189, 203, 0.1)',
                                         color: 'rgba(169, 189, 203, 0.8)'
                                       }}>
-                                  File
+                                  {file.filename?.endsWith('.pdf') ? 'PDF' : 
+                                   file.filename?.endsWith('.txt') ? 'TXT' : 
+                                   file.filename?.endsWith('.md') ? 'Markdown' :
+                                   file.filename?.endsWith('.doc') || file.filename?.endsWith('.docx') ? 'Word' :
+                                   file.filename?.endsWith('.json') ? 'JSON' :
+                                   'File'}
                                 </span>
                               </div>
                               <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
@@ -1361,14 +1366,14 @@ function ChatbotDashboardContent() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                    Custom Text Entry
+                                    Custom Knowledge
                                   </span>
                                   <span className="text-xs px-2 py-0.5 rounded"
                                         style={{ 
                                           backgroundColor: 'rgba(169, 189, 203, 0.1)',
                                           color: 'rgba(169, 189, 203, 0.8)'
                                         }}>
-                                    {entry.knowledge_type || 'General'}
+                                    Text Entry
                                   </span>
                                 </div>
                                 <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
