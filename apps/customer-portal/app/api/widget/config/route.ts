@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Handle CORS preflight
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+}
+
 export async function GET(request: NextRequest) {
   // Get product key from query params
   const { searchParams } = new URL(request.url);
@@ -44,7 +56,7 @@ export async function GET(request: NextRequest) {
     const metadata = productKeyInfo.metadata as any;
     const settings = metadata?.settings || {};
 
-    // Return simplified configuration for the widget
+    // Return simplified configuration for the widget with CORS headers
     return NextResponse.json({
       config: {
         // Single theme color (backwards compatible)
@@ -52,6 +64,9 @@ export async function GET(request: NextRequest) {
         position: settings.position || 'bottom-right',
         welcomeMessage: settings.welcomeMessage || "Hello! How can I help you today?",
         responseStyle: settings.responseStyle || 'professional',
+        showWelcomeMessage: settings.showWelcomeMessage !== false,
+        playNotificationSound: settings.playNotificationSound !== false,
+        collectEmail: settings.collectEmail || false,
         
         // Custom knowledge for AI context
         customKnowledge: customKnowledge ? {
@@ -62,12 +77,31 @@ export async function GET(request: NextRequest) {
         // Product key for tracking
         productKey: productKey
       }
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
     });
   } catch (error) {
     console.error('Error fetching widget config:', error);
     return NextResponse.json({ 
-      error: 'Failed to fetch configuration' 
-    }, { status: 500 });
+      error: 'Failed to fetch configuration',
+      config: {
+        themeColor: '#0070f3',
+        position: 'bottom-right',
+        welcomeMessage: 'Hello! How can I help you today?',
+        responseStyle: 'professional'
+      }
+    }, { 
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
+    });
   }
 }
 

@@ -70,23 +70,34 @@ export async function GET(request: NextRequest) {
     const metadata = productKeyInfo.metadata as any;
     const settings = metadata?.settings || {};
     
-    const config = {
-      themeColor: settings.themeColor || '#0070f3',
-      position: settings.position || 'bottom-right',
-      welcomeMessage: settings.welcomeMessage || 'How can I help you today?',
-      responseStyle: settings.responseStyle || 'professional'
-    };
-
     const version = Date.now();
 
-    // EXACT STATIC WIDGET CODE WITH ONLY PADDING/MARGIN CHANGES
+    // Widget script that fetches config dynamically
     const widgetScript = `
 (function() {
-  console.log('[IntelagentChat] Version ${version}');
-  const WIDGET_CONFIG = ${JSON.stringify(config, null, 2)};
+  console.log('[IntelagentChat] Loading version ${version}');
   const PRODUCT_KEY = '${productKey}';
-  const CUSTOM_KNOWLEDGE = ${JSON.stringify(combinedKnowledge)};
-  const HAS_KNOWLEDGE = ${combinedKnowledge.length > 0};
+  
+  // Fetch configuration dynamically
+  async function loadWidgetConfig() {
+    try {
+      const response = await fetch('https://dashboard.intelagentstudios.com/api/widget/config?key=' + PRODUCT_KEY);
+      const data = await response.json();
+      return data.config || {};
+    } catch (error) {
+      console.error('Failed to load widget config:', error);
+      return {
+        themeColor: '#0070f3',
+        position: 'bottom-right',
+        welcomeMessage: 'How can I help you today?',
+        responseStyle: 'professional'
+      };
+    }
+  }
+  
+  // Initialize widget with fetched config
+  loadWidgetConfig().then(function(WIDGET_CONFIG) {
+    console.log('[IntelagentChat] Config loaded:', WIDGET_CONFIG);
   
   if (document.getElementById('intelagent-chat-widget')) {
     document.getElementById('intelagent-chat-widget').remove();
@@ -94,17 +105,21 @@ export async function GET(request: NextRequest) {
 
   const widgetContainer = document.createElement('div');
   widgetContainer.id = 'intelagent-chat-widget';
-  widgetContainer.style.cssText = \`
-    position: fixed;
-    ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 0;' : 'top: 0;') + '
-    ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 0;' : 'right: 0;') + '
-    z-index: 999999;
-  \`;
+  widgetContainer.style.cssText = 'position: fixed; z-index: 999999;' +
+    (WIDGET_CONFIG.position.includes('bottom') ? ' bottom: 0;' : ' top: 0;') +
+    (WIDGET_CONFIG.position.includes('left') ? ' left: 0;' : ' right: 0;');
   document.body.appendChild(widgetContainer);
 
   let sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
   let chatHistory = [];
 
+  // Generate dynamic styles based on config
+  const buttonPosition = WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 28px;' : 'top: 28px;';
+  const buttonSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
+  const boxPosition = WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 120px;' : 'top: 120px;';
+  const boxSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
+  const userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
+  
   widgetContainer.innerHTML = \`
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -117,8 +132,8 @@ export async function GET(request: NextRequest) {
       
       .intelagent-chat-button {
         position: fixed;
-        ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 28px;' : 'top: 28px;') + '
-        ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;') + '
+        \${buttonPosition}
+        \${buttonSide}
         background-color: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px) saturate(150%);
         -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -146,8 +161,8 @@ export async function GET(request: NextRequest) {
       
       .intelagent-chat-box {
         position: fixed;
-        ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 120px;' : 'top: 120px;') + '
-        ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;') + '
+        \${boxPosition}
+        \${boxSide}
         width: 380px;
         height: 600px;
         max-height: calc(100vh - 150px);
@@ -300,7 +315,7 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-message.user .intelagent-message-content {
-        background: linear-gradient(135deg, ' + WIDGET_CONFIG.themeColor + 'ee 0%, ' + WIDGET_CONFIG.themeColor + 'dd 100%);
+        background: linear-gradient(135deg, \${userMsgColor}ee 0%, \${userMsgColor}dd 100%);
         color: white;
         border-bottom-right-radius: 6px;
       }
@@ -555,6 +570,7 @@ export async function GET(request: NextRequest) {
     }
   });
 
+  }); // End of loadWidgetConfig().then()
 })();
 `;
 
