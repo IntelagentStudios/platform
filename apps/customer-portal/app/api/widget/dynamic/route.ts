@@ -133,6 +133,51 @@ export async function GET(request: NextRequest) {
   const boxPosition = WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 120px;' : 'top: 120px;';
   const boxSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
   
+  // Widget size configuration
+  const widgetSizes = {
+    small: { width: '350px', height: '500px' },
+    medium: { width: '400px', height: '600px' },
+    large: { width: '450px', height: '700px' }
+  };
+  const widgetSize = widgetSizes[WIDGET_CONFIG.widgetSize] || widgetSizes.medium;
+  
+  // Font size configuration
+  const fontSizes = {
+    small: { base: '13px', header: '15px', message: '13px' },
+    medium: { base: '14px', header: '16px', message: '14px' },
+    large: { base: '16px', header: '18px', message: '16px' }
+  };
+  const fontSize = fontSizes[WIDGET_CONFIG.fontSize] || fontSizes.medium;
+  
+  // Border radius configuration
+  const borderRadii = {
+    square: { box: '0px', button: '0px', message: '0px' },
+    slight: { box: '4px', button: '4px', message: '4px' },
+    rounded: { box: '12px', button: '50%', message: '12px' },
+    'very-rounded': { box: '20px', button: '50%', message: '16px' }
+  };
+  const borderRadius = borderRadii[WIDGET_CONFIG.borderRadius] || borderRadii.rounded;
+  
+  // Animation configuration
+  const animations = {
+    none: { transition: 'none', timing: '' },
+    subtle: { transition: 'all 0.15s ease', timing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
+    smooth: { transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', timing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+    bouncy: { transition: 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)', timing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)' }
+  };
+  const animation = animations[WIDGET_CONFIG.animationStyle] || animations.smooth;
+  
+  // Widget opacity
+  const widgetOpacity = (WIDGET_CONFIG.widgetOpacity || 95) / 100;
+  
+  // Text contrast
+  const textContrast = {
+    low: { aiText: 'rgba(102, 102, 102, 0.8)', userText: 'rgba(255, 255, 255, 0.9)' },
+    normal: { aiText: 'rgba(68, 68, 68, 1)', userText: 'rgba(255, 255, 255, 1)' },
+    high: { aiText: 'rgba(0, 0, 0, 1)', userText: 'rgba(255, 255, 255, 1)' }
+  };
+  const contrast = textContrast[WIDGET_CONFIG.textContrast] || textContrast.normal;
+  
   // Ensure color is in proper format
   let userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
   // Remove # if present and ensure it's 6 characters
@@ -156,29 +201,34 @@ export async function GET(request: NextRequest) {
   
   styleElement.textContent = [
     '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");',
-    '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; }',
+    '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; font-size: ' + fontSize.base + '; }',
     '.intelagent-chat-button { position: fixed; ' + buttonPosition + ' ' + buttonSide,
-    'background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px) saturate(150%);',
+    'background-color: rgba(255, 255, 255, ' + widgetOpacity + '); backdrop-filter: blur(12px) saturate(150%);',
     '-webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.4);',
-    'border-radius: 50%; width: 68px; height: 68px; display: flex; justify-content: center;',
+    'border-radius: ' + borderRadius.button + '; width: 68px; height: 68px; display: flex; justify-content: center;',
     'align-items: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);',
-    'z-index: 1000000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }',
+    'z-index: 1000000; transition: ' + animation.transition + '; }',
     '.intelagent-chat-button:hover { transform: scale(1.05); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); }',
     '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
-    'width: 380px; height: 600px; max-height: calc(100vh - 150px);',
-    'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
+    'width: ' + widgetSize.width + '; height: ' + widgetSize.height + '; max-height: calc(100vh - 150px);',
+    'background: rgba(255, 255, 255, ' + (widgetOpacity * 0.8) + '); backdrop-filter: blur(24px) saturate(150%);',
     '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
-    'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
+    'border-radius: ' + borderRadius.box + '; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; font-family: "Inter", sans-serif; }',
     '.intelagent-chat-box.open { display: flex; }',
-    // Header with theme color
+    // Header with theme color and font size
     '.intelagent-chat-header {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
-    'color: white !important; }',
-    // User messages with theme color
+    'color: white !important; font-size: ' + fontSize.header + ' !important; }',
+    // User messages with theme color and border radius
     '.intelagent-message.user .intelagent-message-content {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%) !important;',
-    'color: white !important; border-bottom-right-radius: 6px; }',
+    'color: ' + contrast.userText + ' !important; border-radius: ' + borderRadius.message + ' !important;',
+    'border-bottom-right-radius: 4px !important; font-size: ' + fontSize.message + ' !important; }',
+    // AI messages with contrast settings
+    '.intelagent-message.ai .intelagent-message-content {',
+    'color: ' + contrast.aiText + ' !important; font-size: ' + fontSize.message + ' !important;',
+    'border-radius: ' + borderRadius.message + ' !important; border-bottom-left-radius: 4px !important; }',
     // Send button with theme color
     '.intelagent-send-button { background: ' + userMsgColor + '15 !important; }',
     '.intelagent-send-button:hover { background: ' + userMsgColor + '30 !important; }',
@@ -189,7 +239,18 @@ export async function GET(request: NextRequest) {
     '.intelagent-chat-button svg { fill: ' + userMsgColor + ' !important; }',
     // Close and new buttons
     '.intelagent-close-button { color: white !important; }',
-    '.intelagent-new-button { color: white !important; }'
+    '.intelagent-new-button { color: white !important; }',
+    // Footer and disclaimer with theme color
+    '.intelagent-ai-disclaimer {',
+    'background: ' + userMsgColor + '10 !important;',
+    'border-top: 1px solid ' + userMsgColor + '30 !important; }',
+    '.intelagent-chat-footer {',
+    'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
+    'color: white !important; }',
+    // Input field focus border
+    '.intelagent-chat-input textarea:focus {',
+    'border-color: ' + userMsgColor + ' !important;',
+    'box-shadow: 0 0 0 2px ' + userMsgColor + '20 !important; }'
   ].join(' ');
   
   // Append the style element to the head
@@ -204,6 +265,9 @@ export async function GET(request: NextRequest) {
         transform: scale(1.05);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
       }
+      .intelagent-chat-button.square {
+        border-radius: ' + (borderRadius.button === '0px' ? '8px' : borderRadius.button) + ' !important;
+      }
       .intelagent-chat-button svg {
         width: 30px;
         height: 30px;
@@ -214,6 +278,9 @@ export async function GET(request: NextRequest) {
       .intelagent-chat-button:hover {
         transform: scale(1.05);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      }
+      .intelagent-chat-button.square {
+        border-radius: ' + (borderRadius.button === '0px' ? '8px' : borderRadius.button) + ' !important;
       }
       .intelagent-chat-button svg {
         width: 30px;
@@ -561,12 +628,15 @@ export async function GET(request: NextRequest) {
     messageInput.value = '';
     messageInput.style.height = '40px';
     
-    // Show typing
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'intelagent-typing-indicator';
-    typingDiv.innerHTML = '<span></span><span></span><span></span>';
-    messagesContainer.appendChild(typingDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Show typing indicator if enabled
+    let typingDiv = null;
+    if (WIDGET_CONFIG.showTypingIndicator !== false) {
+      typingDiv = document.createElement('div');
+      typingDiv.className = 'intelagent-typing-indicator';
+      typingDiv.innerHTML = '<span></span><span></span><span></span>';
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
     
     try {
       const response = await fetch('https://dashboard.intelagentstudios.com/api/chatbot-skills/modular', {
@@ -581,7 +651,7 @@ export async function GET(request: NextRequest) {
       });
       
       const data = await response.json();
-      typingDiv.remove();
+      if (typingDiv) typingDiv.remove();
       
       const botDiv = document.createElement('div');
       botDiv.className = 'intelagent-message bot';
@@ -590,7 +660,7 @@ export async function GET(request: NextRequest) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       
     } catch (error) {
-      typingDiv.remove();
+      if (typingDiv) typingDiv.remove();
       const errorDiv = document.createElement('div');
       errorDiv.className = 'intelagent-message bot';
       errorDiv.innerHTML = '<div class="intelagent-message-content">Sorry, there was an error. Please try again.</div>';
@@ -605,6 +675,18 @@ export async function GET(request: NextRequest) {
       sendMessage();
     }
   });
+  
+  // Auto-open functionality
+  if (WIDGET_CONFIG.autoOpen) {
+    const autoOpenDelay = (WIDGET_CONFIG.autoOpenDelay || 5) * 1000; // Convert to milliseconds
+    setTimeout(() => {
+      if (!chatBox.classList.contains('open')) {
+        chatBox.classList.add('open');
+        chatButton.style.display = 'none';
+        messageInput.focus();
+      }
+    }, autoOpenDelay);
+  }
 
   }); // End of loadWidgetConfig().then()
 })();
