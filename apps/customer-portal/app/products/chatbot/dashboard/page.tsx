@@ -110,7 +110,17 @@ function ChatbotDashboardContent() {
     playNotificationSound: true,
     showWelcomeMessage: true,
     collectEmail: false,
-    responseStyle: "professional"
+    responseStyle: "professional",
+    // Advanced customization
+    widgetSize: "medium",
+    fontSize: "medium",
+    borderRadius: "rounded",
+    animationStyle: "smooth",
+    widgetOpacity: 95,
+    textContrast: "normal",
+    showTypingIndicator: true,
+    autoOpen: false,
+    autoOpenDelay: 5
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
