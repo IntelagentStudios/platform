@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -18,14 +16,6 @@ export async function GET(request: NextRequest) {
     let title = 'Chat Assistant';
     let companyName = 'Intelagent Studios';
     let domain = 'intelagentstudios.com';
-    let primaryColor = '#3b3b3b';
-    let accentColor = '#666';
-    let headerPadding = '30px 35px'; // Increased from 20px 24px
-    let messagesPadding = '35px'; // Increased from 24px
-    let messageMargin = '25px'; // Increased from 16px
-    let messagePadding = '18px 25px'; // Increased from 12px 18px
-    let inputPadding = '20px 25px'; // Increased from 12px 16px
-    let textareaPadding = '12px 18px'; // Increased from 6px 12px
 
     try {
       const productKeyRecord = await prisma.product_keys.findFirst({
@@ -51,50 +41,61 @@ export async function GET(request: NextRequest) {
         title = metadata?.title || license?.customer_name || title;
         companyName = metadata?.company_name || license?.customer_name || companyName;
         domain = metadata?.domain || license?.domain || domain;
-        
-        // Style customization
-        if (metadata?.primary_color) primaryColor = metadata.primary_color;
-        if (metadata?.accent_color) accentColor = metadata.accent_color;
-        
-        // Spacing customization (allow overrides)
-        if (metadata?.header_padding) headerPadding = metadata.header_padding;
-        if (metadata?.messages_padding) messagesPadding = metadata.messages_padding;
-        if (metadata?.message_margin) messageMargin = metadata.message_margin;
-        if (metadata?.message_padding) messagePadding = metadata.message_padding;
-        if (metadata?.input_padding) inputPadding = metadata.input_padding;
-        if (metadata?.textarea_padding) textareaPadding = metadata.textarea_padding;
       }
     } catch (error) {
       console.error('Could not fetch product configuration:', error);
     }
 
-    // Read the static widget file
-    const staticWidgetPath = path.join(process.cwd(), 'apps', 'customer-portal', 'public', 'chatbot-widget.js');
-    let widgetCode = fs.readFileSync(staticWidgetPath, 'utf-8');
-
-    // Replace configuration placeholders
-    widgetCode = widgetCode
-      // Replace title
-      .replace(/<span>Chat Assistant<\/span>/g, `<span>${title}</span>`)
-      // Replace company name in footer
-      .replace(/Powered by Intelagent Studios/g, `Powered by ${companyName}`)
-      // Replace primary colors (user message background)
-      .replace(/rgba\(59, 59, 59, 0\.95\)/g, `${primaryColor}e6`) // Convert to rgba
-      .replace(/rgba\(41, 41, 41, 0\.95\)/g, `${primaryColor}cc`)
-      // Replace accent colors
-      .replace(/fill: #666/g, `fill: ${accentColor}`)
-      .replace(/color: #666/g, `color: ${accentColor}`)
-      // Apply increased padding values with !important
-      .replace(/padding: 20px 24px;/g, `padding: ${headerPadding} !important;`)
-      .replace(/padding: 24px;/g, `padding: ${messagesPadding} !important;`)
-      .replace(/margin: 16px 0;/g, `margin: ${messageMargin} 0 !important;`)
-      .replace(/padding: 12px 18px;/g, `padding: ${messagePadding} !important;`)
-      .replace(/padding: 12px 16px;/g, `padding: ${inputPadding} !important;`)
-      .replace(/padding: 6px 12px;/g, `padding: ${textareaPadding} !important;`);
-
-    // Add cache-busting timestamp
-    const timestamp = Date.now();
-    widgetCode = `// Generated: ${timestamp}\n${widgetCode}`;
+    // Simply redirect to the static widget with configuration injected via global variable
+    const widgetCode = `
+(function() {
+  // Configuration from database
+  window.INTELAGENT_CONFIG = {
+    title: "${title}",
+    companyName: "${companyName}",
+    domain: "${domain}",
+    productKey: "${productKey}"
+  };
+  
+  // Load the static widget with increased padding
+  const script = document.createElement('script');
+  script.src = 'https://dashboard.intelagentstudios.com/chatbot-widget.js';
+  script.setAttribute('data-product-key', '${productKey}');
+  
+  // Add custom styles with increased padding
+  const style = document.createElement('style');
+  style.textContent = \`
+    /* Override padding with increased values */
+    .intelagent-chat-header {
+      padding: 30px 35px !important; /* Increased from 20px 24px */
+    }
+    .intelagent-chat-messages {
+      padding: 35px !important; /* Increased from 24px */
+    }
+    .intelagent-message {
+      margin: 25px 0 !important; /* Increased from 16px */
+    }
+    .intelagent-message-content {
+      padding: 18px 25px !important; /* Increased from 12px 18px */
+    }
+    .intelagent-chat-input {
+      padding: 20px 25px !important; /* Increased from 12px 16px */
+    }
+    .intelagent-chat-input textarea {
+      padding: 12px 18px !important; /* Increased from 6px 12px */
+    }
+    /* Ensure box-sizing for proper spacing */
+    .intelagent-chat-box,
+    .intelagent-chat-box * {
+      box-sizing: border-box !important;
+    }
+  \`;
+  document.head.appendChild(style);
+  
+  // Append the script
+  document.head.appendChild(script);
+})();
+`;
 
     // Return as JavaScript with proper headers
     return new NextResponse(widgetCode, {
