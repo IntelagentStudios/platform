@@ -540,6 +540,22 @@ function ChatbotDashboardContent() {
 
   return (
     <DashboardLayout>
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(48, 54, 54, 0.5);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(169, 189, 203, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(169, 189, 203, 0.5);
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -1367,16 +1383,34 @@ function ChatbotDashboardContent() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                    {entry.content?.includes('Document upload:') ? 
-                                      entry.content.split('Document upload:')[1]?.split('\n')[0]?.trim() || 'Document' :
-                                      'Custom Knowledge'}
+                                    {(() => {
+                                      // Check various document patterns
+                                      if (entry.content?.startsWith('Document upload:')) {
+                                        return entry.content.split('Document upload:')[1]?.split('\n')[0]?.trim() || 'Document';
+                                      } else if (entry.content?.includes('.pdf')) {
+                                        // Extract filename if it contains .pdf
+                                        const match = entry.content.match(/([^\s\/\\]+\.pdf)/i);
+                                        return match ? match[1] : 'PDF Document';
+                                      } else if (entry.created_by?.includes('.pdf')) {
+                                        // Check if created_by contains a filename
+                                        return entry.created_by;
+                                      } else if (entry.knowledge_type && entry.knowledge_type !== 'general' && entry.knowledge_type !== 'custom') {
+                                        // Use knowledge_type if it's something specific
+                                        return entry.knowledge_type;
+                                      } else {
+                                        return 'Custom Knowledge';
+                                      }
+                                    })()}
                                   </span>
                                   <span className="text-xs px-2 py-0.5 rounded"
                                         style={{ 
                                           backgroundColor: 'rgba(169, 189, 203, 0.1)',
                                           color: 'rgba(169, 189, 203, 0.8)'
                                         }}>
-                                    {entry.content?.includes('Document upload:') ? 'PDF' : 'Text Entry'}
+                                    {entry.content?.includes('.pdf') || entry.created_by?.includes('.pdf') ? 'PDF' : 
+                                     entry.content?.includes('.doc') || entry.created_by?.includes('.doc') ? 'Word' :
+                                     entry.content?.includes('.txt') || entry.created_by?.includes('.txt') ? 'TXT' :
+                                     'Text Entry'}
                                   </span>
                                 </div>
                                 <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
@@ -1490,7 +1524,7 @@ function ChatbotDashboardContent() {
                       Integration Code (Recommended)
                     </label>
                     <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono" 
+                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar" 
                            style={{ 
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
@@ -1523,7 +1557,7 @@ function ChatbotDashboardContent() {
                       Alternative: Static Widget
                     </label>
                     <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono" 
+                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar" 
                            style={{ 
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
