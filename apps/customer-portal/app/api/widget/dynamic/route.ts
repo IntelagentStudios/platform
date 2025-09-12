@@ -253,18 +253,20 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-header {
-          background-color: rgba(255, 255, 255, 0.75);
+          background-color: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          padding: 20px 24px;
-          font-size: 20px;
+          padding: 18px 20px;
+          font-size: 18px;
           color: #1a1a1a;
           font-weight: 600;
-          border-bottom: none;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-shrink: 0;
+          min-height: 60px;
+          box-sizing: border-box;
         }
         
         .intelagent-close-button {
@@ -314,14 +316,16 @@ export async function GET(request: NextRequest) {
         
         .intelagent-chat-messages {
           flex: 1 1 auto;
-          padding: 24px;
+          padding: 20px;
           overflow-y: auto;
-          font-size: 16px;
+          overflow-x: hidden;
+          font-size: 15px;
           color: #333;
           line-height: 1.6;
           scroll-behavior: smooth;
-          background: transparent;
+          background: rgba(255, 255, 255, 0.3);
           min-height: 0;
+          box-sizing: border-box;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -343,10 +347,18 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-message {
-          margin: 16px 0;
+          margin-bottom: 16px;
           display: flex;
           align-items: flex-start;
           animation: fadeInUp 0.3s ease-out;
+        }
+        
+        .intelagent-message:first-child {
+          margin-top: 0;
+        }
+        
+        .intelagent-message:last-child {
+          margin-bottom: 0;
         }
         
         @keyframes fadeInUp {
@@ -370,22 +382,26 @@ export async function GET(request: NextRequest) {
         
         .intelagent-message-content {
           max-width: 75%;
-          padding: 12px 18px;
-          border-radius: 18px;
+          padding: 10px 16px;
+          border-radius: 16px;
           word-wrap: break-word;
+          word-break: break-word;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          font-size: 14px;
+          line-height: 1.5;
         }
         
         .intelagent-message.user .intelagent-message-content {
-          background: linear-gradient(135deg, rgba(59, 59, 59, 0.95) 0%, rgba(41, 41, 41, 0.95) 100%);
+          background: linear-gradient(135deg, #4a4a4a 0%, #2c2c2c 100%);
           color: white;
           border-bottom-right-radius: 6px;
         }
         
         .intelagent-message.bot .intelagent-message-content {
-          background: rgba(243, 243, 243, 0.9);
+          background: rgba(243, 243, 243, 0.95);
           color: #1a1a1a;
           border-bottom-left-radius: 6px;
+          border: 1px solid rgba(0, 0, 0, 0.04);
         }
         
         .intelagent-message.bot .intelagent-message-content a {
@@ -410,30 +426,34 @@ export async function GET(request: NextRequest) {
         
         .intelagent-chat-input {
           display: flex;
-          border-top: none;
-          padding: 12px 16px;
-          background: rgba(255, 255, 255, 0.75);
+          border-top: 1px solid rgba(0, 0, 0, 0.08);
+          padding: 14px 16px;
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           gap: 10px;
           align-items: center;
           flex-shrink: 0;
+          min-height: 60px;
+          box-sizing: border-box;
         }
         
         .intelagent-chat-input textarea {
           flex-grow: 1;
-          padding: 6px 12px;
-          border: 1px solid rgba(0, 0, 0, 0.2);
-          border-radius: 8px;
+          padding: 8px 12px;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          border-radius: 10px;
           font-size: 14px;
           outline: none;
           font-family: 'Inter', sans-serif;
           background: white;
           resize: none;
-          height: 32px;
+          min-height: 36px;
+          height: 36px;
           overflow: hidden;
           line-height: 20px;
           transition: border-color 0.2s, background 0.2s;
+          box-sizing: border-box;
         }
         
         .intelagent-chat-input textarea:focus {
@@ -477,36 +497,39 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-ai-disclaimer {
-          font-size: 10px;
+          font-size: 11px;
           text-align: center;
           color: #888;
-          padding: 8px 16px;
-          background: rgba(255, 255, 255, 0.75);
+          padding: 10px 16px;
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border-top: none;
+          border-top: 1px solid rgba(0, 0, 0, 0.05);
           line-height: 1.4;
           flex-shrink: 0;
+          box-sizing: border-box;
         }
         
         .intelagent-chat-footer {
           font-size: 11px;
           text-align: center;
           color: #999;
-          padding: 10px;
-          background: rgba(255, 255, 255, 0.75);
+          padding: 12px 16px;
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
+          border-top: 1px solid rgba(0, 0, 0, 0.05);
           flex-shrink: 0;
+          box-sizing: border-box;
         }
         
         .intelagent-typing-indicator {
           display: inline-block;
-          padding: 12px 18px;
+          padding: 10px 16px;
           background: rgba(243, 243, 243, 0.9);
-          border-radius: 18px;
+          border-radius: 16px;
           border-bottom-left-radius: 6px;
-          margin: 16px 0;
+          margin-bottom: 16px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
         
@@ -650,7 +673,7 @@ export async function GET(request: NextRequest) {
     
     // Auto-resize textarea
     messageInput.addEventListener('input', function() {
-      this.style.height = '32px';
+      this.style.height = '36px';
       this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
     
@@ -673,7 +696,7 @@ export async function GET(request: NextRequest) {
       
       // Clear input
       messageInput.value = '';
-      messageInput.style.height = '32px';
+      messageInput.style.height = '36px';
       
       // Show typing indicator
       const typingDiv = document.createElement('div');
