@@ -32,7 +32,8 @@ export class N8NChatbotSkill extends BaseSkill {
         productKey,
         domain,
         chatHistory = [],
-        customKnowledge
+        customKnowledge,
+        settings
       } = params;
 
       // Get the webhook URL from environment or params
@@ -50,6 +51,7 @@ export class N8NChatbotSkill extends BaseSkill {
         domain: domain,
         chat_history: chatHistory,  // n8n expects snake_case
         custom_knowledge: customKnowledge,  // n8n expects snake_case
+        settings: settings,  // Pass settings to n8n for response customization
         timestamp: new Date().toISOString(),
         source: 'skills-orchestrator'
       };

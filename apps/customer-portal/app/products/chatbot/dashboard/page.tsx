@@ -214,7 +214,10 @@ function ChatbotDashboardContent() {
         themeColor: settings.themeColor,
         position: settings.position,
         welcomeMessage: settings.welcomeMessage,
-        responseStyle: settings.responseStyle
+        responseStyle: settings.responseStyle,
+        showWelcomeMessage: settings.showWelcomeMessage,
+        playNotificationSound: settings.playNotificationSound,
+        collectEmail: settings.collectEmail
       };
       
       const response = await fetch('/api/widget/config', {

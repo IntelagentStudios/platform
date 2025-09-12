@@ -38,9 +38,20 @@ export async function POST(request: NextRequest) {
     let customKnowledge = null;
     let chatbotMode = 'n8n'; // Default to n8n for proven efficacy
     let webhookUrl = null;
+    let settings = null;
     
     if (productKey) {
       try {
+        // Get complete configuration from the config endpoint
+        const configResponse = await fetch(`${request.nextUrl.origin}/api/chatbot/${productKey}/config`);
+        if (configResponse.ok) {
+          const config = await configResponse.json();
+          domain = config.domain || domain;
+          customKnowledge = config.knowledge || null;
+          settings = config.settings || null;
+        }
+        
+        // Also get metadata from product key for additional settings
         const productKeyRecord = await prisma.product_keys.findFirst({
           where: {
             product_key: productKey,
@@ -61,12 +72,11 @@ export async function POST(request: NextRequest) {
           const metadata = productKeyRecord.metadata as any;
           domain = metadata?.domain || license?.domain || domain;
           companyName = metadata?.company_name || license?.customer_name || companyName;
-          customKnowledge = metadata?.custom_knowledge || null;
           chatbotMode = metadata?.chatbot_mode || 'n8n';
           webhookUrl = metadata?.webhook_url || null;
         }
       } catch (error) {
-        console.log('Could not fetch product key:', error);
+        console.log('Could not fetch product configuration:', error);
       }
     }
 
@@ -90,6 +100,7 @@ export async function POST(request: NextRequest) {
         domain,
         chatHistory,
         customKnowledge,
+        settings,
         webhookUrl
       });
       

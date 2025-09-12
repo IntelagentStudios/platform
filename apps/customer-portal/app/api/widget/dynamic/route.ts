@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-message.user .intelagent-message-content {
-        background: linear-gradient(135deg, rgba(59, 59, 59, 0.95) 0%, rgba(41, 41, 41, 0.95) 100%);
+        background: linear-gradient(135deg, \${WIDGET_CONFIG.themeColor}ee 0%, \${WIDGET_CONFIG.themeColor}dd 100%);
         color: white;
         border-bottom-right-radius: 6px;
       }
