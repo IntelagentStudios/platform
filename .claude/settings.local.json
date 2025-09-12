@@ -17,7 +17,8 @@
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(npx next:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

@@ -539,8 +539,8 @@ function ChatbotDashboardContent() {
   }
 
   return (
-    <DashboardLayout>
-      <style jsx>{`
+    <>
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           height: 6px;
         }
@@ -556,6 +556,7 @@ function ChatbotDashboardContent() {
           background: rgba(169, 189, 203, 0.5);
         }
       `}</style>
+      <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -1393,6 +1394,7 @@ function ChatbotDashboardContent() {
                 )}
               </div>
             </div>
+            </div>
           </div>
         )}
 
@@ -1982,6 +1984,7 @@ Content-Type: application/json
         )}
       </div>
     </DashboardLayout>
+    </>
   );
 }
 
