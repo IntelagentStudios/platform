@@ -134,35 +134,45 @@ export async function GET(request: NextRequest) {
   const boxSide = WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;';
   const userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
   
+  // Create a style element with dynamic values
+  const styleElement = document.createElement('style');
+  styleElement.id = 'intelagent-dynamic-styles';
+  
+  // Remove any existing dynamic styles
+  const existingStyle = document.getElementById('intelagent-dynamic-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  
+  styleElement.textContent = [
+    '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");',
+    '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; }',
+    '.intelagent-chat-button { position: fixed; ' + buttonPosition + ' ' + buttonSide,
+    'background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px) saturate(150%);',
+    '-webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.4);',
+    'border-radius: 50%; width: 68px; height: 68px; display: flex; justify-content: center;',
+    'align-items: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);',
+    'z-index: 1000000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }',
+    '.intelagent-chat-button:hover { transform: scale(1.05); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); }',
+    '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
+    'width: 380px; height: 600px; max-height: calc(100vh - 150px);',
+    'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
+    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
+    'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
+    'flex-direction: column; overflow: hidden; z-index: 999999; font-family: "Inter", sans-serif; }',
+    '.intelagent-chat-box.open { display: flex; }',
+    '.intelagent-message.user .intelagent-message-content {',
+    'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%);',
+    'color: white; border-bottom-right-radius: 6px; }'
+  ].join(' ');
+  
+  // Append the style element to the head
+  document.head.appendChild(styleElement);
+  
+  console.log('[IntelagentChat] Dynamic styles applied with color:', userMsgColor, 'position:', WIDGET_CONFIG.position);
+  
   widgetContainer.innerHTML = \`
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-      
-      #intelagent-chat-widget * {
-        box-sizing: border-box !important;
-        margin: 0;
-        padding: 0;
-      }
-      
-      .intelagent-chat-button {
-        position: fixed;
-        \${buttonPosition}
-        \${buttonSide}
-        background-color: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(12px) saturate(150%);
-        -webkit-backdrop-filter: blur(12px) saturate(150%);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 50%;
-        width: 68px;
-        height: 68px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        z-index: 1000000;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
       .intelagent-chat-button:hover {
         transform: scale(1.05);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -173,26 +183,15 @@ export async function GET(request: NextRequest) {
         fill: #666;
       }
       
-      .intelagent-chat-box {
-        position: fixed;
-        \${boxPosition}
-        \${boxSide}
-        width: 380px;
-        height: 600px;
-        max-height: calc(100vh - 150px);
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(24px) saturate(150%);
-        -webkit-backdrop-filter: blur(24px) saturate(150%);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 20px;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
-        display: none;
-        flex-direction: column;
-        overflow: hidden;
-        z-index: 999999;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        animation: smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      /* Additional button hover styles */
+      .intelagent-chat-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      }
+      .intelagent-chat-button svg {
+        width: 30px;
+        height: 30px;
+        fill: #666;
       }
       
       .intelagent-chat-box.open {
@@ -328,11 +327,7 @@ export async function GET(request: NextRequest) {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       }
       
-      .intelagent-message.user .intelagent-message-content {
-        background: linear-gradient(135deg, \${userMsgColor}ee 0%, \${userMsgColor}dd 100%);
-        color: white;
-        border-bottom-right-radius: 6px;
-      }
+      /* User message colors are set dynamically above */
       
       .intelagent-message.bot .intelagent-message-content {
         background: rgba(243, 243, 243, 0.9);
