@@ -547,8 +547,9 @@ export async function GET(request: NextRequest) {
       try {
         const webhookData = {
           message: message,
-          sessionId: sessionId,
-          productKey: PRODUCT_KEY,
+          session_id: sessionId,  // n8n expects snake_case
+          product_key: PRODUCT_KEY,  // n8n expects snake_case
+          site_key: PRODUCT_KEY,  // backward compatibility
           timestamp: new Date().toISOString(),
           customKnowledge: CUSTOM_KNOWLEDGE,
           responseStyle: WIDGET_CONFIG.responseStyle,
