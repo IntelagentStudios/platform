@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
     const settings = metadata?.settings || {};
     
     console.log('[Config API GET] Product key:', productKey);
-    console.log('[Config API GET] Metadata:', metadata);
-    console.log('[Config API GET] Settings from metadata:', settings);
+    console.log('[Config API GET] Full metadata:', JSON.stringify(metadata, null, 2));
+    console.log('[Config API GET] Settings from metadata:', JSON.stringify(settings, null, 2));
 
     // Return simplified configuration for the widget with CORS headers
     return NextResponse.json({

@@ -81,11 +81,25 @@ export async function GET(request: NextRequest) {
   // Fetch configuration dynamically
   async function loadWidgetConfig() {
     try {
+      console.log('[IntelagentChat] Fetching config for key:', PRODUCT_KEY);
       const response = await fetch('https://dashboard.intelagentstudios.com/api/widget/config?key=' + PRODUCT_KEY);
       const data = await response.json();
-      return data.config || {};
+      console.log('[IntelagentChat] Config response:', data);
+      
+      if (data.config) {
+        console.log('[IntelagentChat] Using config:', data.config);
+        return data.config;
+      }
+      
+      console.log('[IntelagentChat] No config found, using defaults');
+      return {
+        themeColor: '#0070f3',
+        position: 'bottom-right',
+        welcomeMessage: 'How can I help you today?',
+        responseStyle: 'professional'
+      };
     } catch (error) {
-      console.error('Failed to load widget config:', error);
+      console.error('[IntelagentChat] Failed to load widget config:', error);
       return {
         themeColor: '#0070f3',
         position: 'bottom-right',
@@ -97,7 +111,7 @@ export async function GET(request: NextRequest) {
   
   // Initialize widget with fetched config
   loadWidgetConfig().then(function(WIDGET_CONFIG) {
-    console.log('[IntelagentChat] Config loaded:', WIDGET_CONFIG);
+    console.log('[IntelagentChat] Final config being applied:', WIDGET_CONFIG);
   
   if (document.getElementById('intelagent-chat-widget')) {
     document.getElementById('intelagent-chat-widget').remove();
