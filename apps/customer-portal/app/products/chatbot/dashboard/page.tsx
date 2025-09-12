@@ -424,7 +424,15 @@ function ChatbotDashboardContent() {
       if (res.ok) {
         const data = await res.json();
         if (data.knowledge && data.knowledge.length > 0) {
-          setKnowledgeEntries(data.knowledge);
+          // Filter out entries that look like file imports (PDFs, etc)
+          // Only show actual text entries that were manually added
+          const textEntries = data.knowledge.filter(k => 
+            k.knowledge_type === 'general' && 
+            !k.content?.startsWith('File content from:') &&
+            !k.content?.includes('[PDF Content]') &&
+            !k.content?.includes('[Document Content]')
+          );
+          setKnowledgeEntries(textEntries);
         }
       }
     } catch (error) {
@@ -1487,11 +1495,13 @@ function ChatbotDashboardContent() {
                       Integration Code (Recommended)
                     </label>
                     <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono" 
                            style={{ 
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
-                             border: '1px solid rgba(169, 189, 203, 0.2)'
+                             border: '1px solid rgba(169, 189, 203, 0.2)',
+                             whiteSpace: 'pre-wrap',
+                             wordBreak: 'break-all'
                            }}>
 {`<script src="https://dashboard.intelagentstudios.com/api/widget/configurable?key=${productKey}"></script>`}
                       </pre>
@@ -1518,11 +1528,13 @@ function ChatbotDashboardContent() {
                       Alternative: Static Widget
                     </label>
                     <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono" 
                            style={{ 
                              backgroundColor: 'rgba(48, 54, 54, 0.7)', 
                              color: 'rgb(229, 227, 220)',
-                             border: '1px solid rgba(169, 189, 203, 0.2)'
+                             border: '1px solid rgba(169, 189, 203, 0.2)',
+                             whiteSpace: 'pre-wrap',
+                             wordBreak: 'break-all'
                            }}>
 {`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`}
                       </pre>
@@ -1698,11 +1710,20 @@ function ChatbotDashboardContent() {
             <div className="rounded-lg shadow-sm border p-6" 
                  style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
               <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                API Access
+                API Access - Connect External Systems
               </h3>
-              <p className="mb-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                Access chatbot data programmatically via our REST API
-              </p>
+              <div className="mb-6 p-4 rounded-lg" 
+                   style={{ 
+                     backgroundColor: 'rgba(144, 238, 144, 0.1)', 
+                     border: '1px solid rgba(144, 238, 144, 0.3)' 
+                   }}>
+                <p className="text-sm font-medium mb-2" style={{ color: 'rgb(144, 238, 144)' }}>
+                  🔗 Direct Knowledge Integration
+                </p>
+                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                  Connect your CRM, documentation, or any data source directly to your chatbot's knowledge base using the API below.
+                </p>
+              </div>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1737,8 +1758,11 @@ function ChatbotDashboardContent() {
                 
                 <div>
                   <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Update Knowledge Base
+                    Update Knowledge Base - Add Custom Knowledge from External Sources
                   </label>
+                  <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Use this endpoint to push knowledge from your CRM, helpdesk, documentation, or any other system
+                  </p>
                   <div className="relative">
                     <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
                          style={{ 
