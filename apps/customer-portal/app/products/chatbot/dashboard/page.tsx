@@ -1184,32 +1184,44 @@ function ChatbotDashboardContent() {
                     knowledgeFiles.map((file) => (
                       <div 
                         key={file.id}
-                        className="flex items-center justify-between p-3 rounded-lg"
+                        className="p-4 rounded-lg"
                         style={{ 
                           backgroundColor: 'rgba(48, 54, 54, 0.3)',
                           border: '1px solid rgba(169, 189, 203, 0.1)'
                         }}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded flex items-center justify-center"
-                               style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
-                            {file.file_type?.includes('text') || file.filename?.endsWith('.txt') ? (
-                              <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                            ) : (
-                              <File className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                            )}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                 style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+                              {file.file_type?.includes('text') || file.filename?.endsWith('.txt') ? (
+                                <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                              ) : file.filename?.endsWith('.md') ? (
+                                <BookOpen className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                              ) : (
+                                <File className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                                  {file.filename}
+                                </span>
+                                <span className="text-xs px-2 py-0.5 rounded"
+                                      style={{ 
+                                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                        color: 'rgba(169, 189, 203, 0.8)'
+                                      }}>
+                                  File
+                                </span>
+                              </div>
+                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB • ` : ''}
+                                Added {new Date(file.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {file.filename}
-                            </p>
-                            <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                              {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB • ` : ''}
-                              {new Date(file.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <button
+                          <button
                           onClick={async () => {
                             if (confirm(`Delete "${file.name}"?`)) {
                               try {
@@ -1339,14 +1351,32 @@ function ChatbotDashboardContent() {
                         </div>
                       ) : (
                         <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <p className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
-                                {entry.content}
-                              </p>
-                              <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                                Added {new Date(entry.created_at).toLocaleDateString()} • Type: {entry.knowledge_type || 'general'}
-                              </p>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-3 flex-1">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                   style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+                                <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                                    Custom Text Entry
+                                  </span>
+                                  <span className="text-xs px-2 py-0.5 rounded"
+                                        style={{ 
+                                          backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                          color: 'rgba(169, 189, 203, 0.8)'
+                                        }}>
+                                    {entry.knowledge_type || 'General'}
+                                  </span>
+                                </div>
+                                <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                                  {entry.content.length > 150 ? `${entry.content.substring(0, 150)}...` : entry.content}
+                                </p>
+                                <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                  Added {new Date(entry.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 ml-4">
                               <button
@@ -1448,18 +1478,64 @@ function ChatbotDashboardContent() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Integration Code
+                      Integration Code (Recommended)
                     </label>
-                    <pre className="p-4 rounded-lg overflow-x-auto text-sm font-mono" 
-                         style={{ 
-                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
-                           color: 'rgb(229, 227, 220)',
-                           border: '1px solid rgba(169, 189, 203, 0.2)'
-                         }}>
-{`<!-- Intelagent Chatbot Widget (Dynamic) -->
-<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}">
-</script>`}
-                    </pre>
+                    <div className="relative">
+                      <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                           style={{ 
+                             backgroundColor: 'rgba(48, 54, 54, 0.7)', 
+                             color: 'rgb(229, 227, 220)',
+                             border: '1px solid rgba(169, 189, 203, 0.2)'
+                           }}>
+{`<script src="https://dashboard.intelagentstudios.com/api/widget/configurable?key=${productKey}"></script>`}
+                      </pre>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/api/widget/configurable?key=${productKey}"></script>`);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                        style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                        title="Copy to clipboard"
+                      >
+                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Alternative: Static Widget
+                    </label>
+                    <div className="relative">
+                      <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                           style={{ 
+                             backgroundColor: 'rgba(48, 54, 54, 0.7)', 
+                             color: 'rgb(229, 227, 220)',
+                             border: '1px solid rgba(169, 189, 203, 0.2)'
+                           }}>
+{`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`}
+                      </pre>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                        style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                        title="Copy to clipboard"
+                      >
+                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   
                   {/* Integration Help Section */}
@@ -1622,28 +1698,73 @@ function ChatbotDashboardContent() {
                 Access chatbot data programmatically via our REST API
               </p>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg" 
-                     style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)', border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                      GET /api/chatbot/{productKey}/conversations
-                    </p>
-                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                      Retrieve conversation history
-                    </p>
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Get Conversations
+                  </label>
+                  <div className="relative">
+                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                         style={{ 
+                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
+                           color: 'rgb(229, 227, 220)',
+                           border: '1px solid rgba(169, 189, 203, 0.2)'
+                         }}>
+{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                      style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                      title="Copy to clipboard"
+                    >
+                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <ExternalLink className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      POST /api/chatbot/{productKey}/knowledge
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Update custom knowledge base
-                    </p>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Update Knowledge Base
+                  </label>
+                  <div className="relative">
+                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-sm font-mono" 
+                         style={{ 
+                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
+                           color: 'rgb(229, 227, 220)',
+                           border: '1px solid rgba(169, 189, 203, 0.2)'
+                         }}>
+{`POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge
+Content-Type: application/json
+
+{
+  "content": "Your custom knowledge here",
+  "knowledge_type": "general"
+}`}
+                    </pre>
+                    <button
+                      onClick={() => {
+                        const apiCall = `POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge\nContent-Type: application/json\n\n{\n  "content": "Your custom knowledge here",\n  "knowledge_type": "general"\n}`;
+                        navigator.clipboard.writeText(apiCall);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                      style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                      title="Copy to clipboard"
+                    >
+                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
               
