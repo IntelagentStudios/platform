@@ -1222,26 +1222,27 @@ function ChatbotDashboardContent() {
                             </div>
                           </div>
                           <button
-                          onClick={async () => {
-                            if (confirm(`Delete "${file.name}"?`)) {
-                              try {
-                                const res = await fetch(`/api/products/chatbot/knowledge-files?id=${file.id}`, {
-                                  method: 'DELETE',
-                                  credentials: 'include'
-                                });
-                                if (res.ok) {
-                                  await loadCustomKnowledge();
+                            onClick={async () => {
+                              if (confirm(`Delete "${file.filename}"?`)) {
+                                try {
+                                  const res = await fetch(`/api/products/chatbot/knowledge-files?id=${file.id}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                  });
+                                  if (res.ok) {
+                                    await loadCustomKnowledge();
+                                  }
+                                } catch (error) {
+                                  console.error('Delete error:', error);
                                 }
-                              } catch (error) {
-                                console.error('Delete error:', error);
                               }
-                            }
-                          }}
-                          className="p-1.5 rounded hover:opacity-80"
-                          style={{ color: 'rgba(169, 189, 203, 0.6)' }}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                            }}
+                            className="p-1.5 rounded hover:opacity-80"
+                            style={{ color: 'rgba(169, 189, 203, 0.6)' }}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
