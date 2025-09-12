@@ -92,6 +92,9 @@ function ChatbotDashboardContent() {
   const [savingKnowledge, setSavingKnowledge] = useState(false);
   const [knowledgeSaved, setKnowledgeSaved] = useState(false);
   const [knowledgeFiles, setKnowledgeFiles] = useState<any[]>([]);
+  const [knowledgeEntries, setKnowledgeEntries] = useState<any[]>([]);
+  const [editingEntry, setEditingEntry] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
@@ -413,7 +416,7 @@ function ChatbotDashboardContent() {
         setKnowledgeFiles(filesData.files || []);
       }
       
-      // Load legacy text knowledge
+      // Load custom knowledge entries
       const res = await fetch('/api/products/chatbot/custom-knowledge', {
         credentials: 'include'
       });
@@ -421,10 +424,7 @@ function ChatbotDashboardContent() {
       if (res.ok) {
         const data = await res.json();
         if (data.knowledge && data.knowledge.length > 0) {
-          const general = data.knowledge.find(k => k.knowledge_type === 'general');
-          if (general) {
-            setCustomKnowledge(general.content);
-          }
+          setKnowledgeEntries(data.knowledge);
         }
       }
     } catch (error) {
@@ -1241,6 +1241,160 @@ function ChatbotDashboardContent() {
                       Files are processed and indexed for AI retrieval. Click "Sync AI Memory" after making changes.
                     </p>
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Custom Knowledge Entries Section */}
+            <div className="mt-6 rounded-lg shadow-sm border p-6" 
+                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Custom Knowledge Entries
+                </h2>
+                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                  {knowledgeEntries.length} custom knowledge entr{knowledgeEntries.length !== 1 ? 'ies' : 'y'}
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                {knowledgeEntries.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+                    <p style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      No custom knowledge entries yet
+                    </p>
+                    <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                      Add quick information using the form above
+                    </p>
+                  </div>
+                ) : (
+                  knowledgeEntries.map((entry) => (
+                    <div 
+                      key={entry.id}
+                      className="p-4 rounded-lg"
+                      style={{ 
+                        backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                        border: '1px solid rgba(169, 189, 203, 0.1)'
+                      }}
+                    >
+                      {editingEntry === entry.id ? (
+                        <div className="space-y-3">
+                          <textarea
+                            value={editingContent}
+                            onChange={(e) => setEditingContent(e.target.value)}
+                            rows={4}
+                            className="w-full px-3 py-2 rounded-lg"
+                            style={{
+                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                              border: '1px solid rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(229, 227, 220)'
+                            }}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setEditingEntry(null);
+                                setEditingContent('');
+                              }}
+                              className="px-3 py-1.5 rounded text-sm hover:opacity-80"
+                              style={{
+                                backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                                color: 'rgb(229, 227, 220)'
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch('/api/products/chatbot/custom-knowledge', {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      id: entry.id,
+                                      content: editingContent,
+                                      productKey: productKey || siteKey
+                                    }),
+                                    credentials: 'include'
+                                  });
+                                  if (res.ok) {
+                                    await loadCustomKnowledge();
+                                    setEditingEntry(null);
+                                    setEditingContent('');
+                                  }
+                                } catch (error) {
+                                  console.error('Update error:', error);
+                                }
+                              }}
+                              className="px-3 py-1.5 rounded text-sm hover:opacity-80"
+                              style={{
+                                backgroundColor: 'rgb(169, 189, 203)',
+                                color: 'rgb(48, 54, 54)'
+                              }}
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <p className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                                {entry.content}
+                              </p>
+                              <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                Added {new Date(entry.created_at).toLocaleDateString()} • Type: {entry.knowledge_type || 'general'}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <button
+                                onClick={() => {
+                                  setEditingEntry(entry.id);
+                                  setEditingContent(entry.content);
+                                }}
+                                className="p-1.5 rounded hover:opacity-80"
+                                style={{ color: 'rgba(169, 189, 203, 0.6)' }}
+                                title="Edit"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (confirm('Delete this knowledge entry?')) {
+                                    try {
+                                      const res = await fetch('/api/products/chatbot/custom-knowledge', {
+                                        method: 'DELETE',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          id: entry.id,
+                                          productKey: productKey || siteKey
+                                        }),
+                                        credentials: 'include'
+                                      });
+                                      if (res.ok) {
+                                        await loadCustomKnowledge();
+                                      }
+                                    } catch (error) {
+                                      console.error('Delete error:', error);
+                                    }
+                                  }
+                                }}
+                                className="p-1.5 rounded hover:opacity-80"
+                                style={{ color: 'rgba(169, 189, 203, 0.6)' }}
+                                title="Delete"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
                 )}
               </div>
             </div>

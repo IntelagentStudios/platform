@@ -302,12 +302,153 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * PUT /api/products/chatbot/custom-knowledge
+ * Update existing custom knowledge entry
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    // Check for simple auth first
+    const simpleAuth = request.cookies.get('auth');
+    let realProductKey = '';
+    
+    if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
+    } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
+      realProductKey = 'chat_1d37512c82d10c04';
+    }
+    
+    const body = await request.json();
+    const { id, content } = body;
+    
+    if (!id || !content) {
+      return NextResponse.json(
+        { error: 'ID and content are required' },
+        { status: 400 }
+      );
+    }
+    
+    if (realProductKey) {
+      try {
+        const updated = await prisma.custom_knowledge.update({
+          where: { id: parseInt(id) },
+          data: {
+            content: content.trim(),
+            updated_at: new Date()
+          }
+        });
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Knowledge updated successfully',
+          knowledge: updated
+        });
+      } catch (dbError) {
+        console.error('Error updating knowledge:', dbError);
+        return NextResponse.json(
+          { error: 'Failed to update knowledge' },
+          { status: 500 }
+        );
+      }
+    }
+    
+    // JWT auth fallback
+    const authToken = request.cookies.get('auth_token');
+    
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+    
+    const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
+    
+    try {
+      jwt.verify(authToken.value, JWT_SECRET);
+    } catch (jwtError) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+    
+    // Update the knowledge entry
+    const updated = await prisma.custom_knowledge.update({
+      where: { id: parseInt(id) },
+      data: {
+        content: content.trim(),
+        updated_at: new Date()
+      }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Knowledge updated successfully',
+      knowledge: updated
+    });
+    
+  } catch (error) {
+    console.error('Error updating custom knowledge:', error);
+    return NextResponse.json(
+      { error: 'Failed to update custom knowledge' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/products/chatbot/custom-knowledge
  * Delete custom knowledge for a chatbot
  */
 export async function DELETE(request: NextRequest) {
   try {
-    // Simple JWT validation
+    // Check for simple auth first
+    const simpleAuth = request.cookies.get('auth');
+    let realProductKey = '';
+    
+    if (simpleAuth && simpleAuth.value === 'authenticated-user-harry') {
+      realProductKey = 'chat_9b3f7e8a2c5d1f0e';
+    } else if (simpleAuth && simpleAuth.value === 'authenticated-test-friend') {
+      realProductKey = 'chat_1d37512c82d10c04';
+    }
+    
+    const body = await request.json();
+    const { id } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    if (realProductKey) {
+      try {
+        // Soft delete by marking as inactive
+        const deleted = await prisma.custom_knowledge.update({
+          where: { id: parseInt(id) },
+          data: {
+            is_active: false,
+            updated_at: new Date()
+          }
+        });
+        
+        console.log(`[custom-knowledge] Deleted entry ${id}`);
+        
+        return NextResponse.json({
+          success: true,
+          message: 'Custom knowledge deleted successfully'
+        });
+      } catch (dbError) {
+        console.error('Error deleting knowledge:', dbError);
+        return NextResponse.json(
+          { error: 'Failed to delete knowledge' },
+          { status: 500 }
+        );
+      }
+    }
+    
+    // JWT auth fallback
     const authToken = request.cookies.get('auth_token');
     
     if (!authToken) {
@@ -318,57 +459,26 @@ export async function DELETE(request: NextRequest) {
     }
 
     const JWT_SECRET = process.env.JWT_SECRET || 'xK8mP3nQ7rT5vY2wA9bC4dF6gH1jL0oS';
-    let licenseKey: string;
     
     try {
-      const decoded = jwt.verify(authToken.value, JWT_SECRET) as any;
-      licenseKey = decoded.licenseKey;
-      
-      if (!licenseKey) {
-        return NextResponse.json(
-          { error: 'No license key in token' },
-          { status: 401 }
-        );
-      }
+      jwt.verify(authToken.value, JWT_SECRET);
     } catch (jwtError) {
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
       );
     }
-    const { searchParams } = new URL(request.url);
-    const knowledge_type = searchParams.get('type') || 'general';
-
-    // Get chatbot product key
-    const productKey = await prisma.product_keys.findFirst({
-      where: {
-        license_key: licenseKey,
-        product: 'chatbot',
-        status: 'active'
-      },
-      select: { product_key: true }
-    });
-
-    if (!productKey) {
-      return NextResponse.json(
-        { error: 'Chatbot not configured' },
-        { status: 404 }
-      );
-    }
 
     // Soft delete by marking as inactive
-    await prisma.custom_knowledge.updateMany({
-      where: {
-        product_key: productKey.product_key,
-        knowledge_type: knowledge_type
-      },
+    const deleted = await prisma.custom_knowledge.update({
+      where: { id: parseInt(id) },
       data: {
         is_active: false,
         updated_at: new Date()
       }
     });
 
-    console.log(`[custom-knowledge] Deleted ${knowledge_type} for ${productKey.product_key}`);
+    console.log(`[custom-knowledge] Deleted entry ${id}`);
 
     return NextResponse.json({
       success: true,

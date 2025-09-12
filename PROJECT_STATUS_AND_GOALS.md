@@ -83,7 +83,7 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 
 ## 🎉 Recent Accomplishments (January 2025)
 
-### This Week's Achievements (Jan 9, 2025)
+### This Week's Achievements (Jan 9-12, 2025)
 1. **Authentication & Multi-tenancy Fixes** ✅
    - **Fixed sidebar navigation** - Removed collapse/expand arrow, implemented hover-based expansion
    - **Removed bright blue colors** - Applied consistent theme colors (rgb(48, 54, 54) background, rgb(229, 227, 220) text, rgb(169, 189, 203) accents)
@@ -93,6 +93,18 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
    - **Removed mock data** - Ensured all conversations load from PostgreSQL based on license key
    - **Fixed database schema issues** - Corrected custom_knowledge table with proper field names and compound unique constraints
    - **Standardized authentication** - Consistent handling of simple auth and JWT tokens across all API routes
+
+2. **Chatbot Custom Knowledge System** ✅ (Jan 12, 2025)
+   - **Removed Pinecone dependency** - Migrated to simple database storage using custom_knowledge and knowledge_files tables
+   - **Fixed n8n integration** - Converted all field names to snake_case for n8n compatibility (product_key, session_id, custom_knowledge, etc.)
+   - **Created unified config endpoint** - `/api/chatbot/[siteKey]/config` provides both knowledge and settings to the chatbot
+   - **Fixed widget styling** - Created configurable widget endpoint that preserves glassmorphic design with improved spacing
+   - **Enhanced n8n workflow prompts** - Updated Agent 2 prompt to properly prioritize custom knowledge over website content
+   - **Working configuration**:
+     - Custom knowledge stored in PostgreSQL and passed to n8n via custom_knowledge field
+     - n8n workflow processes with dual-agent architecture
+     - Agent 2 now correctly uses custom knowledge as authoritative source
+     - Widget loads perfectly with `/api/widget/configurable?key=` endpoint
 
 2. **Complete Stripe Payment Integration** ✅
    - Built public marketplace with tier-based pricing (Starter £299, Pro £699, Enterprise £1,499)
