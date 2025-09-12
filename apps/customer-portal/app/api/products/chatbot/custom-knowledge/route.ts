@@ -330,7 +330,7 @@ export async function PUT(request: NextRequest) {
     if (realProductKey) {
       try {
         const updated = await prisma.custom_knowledge.update({
-          where: { id: parseInt(id) },
+          where: { id: id },
           data: {
             content: content.trim(),
             updated_at: new Date()
@@ -374,7 +374,7 @@ export async function PUT(request: NextRequest) {
     
     // Update the knowledge entry
     const updated = await prisma.custom_knowledge.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: {
         content: content.trim(),
         updated_at: new Date()
@@ -426,7 +426,7 @@ export async function DELETE(request: NextRequest) {
       try {
         // Soft delete by marking as inactive
         const deleted = await prisma.custom_knowledge.update({
-          where: { id: parseInt(id) },
+          where: { id: id },
           data: {
             is_active: false,
             updated_at: new Date()
@@ -471,7 +471,7 @@ export async function DELETE(request: NextRequest) {
 
     // Soft delete by marking as inactive
     const deleted = await prisma.custom_knowledge.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: {
         is_active: false,
         updated_at: new Date()
