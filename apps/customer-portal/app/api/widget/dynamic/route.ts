@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
   widgetContainer.id = 'intelagent-chat-widget';
   widgetContainer.style.cssText = \`
     position: fixed;
-    bottom: 0;
-    \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 0;' : 'right: 0;'}
+    ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 0;' : 'top: 0;') + '
+    ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 0;' : 'right: 0;') + '
     z-index: 999999;
   \`;
   document.body.appendChild(widgetContainer);
@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
       
       .intelagent-chat-button {
         position: fixed;
-        bottom: 28px;
-        \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
+        ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 28px;' : 'top: 28px;') + '
+        ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;') + '
         background-color: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px) saturate(150%);
         -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
       
       .intelagent-chat-box {
         position: fixed;
-        bottom: 120px;
-        \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
+        ' + (WIDGET_CONFIG.position.includes('bottom') ? 'bottom: 120px;' : 'top: 120px;') + '
+        ' + (WIDGET_CONFIG.position.includes('left') ? 'left: 28px;' : 'right: 28px;') + '
         width: 380px;
         height: 600px;
         max-height: calc(100vh - 150px);
@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-message.user .intelagent-message-content {
-        background: linear-gradient(135deg, \${WIDGET_CONFIG.themeColor}ee 0%, \${WIDGET_CONFIG.themeColor}dd 100%);
+        background: linear-gradient(135deg, ' + WIDGET_CONFIG.themeColor + 'ee 0%, ' + WIDGET_CONFIG.themeColor + 'dd 100%);
         color: white;
         border-bottom-right-radius: 6px;
       }
