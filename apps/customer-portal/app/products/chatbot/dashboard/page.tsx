@@ -164,11 +164,14 @@ function ChatbotDashboardContent() {
         const configData = await configRes.json();
         
         if (configData.chatbot?.configured) {
+          console.log('[Dashboard] Product key from config:', configData.chatbot.product_key);
+          console.log('[Dashboard] Site key from config:', configData.chatbot.site_key);
           setProductKey(configData.chatbot.product_key);
           setSiteKey(configData.chatbot.site_key || configData.chatbot.product_key);
           await fetchConversations();
           await loadCustomKnowledge();
         } else if (data.user.site_key) {
+          console.log('[Dashboard] Using site key from user:', data.user.site_key);
           await fetchConversations();
           await loadCustomKnowledge();
         } else {
@@ -220,22 +223,39 @@ function ChatbotDashboardContent() {
         collectEmail: settings.collectEmail
       };
       
-      const response = await fetch('/api/widget/config', {
+      const key = productKey || siteKey;
+      
+      if (!key) {
+        console.error('[Settings] No product key or site key available!');
+        alert('Unable to save settings: No product key found. Please refresh the page.');
+        return;
+      }
+      
+      console.log('[Settings] Saving with key:', key);
+      console.log('[Settings] Settings to save:', simplifiedSettings);
+      
+      // Use the correct endpoint that matches where we fetch from
+      const response = await fetch('/api/products/chatbot/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          productKey: productKey || siteKey,
-          settings: simplifiedSettings
-        }),
+        body: JSON.stringify(simplifiedSettings),
       });
+      
+      const result = await response.json();
+      console.log('[Settings] Save response:', result);
       
       if (response.ok) {
         setSettingsSaved(true);
         setTimeout(() => setSettingsSaved(false), 3000);
+        
+        // Verify settings were saved by fetching them back
+        const verifyResponse = await fetch(`/api/widget/config?key=${key}`);
+        const verifyData = await verifyResponse.json();
+        console.log('[Settings] Verification - saved settings:', verifyData.config);
       } else {
-        console.error('Failed to save settings');
+        console.error('Failed to save settings:', result);
       }
     } catch (error) {
       console.error('Error saving settings:', error);

@@ -55,6 +55,10 @@ export async function GET(request: NextRequest) {
     // Get saved settings (if any) from metadata or a settings table
     const metadata = productKeyInfo.metadata as any;
     const settings = metadata?.settings || {};
+    
+    console.log('[Config API GET] Product key:', productKey);
+    console.log('[Config API GET] Metadata:', metadata);
+    console.log('[Config API GET] Settings from metadata:', settings);
 
     // Return simplified configuration for the widget with CORS headers
     return NextResponse.json({
@@ -111,30 +115,42 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productKey, settings } = body;
 
+    console.log('[Config API] POST request received');
+    console.log('[Config API] Product key:', productKey);
+    console.log('[Config API] Settings to save:', settings);
+
     if (!productKey || !settings) {
       return NextResponse.json({ 
         error: 'Product key and settings required' 
       }, { status: 400 });
     }
 
+    // First, check if the product key exists
+    const existing = await prisma.product_keys.findUnique({
+      where: { product_key: productKey },
+      select: { metadata: true, product_key: true }
+    });
+    
+    console.log('[Config API] Existing metadata:', existing?.metadata);
+
     // Update the product key metadata with settings
     const updated = await prisma.product_keys.update({
       where: { product_key: productKey },
       data: {
         metadata: {
-          ...(await prisma.product_keys.findUnique({
-            where: { product_key: productKey },
-            select: { metadata: true }
-          }))?.metadata as any || {},
+          ...(existing?.metadata as any || {}),
           settings: settings,
           lastUpdated: new Date().toISOString()
         }
       }
     });
+    
+    console.log('[Config API] Updated metadata:', updated.metadata);
 
     return NextResponse.json({ 
       success: true,
-      message: 'Settings saved successfully'
+      message: 'Settings saved successfully',
+      savedSettings: settings
     });
   } catch (error) {
     console.error('Error saving widget settings:', error);

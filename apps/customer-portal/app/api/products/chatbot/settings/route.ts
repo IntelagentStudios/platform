@@ -191,9 +191,13 @@ async function saveSettings(licenseKey: string, settings: any) {
 function getDefaultSettings() {
   return {
     welcomeMessage: "Hello! How can I help you today?",
-    primaryColor: "#0070f3",
+    themeColor: "#0070f3",
+    primaryColor: "#0070f3", // Keep for backwards compatibility
     position: "bottom-right",
+    responseStyle: "professional",
+    showWelcomeMessage: true,
     playNotificationSound: true,
+    collectEmail: false,
     showTypingIndicator: true,
     autoOpen: false,
     autoOpenDelay: 5
