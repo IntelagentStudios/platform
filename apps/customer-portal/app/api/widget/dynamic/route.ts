@@ -118,12 +118,14 @@ export async function GET(request: NextRequest) {
     // Generate the complete dynamic widget script matching static widget exactly
     const widgetScript = `
 (function() {
-  // Configuration for ${productKey}
+  // Configuration for ${productKey} - v${Date.now()}
   const WIDGET_CONFIG = ${JSON.stringify(config, null, 2)};
   const PRODUCT_KEY = '${productKey}';
   const CUSTOM_KNOWLEDGE = ${JSON.stringify(combinedKnowledge)};
   const HAS_KNOWLEDGE = ${combinedKnowledge.length > 0};
+  const WIDGET_VERSION = '${Date.now()}';
   
+  console.log('[IntelagentChat] Widget version:', WIDGET_VERSION);
   console.log('[IntelagentChat] Initializing with product key:', PRODUCT_KEY);
   console.log('[IntelagentChat] Custom knowledge loaded:', HAS_KNOWLEDGE ? 'Yes (' + CUSTOM_KNOWLEDGE.length + ' chars)' : 'No');
 
@@ -204,18 +206,16 @@ export async function GET(request: NextRequest) {
           position: fixed;
           bottom: 28px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
-          background-color: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(12px) saturate(150%);
-          -webkit-backdrop-filter: blur(12px) saturate(150%);
-          border: 2px solid rgba(255, 255, 255, 0.6);
+          background-color: \${WIDGET_CONFIG.themeColor};
+          border: 3px solid rgba(255, 255, 255, 0.9);
           border-radius: 50%;
-          width: 68px;
-          height: 68px;
+          width: 72px;
+          height: 72px;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
           z-index: 1000000;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -226,29 +226,29 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-button svg {
-          width: 30px;
-          height: 30px;
-          fill: #666;
+          width: 32px;
+          height: 32px;
+          fill: white;
         }
         
         .intelagent-chat-box {
           position: fixed;
           bottom: 120px;
           \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
-          width: 380px;
-          height: 600px;
+          width: 420px;
+          height: 650px;
           max-height: calc(100vh - 150px);
-          background: rgba(255, 255, 255, 0.75);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(24px) saturate(150%);
           -webkit-backdrop-filter: blur(24px) saturate(150%);
-          border: 2px solid rgba(255, 255, 255, 0.5);
-          border-radius: 20px;
-          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+          border: 3px solid rgba(0, 0, 0, 0.1);
+          border-radius: 24px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
           display: none;
           flex-direction: column;
           overflow: hidden;
           z-index: 999999;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
@@ -269,14 +269,14 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-header {
-          background-color: rgba(255, 255, 255, 0.75);
+          background-color: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          padding: 22px 26px;
-          font-size: 20px;
+          padding: 24px 30px;
+          font-size: 19px;
           color: #1a1a1a;
           font-weight: 600;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          border-bottom: 2px solid rgba(0, 0, 0, 0.06);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -330,10 +330,10 @@ export async function GET(request: NextRequest) {
         
         .intelagent-chat-messages {
           flex: 1 1 auto;
-          padding: 20px 24px;
+          padding: 30px;
           overflow-y: auto;
           overflow-x: hidden;
-          font-size: 16px;
+          font-size: 15px;
           color: #333;
           line-height: 1.6;
           scroll-behavior: smooth;
@@ -360,8 +360,8 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-message {
-          margin: 12px 0;
-          padding: 4px 0;
+          margin: 20px 0;
+          padding: 0;
           display: flex;
           align-items: flex-start;
           animation: fadeInUp 0.3s ease-out;
@@ -387,25 +387,27 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-message-content {
-          max-width: 70%;
-          padding: 14px 20px;
-          border-radius: 18px;
+          max-width: 75%;
+          padding: 16px 24px;
+          border-radius: 20px;
           word-wrap: break-word;
           word-break: break-word;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-          line-height: 1.5;
+          box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+          line-height: 1.6;
+          font-size: 15px;
         }
         
         .intelagent-message.user .intelagent-message-content {
-          background: linear-gradient(135deg, rgba(59, 59, 59, 0.95) 0%, rgba(41, 41, 41, 0.95) 100%);
+          background: linear-gradient(135deg, \${WIDGET_CONFIG.themeColor} 0%, \${WIDGET_CONFIG.themeColor}dd 100%);
           color: white;
-          border-bottom-right-radius: 6px;
+          border-bottom-right-radius: 8px;
         }
         
         .intelagent-message.bot .intelagent-message-content {
-          background: rgba(243, 243, 243, 0.9);
+          background: rgba(240, 240, 245, 0.95);
           color: #1a1a1a;
-          border-bottom-left-radius: 6px;
+          border-bottom-left-radius: 8px;
+          border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .intelagent-message.bot .intelagent-message-content a {
@@ -430,30 +432,30 @@ export async function GET(request: NextRequest) {
         
         .intelagent-chat-input {
           display: flex;
-          border-top: 1px solid rgba(0, 0, 0, 0.05);
-          padding: 16px 20px;
-          background: rgba(255, 255, 255, 0.75);
+          border-top: 2px solid rgba(0, 0, 0, 0.05);
+          padding: 20px 24px;
+          background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          gap: 12px;
+          gap: 14px;
           align-items: center;
           flex-shrink: 0;
         }
         
         .intelagent-chat-input textarea {
           flex-grow: 1;
-          padding: 10px 14px;
-          border: 2px solid rgba(0, 0, 0, 0.1);
-          border-radius: 12px;
-          font-size: 14px;
+          padding: 12px 16px;
+          border: 2px solid rgba(0, 0, 0, 0.08);
+          border-radius: 14px;
+          font-size: 15px;
           outline: none;
-          font-family: 'Inter', sans-serif;
-          background: rgba(255, 255, 255, 0.9);
+          font-family: 'Inter', -apple-system, sans-serif;
+          background: rgba(255, 255, 255, 0.95);
           resize: none;
-          height: 36px;
+          height: 42px;
           overflow: hidden;
-          line-height: 20px;
-          transition: border-color 0.2s, background 0.2s;
+          line-height: 22px;
+          transition: all 0.2s;
         }
         
         .intelagent-chat-input textarea:focus {
@@ -524,12 +526,13 @@ export async function GET(request: NextRequest) {
         
         .intelagent-typing-indicator {
           display: inline-block;
-          padding: 14px 20px;
-          background: rgba(243, 243, 243, 0.9);
-          border-radius: 18px;
-          border-bottom-left-radius: 6px;
-          margin: 12px 0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          padding: 16px 24px;
+          background: rgba(240, 240, 245, 0.95);
+          border-radius: 20px;
+          border-bottom-left-radius: 8px;
+          margin: 20px 0;
+          box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .intelagent-typing-indicator span {
@@ -776,6 +779,8 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/javascript',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
         'Access-Control-Allow-Origin': '*'
       }
     });
