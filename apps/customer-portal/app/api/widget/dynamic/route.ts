@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
       });
     } catch (error) {
       console.log('Knowledge files table not available:', error);
-      // Continue without files
     }
 
     // Get legacy custom knowledge
@@ -52,7 +51,7 @@ export async function GET(request: NextRequest) {
     try {
       customKnowledge = await prisma.custom_knowledge.findMany({
         where: { 
-          product_key: productKey,  // Try product_key first
+          product_key: productKey,
           is_active: true
         },
         select: {
@@ -62,7 +61,7 @@ export async function GET(request: NextRequest) {
       });
       
       // If no knowledge found with product_key, try license_key
-      if (customKnowledge.length === 0) {
+      if (customKnowledge.length === 0 && productKeyInfo.license_key) {
         customKnowledge = await prisma.custom_knowledge.findMany({
           where: { 
             license_key: productKeyInfo.license_key,
@@ -76,18 +75,15 @@ export async function GET(request: NextRequest) {
       }
     } catch (error) {
       console.log('Custom knowledge table not available:', error);
-      // Continue without custom knowledge
     }
 
     // Combine all knowledge
     const knowledgePieces: string[] = [];
     
-    // Add files
     for (const file of knowledgeFiles) {
       knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
     }
     
-    // Add legacy custom knowledge
     for (const k of customKnowledge) {
       if (k.knowledge_type !== 'file') {
         knowledgePieces.push(`[${k.knowledge_type}]\n${k.content}`);
@@ -96,42 +92,30 @@ export async function GET(request: NextRequest) {
     
     const combinedKnowledge = knowledgePieces.join('\n\n---\n\n');
 
-    // Get settings from metadata - handle nested structure
+    // Get settings from metadata
     const metadata = productKeyInfo.metadata as any;
-    // The structure is metadata.settings based on your config check
     const settings = metadata?.settings || {};
     
-    // Debug logging
-    console.log('[Widget Dynamic] Raw metadata:', metadata);
-    console.log('[Widget Dynamic] Extracted settings:', settings);
-    
-    // Simplified configuration - use the actual saved settings
     const config = {
       themeColor: settings.themeColor || '#0070f3',
       position: settings.position || 'bottom-right',
-      welcomeMessage: settings.welcomeMessage || 'Hello! How can I help you today?',
+      welcomeMessage: settings.welcomeMessage || 'How can I help you today?',
       responseStyle: settings.responseStyle || 'professional'
     };
-    
-    console.log('[Widget Dynamic] Final config for', productKey, ':', config);
 
-    // Generate the complete dynamic widget script matching static widget exactly
+    // Generate the widget script with EXACT styles from static widget
     const widgetScript = `
 (function() {
-  // Configuration for ${productKey} - v${Date.now()}
+  // Widget version: ${Date.now()}
   const WIDGET_CONFIG = ${JSON.stringify(config, null, 2)};
   const PRODUCT_KEY = '${productKey}';
   const CUSTOM_KNOWLEDGE = ${JSON.stringify(combinedKnowledge)};
   const HAS_KNOWLEDGE = ${combinedKnowledge.length > 0};
-  const WIDGET_VERSION = '${Date.now()}';
   
-  console.log('[IntelagentChat] Widget version:', WIDGET_VERSION);
   console.log('[IntelagentChat] Initializing with product key:', PRODUCT_KEY);
-  console.log('[IntelagentChat] Custom knowledge loaded:', HAS_KNOWLEDGE ? 'Yes (' + CUSTOM_KNOWLEDGE.length + ' chars)' : 'No');
 
   // Check if widget already exists
   if (document.getElementById('intelagent-chat-widget')) {
-    console.log('[IntelagentChat] Widget already exists, removing old instance');
     document.getElementById('intelagent-chat-widget').remove();
   }
 
@@ -146,7 +130,7 @@ export async function GET(request: NextRequest) {
   \`;
   document.body.appendChild(widgetContainer);
 
-  // Generate session ID
+  // Session management
   function getOrCreateSessionId() {
     const lastActivity = localStorage.getItem('intelagent_last_activity');
     const existingSessionId = localStorage.getItem('intelagent_session_id');
@@ -168,19 +152,16 @@ export async function GET(request: NextRequest) {
   let sessionId = getOrCreateSessionId();
   let chatHistory = loadChatHistory();
 
-  // Load chat history from localStorage
   function loadChatHistory() {
     const savedHistory = localStorage.getItem('intelagent_chat_history');
     return savedHistory ? JSON.parse(savedHistory) : [];
   }
 
-  // Save chat history to localStorage
   function saveChatHistory(messages) {
     localStorage.setItem('intelagent_chat_history', JSON.stringify(messages));
     localStorage.setItem('intelagent_last_activity', Date.now().toString());
   }
 
-  // Clear chat history and start new conversation
   function startNewConversation() {
     localStorage.removeItem('intelagent_chat_history');
     localStorage.removeItem('intelagent_session_id');
@@ -190,7 +171,7 @@ export async function GET(request: NextRequest) {
     renderMessages();
   }
 
-  // Initialize widget HTML with exact styles from static widget
+  // Initialize widget with EXACT static widget styles
   function initWidget() {
     widgetContainer.innerHTML = \`
       <style>
@@ -202,20 +183,23 @@ export async function GET(request: NextRequest) {
           padding: 0;
         }
         
+        /* EXACT STYLES FROM STATIC WIDGET */
         .intelagent-chat-button {
           position: fixed;
-          bottom: 24px;
-          \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 24px;' : 'right: 24px;'}
-          background-color: \${WIDGET_CONFIG.themeColor};
-          border: 2px solid rgba(255, 255, 255, 0.9);
+          bottom: 28px;
+          \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
+          background-color: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(12px) saturate(150%);
+          -webkit-backdrop-filter: blur(12px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.4);
           border-radius: 50%;
-          width: 60px;
-          height: 60px;
+          width: 68px;
+          height: 68px;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
           z-index: 1000000;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -226,35 +210,29 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-button svg {
-          width: 28px;
-          height: 28px;
-          fill: white;
+          width: 30px;
+          height: 30px;
+          fill: #666;
         }
         
         .intelagent-chat-box {
           position: fixed;
-          bottom: 110px;
-          \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 24px;' : 'right: 24px;'}
-          width: 360px;
-          height: 520px;
-          max-height: calc(100vh - 140px);
-          background: rgba(255, 255, 255, 0.92);
-          backdrop-filter: blur(20px) saturate(150%);
-          -webkit-backdrop-filter: blur(20px) saturate(150%);
-          border: 2px solid rgba(0, 0, 0, 0.08);
-          border-radius: 18px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+          bottom: 120px;
+          \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 28px;' : 'right: 28px;'}
+          width: 380px;
+          max-height: 600px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(24px) saturate(150%);
+          -webkit-backdrop-filter: blur(24px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 20px;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
           display: none;
           flex-direction: column;
           overflow: hidden;
           z-index: 999999;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-family: 'Inter', sans-serif;
           transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          box-sizing: border-box;
-        }
-        
-        .intelagent-chat-box.open {
-          display: flex;
           animation: smoothSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
@@ -270,18 +248,17 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-header {
-          background-color: rgba(255, 255, 255, 0.9);
+          background-color: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          padding: 18px 20px;
-          font-size: 17px;
+          padding: 20px 24px;
+          font-size: 20px;
           color: #1a1a1a;
           font-weight: 600;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          border-bottom: none;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          flex-shrink: 0;
         }
         
         .intelagent-close-button {
@@ -330,17 +307,14 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-chat-messages {
-          flex: 1 1 auto;
-          padding: 20px;
+          flex-grow: 1;
+          padding: 24px;
           overflow-y: auto;
-          overflow-x: hidden;
-          font-size: 14px;
+          font-size: 16px;
           color: #333;
           line-height: 1.6;
           scroll-behavior: smooth;
           background: transparent;
-          min-height: 0;
-          box-sizing: border-box;
         }
         
         .intelagent-chat-messages::-webkit-scrollbar {
@@ -362,13 +336,10 @@ export async function GET(request: NextRequest) {
         }
         
         .intelagent-message {
-          margin: 12px 0;
-          padding: 2px 0;
+          margin: 16px 0;
           display: flex;
           align-items: flex-start;
           animation: fadeInUp 0.3s ease-out;
-          width: 100%;
-          box-sizing: border-box;
         }
         
         @keyframes fadeInUp {
@@ -395,26 +366,19 @@ export async function GET(request: NextRequest) {
           padding: 12px 18px;
           border-radius: 18px;
           word-wrap: break-word;
-          word-break: break-word;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-          line-height: 1.6;
-          font-size: 14px;
-          letter-spacing: 0.01em;
-          min-width: 60px;
-          box-sizing: border-box;
         }
         
         .intelagent-message.user .intelagent-message-content {
-          background: linear-gradient(135deg, \${WIDGET_CONFIG.themeColor} 0%, \${WIDGET_CONFIG.themeColor}dd 100%);
+          background: linear-gradient(135deg, rgba(59, 59, 59, 0.95) 0%, rgba(41, 41, 41, 0.95) 100%);
           color: white;
-          border-bottom-right-radius: 8px;
+          border-bottom-right-radius: 6px;
         }
         
         .intelagent-message.bot .intelagent-message-content {
-          background: rgba(240, 240, 245, 0.95);
+          background: rgba(243, 243, 243, 0.9);
           color: #1a1a1a;
-          border-bottom-left-radius: 8px;
-          border: 1px solid rgba(0, 0, 0, 0.05);
+          border-bottom-left-radius: 6px;
         }
         
         .intelagent-message.bot .intelagent-message-content a {
@@ -439,39 +403,34 @@ export async function GET(request: NextRequest) {
         
         .intelagent-chat-input {
           display: flex;
-          border-top: 1px solid rgba(0, 0, 0, 0.05);
-          padding: 16px 20px;
-          background: rgba(255, 255, 255, 0.9);
+          border-top: none;
+          padding: 12px 16px;
+          background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          gap: 12px;
+          gap: 10px;
           align-items: center;
-          flex-shrink: 0;
         }
         
         .intelagent-chat-input textarea {
           flex-grow: 1;
-          padding: 10px 14px;
-          border: 2px solid rgba(0, 0, 0, 0.08);
-          border-radius: 12px;
+          padding: 6px 12px;
+          border: 1px solid rgba(0, 0, 0, 0.2);
+          border-radius: 8px;
           font-size: 14px;
           outline: none;
-          font-family: 'Inter', -apple-system, sans-serif;
-          background: rgba(255, 255, 255, 0.95);
+          font-family: 'Inter', sans-serif;
+          background: white;
           resize: none;
-          min-height: 38px;
-          max-height: 100px;
-          overflow-y: auto;
-          line-height: 1.4;
-          letter-spacing: 0.01em;
-          transition: all 0.2s;
-          box-sizing: border-box;
+          height: 32px;
+          overflow: hidden;
+          line-height: 20px;
+          transition: border-color 0.2s, background 0.2s;
         }
         
         .intelagent-chat-input textarea:focus {
-          border-color: \${WIDGET_CONFIG.themeColor};
+          border-color: rgba(0, 0, 0, 0.4);
           background: white;
-          box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
         }
         
         .intelagent-send-button {
@@ -517,32 +476,28 @@ export async function GET(request: NextRequest) {
           background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border-top: 1px solid rgba(0, 0, 0, 0.03);
-          line-height: 1.3;
-          flex-shrink: 0;
+          border-top: none;
+          line-height: 1.4;
         }
         
         .intelagent-chat-footer {
-          font-size: 10px;
+          font-size: 11px;
           text-align: center;
           color: #999;
-          padding: 10px 16px;
+          padding: 10px;
           background: rgba(255, 255, 255, 0.75);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border-top: 1px solid rgba(0, 0, 0, 0.03);
-          flex-shrink: 0;
         }
         
         .intelagent-typing-indicator {
           display: inline-block;
           padding: 12px 18px;
-          background: rgba(240, 240, 245, 0.95);
+          background: rgba(243, 243, 243, 0.9);
           border-radius: 18px;
-          border-bottom-left-radius: 8px;
-          margin: 12px 0;
+          border-bottom-left-radius: 6px;
+          margin: 16px 0;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-          border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .intelagent-typing-indicator span {
@@ -585,17 +540,14 @@ export async function GET(request: NextRequest) {
         
         @media (max-width: 480px) {
           .intelagent-chat-box {
-            width: calc(100vw - 24px);
-            \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 12px;' : 'right: 12px;'}
-            bottom: 90px;
-            height: 65vh;
-            max-height: 65vh;
+            width: calc(100vw - 32px);
+            \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 16px;' : 'right: 16px;'}
+            bottom: 100px;
+            max-height: 70vh;
           }
           .intelagent-chat-button {
             \${WIDGET_CONFIG.position === 'bottom-left' ? 'left: 16px;' : 'right: 16px;'}
             bottom: 16px;
-            width: 56px;
-            height: 56px;
           }
         }
       </style>
@@ -616,7 +568,7 @@ export async function GET(request: NextRequest) {
         </div>
         <div class="intelagent-chat-messages" id="intelagent-messages"></div>
         <div class="intelagent-chat-input">
-          <textarea id="intelagent-input" placeholder="Type your message..." rows="1" style="min-height: 38px;"></textarea>
+          <textarea id="intelagent-input" placeholder="Type your message..." rows="1"></textarea>
           <button class="intelagent-send-button" id="intelagent-send" aria-label="Send message">
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
@@ -687,7 +639,7 @@ export async function GET(request: NextRequest) {
     
     // Auto-resize textarea
     messageInput.addEventListener('input', function() {
-      this.style.height = 'auto';
+      this.style.height = '32px';
       this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
     
@@ -710,7 +662,7 @@ export async function GET(request: NextRequest) {
       
       // Clear input
       messageInput.value = '';
-      messageInput.style.height = '38px';
+      messageInput.style.height = '32px';
       
       // Show typing indicator
       const typingDiv = document.createElement('div');
