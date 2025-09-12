@@ -106,6 +106,9 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
      - Created clean card-based layout with type badges (PDF, TXT, Text Entry)
      - Fixed PDF detection to show actual filenames instead of "Custom Knowledge"
      - Added proper file type icons and truncation for long filenames
+     - **Consolidated file management** - Integrated uploaded files list directly into upload section
+     - **Removed duplicate Knowledge Library** - Streamlined UI by eliminating redundant section
+     - **Renamed to Knowledge Base** - Clearer naming for custom knowledge entries section
    - **Integration Page Improvements**:
      - All code snippets now have copy buttons with consistent styling
      - Fixed scrolling issues - code fits on one line without horizontal scroll

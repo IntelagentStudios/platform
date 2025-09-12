@@ -1111,6 +1111,60 @@ function ChatbotDashboardContent() {
                     </label>
                   </div>
                   
+                  {/* Uploaded Files List */}
+                  {knowledgeFiles.length > 0 && (
+                    <div className="mt-4">
+                      <div className="text-xs font-medium mb-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        Uploaded Files ({knowledgeFiles.length})
+                      </div>
+                      <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                        {knowledgeFiles.map((file) => (
+                          <div 
+                            key={file.id}
+                            className="flex items-center justify-between p-2 rounded"
+                            style={{ 
+                              backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                              border: '1px solid rgba(169, 189, 203, 0.1)'
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              {file.filename?.endsWith('.pdf') ? (
+                                <File className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                              ) : (
+                                <FileText className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                              )}
+                              <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                                {file.filename.length > 25 ? `${file.filename.substring(0, 25)}...` : file.filename}
+                              </span>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                if (confirm(`Delete "${file.filename}"?`)) {
+                                  try {
+                                    const res = await fetch(`/api/products/chatbot/knowledge-files?id=${file.id}`, {
+                                      method: 'DELETE',
+                                      credentials: 'include'
+                                    });
+                                    if (res.ok) {
+                                      await loadCustomKnowledge();
+                                    }
+                                  } catch (error) {
+                                    console.error('Delete error:', error);
+                                  }
+                                }
+                              }}
+                              className="p-1 rounded hover:opacity-80"
+                              style={{ color: 'rgba(169, 189, 203, 0.4)' }}
+                              title="Delete"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Quick Add Section */}
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1147,148 +1201,16 @@ function ChatbotDashboardContent() {
                   </div>
                 </div>
               </div>
-              
-              {/* Files List Section */}
-              <div className="rounded-lg shadow-sm border p-6" 
-                   style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <div className="mb-6 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Knowledge Library
-                    </h2>
-                    <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                      {knowledgeFiles.length} file{knowledgeFiles.length !== 1 ? 's' : ''} uploaded
-                    </p>
-                  </div>
-                  <button 
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/api/embeddings/regenerate', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            productKey: productKey || siteKey,
-                            forceRegenerate: true
-                          })
-                        });
-                        if (res.ok) {
-                          alert('AI memory regenerated successfully!');
-                        }
-                      } catch (error) {
-                        console.error('Error:', error);
-                      }
-                    }}
-                    className="px-3 py-1.5 rounded-lg flex items-center gap-2 hover:opacity-80 text-sm"
-                    style={{ backgroundColor: 'rgb(144, 238, 144)', color: 'rgb(48, 54, 54)' }}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Sync AI Memory
-                  </button>
-                </div>
-                
-                <div className="space-y-2">
-                  {knowledgeFiles.length === 0 ? (
-                    <div className="text-center py-12">
-                      <BookOpen className="w-12 h-12 mx-auto mb-3" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
-                      <p style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                        No knowledge files uploaded yet
-                      </p>
-                      <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                        Upload files to teach your chatbot about your business
-                      </p>
-                    </div>
-                  ) : (
-                    knowledgeFiles.map((file) => (
-                      <div 
-                        key={file.id}
-                        className="p-4 rounded-lg"
-                        style={{ 
-                          backgroundColor: 'rgba(48, 54, 54, 0.3)',
-                          border: '1px solid rgba(169, 189, 203, 0.1)'
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                                 style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
-                              {file.file_type?.includes('text') || file.filename?.endsWith('.txt') ? (
-                                <FileText className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                              ) : file.filename?.endsWith('.md') ? (
-                                <BookOpen className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                              ) : (
-                                <File className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                              )}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                  {file.filename.length > 30 ? `${file.filename.substring(0, 30)}...` : file.filename}
-                                </span>
-                                <span className="text-xs px-2 py-0.5 rounded"
-                                      style={{ 
-                                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                                        color: 'rgba(169, 189, 203, 0.8)'
-                                      }}>
-                                  {file.filename?.endsWith('.pdf') ? 'PDF' : 
-                                   file.filename?.endsWith('.txt') ? 'TXT' : 
-                                   file.filename?.endsWith('.md') ? 'Markdown' :
-                                   file.filename?.endsWith('.doc') || file.filename?.endsWith('.docx') ? 'Word' :
-                                   file.filename?.endsWith('.json') ? 'JSON' :
-                                   'File'}
-                                </span>
-                              </div>
-                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                                {file.file_size ? `${(file.file_size / 1024).toFixed(1)} KB • ` : ''}
-                                Added {new Date(file.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={async () => {
-                              if (confirm(`Delete "${file.filename}"?`)) {
-                                try {
-                                  const res = await fetch(`/api/products/chatbot/knowledge-files?id=${file.id}`, {
-                                    method: 'DELETE',
-                                    credentials: 'include'
-                                  });
-                                  if (res.ok) {
-                                    await loadCustomKnowledge();
-                                  }
-                                } catch (error) {
-                                  console.error('Delete error:', error);
-                                }
-                              }
-                            }}
-                            className="p-1.5 rounded hover:opacity-80"
-                            style={{ color: 'rgba(169, 189, 203, 0.6)' }}
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                
-                {knowledgeFiles.length > 0 && (
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                      Files are processed and indexed for AI retrieval. Click "Sync AI Memory" after making changes.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Custom Knowledge Entries Section */}
-            <div className="mt-6 rounded-lg shadow-sm border p-6" 
+            {/* Knowledge Base Section */}
+            <div className="rounded-lg shadow-sm border p-6" 
                  style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
               <div className="mb-6">
                 <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Custom Knowledge Entries
+                  Knowledge Base
                 </h2>
                 <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                  {knowledgeEntries.length} custom knowledge entr{knowledgeEntries.length !== 1 ? 'ies' : 'y'}
+                  {knowledgeEntries.length} knowledge entr{knowledgeEntries.length !== 1 ? 'ies' : 'y'}
                 </p>
               </div>
               
