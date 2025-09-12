@@ -30,28 +30,54 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get knowledge files from new table
-    const knowledgeFiles = await prisma.knowledge_files.findMany({
-      where: { 
-        product_key: productKey
-      },
-      select: {
-        filename: true,
-        content: true
-      }
-    });
+    // Get knowledge files from new table (if it exists)
+    let knowledgeFiles = [];
+    try {
+      knowledgeFiles = await prisma.knowledge_files.findMany({
+        where: { 
+          product_key: productKey
+        },
+        select: {
+          filename: true,
+          content: true
+        }
+      });
+    } catch (error) {
+      console.log('Knowledge files table not available:', error);
+      // Continue without files
+    }
 
     // Get legacy custom knowledge
-    const customKnowledge = await prisma.custom_knowledge.findMany({
-      where: { 
-        license_key: productKeyInfo.license_key,
-        is_active: true
-      },
-      select: {
-        content: true,
-        knowledge_type: true
+    let customKnowledge = [];
+    try {
+      customKnowledge = await prisma.custom_knowledge.findMany({
+        where: { 
+          product_key: productKey,  // Try product_key first
+          is_active: true
+        },
+        select: {
+          content: true,
+          knowledge_type: true
+        }
+      });
+      
+      // If no knowledge found with product_key, try license_key
+      if (customKnowledge.length === 0) {
+        customKnowledge = await prisma.custom_knowledge.findMany({
+          where: { 
+            license_key: productKeyInfo.license_key,
+            is_active: true
+          },
+          select: {
+            content: true,
+            knowledge_type: true
+          }
+        });
       }
-    });
+    } catch (error) {
+      console.log('Custom knowledge table not available:', error);
+      // Continue without custom knowledge
+    }
 
     // Combine all knowledge
     const knowledgePieces: string[] = [];
