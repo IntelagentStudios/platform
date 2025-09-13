@@ -65,12 +65,11 @@ export async function GET(request: NextRequest) {
       config: {
         // Single theme color (backwards compatible)
         themeColor: settings.themeColor || settings.primaryColor || '#0070f3',
-        position: settings.position || 'bottom-right',
         welcomeMessage: settings.welcomeMessage || "Hello! How can I help you today?",
         responseStyle: settings.responseStyle || 'professional',
         showWelcomeMessage: settings.showWelcomeMessage !== false,
-        playNotificationSound: settings.playNotificationSound !== false,
         collectEmail: settings.collectEmail || false,
+        autoReopenOnResponse: settings.autoReopenOnResponse !== false,
         
         // Custom knowledge for AI context
         customKnowledge: customKnowledge ? {
@@ -94,9 +93,9 @@ export async function GET(request: NextRequest) {
       error: 'Failed to fetch configuration',
       config: {
         themeColor: '#0070f3',
-        position: 'bottom-right',
         welcomeMessage: 'Hello! How can I help you today?',
-        responseStyle: 'professional'
+        responseStyle: 'professional',
+        autoReopenOnResponse: true
       }
     }, { 
       status: 500,

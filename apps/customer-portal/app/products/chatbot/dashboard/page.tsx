@@ -106,21 +106,10 @@ function ChatbotDashboardContent() {
   const [settings, setSettings] = useState({
     welcomeMessage: "Hello! How can I help you today?",
     themeColor: "#0070f3",
-    position: "bottom-right",
-    playNotificationSound: true,
     showWelcomeMessage: true,
     collectEmail: false,
     responseStyle: "professional",
-    // Advanced customization
-    widgetSize: "medium",
-    fontSize: "medium",
-    borderRadius: "rounded",
-    animationStyle: "smooth",
-    widgetOpacity: 95,
-    textContrast: "normal",
-    showTypingIndicator: true,
-    autoOpen: false,
-    autoOpenDelay: 5
+    autoReopenOnResponse: true
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
@@ -225,12 +214,11 @@ function ChatbotDashboardContent() {
       // Map to simplified settings format
       const simplifiedSettings = {
         themeColor: settings.themeColor,
-        position: settings.position,
         welcomeMessage: settings.welcomeMessage,
         responseStyle: settings.responseStyle,
         showWelcomeMessage: settings.showWelcomeMessage,
-        playNotificationSound: settings.playNotificationSound,
-        collectEmail: settings.collectEmail
+        collectEmail: settings.collectEmail,
+        autoReopenOnResponse: settings.autoReopenOnResponse
       };
       
       const key = productKey || siteKey;
@@ -1850,198 +1838,21 @@ Content-Type: application/json
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                     Widget Appearance
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Theme Color
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={settings.themeColor}
-                          onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
-                          className="h-12 w-24 rounded cursor-pointer"
-                          style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
-                        />
-                        <span style={{ color: 'rgba(229, 227, 220, 0.7)', fontSize: '13px' }}>
-                          Applied to header, buttons & user messages
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Widget Position
-                      </label>
-                      <select 
-                        value={settings.position}
-                        onChange={(e) => setSettings(prev => ({ ...prev, position: e.target.value }))}
-                        className="w-full px-3 py-2 rounded-lg" 
-                        style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                      >
-                        <option value="bottom-right">Bottom Right</option>
-                        <option value="bottom-left">Bottom Left</option>
-                        <option value="top-right">Top Right</option>
-                        <option value="top-left">Top Left</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {/* Advanced Appearance Options */}
-                  <div className="mt-6 pt-6 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                    <h4 className="text-md font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Advanced Customization
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Widget Size
-                        </label>
-                        <select 
-                          value={settings.widgetSize || 'medium'}
-                          onChange={(e) => setSettings(prev => ({ ...prev, widgetSize: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg" 
-                          style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="small">Small (350px × 500px)</option>
-                          <option value="medium">Medium (400px × 600px)</option>
-                          <option value="large">Large (450px × 700px)</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Font Size
-                        </label>
-                        <select 
-                          value={settings.fontSize || 'medium'}
-                          onChange={(e) => setSettings(prev => ({ ...prev, fontSize: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg" 
-                          style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="small">Small</option>
-                          <option value="medium">Medium</option>
-                          <option value="large">Large</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Border Radius
-                        </label>
-                        <select 
-                          value={settings.borderRadius || 'rounded'}
-                          onChange={(e) => setSettings(prev => ({ ...prev, borderRadius: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg" 
-                          style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="square">Square (0px)</option>
-                          <option value="slight">Slightly Rounded (4px)</option>
-                          <option value="rounded">Rounded (12px)</option>
-                          <option value="very-rounded">Very Rounded (20px)</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Animation Style
-                        </label>
-                        <select 
-                          value={settings.animationStyle || 'smooth'}
-                          onChange={(e) => setSettings(prev => ({ ...prev, animationStyle: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg" 
-                          style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="none">No Animations</option>
-                          <option value="subtle">Subtle</option>
-                          <option value="smooth">Smooth</option>
-                          <option value="bouncy">Bouncy</option>
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Widget Opacity
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="70"
-                            max="100"
-                            value={settings.widgetOpacity || 95}
-                            onChange={(e) => setSettings(prev => ({ ...prev, widgetOpacity: parseInt(e.target.value) }))}
-                            className="flex-1"
-                            style={{ accentColor: settings.themeColor }}
-                          />
-                          <span className="text-sm w-12 text-right" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                            {settings.widgetOpacity || 95}%
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Text Contrast
-                        </label>
-                        <select 
-                          value={settings.textContrast || 'normal'}
-                          onChange={(e) => setSettings(prev => ({ ...prev, textContrast: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg" 
-                          style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.2)', color: 'rgb(229, 227, 220)' }}
-                        >
-                          <option value="low">Low Contrast</option>
-                          <option value="normal">Normal</option>
-                          <option value="high">High Contrast</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={settings.showTypingIndicator !== false}
-                          onChange={(e) => setSettings(prev => ({ ...prev, showTypingIndicator: e.target.checked }))}
-                          className="w-4 h-4 rounded"
-                          style={{ accentColor: 'rgb(169, 189, 203)' }}
-                        />
-                        <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                          Show typing indicator when AI is responding
-                        </span>
-                      </label>
-                      
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={settings.autoOpen || false}
-                          onChange={(e) => setSettings(prev => ({ ...prev, autoOpen: e.target.checked }))}
-                          className="w-4 h-4 rounded"
-                          style={{ accentColor: 'rgb(169, 189, 203)' }}
-                        />
-                        <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                          Auto-open widget after delay
-                        </span>
-                      </label>
-                      
-                      {settings.autoOpen && (
-                        <div className="ml-7">
-                          <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                            Auto-open delay (seconds)
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="60"
-                            value={settings.autoOpenDelay || 5}
-                            onChange={(e) => setSettings(prev => ({ ...prev, autoOpenDelay: parseInt(e.target.value) }))}
-                            className="w-24 px-3 py-1 rounded-lg"
-                            style={{
-                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                              border: '1px solid rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          />
-                        </div>
-                      )}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                      Theme Color
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={settings.themeColor}
+                        onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
+                        className="h-12 w-24 rounded cursor-pointer"
+                        style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                      />
+                      <span style={{ color: 'rgba(229, 227, 220, 0.7)', fontSize: '13px' }}>
+                        Applied to header, buttons & user messages
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -2064,21 +1875,18 @@ Content-Type: application/json
                         Show welcome message on first visit
                       </span>
                     </label>
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={settings.playNotificationSound}
-                          onChange={(e) => setSettings(prev => ({ ...prev, playNotificationSound: e.target.checked }))}
-                          className="w-4 h-4 rounded"
-                          style={{ accentColor: 'rgb(169, 189, 203)' }}
-                        />
-                        <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                          Play notification sound for customers when they receive a message
-                        </span>
-                        <AlertCircle className="w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
-                      </label>
-                    </div>
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={settings.autoReopenOnResponse}
+                        onChange={(e) => setSettings(prev => ({ ...prev, autoReopenOnResponse: e.target.checked }))}
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: 'rgb(169, 189, 203)' }}
+                      />
+                      <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                        Auto-reopen widget when AI responds
+                      </span>
+                    </label>
                     <label className="flex items-center gap-3">
                       <input
                         type="checkbox"
