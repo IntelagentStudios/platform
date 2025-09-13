@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
     'width: 400px; height: 520px; max-height: calc(100vh - 150px);',
     'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
     '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
-    'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
+    'border-radius: 20px; display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; }',
     '.intelagent-chat-box.open { display: flex; }',
     // Header with theme color
@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 28px;
+        font-size: 32px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
@@ -474,7 +474,7 @@ export async function GET(request: NextRequest) {
         font-size: 11px;
         text-align: center;
         color: white;
-        padding: 10px !important;
+        padding: 20px 24px !important;
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
@@ -573,7 +573,7 @@ export async function GET(request: NextRequest) {
       headerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
     }
     if (footerElement) {
-      footerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
+      footerElement.style.setProperty('color', WIDGET_CONFIG.titleColor, 'important');
     }
   }
   
