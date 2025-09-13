@@ -193,6 +193,8 @@ function getDefaultSettings() {
     welcomeMessage: "Hello! How can I help you today?",
     themeColor: "#0070f3",
     primaryColor: "#0070f3", // Keep for backwards compatibility
+    widgetTitle: "Chat Assistant",
+    titleColor: "#ffffff",
     responseStyle: "professional",
     showWelcomeMessage: true,
     collectEmail: false,

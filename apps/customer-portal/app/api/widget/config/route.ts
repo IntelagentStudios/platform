@@ -65,6 +65,8 @@ export async function GET(request: NextRequest) {
       config: {
         // Single theme color (backwards compatible)
         themeColor: settings.themeColor || settings.primaryColor || '#0070f3',
+        widgetTitle: settings.widgetTitle || 'Chat Assistant',
+        titleColor: settings.titleColor || '#ffffff',
         welcomeMessage: settings.welcomeMessage || "Hello! How can I help you today?",
         responseStyle: settings.responseStyle || 'professional',
         showWelcomeMessage: settings.showWelcomeMessage !== false,

@@ -106,6 +106,8 @@ function ChatbotDashboardContent() {
   const [settings, setSettings] = useState({
     welcomeMessage: "Hello! How can I help you today?",
     themeColor: "#0070f3",
+    widgetTitle: "Chat Assistant",
+    titleColor: "#ffffff",
     showWelcomeMessage: true,
     collectEmail: false,
     responseStyle: "professional",
@@ -214,6 +216,8 @@ function ChatbotDashboardContent() {
       // Map to simplified settings format
       const simplifiedSettings = {
         themeColor: settings.themeColor,
+        widgetTitle: settings.widgetTitle,
+        titleColor: settings.titleColor,
         welcomeMessage: settings.welcomeMessage,
         responseStyle: settings.responseStyle,
         showWelcomeMessage: settings.showWelcomeMessage,
@@ -1838,21 +1842,61 @@ Content-Type: application/json
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                     Widget Appearance
                   </h3>
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                      Theme Color
-                    </label>
-                    <div className="flex items-center gap-3">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Widget Title
+                      </label>
                       <input
-                        type="color"
-                        value={settings.themeColor}
-                        onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
-                        className="h-12 w-24 rounded cursor-pointer"
-                        style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                        type="text"
+                        value={settings.widgetTitle}
+                        onChange={(e) => setSettings(prev => ({ ...prev, widgetTitle: e.target.value }))}
+                        placeholder="e.g., Chat Assistant, Support, Help"
+                        className="w-full px-3 py-2 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
                       />
-                      <span style={{ color: 'rgba(229, 227, 220, 0.7)', fontSize: '13px' }}>
-                        Applied to header, buttons & user messages
-                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Theme Color
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={settings.themeColor}
+                            onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
+                            className="h-12 w-24 rounded cursor-pointer"
+                            style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                          />
+                          <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
+                            Header & buttons
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Title Color
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="color"
+                            value={settings.titleColor}
+                            onChange={(e) => setSettings(prev => ({ ...prev, titleColor: e.target.value }))}
+                            className="h-12 w-24 rounded cursor-pointer"
+                            style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                          />
+                          <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
+                            Title text
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

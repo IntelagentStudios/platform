@@ -154,8 +154,8 @@ export async function GET(request: NextRequest) {
   }
   
   styleElement.textContent = [
-    '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");',
-    '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; }',
+    '@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");',
+    '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }',
     '.intelagent-chat-button { position: fixed; ' + buttonPosition + ' ' + buttonSide,
     'background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px) saturate(150%);',
     '-webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.4);',
@@ -168,12 +168,13 @@ export async function GET(request: NextRequest) {
     'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
     '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
     'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
-    'flex-direction: column; overflow: hidden; z-index: 999999; font-family: "Inter", sans-serif; }',
+    'flex-direction: column; overflow: hidden; z-index: 999999; }',
     '.intelagent-chat-box.open { display: flex; }',
     // Header with theme color
     '.intelagent-chat-header {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
-    'color: white !important; }',
+    'color: ' + (WIDGET_CONFIG.titleColor || '#ffffff') + ' !important;',
+    'font-weight: 600 !important; font-size: 16px !important; }',
     // User messages with theme color
     '.intelagent-message.user .intelagent-message-content {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'ee 0%, ' + userMsgColor + 'dd 100%) !important;',
@@ -250,8 +251,9 @@ export async function GET(request: NextRequest) {
         background-color: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        padding: 30px 35px !important; /* INCREASED FROM 20px 24px */
-        font-size: 20px;
+        padding: 20px 24px !important;
+        font-size: 17px;
+        letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
         border-bottom: none;
@@ -306,11 +308,11 @@ export async function GET(request: NextRequest) {
       
       .intelagent-chat-messages {
         flex: 1 1 auto;
-        padding: 35px !important; /* INCREASED FROM 24px */
+        padding: 20px !important;
         overflow-y: auto;
-        font-size: 16px;
+        font-size: 14.5px;
         color: #333;
-        line-height: 1.6;
+        line-height: 1.5;
         scroll-behavior: smooth;
         background: transparent;
         min-height: 0;
@@ -358,10 +360,13 @@ export async function GET(request: NextRequest) {
       
       .intelagent-message-content {
         max-width: 75%;
-        padding: 18px 25px !important; /* INCREASED FROM 12px 18px */
+        padding: 14px 20px !important;
         border-radius: 18px;
         word-wrap: break-word;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        font-size: 14.5px;
+        line-height: 1.5;
+        letter-spacing: -0.01em;
       }
       
       /* User message colors are set dynamically above */
@@ -506,7 +511,7 @@ export async function GET(request: NextRequest) {
 
     <div class="intelagent-chat-box" id="chatBox">
       <div class="intelagent-chat-header">
-        <span>Chat Assistant</span>
+        <span>' + (WIDGET_CONFIG.widgetTitle || 'Chat Assistant') + '</span>
         <div style="display: flex; gap: 6px;">
           <button class="intelagent-new-button" aria-label="New conversation">↺</button>
           <button class="intelagent-close-button" aria-label="Close chat">⨯</button>
