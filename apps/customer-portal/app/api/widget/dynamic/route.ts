@@ -81,8 +81,15 @@ export async function GET(request: NextRequest) {
   // Fetch configuration dynamically
   async function loadWidgetConfig() {
     try {
+      // Use the same origin as the widget script for config API
+      const scriptTag = document.querySelector('script[src*="/api/widget/dynamic"]');
+      const widgetOrigin = scriptTag ? new URL(scriptTag.src).origin : 'https://dashboard.intelagentstudios.com';
+      const configUrl = widgetOrigin + '/api/widget/config?key=' + PRODUCT_KEY;
+      
       console.log('[IntelagentChat] Fetching config for key:', PRODUCT_KEY);
-      const response = await fetch('https://dashboard.intelagentstudios.com/api/widget/config?key=' + PRODUCT_KEY);
+      console.log('[IntelagentChat] Config URL:', configUrl);
+      
+      const response = await fetch(configUrl);
       const data = await response.json();
       console.log('[IntelagentChat] Config response:', data);
       
@@ -94,17 +101,21 @@ export async function GET(request: NextRequest) {
       console.log('[IntelagentChat] No config found, using defaults');
       return {
         themeColor: '#0070f3',
-        position: 'bottom-right',
+        widgetTitle: 'Chat Assistant',
+        titleColor: '#ffffff',
         welcomeMessage: 'How can I help you today?',
-        responseStyle: 'professional'
+        responseStyle: 'professional',
+        autoReopenOnResponse: true
       };
     } catch (error) {
       console.error('[IntelagentChat] Failed to load widget config:', error);
       return {
         themeColor: '#0070f3',
-        position: 'bottom-right',
+        widgetTitle: 'Chat Assistant',
+        titleColor: '#ffffff',
         welcomeMessage: 'How can I help you today?',
-        responseStyle: 'professional'
+        responseStyle: 'professional',
+        autoReopenOnResponse: true
       };
     }
   }
@@ -134,6 +145,10 @@ export async function GET(request: NextRequest) {
   
   // Ensure color is in proper format
   let userMsgColor = WIDGET_CONFIG.themeColor || '#0070f3';
+  console.log('[IntelagentChat] Theme color from config:', WIDGET_CONFIG.themeColor);
+  console.log('[IntelagentChat] Widget title from config:', WIDGET_CONFIG.widgetTitle);
+  console.log('[IntelagentChat] Title color from config:', WIDGET_CONFIG.titleColor);
+  
   // Remove # if present and ensure it's 6 characters
   userMsgColor = userMsgColor.replace('#', '');
   if (userMsgColor.length === 3) {
@@ -584,7 +599,11 @@ export async function GET(request: NextRequest) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
     try {
-      const response = await fetch('https://dashboard.intelagentstudios.com/api/chatbot-skills/modular', {
+      // Use the same origin for API calls
+      const scriptTag = document.querySelector('script[src*="/api/widget/dynamic"]');
+      const apiOrigin = scriptTag ? new URL(scriptTag.src).origin : 'https://dashboard.intelagentstudios.com';
+      
+      const response = await fetch(apiOrigin + '/api/chatbot-skills/modular', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
