@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 36px;
+        font-size: 42px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
         background: none;
         border: none;
         font-size: 20px;
-        color: #888;
+        color: #1a1a1a;
         cursor: pointer;
         padding: 0;
         width: 30px;
@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
       .intelagent-new-button {
         background: none;
         border: none;
-        color: #888;
+        color: #1a1a1a;
         font-size: 18px;
         cursor: pointer;
         padding: 0;
@@ -458,7 +458,7 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-ai-disclaimer {
-        font-size: 10px;
+        font-size: 13px;
         text-align: center;
         color: #888;
         padding: 8px 16px !important;
@@ -484,11 +484,12 @@ export async function GET(request: NextRequest) {
       .intelagent-typing-indicator {
         display: inline-block;
         padding: 18px 25px !important; /* INCREASED FROM 12px 18px */
-        background: rgba(243, 243, 243, 0.9);
+        background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
         border-radius: 18px;
         border-bottom-left-radius: 6px;
         margin: 25px 0 !important; /* INCREASED FROM 16px */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.08);
       }
       
       .intelagent-typing-indicator span {
@@ -568,12 +569,20 @@ export async function GET(request: NextRequest) {
   if (WIDGET_CONFIG.titleColor) {
     const headerElement = document.querySelector('.intelagent-chat-header');
     const footerElement = document.querySelector('.intelagent-chat-footer');
+    const closeButton = document.querySelector('.intelagent-close-button');
+    const newButton = document.querySelector('.intelagent-new-button');
     console.log('[IntelagentChat] Applying title color:', WIDGET_CONFIG.titleColor, 'to header:', !!headerElement, 'and footer:', !!footerElement);
     if (headerElement) {
       headerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
     }
     if (footerElement) {
       footerElement.style.setProperty('color', WIDGET_CONFIG.titleColor, 'important');
+    }
+    if (closeButton) {
+      closeButton.style.setProperty('color', WIDGET_CONFIG.titleColor, 'important');
+    }
+    if (newButton) {
+      newButton.style.setProperty('color', WIDGET_CONFIG.titleColor, 'important');
     }
   }
   
@@ -646,7 +655,7 @@ export async function GET(request: NextRequest) {
       botDiv.className = 'intelagent-message bot';
       botDiv.innerHTML = '<div class="intelagent-message-content">' + (data.response || 'Sorry, I could not process your request.') + '</div>';
       messagesContainer.appendChild(botDiv);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Don't auto-scroll to bottom - let user see start of message
       
       // Auto-reopen widget when bot responds (if enabled)
       if (WIDGET_CONFIG.autoReopenOnResponse && !chatBox.classList.contains('open')) {
