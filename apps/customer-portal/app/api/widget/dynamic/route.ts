@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
     const widgetScript = `
 (function() {
   console.log('[IntelagentChat] Loading version ${version}');
+  console.log('[IntelagentChat] Build timestamp: ${new Date().toISOString()}');
   const PRODUCT_KEY = '${productKey}';
   
   // Fetch configuration dynamically
@@ -148,6 +149,7 @@ export async function GET(request: NextRequest) {
   console.log('[IntelagentChat] Theme color from config:', WIDGET_CONFIG.themeColor);
   console.log('[IntelagentChat] Widget title from config:', WIDGET_CONFIG.widgetTitle);
   console.log('[IntelagentChat] Title color from config:', WIDGET_CONFIG.titleColor);
+  console.log('[IntelagentChat] VERSION: 2.1.0 - Dynamic title and color support');
   
   // Remove # if present and ensure it's 6 characters
   userMsgColor = userMsgColor.replace('#', '');
