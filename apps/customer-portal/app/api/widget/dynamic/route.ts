@@ -202,20 +202,18 @@ export async function GET(request: NextRequest) {
     '.intelagent-send-button { background: ' + userMsgColor + '15 !important; }',
     '.intelagent-send-button:hover { background: ' + userMsgColor + '30 !important; }',
     '.intelagent-send-button svg { fill: ' + userMsgColor + ' !important; }',
-    // Chat button with theme accent
+    // Chat button with theme color
     '.intelagent-chat-button {',
-    'background: linear-gradient(135deg, white 0%, ' + userMsgColor + '10 100%) !important; }',
-    '.intelagent-chat-button svg { fill: ' + userMsgColor + ' !important; }',
+    'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important; }',
+    '.intelagent-chat-button svg { fill: white !important; }',
     // Close and new buttons
     '.intelagent-close-button { color: white !important; }',
     '.intelagent-new-button { color: white !important; }',
-    // Footer and disclaimer with theme color
+    // Footer and disclaimer background
     '.intelagent-ai-disclaimer {',
-    'background: ' + userMsgColor + '10 !important;',
-    'border-top: 1px solid ' + userMsgColor + '30 !important; }',
+    'background: rgba(248, 248, 248, 0.9) !important; }',
     '.intelagent-chat-footer {',
-    'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
-    'color: white !important; }',
+    'background: rgba(248, 248, 248, 0.9) !important; }',
     // Input field focus border
     '.intelagent-chat-input textarea:focus {',
     'border-color: ' + userMsgColor + ' !important;',
@@ -237,7 +235,7 @@ export async function GET(request: NextRequest) {
       .intelagent-chat-button svg {
         width: 30px;
         height: 30px;
-        fill: #666;
+        fill: white;
       }
       
       /* Additional button hover styles */
@@ -248,7 +246,7 @@ export async function GET(request: NextRequest) {
       .intelagent-chat-button svg {
         width: 30px;
         height: 30px;
-        fill: #666;
+        fill: white;
       }
       
       .intelagent-chat-box.open {
@@ -477,8 +475,8 @@ export async function GET(request: NextRequest) {
         font-size: 11px;
         text-align: center;
         color: #999;
-        padding: 18px !important; /* INCREASED FROM 10px */
-        background: rgba(255, 255, 255, 0.75);
+        padding: 10px !important;
+        background: rgba(248, 248, 248, 0.9);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         flex-shrink: 0;
@@ -570,9 +568,13 @@ export async function GET(request: NextRequest) {
   // Update title color if specified
   if (WIDGET_CONFIG.titleColor) {
     const headerElement = document.querySelector('.intelagent-chat-header');
-    console.log('[IntelagentChat] Applying title color:', WIDGET_CONFIG.titleColor, 'to element:', !!headerElement);
+    const footerElement = document.querySelector('.intelagent-chat-footer');
+    console.log('[IntelagentChat] Applying title color:', WIDGET_CONFIG.titleColor, 'to header:', !!headerElement, 'and footer:', !!footerElement);
     if (headerElement) {
       headerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
+    }
+    if (footerElement) {
+      footerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
     }
   }
   
