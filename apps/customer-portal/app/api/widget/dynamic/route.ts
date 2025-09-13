@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
     '#intelagent-chat-widget * { box-sizing: border-box !important; margin: 0; padding: 0; font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }',
     '.intelagent-chat-button { position: fixed; ' + buttonPosition + ' ' + buttonSide,
     'background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px) saturate(150%);',
-    '-webkit-backdrop-filter: blur(12px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.4);',
+    '-webkit-backdrop-filter: blur(12px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
     'border-radius: 50%; width: 68px; height: 68px; display: flex; justify-content: center;',
     'align-items: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);',
     'z-index: 1000000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }',
@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
     '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
     'width: 400px; height: 520px; max-height: calc(100vh - 150px);',
     'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
-    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
+    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
     'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; }',
     '.intelagent-chat-box.open { display: flex; }',
@@ -206,6 +206,10 @@ export async function GET(request: NextRequest) {
     '.intelagent-chat-button {',
     'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important; }',
     '.intelagent-chat-button svg { fill: white !important; }',
+    // Footer styling to match header
+    '.intelagent-chat-footer {',
+    'background: linear-gradient(135deg, ' + userMsgColor + 'dd 0%, ' + userMsgColor + 'cc 100%) !important;',
+    'color: white !important; }',
     // Close and new buttons
     '.intelagent-close-button { color: white !important; }',
     '.intelagent-new-button { color: white !important; }',
@@ -264,7 +268,7 @@ export async function GET(request: NextRequest) {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 24px;
+        font-size: 28px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
@@ -469,7 +473,7 @@ export async function GET(request: NextRequest) {
       .intelagent-chat-footer {
         font-size: 11px;
         text-align: center;
-        color: #999;
+        color: white;
         padding: 10px !important;
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
