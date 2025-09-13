@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
     '.intelagent-chat-button:hover { transform: scale(1.05); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); }',
     '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
     'width: 400px; height: 520px; max-height: calc(100vh - 150px);',
-    'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
+    'background: transparent; backdrop-filter: blur(24px) saturate(150%);',
     '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
     'border-radius: 20px; display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; }',
@@ -264,11 +264,11 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-chat-header {
-        background-color: rgba(255, 255, 255, 0.75);
+        background-color: transparent;
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 32px;
+        font-size: 36px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
@@ -330,7 +330,7 @@ export async function GET(request: NextRequest) {
         color: #333;
         line-height: 1.5;
         scroll-behavior: smooth;
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.3);
         min-height: 0;
       }
       
@@ -397,7 +397,7 @@ export async function GET(request: NextRequest) {
         display: flex;
         border-top: none;
         padding: 14px 18px !important;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         gap: 10px;
@@ -462,7 +462,7 @@ export async function GET(request: NextRequest) {
         text-align: center;
         color: #888;
         padding: 8px 16px !important;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-top: none;
@@ -471,11 +471,11 @@ export async function GET(request: NextRequest) {
       }
       
       .intelagent-chat-footer {
-        font-size: 11px;
+        font-size: 14px;
         text-align: center;
         color: white;
         padding: 20px 24px !important;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         flex-shrink: 0;
