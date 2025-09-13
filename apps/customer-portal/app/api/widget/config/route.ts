@@ -59,6 +59,9 @@ export async function GET(request: NextRequest) {
     console.log('[Config API GET] Product key:', productKey);
     console.log('[Config API GET] Full metadata:', JSON.stringify(metadata, null, 2));
     console.log('[Config API GET] Settings from metadata:', JSON.stringify(settings, null, 2));
+    console.log('[Config API GET] Returning themeColor:', settings.themeColor || settings.primaryColor || '#0070f3');
+    console.log('[Config API GET] Returning widgetTitle:', settings.widgetTitle || 'Chat Assistant');
+    console.log('[Config API GET] Returning titleColor:', settings.titleColor || '#ffffff');
 
     // Return simplified configuration for the widget with CORS headers
     return NextResponse.json({

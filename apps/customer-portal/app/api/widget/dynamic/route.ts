@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
       const response = await fetch(configUrl);
       const data = await response.json();
       console.log('[IntelagentChat] Config response:', data);
+      console.log('[IntelagentChat] Config response status:', response.status);
+      console.log('[IntelagentChat] Full config object:', JSON.stringify(data.config, null, 2));
       
       if (data.config) {
         console.log('[IntelagentChat] Using config:', data.config);
@@ -556,13 +558,19 @@ export async function GET(request: NextRequest) {
   const widgetTitle = document.getElementById('widget-title');
   
   // Update widget title from config
+  console.log('[IntelagentChat] Updating title element:', widgetTitle);
+  console.log('[IntelagentChat] Config title value:', WIDGET_CONFIG.widgetTitle);
   if (widgetTitle && WIDGET_CONFIG.widgetTitle) {
     widgetTitle.textContent = WIDGET_CONFIG.widgetTitle;
+    console.log('[IntelagentChat] Title updated to:', WIDGET_CONFIG.widgetTitle);
+  } else {
+    console.log('[IntelagentChat] Title not updated - widgetTitle element:', !!widgetTitle, 'config title:', WIDGET_CONFIG.widgetTitle);
   }
   
   // Update title color if specified
   if (WIDGET_CONFIG.titleColor) {
     const headerElement = document.querySelector('.intelagent-chat-header');
+    console.log('[IntelagentChat] Applying title color:', WIDGET_CONFIG.titleColor, 'to element:', !!headerElement);
     if (headerElement) {
       headerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
     }
