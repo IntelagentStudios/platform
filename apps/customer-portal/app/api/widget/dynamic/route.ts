@@ -183,9 +183,9 @@ export async function GET(request: NextRequest) {
     'z-index: 1000000; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }',
     '.intelagent-chat-button:hover { transform: scale(1.05); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); }',
     '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
-    'width: 400px; height: 600px; max-height: calc(100vh - 150px);',
+    'width: 400px; height: 520px; max-height: calc(100vh - 150px);',
     'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
-    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
+    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
     'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; }',
     '.intelagent-chat-box.open { display: flex; }',
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 17px;
+        font-size: 21px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
@@ -331,7 +331,7 @@ export async function GET(request: NextRequest) {
         color: #333;
         line-height: 1.5;
         scroll-behavior: smooth;
-        background: transparent;
+        background: rgba(255, 255, 255, 0.5);
         min-height: 0;
       }
       
@@ -397,8 +397,8 @@ export async function GET(request: NextRequest) {
       .intelagent-chat-input {
         display: flex;
         border-top: none;
-        padding: 20px 25px !important; /* INCREASED FROM 12px 16px */
-        background: rgba(255, 255, 255, 0.75);
+        padding: 14px 18px !important;
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         gap: 10px;
@@ -462,8 +462,8 @@ export async function GET(request: NextRequest) {
         font-size: 10px;
         text-align: center;
         color: #888;
-        padding: 15px 25px !important; /* INCREASED FROM 8px 16px */
-        background: rgba(255, 255, 255, 0.75);
+        padding: 8px 16px !important;
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-top: none;
@@ -476,7 +476,7 @@ export async function GET(request: NextRequest) {
         text-align: center;
         color: #999;
         padding: 10px !important;
-        background: rgba(248, 248, 248, 0.9);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         flex-shrink: 0;
