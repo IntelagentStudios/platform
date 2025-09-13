@@ -518,6 +518,49 @@ export async function GET(request: NextRequest) {
           opacity: 1;
         }
       }
+      
+      /* Mobile responsive styles */
+      @media (max-width: 768px) {
+        .intelagent-chat-box {
+          position: fixed !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+          right: auto !important;
+          bottom: auto !important;
+          width: 90% !important;
+          max-width: 400px !important;
+          height: 80vh !important;
+          max-height: 600px !important;
+        }
+        
+        .intelagent-chat-box.open {
+          animation: mobileSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .intelagent-chat-button {
+          bottom: 20px !important;
+          right: 20px !important;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .intelagent-chat-box {
+          width: 95% !important;
+          height: 85vh !important;
+        }
+      }
+      
+      @keyframes mobileSlideIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -45%) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
     </style>
     
     <div class="intelagent-chat-button" id="chatButton">
