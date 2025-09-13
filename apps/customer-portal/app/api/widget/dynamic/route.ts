@@ -185,7 +185,7 @@ export async function GET(request: NextRequest) {
     '.intelagent-chat-box { position: fixed; ' + boxPosition + ' ' + boxSide,
     'width: 400px; height: 520px; max-height: calc(100vh - 150px);',
     'background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px) saturate(150%);',
-    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 2px solid ' + userMsgColor + ';',
+    '-webkit-backdrop-filter: blur(24px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.3);',
     'border-radius: 20px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1); display: none;',
     'flex-direction: column; overflow: hidden; z-index: 999999; }',
     '.intelagent-chat-box.open { display: flex; }',
@@ -209,11 +209,6 @@ export async function GET(request: NextRequest) {
     // Close and new buttons
     '.intelagent-close-button { color: white !important; }',
     '.intelagent-new-button { color: white !important; }',
-    // Footer and disclaimer background
-    '.intelagent-ai-disclaimer {',
-    'background: rgba(248, 248, 248, 0.9) !important; }',
-    '.intelagent-chat-footer {',
-    'background: rgba(248, 248, 248, 0.9) !important; }',
     // Input field focus border
     '.intelagent-chat-input textarea:focus {',
     'border-color: ' + userMsgColor + ' !important;',
@@ -269,7 +264,7 @@ export async function GET(request: NextRequest) {
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 20px 24px !important;
-        font-size: 21px;
+        font-size: 24px;
         letter-spacing: -0.02em;
         color: #1a1a1a;
         font-weight: 600;
