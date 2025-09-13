@@ -526,7 +526,7 @@ export async function GET(request: NextRequest) {
 
     <div class="intelagent-chat-box" id="chatBox">
       <div class="intelagent-chat-header">
-        <span>' + (WIDGET_CONFIG.widgetTitle || 'Chat Assistant') + '</span>
+        <span id="widget-title">Chat Assistant</span>
         <div style="display: flex; gap: 6px;">
           <button class="intelagent-new-button" aria-label="New conversation">↺</button>
           <button class="intelagent-close-button" aria-label="Close chat">⨯</button>
@@ -551,6 +551,20 @@ export async function GET(request: NextRequest) {
   const messageInput = document.getElementById('intelagent-input');
   const sendButton = document.getElementById('intelagent-send');
   const messagesContainer = document.getElementById('intelagent-messages');
+  const widgetTitle = document.getElementById('widget-title');
+  
+  // Update widget title from config
+  if (widgetTitle && WIDGET_CONFIG.widgetTitle) {
+    widgetTitle.textContent = WIDGET_CONFIG.widgetTitle;
+  }
+  
+  // Update title color if specified
+  if (WIDGET_CONFIG.titleColor) {
+    const headerElement = document.querySelector('.intelagent-chat-header');
+    if (headerElement) {
+      headerElement.style.color = WIDGET_CONFIG.titleColor + ' !important';
+    }
+  }
   
   // Add initial message
   messagesContainer.innerHTML = '<div class="intelagent-message bot"><div class="intelagent-message-content">' + WIDGET_CONFIG.welcomeMessage + '</div></div>';
