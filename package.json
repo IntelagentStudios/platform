@@ -45,6 +45,8 @@
   "author": "Intelagent Studios",
   "license": "MIT",
   "dependencies": {
-    "critters": "^0.0.23"
+    "bull": "^4.16.5",
+    "critters": "^0.0.23",
+    "redis": "^4.7.1"
   }
 }
