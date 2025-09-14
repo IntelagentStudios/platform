@@ -381,6 +381,13 @@ model licenses {
   suspended_at        DateTime? @db.Timestamptz(6)
   cancelled_at        DateTime? @db.Timestamptz(6)
 
+  // Sales Agent Relations
+  sales_campaigns       sales_campaigns[]
+  sales_leads           sales_leads[]
+  sales_activities      sales_activities[]
+  sales_email_templates sales_email_templates[]
+  sales_integrations    sales_integrations[]
+
   @@index([domain], map: "idx_licenses_domain")
   @@index([email], map: "idx_licenses_email")
   @@index([site_key], map: "idx_licenses_site_key")
@@ -1298,5 +1305,226 @@ model knowledge_files {
 
   @@index([product_key], map: "idx_knowledge_files_product_key")
   @@index([license_key], map: "idx_knowledge_files_license_key")
+  @@schema("public")
+}
+// Add these models to the main schema.prisma file
+
+model sales_campaigns {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(50)
+  product_key       String?   @db.VarChar(100)
+  name              String    @db.VarChar(255)
+  description       String?   @db.Text
+  status            String?   @default("draft") @db.VarChar(20)
+  campaign_type     String?   @default("email") @db.VarChar(50)
+
+  settings          Json?     @default("{}")
+  email_templates   Json?     @default("[]")
+  sequence_steps    Json?     @default("[]")
+
+  target_criteria   Json?     @default("{}")
+  target_persona    String?   @db.VarChar(255)
+
+  start_date        DateTime? @db.Timestamptz(6)
+  end_date          DateTime? @db.Timestamptz(6)
+  timezone          String?   @default("UTC") @db.VarChar(50)
+  send_schedule     Json?     @default("{}")
+
+  total_leads       Int?      @default(0)
+  emails_sent       Int?      @default(0)
+  emails_opened     Int?      @default(0)
+  emails_clicked    Int?      @default(0)
+  replies_received  Int?      @default(0)
+  meetings_booked   Int?      @default(0)
+  deals_created     Int?      @default(0)
+
+  skills_used       String[]
+  workflow_id       String?   @db.VarChar(36)
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  created_by        String?   @db.VarChar(255)
+
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  leads             sales_leads[]
+  activities        sales_activities[]
+  sequences         sales_sequences[]
+
+  @@index([license_key])
+  @@index([status])
+  @@schema("public")
+}
+
+model sales_leads {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(50)
+  campaign_id       String?   @db.VarChar(36)
+
+  email             String    @db.VarChar(255)
+  first_name        String?   @db.VarChar(100)
+  last_name         String?   @db.VarChar(100)
+  full_name         String?   @db.VarChar(255)
+  phone             String?   @db.VarChar(50)
+  linkedin_url      String?   @db.VarChar(500)
+
+  company_name      String?   @db.VarChar(255)
+  company_domain    String?   @db.VarChar(255)
+  company_size      String?   @db.VarChar(50)
+  industry          String?   @db.VarChar(100)
+  job_title         String?   @db.VarChar(255)
+  department        String?   @db.VarChar(100)
+
+  city              String?   @db.VarChar(100)
+  state             String?   @db.VarChar(100)
+  country           String?   @db.VarChar(100)
+  timezone          String?   @db.VarChar(50)
+
+  status            String?   @default("new") @db.VarChar(50)
+  score             Int?      @default(0)
+  tags              String[]
+
+  emails_sent       Int?      @default(0)
+  emails_opened     Int?      @default(0)
+  emails_clicked    Int?      @default(0)
+  last_contacted_at DateTime? @db.Timestamptz(6)
+  last_engaged_at   DateTime? @db.Timestamptz(6)
+
+  custom_fields     Json?     @default("{}")
+
+  source            String?   @db.VarChar(100)
+  source_details    Json?     @default("{}")
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  campaign          sales_campaigns? @relation(fields: [campaign_id], references: [id], onDelete: SetNull)
+  activities        sales_activities[]
+  sequences         sales_sequences[]
+
+  @@unique([license_key, email])
+  @@index([license_key])
+  @@index([campaign_id])
+  @@index([email])
+  @@index([status])
+  @@schema("public")
+}
+
+model sales_activities {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(50)
+  campaign_id       String?   @db.VarChar(36)
+  lead_id           String?   @db.VarChar(36)
+
+  activity_type     String    @db.VarChar(50)
+  subject           String?   @db.VarChar(500)
+  content           String?   @db.Text
+
+  metadata          Json?     @default("{}")
+
+  status            String?   @default("completed") @db.VarChar(50)
+  error_message     String?   @db.Text
+
+  skill_used        String?   @db.VarChar(100)
+  workflow_step     Int?
+
+  performed_at      DateTime? @default(now()) @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+  campaign          sales_campaigns? @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  lead              sales_leads? @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+
+  @@index([license_key])
+  @@index([campaign_id])
+  @@index([lead_id])
+  @@index([activity_type])
+  @@index([performed_at])
+  @@schema("public")
+}
+
+model sales_email_templates {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(50)
+
+  name              String    @db.VarChar(255)
+  subject           String    @db.VarChar(500)
+  body              String    @db.Text
+
+  variables         Json?     @default("[]")
+
+  template_type     String?   @default("outreach") @db.VarChar(50)
+  tags              String[]
+
+  times_used        Int?      @default(0)
+  avg_open_rate     Decimal?  @db.Decimal(5, 2)
+  avg_click_rate    Decimal?  @db.Decimal(5, 2)
+  avg_reply_rate    Decimal?  @db.Decimal(5, 2)
+
+  ai_optimized      Boolean?  @default(false)
+  ai_suggestions    Json?     @default("{}")
+
+  is_active         Boolean?  @default(true)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+
+  @@index([license_key])
+  @@schema("public")
+}
+
+model sales_sequences {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  campaign_id       String    @db.VarChar(36)
+  lead_id           String    @db.VarChar(36)
+
+  current_step      Int?      @default(0)
+  status            String?   @default("active") @db.VarChar(50)
+
+  started_at        DateTime? @default(now()) @db.Timestamptz(6)
+  last_step_at      DateTime? @db.Timestamptz(6)
+  next_step_at      DateTime? @db.Timestamptz(6)
+  completed_at      DateTime? @db.Timestamptz(6)
+
+  steps_completed   Int?      @default(0)
+  total_steps       Int?
+
+  stop_reason       String?   @db.VarChar(100)
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  campaign          sales_campaigns @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  lead              sales_leads @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+
+  @@unique([campaign_id, lead_id])
+  @@index([campaign_id])
+  @@index([lead_id])
+  @@index([status])
+  @@schema("public")
+}
+
+model sales_integrations {
+  id                String    @id @default(dbgenerated("(gen_random_uuid())::character varying")) @db.VarChar(36)
+  license_key       String    @db.VarChar(50)
+
+  integration_type  String    @db.VarChar(50)
+  name              String    @db.VarChar(255)
+
+  config            Json
+
+  is_active         Boolean?  @default(true)
+  is_verified       Boolean?  @default(false)
+  last_verified_at  DateTime? @db.Timestamptz(6)
+
+  default_for_campaigns Boolean? @default(false)
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+
+  licenses          licenses  @relation(fields: [license_key], references: [license_key], onDelete: Cascade)
+
+  @@unique([license_key, integration_type, name])
   @@schema("public")
 }
