@@ -1,0 +1,29 @@
+{
+  "name": "@intelagent/chatbot-widget",
+  "version": "1.0.0",
+  "description": "Intelagent Chatbot Widget - Embed AI chat on any website",
+  "main": "v1/chatbot.js",
+  "scripts": {
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "test": "node test/test-widget.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intelagentstudios/chatbot-widget"
+  },
+  "keywords": [
+    "chatbot",
+    "widget",
+    "ai",
+    "customer-support",
+    "intelagent"
+  ],
+  "author": "Intelagent Studios",
+  "license": "MIT",
+  "files": [
+    "v1/",
+    "latest/",
+    "README.md"
+  ]
+}

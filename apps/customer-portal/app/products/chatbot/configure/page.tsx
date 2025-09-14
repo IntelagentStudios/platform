@@ -38,7 +38,9 @@ export default function ConfigureChatbot() {
       }
 
       setProductKey(data.product_key);
-      setEmbedCode(data.embed_code);
+      // Update embed code to use Vercel CDN
+      const cdnEmbedCode = `<script src="https://intelagent-widget.vercel.app/v1/chatbot.js" data-product-key="${data.product_key}"></script>`;
+      setEmbedCode(cdnEmbedCode);
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');

@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       product_key: productKey.product_key,
-      embed_code: `<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey.product_key}"></script>`,
+      embed_code: `<script src="https://intelagent-widget.vercel.app/v1/chatbot.js" data-product-key="${productKey.product_key}"></script>`,
       domain: domain,
       message: 'Chatbot configured successfully'
     });
