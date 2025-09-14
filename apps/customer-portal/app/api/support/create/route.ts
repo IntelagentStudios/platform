@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/auth';
+import { getAuthFromCookies } from '@/lib/auth';
 
 // Import management agents
 import { CommunicationsAgent } from '@intelagent/skills-orchestrator/src/agents/CommunicationsAgent';
@@ -23,8 +22,8 @@ const AGENT_MAP = {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const auth = await getAuthFromCookies();
+    if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -38,8 +37,8 @@ export async function POST(request: NextRequest) {
     const license = await prisma.licenses.findFirst({
       where: {
         OR: [
-          { customer_email: session.user.email },
-          { customer_name: session.user.name || '' }
+          { customer_email: auth.email },
+          { license_key: auth.licenseKey }
         ],
         status: 'active'
       }
@@ -51,8 +50,8 @@ export async function POST(request: NextRequest) {
         entity_type: 'support_ticket',
         entity_id: ticketId,
         action: 'created',
-        user_id: session.user.email || 'unknown',
-        license_key: license?.license_key || 'unknown',
+        user_id: auth.email || 'unknown',
+        license_key: license?.license_key || auth.licenseKey || 'unknown',
         metadata: {
           type,
           agent,
@@ -61,9 +60,9 @@ export async function POST(request: NextRequest) {
           priority,
           status: 'open',
           customer: {
-            email: session.user.email,
-            name: session.user.name,
-            licenseKey: license?.license_key
+            email: auth.email,
+            name: auth.name || auth.email,
+            licenseKey: license?.license_key || auth.licenseKey
           },
           ...metadata
         }
@@ -85,9 +84,9 @@ export async function POST(request: NextRequest) {
           message,
           priority,
           customer: {
-            email: session.user.email,
-            name: session.user.name,
-            licenseKey: license?.license_key
+            email: auth.email,
+            name: auth.name || auth.email,
+            licenseKey: license?.license_key || auth.licenseKey
           }
         }
       });
@@ -101,7 +100,7 @@ export async function POST(request: NextRequest) {
             type: 'urgent_support',
             recipient: 'admin',
             subject: `[${priority.toUpperCase()}] Support: ${subject}`,
-            message: `New ${priority} priority support ticket from ${session.user.email}`,
+            message: `New ${priority} priority support ticket from ${auth.email}`,
             ticketId
           }
         });
