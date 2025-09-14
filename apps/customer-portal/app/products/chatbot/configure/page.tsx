@@ -38,8 +38,8 @@ export default function ConfigureChatbot() {
       }
 
       setProductKey(data.product_key);
-      // Update embed code to use Vercel CDN
-      const cdnEmbedCode = `<script src="https://intelagent-widget.vercel.app/v1/chatbot.js" data-product-key="${data.product_key}"></script>`;
+      // Update embed code to use custom domain CDN
+      const cdnEmbedCode = `<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${data.product_key}"></script>`;
       setEmbedCode(cdnEmbedCode);
       setSuccess(true);
     } catch (err: any) {

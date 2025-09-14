@@ -1,7 +1,7 @@
 /**
  * Intelagent Chatbot Widget Loader v1.0.0
- * This file can be served from any CDN (Cloudflare, AWS CloudFront, etc.)
- * Usage: <script src="https://cdn.intelagentstudios.com/widget/v1/chatbot.js" data-product-key="YOUR_KEY"></script>
+ * Production CDN: https://embed.intelagentstudios.com
+ * Usage: <script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="YOUR_KEY"></script>
  */
 
 (function() {

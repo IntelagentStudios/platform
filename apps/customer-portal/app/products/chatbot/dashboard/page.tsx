@@ -1481,11 +1481,11 @@ function ChatbotDashboardContent() {
                              whiteSpace: 'nowrap',
                              overflowX: 'auto'
                            }}>
-{`<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`}
+{`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`}
                       </pre>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`);
+                          navigator.clipboard.writeText(`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`);
                           setCopied(true);
                           setTimeout(() => setCopied(false), 2000);
                         }}
@@ -1514,12 +1514,12 @@ function ChatbotDashboardContent() {
                              whiteSpace: 'nowrap',
                              overflowX: 'auto'
                            }}>
-{`<!-- Legacy embed code (use dynamic widget above for full theming support) -->
-<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`}
+{`<!-- Alternative: Direct API endpoint (uses dashboard server) -->
+<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`}
                       </pre>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/chatbot-widget.js" data-product-key="${productKey}"></script>`);
+                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`);
                           setCopied(true);
                           setTimeout(() => setCopied(false), 2000);
                         }}
