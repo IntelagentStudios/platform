@@ -166,17 +166,19 @@ export abstract class EnhancedBaseSkill {
     context?: EnhancedSkillContext
   ): Promise<void> {
     try {
-      await prisma.skill_logs.create({
+      await prisma.skill_audit_log.create({
         data: {
+          event_type: type,
           skill_id: this.metadata.id,
-          skill_name: this.metadata.name,
-          session_id: context?.sessionId || 'anonymous',
           user_id: context?.userId || 'anonymous',
-          product_key: context?.productKey,
-          domain: context?.domain,
-          log_type: type,
-          data: JSON.stringify(data),
-          timestamp: new Date()
+          license_key: context?.productKey,
+          event_data: {
+            skill_name: this.metadata.name,
+            session_id: context?.sessionId || 'anonymous',
+            domain: context?.domain,
+            ...data
+          },
+          created_at: new Date()
         }
       });
     } catch (error) {
