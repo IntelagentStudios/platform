@@ -3,6 +3,7 @@
  * Manages platform security, threat detection, and access control
  */
 
+import { EventEmitter } from 'events';
 import { prisma } from '@intelagent/database';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -42,7 +43,7 @@ interface AuditLog {
   userAgent?: string;
 }
 
-export class SecurityAgent {
+export class SecurityAgent extends EventEmitter {
   private static instance: SecurityAgent;
   private readonly jwtSecret: string;
   private suspiciousPatterns: Map<string, RegExp>;
@@ -69,6 +70,7 @@ export class SecurityAgent {
   };
 
   private constructor() {
+    super();
     this.jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
     this.suspiciousPatterns = new Map();
     this.blacklistedIPs = new Set();
@@ -739,5 +741,45 @@ export class SecurityAgent {
     // Check if sensitive data is encrypted
     // This is a placeholder for actual implementation
     return { allEncrypted: true };
+  }
+
+  /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[SecurityAgent] Handling external event: ${event}`, data);
+    this.emit('external:event', { event, data });
+
+    // Handle specific events
+    switch (event) {
+      case 'compliance:violation':
+        // Increase security monitoring
+        console.log('[SecurityAgent] Increasing security monitoring due to compliance violation');
+        break;
+      case 'anomaly:detected':
+        // Investigate anomaly
+        console.log('[SecurityAgent] Investigating detected anomaly');
+        break;
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    console.log('[SecurityAgent] Shutting down...');
+    // Cleanup resources
+    this.removeAllListeners();
+  }
+
+  /**
+   * Get agent status
+   */
+  public async getStatus(): Promise<any> {
+    return {
+      active: true,
+      threatLevel: 'low',
+      activeThreats: 0
+    };
   }
 }

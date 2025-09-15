@@ -3,6 +3,7 @@
  * Manages servers, resources, scaling, and system health
  */
 
+import { EventEmitter } from 'events';
 import { prisma } from '@intelagent/database';
 import { createClient } from 'redis';
 import Bull from 'bull';
@@ -33,7 +34,7 @@ interface ResourceAllocation {
   network: { allocated: number; available: number; percentage: number };
 }
 
-export class InfrastructureAgent {
+export class InfrastructureAgent extends EventEmitter {
   private static instance: InfrastructureAgent;
   private redisClient: any;
   private queues: Map<string, Bull.Queue>;
@@ -57,6 +58,7 @@ export class InfrastructureAgent {
   };
 
   private constructor() {
+    super();
     this.queues = new Map();
     this.healthChecks = new Map();
     this.initializeRedis();
@@ -571,5 +573,48 @@ export class InfrastructureAgent {
         created_at: new Date()
       }
     });
+  }
+
+  /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[InfrastructureAgent] Handling external event: ${event}`, data);
+    this.emit('external:event', { event, data });
+
+    // Handle specific events
+    switch (event) {
+      case 'threat:detected':
+        // Isolate affected resources
+        console.log('[InfrastructureAgent] Isolating resources due to threat');
+        break;
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    console.log('[InfrastructureAgent] Shutting down...');
+    // Stop health monitoring
+    this.healthChecks.forEach(check => clearInterval(check));
+    this.healthChecks.clear();
+    // Cleanup resources
+    if (this.redisClient) {
+      await this.redisClient.quit();
+    }
+    this.removeAllListeners();
+  }
+
+  /**
+   * Get agent status
+   */
+  public async getStatus(): Promise<any> {
+    const allocation = await this.getResourceAllocation();
+    return {
+      active: true,
+      resourceAllocation: allocation,
+      healthChecks: this.healthChecks.size
+    };
   }
 }

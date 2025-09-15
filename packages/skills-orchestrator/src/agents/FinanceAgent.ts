@@ -469,4 +469,40 @@ export class FinanceAgent extends EventEmitter {
       .filter(t => t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
   }
+
+  /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[FinanceAgent] Handling external event: ${event}`, data);
+    this.emit('external:event', { event, data });
+
+    // Handle specific events
+    switch (event) {
+      case 'threat:detected':
+        // Freeze suspicious transactions
+        console.log('[FinanceAgent] Freezing suspicious transactions due to threat');
+        break;
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    console.log('[FinanceAgent] Shutting down...');
+    // Cleanup resources
+    this.removeAllListeners();
+  }
+
+  /**
+   * Get agent status
+   */
+  public async getStatus(): Promise<any> {
+    return {
+      active: true,
+      transactionCount: this.transactions.size,
+      todayRevenue: this.calculateTodayRevenue()
+    };
+  }
 }

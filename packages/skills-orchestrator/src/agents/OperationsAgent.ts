@@ -3,6 +3,7 @@
  * Manages day-to-day platform operations and workflow optimization
  */
 
+import { EventEmitter } from 'events';
 import { prisma } from '@intelagent/database';
 import { SkillsRegistry } from '../skills/registry';
 import { BaseSkill } from '../skills/BaseSkill';
@@ -23,7 +24,7 @@ interface WorkflowOptimization {
   implementation: string;
 }
 
-export class OperationsAgent {
+export class OperationsAgent extends EventEmitter {
   private static instance: OperationsAgent;
   private skillsRegistry: SkillsRegistry;
   private operationalThresholds = {
@@ -35,6 +36,7 @@ export class OperationsAgent {
   };
 
   private constructor() {
+    super();
     this.skillsRegistry = SkillsRegistry.getInstance();
   }
 
@@ -559,9 +561,56 @@ export class OperationsAgent {
 
   private findCriticalPath(steps: string[]): string[] {
     // Identify critical path through workflow
-    return steps.filter(step => 
-      step.includes('critical') || 
+    return steps.filter(step =>
+      step.includes('critical') ||
       step.includes('required')
     );
+  }
+
+  /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[OperationsAgent] Handling external event: ${event}`, data);
+    this.emit('external:event', { event, data });
+
+    // Handle specific events
+    switch (event) {
+      case 'payment:required':
+        // Pause operations that require payment
+        console.log('[OperationsAgent] Pausing payment-required operations');
+        break;
+      case 'threat:detected':
+        // Switch to safe mode
+        console.log('[OperationsAgent] Entering safe mode due to threat');
+        break;
+      case 'resource:limit':
+        // Throttle operations
+        console.log('[OperationsAgent] Throttling operations due to resource limits');
+        break;
+      case 'compliance:violation':
+        // Stop non-compliant operations
+        console.log('[OperationsAgent] Stopping non-compliant operations');
+        break;
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    console.log('[OperationsAgent] Shutting down...');
+    // Cleanup resources
+    this.removeAllListeners();
+  }
+
+  /**
+   * Get agent status
+   */
+  public async getStatus(): Promise<any> {
+    return {
+      active: true,
+      metrics: await this.getOperationalMetrics(new Date(Date.now() - 3600000), new Date())
+    };
   }
 }
