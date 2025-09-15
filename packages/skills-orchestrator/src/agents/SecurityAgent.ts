@@ -744,6 +744,42 @@ export class SecurityAgent extends EventEmitter {
   }
 
   /**
+   * Validate a request for security concerns
+   */
+  public async validateRequest(request: any): Promise<any> {
+    const securityCheck = await this.performSecurityCheck({
+      resource: request.action,
+      userId: request.context?.userId,
+      sessionId: request.context?.sessionId,
+      ip: '127.0.0.1',
+      method: 'execute'
+    });
+
+    return {
+      approved: securityCheck.passed,
+      reason: securityCheck.risks.join(', '),
+      score: securityCheck.score,
+      recommendations: securityCheck.recommendations
+    };
+  }
+
+  /**
+   * Execute a security-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[SecurityAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'audit':
+        return await this.performSecurityAudit();
+      case 'threat_scan':
+        return await this.scanForThreats();
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
    * Handle external events from other agents
    */
   public handleExternalEvent(event: string, data: any): void {

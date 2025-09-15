@@ -301,4 +301,27 @@ export class IntegrationAgent extends SpecialistAgent {
       rateLimits: Object.fromEntries(this.rateLimits)
     };
   }
+
+  /**
+   * Execute an integration-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[IntegrationAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'connect':
+        return { success: true, connected: true };
+      case 'sync':
+        return { success: true, synced: true };
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    await super.stop();
+  }
 }

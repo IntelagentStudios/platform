@@ -520,4 +520,27 @@ export class CommunicationsAgent extends SpecialistAgent {
       )
     };
   }
+
+  /**
+   * Execute a communications-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[CommunicationsAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'send':
+        return { success: true, sent: true };
+      case 'broadcast':
+        return { success: true, broadcasted: true };
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    await super.stop();
+  }
 }

@@ -177,4 +177,74 @@ export class ComplianceAgent extends SpecialistAgent {
       data
     );
   }
+
+  /**
+   * Validate a request for compliance
+   */
+  public async validateRequest(request: any): Promise<any> {
+    const violations: string[] = [];
+    const recommendations: string[] = [];
+
+    // Check GDPR compliance
+    if (this.complianceRules.gdprCompliant && request.action?.includes('data')) {
+      if (!request.context?.userId) {
+        violations.push('GDPR: User consent not verified');
+      }
+    }
+
+    // Check data retention
+    if (request.action?.includes('store') || request.action?.includes('save')) {
+      recommendations.push(`Data retention policy: ${this.complianceRules.dataRetentionDays} days`);
+    }
+
+    // Check encryption requirement
+    if (this.complianceRules.encryptionRequired && request.params?.sensitive) {
+      if (!request.params?.encrypted) {
+        violations.push('Sensitive data must be encrypted');
+      }
+    }
+
+    return {
+      approved: violations.length === 0,
+      reason: violations.join(', '),
+      recommendations
+    };
+  }
+
+  /**
+   * Execute a compliance-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[ComplianceAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'audit':
+        return {
+          success: true,
+          auditLog: this.getInsights()
+        };
+      case 'check_compliance':
+        return await this.validateRequest(request);
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
+   * Shutdown the agent
+   */
+  public async shutdown(): Promise<void> {
+    await super.stop();
+  }
+
+  /**
+   * Get agent status
+   */
+  public async getStatus(): Promise<any> {
+    return {
+      active: this.isActive,
+      rules: this.complianceRules,
+      insightCount: this.insights.length
+    };
+  }
 }

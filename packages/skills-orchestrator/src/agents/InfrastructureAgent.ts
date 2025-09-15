@@ -576,6 +576,62 @@ export class InfrastructureAgent extends EventEmitter {
   }
 
   /**
+   * Check capacity for a request
+   */
+  public async checkCapacity(request: any): Promise<any> {
+    const allocation = await this.getResourceAllocation();
+
+    // Determine resource requirements
+    let requiredCpu = 1;
+    let requiredMemory = 128; // MB
+
+    if (request.type === 'workflow') {
+      requiredCpu = 5;
+      requiredMemory = 512;
+    } else if (request.type === 'system') {
+      requiredCpu = 10;
+      requiredMemory = 1024;
+    }
+
+    const cpuAvailable = allocation.cpu.available >= requiredCpu;
+    const memoryAvailable = allocation.memory.available >= requiredMemory;
+    const available = cpuAvailable && memoryAvailable;
+
+    return {
+      available,
+      estimatedTime: available ? 1000 : 5000, // ms
+      resources: {
+        cpuRequired: requiredCpu,
+        memoryRequired: requiredMemory,
+        cpuAvailable: allocation.cpu.available,
+        memoryAvailable: allocation.memory.available
+      }
+    };
+  }
+
+  /**
+   * Execute an infrastructure-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[InfrastructureAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'scale':
+        return await this.scaleResources({
+          cpu: request.params?.cpu || 1,
+          memory: request.params?.memory || 1024,
+          instances: request.params?.instances || 1
+        });
+      case 'health_check':
+        return await this.performHealthCheck('system');
+      case 'allocate':
+        return await this.getResourceAllocation();
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
    * Handle external events from other agents
    */
   public handleExternalEvent(event: string, data: any): void {

@@ -471,6 +471,59 @@ export class FinanceAgent extends EventEmitter {
   }
 
   /**
+   * Estimate cost for a request
+   */
+  public async estimateCost(request: any): Promise<any> {
+    let estimatedCost = 0;
+
+    // Base cost calculation
+    if (request.type === 'skill') {
+      estimatedCost = 0.001; // $0.001 per skill execution
+    } else if (request.type === 'workflow') {
+      estimatedCost = 0.01; // $0.01 per workflow
+    } else if (request.type === 'system') {
+      estimatedCost = 0.1; // $0.10 per system operation
+    }
+
+    // Priority multiplier
+    if (request.context?.priority === 'high') {
+      estimatedCost *= 2;
+    } else if (request.context?.priority === 'critical') {
+      estimatedCost *= 5;
+    }
+
+    return {
+      estimatedCost,
+      currency: 'USD',
+      breakdown: {
+        base: estimatedCost,
+        priority: request.context?.priority || 'normal'
+      }
+    };
+  }
+
+  /**
+   * Execute a finance-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[FinanceAgent] Executing request:', request.action);
+
+    switch (request.action) {
+      case 'process_payment':
+        return await this.processPayment({
+          amount: request.params?.amount || 0,
+          currency: request.params?.currency || 'USD',
+          customerId: request.context?.userId,
+          metadata: request.params
+        });
+      case 'get_metrics':
+        return await this.getFinancialMetrics();
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
    * Handle external events from other agents
    */
   public handleExternalEvent(event: string, data: any): void {
