@@ -747,13 +747,14 @@ export class SecurityAgent extends EventEmitter {
    * Validate a request for security concerns
    */
   public async validateRequest(request: any): Promise<any> {
-    const securityCheck = await this.performSecurityCheck({
-      resource: request.action,
-      userId: request.context?.userId,
-      sessionId: request.context?.sessionId,
-      ip: '127.0.0.1',
-      method: 'execute'
-    });
+    const securityCheck = await this.performSecurityCheck(
+      request,
+      {
+        userId: request.context?.userId,
+        ipAddress: '127.0.0.1',
+        action: request.action || 'execute'
+      }
+    );
 
     return {
       approved: securityCheck.passed,
