@@ -553,10 +553,8 @@ export class SecurityAgent extends EventEmitter {
     if (context.userId) {
       const recentAccess = await prisma.audit_logs.count({
         where: {
-          event_type: 'access_attempt',
-          details: {
-            contains: context.userId
-          },
+          action: 'access_attempt',
+          user_id: context.userId,
           created_at: {
             gte: new Date(Date.now() - 60000) // Last minute
           }
