@@ -57,7 +57,7 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
     return params.action && validActions.includes(params.action);
   }
 
-  async doExecute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action, productKey, licenseKey } = params;
 
     try {

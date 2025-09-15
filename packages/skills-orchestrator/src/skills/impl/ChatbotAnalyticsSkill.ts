@@ -52,7 +52,7 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
     return params.action && validActions.includes(params.action);
   }
 
-  async doExecute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action, productKey, licenseKey, timeRange = '7d', conversationId } = params;
 
     try {
