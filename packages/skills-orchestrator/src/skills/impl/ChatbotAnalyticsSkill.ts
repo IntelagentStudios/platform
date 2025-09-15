@@ -135,11 +135,12 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
         : 0;
 
       // Store analytics in skill execution for tracking
-      await this.logInsight({
-        type: 'analytics_snapshot',
-        data: stats,
-        timestamp: new Date()
-      });
+      // TODO: Implement logInsight method or use proper logging
+      // await this.logInsight({
+      //   type: 'analytics_snapshot',
+      //   data: stats,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -188,12 +189,13 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       };
 
       // Store the analysis
-      await this.logInsight({
-        type: 'conversation_analysis',
-        conversationId,
-        analysis,
-        timestamp: new Date()
-      });
+      // TODO: Implement logInsight method or use proper logging
+      // await this.logInsight({
+      //   type: 'conversation_analysis',
+      //   conversationId,
+      //   analysis,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -244,11 +246,12 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       };
 
       // Store the report
-      await this.logInsight({
-        type: 'performance_report',
-        report,
-        timestamp: new Date()
-      });
+      // TODO: Implement logInsight method or use proper logging
+      // await this.logInsight({
+      //   type: 'performance_report',
+      //   report,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -273,7 +276,8 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
         timestamp: new Date()
       };
 
-      await this.logInsight(event);
+      // TODO: Implement logInsight method or use proper logging
+      // await this.logInsight(event);
 
       // Process real-time alerts if needed
       if (this.shouldTriggerAlert(eventType, eventData)) {
