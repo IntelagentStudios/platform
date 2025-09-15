@@ -617,8 +617,12 @@ export class InfrastructureAgent extends EventEmitter {
 
     switch (request.action) {
       case 'scale':
-        // Use auto-scaling decision instead
-        const scalingDecision = await this.decideAutoScaling();
+        // Evaluate scaling decision
+        const scalingDecision = await this.evaluateScaling();
+        // Execute the scaling if needed
+        if (scalingDecision.action !== 'maintain') {
+          await this.executeScaling(scalingDecision);
+        }
         return {
           success: true,
           action: 'scale',
@@ -626,7 +630,7 @@ export class InfrastructureAgent extends EventEmitter {
         };
       case 'health_check':
         // Check server health
-        const health = await this.checkServerHealth('main-server');
+        const health = await this.checkServerHealth(request.params?.serverId || 'main-server');
         return {
           success: true,
           action: 'health_check',
@@ -634,6 +638,12 @@ export class InfrastructureAgent extends EventEmitter {
         };
       case 'allocate':
         return await this.getResourceAllocation();
+      case 'optimize':
+        await this.optimizeDatabase();
+        return { success: true, action: 'optimize' };
+      case 'cache':
+        await this.manageCaching();
+        return { success: true, action: 'cache' };
       default:
         return { success: true, action: request.action };
     }
