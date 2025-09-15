@@ -589,8 +589,7 @@ export class OperationsAgent extends EventEmitter {
       case 'incident':
         return await this.handleIncident(
           request.params?.type || 'unknown',
-          request.params?.severity || 'low',
-          request.params || {}
+          { severity: request.params?.severity || 'low', ...request.params }
         );
       default:
         return { success: true, action: request.action };
