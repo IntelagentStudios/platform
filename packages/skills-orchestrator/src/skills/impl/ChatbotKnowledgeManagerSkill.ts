@@ -148,13 +148,14 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       await this.indexKnowledge(knowledge);
 
       // Log the addition
-      await this.logInsight({
-        type: 'knowledge_added',
-        knowledgeId: knowledge.id,
-        knowledgeType,
-        contentLength: processedContent.length,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'knowledge_added',
+      //   knowledgeId: knowledge.id,
+      //   knowledgeType,
+      //   contentLength: processedContent.length,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -222,12 +223,13 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       }
 
       // Log the update
-      await this.logInsight({
-        type: 'knowledge_updated',
-        knowledgeId,
-        updates: Object.keys(updates),
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'knowledge_updated',
+      //   knowledgeId,
+      //   updates: Object.keys(updates),
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -267,11 +269,12 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       await this.removeFromIndex(knowledgeId);
 
       // Log the deletion
-      await this.logInsight({
-        type: hardDelete ? 'knowledge_deleted' : 'knowledge_deactivated',
-        knowledgeId,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: hardDelete ? 'knowledge_deleted' : 'knowledge_deactivated',
+      //   knowledgeId,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -456,15 +459,16 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       await Promise.all(imported.map(item => this.indexKnowledge(item)));
 
       // Log the import
-      await this.logInsight({
-        type: 'knowledge_imported',
-        source,
-        format,
-        imported: imported.length,
-        invalid: invalidCount,
-        overwrite,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'knowledge_imported',
+      //   source,
+      //   format,
+      //   imported: imported.length,
+      //   invalid: invalidCount,
+      //   overwrite,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -687,11 +691,12 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       optimizations.outdatedDeactivated = outdated.count;
 
       // Log optimization
-      await this.logInsight({
-        type: 'knowledge_optimized',
-        optimizations,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'knowledge_optimized',
+      //   optimizations,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -751,11 +756,12 @@ export class ChatbotKnowledgeManagerSkill extends BaseSkill {
       }
 
       // Log the sync
-      await this.logInsight({
-        type: 'knowledge_synced',
-        syncResult,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'knowledge_synced',
+      //   syncResult,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,

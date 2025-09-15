@@ -210,12 +210,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log configuration
-      await this.logInsight({
-        type: 'chatbot_configured',
-        productKey,
-        domain,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'chatbot_configured',
+      //   productKey,
+      //   domain,
+      //   timestamp: new Date()
+      // });
 
       // Notify management team
       await this.notifyManagementTeam({
@@ -311,12 +312,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log update
-      await this.logInsight({
-        type: 'settings_updated',
-        productKey,
-        changes: Object.keys({ ...settings, ...features, ...security, ...integration }),
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'settings_updated',
+      //   productKey,
+      //   changes: Object.keys({ ...settings, ...features, ...security, ...integration }),
+      //   timestamp: new Date()
+      // });
 
       // Notify active sessions about configuration change
       await this.notifyActiveSessions(productKey, 'configuration_updated', updatedConfig);
@@ -438,12 +440,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       await this.initializeChatbotServices(productKey, { configuration: config });
 
       // Log deployment
-      await this.logInsight({
-        type: 'chatbot_deployed',
-        productKey,
-        domain: config.domain,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'chatbot_deployed',
+      //   productKey,
+      //   domain: config.domain,
+      //   timestamp: new Date()
+      // });
 
       // Notify management team
       await this.notifyManagementTeam({
@@ -500,13 +503,14 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       const allTestsPassed = Object.values(tests).every(test => test.passed);
 
       // Log test results
-      await this.logInsight({
-        type: 'configuration_tested',
-        productKey,
-        tests,
-        passed: allTestsPassed,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'configuration_tested',
+      //   productKey,
+      //   tests,
+      //   passed: allTestsPassed,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -563,12 +567,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log backup
-      await this.logInsight({
-        type: 'configuration_backed_up',
-        productKey,
-        backupId: backup.backupId,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'configuration_backed_up',
+      //   productKey,
+      //   backupId: backup.backupId,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -619,12 +624,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log restoration
-      await this.logInsight({
-        type: 'configuration_restored',
-        productKey,
-        backupId,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'configuration_restored',
+      //   productKey,
+      //   backupId,
+      //   timestamp: new Date()
+      // });
 
       // Notify active sessions
       await this.notifyActiveSessions(productKey, 'configuration_restored', backupConfig);
@@ -712,13 +718,14 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log cloning
-      await this.logInsight({
-        type: 'configuration_cloned',
-        sourceProductKey,
-        newProductKey,
-        targetDomain,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'configuration_cloned',
+      //   sourceProductKey,
+      //   newProductKey,
+      //   targetDomain,
+      //   timestamp: new Date()
+      // });
 
       return {
         success: true,
@@ -806,11 +813,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Log reset
-      await this.logInsight({
-        type: 'configuration_reset',
-        productKey,
-        timestamp: new Date()
-      });
+      // TODO: Implement proper logging
+      // await this.logInsight({
+      //   type: 'configuration_reset',
+      //   productKey,
+      //   timestamp: new Date()
+      // });
 
       // Notify active sessions
       await this.notifyActiveSessions(productKey, 'configuration_reset', resetConfig);
@@ -1003,11 +1011,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     console.log('[ChatbotConfigurationSkill] Notifying management team:', notification);
     
     // Would integrate with actual notification system
-    await this.logInsight({
-      type: 'management_notification',
-      notification,
-      timestamp: new Date()
-    });
+    // TODO: Implement proper logging
+    // await this.logInsight({
+    //   type: 'management_notification',
+    //   notification,
+    //   timestamp: new Date()
+    // });
   }
 
   private async notifyActiveSessions(productKey: string, event: string, data: any): Promise<void> {
