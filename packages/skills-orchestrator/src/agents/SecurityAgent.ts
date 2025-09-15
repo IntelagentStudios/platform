@@ -574,10 +574,8 @@ export class SecurityAgent extends EventEmitter {
 
     const failedAttempts = await prisma.audit_logs.count({
       where: {
-        event_type: 'login_failed',
-        details: {
-          contains: context.userId
-        },
+        action: 'login_failed',
+        user_id: context.userId,
         created_at: {
           gte: new Date(Date.now() - 300000) // Last 5 minutes
         }
@@ -630,10 +628,8 @@ export class SecurityAgent extends EventEmitter {
   private async checkLockout(userId: string): Promise<{ locked: boolean; until?: Date }> {
     const lockout = await prisma.audit_logs.findFirst({
       where: {
-        event_type: 'account_locked',
-        details: {
-          contains: userId
-        },
+        action: 'account_locked',
+        user_id: userId,
         created_at: {
           gte: new Date(Date.now() - this.securityPolicies.lockoutDuration)
         }
@@ -702,9 +698,12 @@ export class SecurityAgent extends EventEmitter {
   private async logAccessAttempt(attempt: AuditLog): Promise<void> {
     await prisma.audit_logs.create({
       data: {
-        event_type: 'access_attempt',
-        details: JSON.stringify(attempt),
-        severity: attempt.result === 'denied' ? 'warning' : 'info',
+        action: 'access_attempt',
+        user_id: attempt.userId,
+        resource_type: 'security',
+        resource_id: attempt.resource,
+        changes: attempt as any,
+        license_key: 'SYSTEM',
         created_at: new Date()
       }
     });
@@ -713,9 +712,10 @@ export class SecurityAgent extends EventEmitter {
   private async logSecurityEvent(eventType: string, details: any): Promise<void> {
     await prisma.audit_logs.create({
       data: {
-        event_type: `security_${eventType}`,
-        details: JSON.stringify(details),
-        severity: eventType.includes('threat') || eventType.includes('critical') ? 'error' : 'warning',
+        action: `security_${eventType}`,
+        resource_type: 'security',
+        changes: details,
+        license_key: 'SYSTEM',
         created_at: new Date()
       }
     });
