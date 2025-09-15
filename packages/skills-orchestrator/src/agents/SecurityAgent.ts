@@ -367,9 +367,9 @@ export class SecurityAgent extends EventEmitter {
    */
   public generateSecureToken(payload: any, expiresIn: string = '1h'): string {
     return jwt.sign(payload, this.jwtSecret, {
-      expiresIn,
+      expiresIn: expiresIn as any,
       algorithm: 'HS256'
-    });
+    } as jwt.SignOptions);
   }
 
   /**
