@@ -6,7 +6,7 @@
 import { SpecialistAgent, AgentInsight } from './base/SpecialistAgent';
 
 export class AnalyticsAgent extends SpecialistAgent {
-  private metrics = new Map<string, any[]>();
+  private analyticsData = new Map<string, any[]>();
   private patterns = new Map<string, any>();
   private predictions = new Map<string, any>();
   private dashboards = new Map<string, any>();
@@ -23,13 +23,13 @@ export class AnalyticsAgent extends SpecialistAgent {
   
   private initializeMetrics(): void {
     // Initialize core metrics
-    this.metrics.set('api_calls', []);
-    this.metrics.set('skill_executions', []);
-    this.metrics.set('user_actions', []);
-    this.metrics.set('system_performance', []);
-    this.metrics.set('error_rates', []);
-    this.metrics.set('revenue', []);
-    this.metrics.set('user_engagement', []);
+    this.analyticsData.set('api_calls', []);
+    this.analyticsData.set('skill_executions', []);
+    this.analyticsData.set('user_actions', []);
+    this.analyticsData.set('system_performance', []);
+    this.analyticsData.set('error_rates', []);
+    this.analyticsData.set('revenue', []);
+    this.analyticsData.set('user_engagement', []);
   }
   
   private setupDashboards(): void {
@@ -153,7 +153,7 @@ export class AnalyticsAgent extends SpecialistAgent {
   protected async cleanup(): Promise<void> {
     // Save metrics before cleanup
     await this.saveMetrics();
-    this.metrics.clear();
+    this.analyticsData.clear();
   }
   
   /**
@@ -168,7 +168,7 @@ export class AnalyticsAgent extends SpecialistAgent {
       skillsUsed: results.skillsUsed || []
     };
     
-    const executions = this.metrics.get('skill_executions') || [];
+    const executions = this.analyticsData.get('skill_executions') || [];
     executions.push(metric);
     
     // Keep only last 1000 executions
@@ -176,7 +176,7 @@ export class AnalyticsAgent extends SpecialistAgent {
       executions.shift();
     }
     
-    this.metrics.set('skill_executions', executions);
+    this.analyticsData.set('skill_executions', executions);
   }
   
   /**
@@ -190,7 +190,7 @@ export class AnalyticsAgent extends SpecialistAgent {
         return await this.generateReport(params);
       
       case 'get_metrics':
-        return await this.getMetrics(params);
+        return await this.getAnalyticsMetrics(params);
       
       case 'predict':
         return await this.predict(params);
@@ -207,7 +207,7 @@ export class AnalyticsAgent extends SpecialistAgent {
    * Track event
    */
   private trackEvent(type: string, data: any): void {
-    const events = this.metrics.get(type) || [];
+    const events = this.analyticsData.get(type) || [];
     events.push({
       timestamp: new Date(),
       data
@@ -218,7 +218,7 @@ export class AnalyticsAgent extends SpecialistAgent {
       events.shift();
     }
     
-    this.metrics.set(type, events);
+    this.analyticsData.set(type, events);
   }
   
   /**
@@ -227,7 +227,7 @@ export class AnalyticsAgent extends SpecialistAgent {
   private async analyzePatterns(): Promise<void> {
     if (!this.isActive) return;
     
-    for (const [metricName, data] of this.metrics) {
+    for (const [metricName, data] of this.analyticsData) {
       if (data.length < 10) continue;
       
       // Simple pattern detection
@@ -280,7 +280,7 @@ export class AnalyticsAgent extends SpecialistAgent {
   private async generatePredictions(): Promise<void> {
     if (!this.isActive) return;
     
-    for (const [metricName, data] of this.metrics) {
+    for (const [metricName, data] of this.analyticsData) {
       if (data.length < 20) continue;
       
       // Simple linear prediction
@@ -325,21 +325,21 @@ export class AnalyticsAgent extends SpecialistAgent {
     if (!this.isActive) return;
     
     const kpis = {
-      totalExecutions: (this.metrics.get('skill_executions') || []).length,
+      totalExecutions: (this.analyticsData.get('skill_executions') || []).length,
       successRate: this.calculateSuccessRate(),
       avgResponseTime: this.calculateAvgResponseTime(),
       activeUsers: Math.floor(Math.random() * 1000),
       revenue: Math.floor(Math.random() * 100000)
     };
     
-    this.metrics.set('kpis', [kpis]);
+    this.analyticsData.set('kpis', [kpis]);
   }
   
   /**
    * Calculate success rate
    */
   private calculateSuccessRate(): number {
-    const executions = this.metrics.get('skill_executions') || [];
+    const executions = this.analyticsData.get('skill_executions') || [];
     if (executions.length === 0) return 100;
     
     const successful = executions.filter((e: any) => e.success).length;
@@ -350,7 +350,7 @@ export class AnalyticsAgent extends SpecialistAgent {
    * Calculate average response time
    */
   private calculateAvgResponseTime(): number {
-    const executions = this.metrics.get('skill_executions') || [];
+    const executions = this.analyticsData.get('skill_executions') || [];
     if (executions.length === 0) return 0;
     
     const total = executions.reduce((sum: number, e: any) => sum + (e.duration || 0), 0);
@@ -387,7 +387,7 @@ export class AnalyticsAgent extends SpecialistAgent {
       period,
       generated: new Date(),
       metrics: Object.fromEntries(
-        Array.from(this.metrics.entries()).map(([k, v]) => [k, v.length])
+        Array.from(this.analyticsData.entries()).map(([k, v]) => [k, v.length])
       ),
       patterns: Object.fromEntries(this.patterns),
       predictions: Object.fromEntries(this.predictions)
@@ -395,18 +395,18 @@ export class AnalyticsAgent extends SpecialistAgent {
   }
   
   /**
-   * Get metrics
+   * Get analytics metrics
    */
-  private async getMetrics(params: any): Promise<any> {
+  private async getAnalyticsMetrics(params: any): Promise<any> {
     const { metric, limit = 100 } = params;
     
     if (metric) {
-      const data = this.metrics.get(metric) || [];
+      const data = this.analyticsData.get(metric) || [];
       return data.slice(-limit);
     }
     
     return Object.fromEntries(
-      Array.from(this.metrics.entries()).map(([k, v]) => [k, v.slice(-limit)])
+      Array.from(this.analyticsData.entries()).map(([k, v]) => [k, v.slice(-limit)])
     );
   }
   
@@ -472,11 +472,11 @@ export class AnalyticsAgent extends SpecialistAgent {
   public async getStatus(): Promise<any> {
     return {
       active: this.isActive,
-      metrics: this.metrics.size,
+      metrics: this.analyticsData.size,
       patterns: this.patterns.size,
       predictions: this.predictions.size,
       dashboards: this.dashboards.size,
-      kpis: this.metrics.get('kpis')?.[0] || {}
+      kpis: this.analyticsData.get('kpis')?.[0] || {}
     };
   }
 }

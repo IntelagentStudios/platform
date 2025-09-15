@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
             in: productKeys.map(pk => pk.product_key)
           }
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         select: { timestamp: true }
       });
       

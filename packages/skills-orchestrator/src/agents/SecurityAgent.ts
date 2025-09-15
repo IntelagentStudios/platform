@@ -547,7 +547,7 @@ export class SecurityAgent {
 
     // Check for rapid resource access
     if (context.userId) {
-      const recentAccess = await prisma.platform_logs.count({
+      const recentAccess = await prisma.audit_logs.count({
         where: {
           event_type: 'access_attempt',
           details: {
@@ -570,7 +570,7 @@ export class SecurityAgent {
   private async checkBruteForce(context: any): Promise<{ detected: boolean }> {
     if (!context.userId) return { detected: false };
 
-    const failedAttempts = await prisma.platform_logs.count({
+    const failedAttempts = await prisma.audit_logs.count({
       where: {
         event_type: 'login_failed',
         details: {
@@ -626,7 +626,7 @@ export class SecurityAgent {
   }
 
   private async checkLockout(userId: string): Promise<{ locked: boolean; until?: Date }> {
-    const lockout = await prisma.platform_logs.findFirst({
+    const lockout = await prisma.audit_logs.findFirst({
       where: {
         event_type: 'account_locked',
         details: {
@@ -698,7 +698,7 @@ export class SecurityAgent {
   }
 
   private async logAccessAttempt(attempt: AuditLog): Promise<void> {
-    await prisma.platform_logs.create({
+    await prisma.audit_logs.create({
       data: {
         event_type: 'access_attempt',
         details: JSON.stringify(attempt),
@@ -709,7 +709,7 @@ export class SecurityAgent {
   }
 
   private async logSecurityEvent(eventType: string, details: any): Promise<void> {
-    await prisma.platform_logs.create({
+    await prisma.audit_logs.create({
       data: {
         event_type: `security_${eventType}`,
         details: JSON.stringify(details),

@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
 
     let knowledgeFiles = [];
     try {
-      knowledgeFiles = await prisma.knowledge_files.findMany({
+      knowledgeFiles = await prisma.custom_knowledge.findMany({
         where: { product_key: productKey },
-        select: { filename: true, content: true }
+        select: { knowledge_type: true, content: true }
       });
     } catch (error) {
       console.log('Knowledge files table not available:', error);
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     const knowledgePieces: string[] = [];
     for (const file of knowledgeFiles) {
-      knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
+      knowledgePieces.push(`[File: ${file.knowledge_type}]\n${file.content}`);
     }
     for (const k of customKnowledge) {
       if (k.knowledge_type !== 'file') {

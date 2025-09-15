@@ -40,7 +40,7 @@ export class SEOManager {
   }
 
   generateStructuredData(locale: string, pageData?: any): string {
-    const structuredData = {
+    const structuredData: any = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       inLanguage: locale,
@@ -59,11 +59,11 @@ export class SEOManager {
     };
 
     if (pageData?.title) {
-      structuredData['name'] = pageData.title;
+      structuredData.name = pageData.title;
     }
 
     if (pageData?.description) {
-      structuredData['description'] = pageData.description;
+      structuredData.description = pageData.description;
     }
 
     return `<script type="application/ld+json">${JSON.stringify(structuredData, null, 2)}</script>`;

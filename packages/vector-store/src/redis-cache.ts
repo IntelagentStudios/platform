@@ -281,7 +281,7 @@ export class VectorRedisCache {
         ttl: this.ttl
       };
     } catch (error) {
-      return { enabled: true, error: error.message };
+      return { enabled: true, error: (error as Error).message };
     }
   }
 

@@ -23,7 +23,11 @@
       "Bash(npx prisma studio:*)",
       "Bash(npx prisma migrate dev:*)",
       "Bash(npm install:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(xargs:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm update:*)"
     ],
     "deny": [],
     "ask": []

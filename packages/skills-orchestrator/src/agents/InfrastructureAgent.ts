@@ -473,10 +473,10 @@ export class InfrastructureAgent {
     // Clean up old logs
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
-    await prisma.platform_logs.deleteMany({
+    await prisma.audit_logs.deleteMany({
       where: {
         created_at: { lt: thirtyDaysAgo },
-        severity: 'info'
+        action: { in: ['info', 'debug'] }  // Clean up low-priority logs
       }
     });
   }
@@ -562,11 +562,12 @@ export class InfrastructureAgent {
   }
 
   private async logInfrastructureEvent(eventType: string, details: any): Promise<void> {
-    await prisma.platform_logs.create({
+    await prisma.audit_logs.create({
       data: {
-        event_type: `infrastructure_${eventType}`,
-        details: JSON.stringify(details),
-        severity: eventType.includes('failed') || eventType.includes('critical') ? 'error' : 'info',
+        action: `infrastructure_${eventType}`,
+        changes: details,
+        resource_type: 'infrastructure',
+        license_key: 'SYSTEM',  // System infrastructure events
         created_at: new Date()
       }
     });

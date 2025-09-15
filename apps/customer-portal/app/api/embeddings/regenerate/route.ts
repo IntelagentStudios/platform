@@ -24,12 +24,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get all knowledge files for this product
-    const knowledgeFiles = await prisma.knowledge_files.findMany({
-      where: { 
-        product_key: key
+    const knowledgeFiles = await prisma.custom_knowledge.findMany({
+      where: {
+        product_key: key,
+        is_active: true
       },
       select: {
-        filename: true,
+        knowledge_type: true,
         content: true
       },
       orderBy: {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     
     // Add files
     for (const file of knowledgeFiles) {
-      knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
+      knowledgePieces.push(`[Knowledge: ${file.knowledge_type}]\n${file.content}`);
     }
     
     // Add legacy custom knowledge

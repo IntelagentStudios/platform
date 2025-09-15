@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     const license = await prisma.licenses.findFirst({
       where: {
         OR: [
-          { customer_email: auth.email },
-          { license_key: auth.licenseKey }
+          { email: auth.email },
+          { license_key: auth.license_key }
         ],
         status: 'active'
       }
@@ -47,12 +47,12 @@ export async function POST(request: NextRequest) {
     // Create support record in audit_logs (temporary storage)
     await prisma.audit_logs.create({
       data: {
-        entity_type: 'support_ticket',
-        entity_id: ticketId,
+        resource_type: 'support_ticket',
+        resource_id: ticketId,
         action: 'created',
         user_id: auth.email || 'unknown',
-        license_key: license?.license_key || auth.licenseKey || 'unknown',
-        metadata: {
+        license_key: license?.license_key || auth.license_key || 'unknown',
+        changes: {
           type,
           agent,
           subject,
@@ -62,53 +62,25 @@ export async function POST(request: NextRequest) {
           customer: {
             email: auth.email,
             name: auth.name || auth.email,
-            licenseKey: license?.license_key || auth.licenseKey
+            licenseKey: license?.license_key || auth.license_key
           },
           ...metadata
         }
       }
     });
 
-    // Route to appropriate management agent
-    const AgentClass = AGENT_MAP[agent as keyof typeof AGENT_MAP] || CommunicationsAgent;
-    const agentInstance = new AgentClass();
+    // TODO: Route to appropriate management agent once agent execute methods are implemented
+    // const AgentClass = AGENT_MAP[agent as keyof typeof AGENT_MAP] || CommunicationsAgent;
+    // const agentInstance = new AgentClass();
 
-    // Execute support workflow through the agent
-    try {
-      await agentInstance.execute({
-        action: 'handle_support',
-        data: {
-          ticketId,
-          type,
-          subject,
-          message,
-          priority,
-          customer: {
-            email: auth.email,
-            name: auth.name || auth.email,
-            licenseKey: license?.license_key || auth.licenseKey
-          }
-        }
-      });
-
-      // For high priority issues, also notify via Communications Agent
-      if (priority === 'high' || priority === 'urgent') {
-        const commsAgent = new CommunicationsAgent();
-        await commsAgent.execute({
-          action: 'send_notification',
-          data: {
-            type: 'urgent_support',
-            recipient: 'admin',
-            subject: `[${priority.toUpperCase()}] Support: ${subject}`,
-            message: `New ${priority} priority support ticket from ${auth.email}`,
-            ticketId
-          }
-        });
-      }
-    } catch (agentError) {
-      console.error('Agent execution error:', agentError);
-      // Continue anyway - ticket is created
-    }
+    // For now, just log the support request
+    console.log('Support ticket created:', {
+      ticketId,
+      agent,
+      priority,
+      subject,
+      customer: auth.email
+    });
 
     return NextResponse.json({
       success: true,

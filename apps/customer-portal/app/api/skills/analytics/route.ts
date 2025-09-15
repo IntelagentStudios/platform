@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
     }
     
     // Get skill execution logs
-    const logs = await prisma.skill_logs.findMany({
+    const logs = await prisma.skill_audit_log.findMany({
       where,
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 100
     });
     
@@ -54,33 +54,36 @@ export async function GET(request: NextRequest) {
         timestamp: { gte: startDate },
         ...(productKey ? { product_key: productKey } : {})
       },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 100
     });
     
     // Calculate analytics
     const skillUsage = logs.reduce((acc: any, log) => {
-      if (!acc[log.skill_id]) {
-        acc[log.skill_id] = {
-          skill_id: log.skill_id,
-          skill_name: log.skill_name,
+      const skillId = log.skill_id || 'unknown';
+      if (!acc[skillId]) {
+        acc[skillId] = {
+          skill_id: skillId,
+          skill_name: (log.event_data as any)?.skill_name || skillId,
           count: 0,
           success: 0,
           error: 0,
           domains: new Set()
         };
       }
-      
-      acc[log.skill_id].count++;
-      
-      if (log.log_type === 'response') {
-        acc[log.skill_id].success++;
-      } else if (log.log_type === 'error') {
-        acc[log.skill_id].error++;
+
+      acc[skillId].count++;
+
+      const eventType = log.event_type;
+      if (eventType === 'skill_success' || eventType === 'response') {
+        acc[skillId].success++;
+      } else if (eventType === 'skill_error' || eventType === 'error') {
+        acc[skillId].error++;
       }
       
-      if (log.domain) {
-        acc[log.skill_id].domains.add(log.domain);
+      const domain = (log.event_data as any)?.domain;
+      if (domain) {
+        acc[skillId].domains.add(domain);
       }
       
       return acc;
@@ -93,14 +96,14 @@ export async function GET(request: NextRequest) {
     });
     
     // Get unique sessions
-    const uniqueSessions = new Set(logs.map(l => l.session_id));
+    const uniqueSessions = new Set(logs.map(l => (l.event_data as any)?.session_id || l.execution_id));
     const uniqueChatbotSessions = new Set(chatbotLogs.map(l => l.session_id));
-    
+
     // Time series data for chart
     const timeSeriesMap = new Map();
-    
+
     logs.forEach(log => {
-      const hour = new Date(log.timestamp!);
+      const hour = new Date(log.created_at!);
       hour.setMinutes(0, 0, 0);
       const key = hour.toISOString();
       
@@ -157,19 +160,19 @@ export async function GET(request: NextRequest) {
       timeSeries,
       recentExecutions: logs.slice(0, 20).map(log => ({
         id: log.id,
-        skill: log.skill_name,
-        type: log.log_type,
-        session: log.session_id,
-        domain: log.domain,
-        timestamp: log.timestamp
+        skill: (log.event_data as any)?.skill_name || log.skill_id || 'unknown',
+        type: log.event_type,
+        session: (log.event_data as any)?.session_id || log.execution_id,
+        domain: (log.event_data as any)?.domain || 'unknown',
+        timestamp: log.created_at
       })),
       performance: {
         averageResponseTime: '< 500ms',
-        successRate: logs.length > 0 
-          ? (logs.filter(l => l.log_type === 'response').length / logs.length * 100).toFixed(1) + '%'
+        successRate: logs.length > 0
+          ? (logs.filter(l => l.event_type === 'skill_success' || l.event_type === 'response').length / logs.length * 100).toFixed(1) + '%'
           : '0%',
         errorRate: logs.length > 0
-          ? (logs.filter(l => l.log_type === 'error').length / logs.length * 100).toFixed(1) + '%'
+          ? (logs.filter(l => l.event_type === 'skill_error' || l.event_type === 'error').length / logs.length * 100).toFixed(1) + '%'
           : '0%'
       }
     });

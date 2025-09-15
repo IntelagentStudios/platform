@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     // Check what's actually in the chatbot_logs table
     const logs = await prisma.chatbot_logs.findMany({
       take: 10,
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       select: {
         id: true,
         product_key: true,

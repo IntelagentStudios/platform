@@ -13,7 +13,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "handlebars": "^4.7.8"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",

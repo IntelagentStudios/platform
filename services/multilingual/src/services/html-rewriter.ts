@@ -6,7 +6,7 @@ export class HTMLTranslator {
   private config: Config;
   private sourceLocale: string;
   private targetLocale: string;
-  private textNodesToTranslate: Map<string, Element | Text> = new Map();
+  private textNodesToTranslate: Map<string, Element | any> = new Map();
   private attributesToTranslate: Map<string, { element: Element; attr: string }> = new Map();
 
   constructor(
@@ -196,7 +196,8 @@ export class HTMLTranslator {
 
     let textIndex = 0;
     for (const [key, node] of this.textNodesToTranslate) {
-      if (node instanceof Text) {
+      // Check if node has a replace method (text nodes in Cloudflare Workers)
+      if (node && typeof (node as any).replace === 'function') {
         (node as any).replace(translations[textIndex]);
       }
       textIndex++;

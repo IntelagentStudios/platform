@@ -29,13 +29,11 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
     const leadsToProcess = leadIds ? await prisma.sales_leads.findMany({
       where: { id: { in: leadIds } }
     }) : await prisma.sales_leads.findMany({
-      where: { 
+      where: {
         campaign_id: campaignId,
-        status: 'new',
-        is_bounced: false,
-        is_unsubscribed: false
+        status: 'new'
       },
-      take: campaign.daily_send_limit
+      take: (campaign.settings as any)?.daily_send_limit || 50
     });
 
     for (const lead of leadsToProcess) {
@@ -54,12 +52,15 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
             lead_id: lead.id,
             license_key: campaign.license_key,
             activity_type: 'email_sent',
-            activity_subtype: lead.emails_sent === 0 ? 'cold_email' : 'follow_up',
-            email_subject: personalizedSubject,
-            email_content: personalizedContent,
-            email_template_id: emailToSend.id,
-            email_sequence_num: lead.emails_sent + 1,
-            skill_used: 'email_automation'
+            subject: personalizedSubject,
+            content: personalizedContent,
+            metadata: {
+              activity_subtype: lead.emails_sent === 0 ? 'cold_email' : 'follow_up',
+              email_template_id: emailToSend.id,
+              email_sequence_num: lead.emails_sent + 1
+            },
+            skill_used: 'email_automation',
+            status: 'completed'
           }
         });
 
@@ -69,8 +70,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
           data: {
             status: 'contacted',
             emails_sent: { increment: 1 },
-            last_email_sent: new Date(),
-            contacted_at: lead.contacted_at || new Date()
+            last_contacted_at: new Date()
           }
         });
 
@@ -95,8 +95,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       where: { id: campaignId },
       data: {
         emails_sent: { increment: results.filter(r => r.status === 'sent').length },
-        leads_contacted: { increment: results.filter(r => r.status === 'sent').length },
-        last_activity_at: new Date()
+        updated_at: new Date()
       }
     });
 
@@ -132,7 +131,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       // Score based on engagement
       if (lead.emails_opened > 0) score += 10;
       if (lead.emails_clicked > 0) score += 20;
-      if (lead.last_response) score += 30;
+      if (lead.last_engaged_at) score += 30;
       
       // Score based on company info
       if (lead.company_name) score += 5;
@@ -157,17 +156,16 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       // Update lead score
       await prisma.sales_leads.update({
         where: { id: lead.id },
-        data: { 
-          lead_score: score,
-          status: score >= 70 ? 'qualified' : lead.status,
-          qualified_at: score >= 70 && !lead.qualified_at ? new Date() : lead.qualified_at
+        data: {
+          score: score,
+          status: score >= 70 ? 'qualified' : lead.status
         }
       });
       
       scoredLeads.push({
         leadId: lead.id,
         email: lead.email,
-        previousScore: lead.lead_score,
+        previousScore: lead.score,
         newScore: score,
         qualified: score >= 70
       });
@@ -199,10 +197,13 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
         lead_id: leadId,
         license_key: lead.license_key,
         activity_type: 'response_received',
-        response_content: responseContent,
-        sentiment_score: sentiment || 0,
-        intent_detected: intent,
-        skill_used: 'response_handler'
+        content: responseContent,
+        metadata: {
+          sentiment_score: sentiment || 0,
+          intent_detected: intent
+        },
+        skill_used: 'response_handler',
+        status: 'completed'
       }
     });
     
@@ -210,10 +211,10 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
     await prisma.sales_leads.update({
       where: { id: leadId },
       data: {
-        status: intent === 'interested' ? 'qualified' : 
+        status: intent === 'interested' ? 'qualified' :
                 intent === 'not_interested' ? 'lost' : 'responded',
-        last_response: responseContent,
-        lead_score: Math.min(100, lead.lead_score + (intent === 'interested' ? 20 : 5))
+        last_engaged_at: new Date(),
+        score: Math.min(100, lead.score + (intent === 'interested' ? 20 : 5))
       }
     });
     
@@ -221,8 +222,8 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
     await prisma.sales_campaigns.update({
       where: { id: lead.campaign_id },
       data: {
-        responses_received: { increment: 1 },
-        last_activity_at: new Date()
+        replies_received: { increment: 1 },
+        updated_at: new Date()
       }
     });
     
@@ -251,10 +252,13 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
         lead_id: leadId,
         license_key: lead.license_key,
         activity_type: 'meeting_scheduled',
-        meeting_date: new Date(meetingDate),
-        meeting_duration: duration || 30,
-        metadata: { notes },
-        skill_used: 'meeting_scheduler'
+        metadata: {
+          meeting_date: new Date(meetingDate),
+          meeting_duration: duration || 30,
+          notes
+        },
+        skill_used: 'meeting_scheduler',
+        status: 'completed'
       }
     });
     
@@ -263,7 +267,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       where: { id: leadId },
       data: {
         status: 'meeting_scheduled',
-        lead_score: Math.min(100, lead.lead_score + 15)
+        score: Math.min(100, lead.score + 15)
       }
     });
     
@@ -272,7 +276,7 @@ const salesSkillHandlers: Record<string, (params: any) => Promise<any>> = {
       where: { id: lead.campaign_id },
       data: {
         meetings_booked: { increment: 1 },
-        last_activity_at: new Date()
+        updated_at: new Date()
       }
     });
     

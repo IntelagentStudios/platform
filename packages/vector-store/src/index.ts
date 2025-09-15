@@ -559,7 +559,7 @@ export class IntelagentVectorStore {
       take: limit
     });
 
-    const cacheVectors: Vector[] = vectors.map(v => ({
+    const cacheVectors: Vector[] = vectors.map((v: any) => ({
       id: v.id,
       embedding: v.embedding as number[],
       metadata: v.metadata as Record<string, any>,

@@ -93,13 +93,14 @@ export async function GET(
     // Get all knowledge files for this product
     let knowledgeFiles = [];
     try {
-      knowledgeFiles = await prisma.knowledge_files.findMany({
+      knowledgeFiles = await prisma.custom_knowledge.findMany({
         where: {
-          product_key: finalProductKey
+          product_key: finalProductKey,
+          is_active: true
         },
         select: {
           content: true,
-          filename: true
+          knowledge_type: true
         }
       });
     } catch (error) {
@@ -119,8 +120,8 @@ export async function GET(
     // Add knowledge files
     if (knowledgeFiles.length > 0) {
       if (combinedKnowledge) combinedKnowledge += '\n\n---\n\n';
-      combinedKnowledge += knowledgeFiles.map(f => 
-        `[File: ${f.filename}]\n${f.content}`
+      combinedKnowledge += knowledgeFiles.map(f =>
+        `[Knowledge: ${f.knowledge_type}]\n${f.content}`
       ).join('\n\n---\n\n');
     }
 

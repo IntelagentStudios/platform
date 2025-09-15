@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     
     // Get ALL recent chatbot logs to see what's being stored
     const recentLogs = await prisma.chatbot_logs.findMany({
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 10,
       select: {
         id: true,
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Specifically check for your product key
     const yourProductKeyLogs = await prisma.chatbot_logs.findMany({
       where: { product_key: 'chat_9b3f7e8a2c5d1f0e' },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 5
     });
     

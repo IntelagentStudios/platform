@@ -478,17 +478,18 @@ export class OperationsAgent {
     actions: string[],
     resolved: boolean
   ): Promise<void> {
-    // Log to platform_logs
-    await prisma.platform_logs.create({
+    // Log to audit_logs
+    await prisma.audit_logs.create({
       data: {
-        event_type: `incident_${type}`,
-        details: JSON.stringify({
+        action: `incident_${type}`,
+        changes: {
           type,
           details,
           actions,
           resolved
-        }),
-        severity: resolved ? 'warning' : 'error',
+        },
+        resource_type: 'operations',
+        license_key: 'SYSTEM',
         created_at: new Date()
       }
     });

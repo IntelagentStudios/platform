@@ -23,15 +23,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Get knowledge files
-    const knowledgeFiles = await prisma.knowledge_files.findMany({
+    const knowledgeFiles = await prisma.custom_knowledge.findMany({
       where: { 
         product_key: productKey
       },
       select: {
         id: true,
-        filename: true,
+        knowledge_type: true,
         content: true,
-        file_size: true,
         created_at: true
       }
     });
@@ -53,7 +52,7 @@ export async function GET(request: NextRequest) {
     
     // Add files
     for (const file of knowledgeFiles) {
-      knowledgePieces.push(`[File: ${file.filename}]\n${file.content}`);
+      knowledgePieces.push(`[File: ${file.knowledge_type}]\n${file.content}`);
     }
     
     // Add legacy custom knowledge
@@ -84,8 +83,8 @@ export async function GET(request: NextRequest) {
       knowledge: {
         files: knowledgeFiles.map(f => ({
           id: f.id,
-          filename: f.filename,
-          size: f.file_size,
+          filename: f.knowledge_type,
+          size: f.content.length,
           preview: f.content.substring(0, 200) + '...'
         })),
         legacy: customKnowledge.map(k => ({

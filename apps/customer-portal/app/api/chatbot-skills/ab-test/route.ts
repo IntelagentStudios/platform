@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
           contains: '"abTest":true'
         }
       },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: detailed ? 1000 : 100
     });
 

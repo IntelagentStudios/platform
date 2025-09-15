@@ -59,15 +59,16 @@ export async function GET(request: NextRequest) {
     
     // Get all knowledge files for this product
     try {
-      const files = await prisma.knowledge_files.findMany({
+      const files = await prisma.custom_knowledge.findMany({
         where: {
-          product_key: productKey
+          product_key: productKey,
+          knowledge_type: 'file',
+          is_active: true
         },
         select: {
           id: true,
-          filename: true,
-          file_type: true,
-          file_size: true,
+          knowledge_type: true,
+          content: true,
           created_at: true,
           updated_at: true
         },
@@ -171,14 +172,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Store file in database
-    const knowledgeFile = await prisma.knowledge_files.create({
+    const knowledgeFile = await prisma.custom_knowledge.create({
       data: {
         product_key: productKey,
         license_key: productKeyInfo.license_key,
-        filename: file.name,
-        content: content,
-        file_type: file.type || 'text/plain',
-        file_size: bytes.byteLength
+        knowledge_type: 'file',
+        content: `[${file.name}]\n${content}`,
+        is_active: true
       }
     });
 
@@ -261,7 +261,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from database
-    await prisma.knowledge_files.delete({
+    await prisma.custom_knowledge.delete({
       where: { id: fileId }
     });
 
@@ -318,7 +318,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update in database
-    const updated = await prisma.knowledge_files.update({
+    const updated = await prisma.custom_knowledge.update({
       where: { id },
       data: {
         ...(content && { content }),

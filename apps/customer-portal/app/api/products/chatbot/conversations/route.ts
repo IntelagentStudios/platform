@@ -69,7 +69,7 @@ async function fetchConversations(licenseKey: string) {
     if (isMasterAdmin) {
       // Master admin sees all conversations across all accounts
       logs = await prisma.chatbot_logs.findMany({
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 500 // More for admin
       });
       siteKeyUsed = 'chat_9b3f7e8a2c5d1f0e'; // Harry's actual product key
@@ -216,7 +216,7 @@ async function fetchConversations(licenseKey: string) {
             }
           ]
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 100 // Limit to last 100 messages
       });
       

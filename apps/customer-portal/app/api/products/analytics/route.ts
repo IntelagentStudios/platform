@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       // Fetch real data from chatbot_logs
       const logs = await prisma.chatbot_logs.findMany({
         where: { product_key: productKeyRecord.product_key },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { created_at: 'desc' }
       });
 
       // Calculate metrics

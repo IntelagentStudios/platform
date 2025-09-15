@@ -103,15 +103,14 @@ export async function GET(request: NextRequest) {
     };
     
     try {
-      const files = await prisma.knowledge_files.findMany({
+      const files = await prisma.custom_knowledge.findMany({
         where: {
           product_key: productKey
         },
         select: {
           id: true,
-          filename: true,
-          file_type: true,
-          file_size: true,
+          knowledge_type: true,
+          content: true,
           created_at: true,
           updated_at: true
         },

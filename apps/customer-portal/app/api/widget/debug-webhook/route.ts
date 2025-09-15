@@ -60,9 +60,9 @@ export async function GET(request: NextRequest) {
     const { prisma } = await import('@/lib/prisma');
     
     // Get knowledge files
-    const knowledgeFiles = await prisma.knowledge_files.findMany({
+    const knowledgeFiles = await prisma.custom_knowledge.findMany({
       where: { product_key: productKey },
-      select: { filename: true, content: true }
+      select: { knowledge_type: true, content: true }
     });
     
     // Get product key info for legacy knowledge
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       // Combine knowledge
       const pieces: string[] = [];
       for (const file of knowledgeFiles) {
-        pieces.push(`[File: ${file.filename}]\n${file.content}`);
+        pieces.push(`[File: ${file.knowledge_type}]\n${file.content}`);
       }
       for (const k of legacy) {
         if (k.knowledge_type !== 'file') {

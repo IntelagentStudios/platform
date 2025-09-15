@@ -8,7 +8,7 @@ export async function GET() {
   try {
     // Get the 10 most recent chatbot logs
     const recentLogs = await prisma.chatbot_logs.findMany({
-      orderBy: { timestamp: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 10,
       select: {
         id: true,

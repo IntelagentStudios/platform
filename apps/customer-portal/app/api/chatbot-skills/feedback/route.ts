@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
 
     const feedbackEntries = await prisma.chatbot_logs.findMany({
       where: whereClause,
-      orderBy: { timestamp: 'desc' }
+      orderBy: { created_at: 'desc' }
     });
 
     // Analyze feedback

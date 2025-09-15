@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       // Recent activity (last 10 logs)
       prisma.chatbot_logs.findMany({
         take: 10,
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         select: {
           timestamp: true,
           product_key: true,

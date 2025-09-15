@@ -374,7 +374,7 @@ export class PgVectorAdapter {
       `;
 
       // Simple clustering (would need more sophisticated algorithm for production)
-      vectors.forEach((v, idx) => {
+      vectors.forEach((v: any, idx: number) => {
         const clusterIdx = idx % k;
         if (!clusters.has(clusterIdx)) {
           clusters.set(clusterIdx, []);

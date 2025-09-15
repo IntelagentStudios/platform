@@ -142,15 +142,17 @@ export abstract class SpecialistAgent extends EventEmitter {
     try {
       await prisma.skill_executions.create({
         data: {
+          execution_id: insight.id, // Use insight ID as execution ID
           skill_id: this.agentId,
+          node_id: this.domain, // Use domain as node ID
           license_key: 'SYSTEM', // System agents don't have a license
           status: 'completed',
-          input_params: {
+          input_data: {
             type: 'insight_generation',
             domain: this.domain,
             insightType: insight.type
           },
-          output_result: {
+          output_data: {
             insight: {
               id: insight.id,
               title: insight.title,
@@ -164,10 +166,13 @@ export abstract class SpecialistAgent extends EventEmitter {
           started_at: insight.timestamp,
           completed_at: new Date(),
           execution_time_ms: 0,
-          metadata: {
+          performance_metrics: {
             agent: this.agentId,
             domain: this.domain,
-            metrics: this.metrics
+            eventsProcessed: this.metrics.eventsProcessed,
+            insightsGenerated: this.metrics.insightsGenerated,
+            interventions: this.metrics.interventions,
+            uptime: this.metrics.uptime
           }
         }
       });

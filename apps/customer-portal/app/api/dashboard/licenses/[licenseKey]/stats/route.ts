@@ -86,7 +86,7 @@ export async function GET(
       // Recent activity
       prisma.chatbot_logs.findFirst({
         where: { product_key: productKey },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         select: { timestamp: true }
       })
     ])

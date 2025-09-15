@@ -50,10 +50,6 @@ class ComplianceService {
         where: {
           id: userId,
           license_key: licenseKey
-        },
-        include: {
-          api_keys: true,
-          sessions: true
         }
       });
 
@@ -293,24 +289,26 @@ class ComplianceService {
 
     try {
       const tenantDb = await tenantManager.getTenantConnection(licenseKey);
-      
-      switch (policy.archiveStrategy) {
-        case 'delete':
-          await tenantDb.$executeRawUnsafe(
-            `DELETE FROM ${policy.tableName} WHERE created_at < $1`,
-            cutoffDate
-          );
-          break;
+
+      if (tenantDb) {
+        switch (policy.archiveStrategy) {
+          case 'delete':
+            await tenantDb.$executeRawUnsafe(
+              `DELETE FROM ${policy.tableName} WHERE created_at < $1`,
+              cutoffDate
+            );
+            break;
+
+          case 'anonymize':
+            // Anonymize old records
+            await this.anonymizeOldRecords(tenantDb, policy.tableName, cutoffDate);
+            break;
           
-        case 'anonymize':
-          // Anonymize old records
-          await this.anonymizeOldRecords(tenantDb, policy.tableName, cutoffDate);
-          break;
-          
-        case 'archive':
-          // Move to archive table
-          await this.archiveOldRecords(tenantDb, policy.tableName, cutoffDate);
-          break;
+          case 'archive':
+            // Move to archive table
+            await this.archiveOldRecords(tenantDb, policy.tableName, cutoffDate);
+            break;
+        }
       }
     } catch (error) {
       console.error(`Failed to enforce retention policy for ${policy.tableName}:`, error);
@@ -357,14 +355,14 @@ class ComplianceService {
 
     // Get statistics
     const stats = await adminDb.$queryRaw`
-      SELECT 
+      SELECT
         COUNT(DISTINCT u.id) as total_users,
         COUNT(DISTINCT CASE WHEN al.action = 'data_export' THEN al.id END) as total_exports,
         COUNT(DISTINCT CASE WHEN al.action = 'data_deletion' THEN al.id END) as total_deletions
       FROM public.users u
       LEFT JOIN public.audit_logs al ON al.user_id = u.id
       WHERE u.license_key = ${licenseKey}
-    `;
+    ` as any[];
 
     if (stats && stats[0]) {
       report.statistics.totalUsers = stats[0].total_users;
@@ -382,14 +380,14 @@ class ComplianceService {
     const adminDb = await getAdminDb();
     
     const consent = await adminDb.$queryRaw`
-      SELECT granted 
+      SELECT granted
       FROM public.user_consents
       WHERE user_id = ${userId}
         AND consent_type = ${consentType}
         AND revoked_at IS NULL
       ORDER BY granted_at DESC
       LIMIT 1
-    `;
+    ` as any[];
 
     return consent && consent.length > 0 && consent[0].granted;
   }

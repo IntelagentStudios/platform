@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
           product_key: true,
           timestamp: true
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: limit * 5 // Get more to group properly
       })
 
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
       // Get recent conversations with full details
       const recentLogs = await prisma.chatbot_logs.findMany({
         where: whereClause,
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: limit,
         select: {
           id: true,
@@ -278,7 +278,7 @@ export async function GET(request: NextRequest) {
           product_key: true,
           timestamp: true
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: limit * 5
       })
 

@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
           session_id: data.session_id,
           timestamp: { gte: lastHour }
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { created_at: 'desc' }
       })
 
       if (!recentActivity || recentActivity.id === log.id) {

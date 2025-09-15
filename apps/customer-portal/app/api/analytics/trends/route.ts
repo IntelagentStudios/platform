@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         session_id: true,
         product_key: true
       },
-      orderBy: { timestamp: 'asc' }
+      orderBy: { created_at: 'asc' }
     })
 
     // Group data by date/week/month

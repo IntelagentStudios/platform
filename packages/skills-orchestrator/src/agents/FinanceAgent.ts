@@ -75,9 +75,9 @@ export class FinanceAgent extends EventEmitter {
    */
   public async requiresPayment(request: ManagementRequest): Promise<boolean> {
     // Check if skill has associated cost
-    const skillId = request.payload?.skillId;
+    const skillId = request.params?.skillId;
     if (!skillId) return false;
-    
+
     const cost = this.skillPricing.get(skillId);
     return cost !== undefined && cost > 0;
   }
@@ -87,7 +87,7 @@ export class FinanceAgent extends EventEmitter {
    */
   public async authorizeTransaction(request: ManagementRequest): Promise<any> {
     const { userId, licenseKey } = request.context;
-    const skillId = request.payload?.skillId;
+    const skillId = request.params?.skillId;
     const cost = this.skillPricing.get(skillId) || 0;
     
     try {
@@ -164,23 +164,23 @@ export class FinanceAgent extends EventEmitter {
    * Execute financial operation
    */
   public async execute(request: ManagementRequest): Promise<any> {
-    const { action, payload } = request;
+    const { action, params } = request;
     
     switch (action) {
       case 'process_payment':
-        return await this.processPayment(payload);
-        
+        return await this.processPayment(params);
+
       case 'create_invoice':
-        return await this.createInvoice(payload);
-        
+        return await this.createInvoice(params);
+
       case 'refund':
-        return await this.processRefund(payload);
-        
+        return await this.processRefund(params);
+
       case 'subscription':
-        return await this.manageSubscription(payload);
-        
+        return await this.manageSubscription(params);
+
       case 'report':
-        return await this.generateFinancialReport(payload);
+        return await this.generateFinancialReport(params);
         
       default:
         return { success: false, error: 'Unknown finance action' };
@@ -399,7 +399,7 @@ export class FinanceAgent extends EventEmitter {
    * Estimate cost for a request
    */
   public async estimateCost(request: ManagementRequest): Promise<number> {
-    const skillId = request.payload?.skillId;
+    const skillId = request.params?.skillId;
     if (!skillId) return 0;
     
     const baseCost = this.skillPricing.get(skillId) || 0;
