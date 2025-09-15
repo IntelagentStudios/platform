@@ -253,9 +253,7 @@ export class SecurityAgent extends EventEmitter {
       const user = await prisma.users.findUnique({
         where: { id: userId },
         include: {
-          licenses: {
-            include: { license_types: true }
-          }
+          licenses: true
         }
       });
 
@@ -280,7 +278,7 @@ export class SecurityAgent extends EventEmitter {
       }
 
       // Get user's tier and permissions
-      const tier = user.licenses?.license_types?.name || 'free';
+      const tier = user.licenses?.tier || user.licenses?.plan || 'free';
       const permissions = this.getTierPermissions(tier);
       const restrictions = this.getTierRestrictions(tier);
 
