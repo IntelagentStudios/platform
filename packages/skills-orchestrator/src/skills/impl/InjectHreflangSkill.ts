@@ -1,12 +1,12 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillResult, SkillParams } from '../types';
+import { SkillResult, SkillParams, SkillCategory } from '../../types';
 
 export class InjectHreflangSkill extends BaseSkill {
   metadata = {
     id: 'inject-hreflang_v1',
     name: 'Inject Hreflang Tags',
     description: 'Generate and inject hreflang tags for multilingual SEO optimization',
-    category: 'seo' as const,
+    category: SkillCategory.MARKETING,
     version: '1.0.0',
     author: 'Intelagent',
     tags: ['hreflang', 'seo', 'multilingual', 'localization', 'international'],

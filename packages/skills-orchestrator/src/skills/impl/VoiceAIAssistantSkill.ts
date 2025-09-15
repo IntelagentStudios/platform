@@ -1,5 +1,5 @@
 import { EnhancedBaseSkill } from '../EnhancedBaseSkill';
-import { SkillInput, SkillOutput, SkillMetadata } from '../../types';
+import { SkillParams, SkillResult, SkillMetadata, SkillCategory } from '../../types';
 
 interface VoiceCommand {
   transcript: string;
@@ -66,7 +66,7 @@ export class VoiceAIAssistantSkill extends EnhancedBaseSkill {
     name: 'VoiceAIAssistant',
     description: 'Advanced voice AI assistant with real-time sentiment analysis and emotional intelligence',
     version: '2.0.0',
-    category: 'customer-service',
+    category: SkillCategory.CUSTOMER_SERVICE,
     tags: ['voice', 'ai', 'sentiment', 'nlp', 'speech', 'emotion'],
     complexity: 'advanced',
     estimatedResponseTime: 500,

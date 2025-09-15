@@ -120,8 +120,8 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
         totalConversations: conversations.length,
         uniqueSessions: new Set(conversations.map(c => c.session_id)).size,
         totalMessages: conversations.reduce((sum, c) => {
-          const messages = typeof c.messages === 'string' ? JSON.parse(c.messages) : c.messages;
-          return sum + (Array.isArray(messages) ? messages.length : 0);
+          // Count both customer messages and chatbot responses
+          return sum + (c.customer_message ? 1 : 0) + (c.chatbot_response ? 1 : 0);
         }, 0),
         avgMessagesPerConversation: 0,
         domains: [...new Set(conversations.map(c => c.domain).filter(Boolean))],
@@ -169,9 +169,14 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
         };
       }
 
-      const messages = typeof conversation.messages === 'string' 
-        ? JSON.parse(conversation.messages) 
-        : conversation.messages;
+      // Create a messages array from customer_message and chatbot_response
+      const messages = [];
+      if (conversation.customer_message) {
+        messages.push({ role: 'user', content: conversation.customer_message });
+      }
+      if (conversation.chatbot_response) {
+        messages.push({ role: 'assistant', content: conversation.chatbot_response });
+      }
 
       // Analyze the conversation
       const analysis: ConversationAnalysis = {
@@ -212,10 +217,7 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       // Get top conversations
       const conversations = await prisma.chatbot_logs.findMany({
         where: {
-          OR: [
-            { product_key: identifier },
-            { license_key: identifier }
-          ]
+          product_key: identifier
         },
         orderBy: { created_at: 'desc' },
         take: 10
@@ -302,10 +304,7 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       } = params;
 
       const where: any = {
-        OR: [
-          { product_key: identifier },
-          { license_key: identifier }
-        ]
+        product_key: identifier
       };
 
       // Apply filters
@@ -395,10 +394,7 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       // Get all data
       const conversations = await prisma.chatbot_logs.findMany({
         where: {
-          OR: [
-            { product_key: identifier },
-            { license_key: identifier }
-          ]
+          product_key: identifier
         },
         orderBy: { created_at: 'desc' }
       });
@@ -517,10 +513,23 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
   }
 
   private calculateDuration(conversation: any): number {
-    const messages = typeof conversation.messages === 'string' 
-      ? JSON.parse(conversation.messages) 
-      : conversation.messages;
-    
+    // Create a messages array from customer_message and chatbot_response
+    const messages = [];
+    if (conversation.customer_message) {
+      messages.push({
+        content: conversation.customer_message,
+        timestamp: conversation.created_at,
+        role: 'user'
+      });
+    }
+    if (conversation.chatbot_response) {
+      messages.push({
+        content: conversation.chatbot_response,
+        timestamp: conversation.created_at,
+        role: 'assistant'
+      });
+    }
+
     if (!messages || messages.length < 2) return 0;
     
     const firstTime = new Date(messages[0].timestamp || conversation.created_at);
@@ -549,10 +558,11 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
     const topicCounts = new Map<string, number>();
     
     conversations.forEach(conv => {
-      const messages = typeof conv.messages === 'string' 
-        ? JSON.parse(conv.messages) 
-        : conv.messages;
-      
+      // Create messages array from customer_message and chatbot_response
+      const messages = [];
+      if (conv.customer_message) messages.push({ content: conv.customer_message });
+      if (conv.chatbot_response) messages.push({ content: conv.chatbot_response });
+
       const topics = this.extractTopics(messages);
       topics.forEach(topic => {
         topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
@@ -574,9 +584,10 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
     if (conversations.length === 0) return 0;
     
     const resolved = conversations.filter(conv => {
-      const messages = typeof conv.messages === 'string' 
-        ? JSON.parse(conv.messages) 
-        : conv.messages;
+      // Create messages array from customer_message and chatbot_response
+      const messages = [];
+      if (conv.customer_message) messages.push({ content: conv.customer_message });
+      if (conv.chatbot_response) messages.push({ content: conv.chatbot_response });
       return this.checkResolution(messages);
     });
     
@@ -686,9 +697,10 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
     
     const headers = ['ID', 'Session ID', 'Domain', 'Created At', 'Message Count'];
     const rows = conversations.map(conv => {
-      const messages = typeof conv.messages === 'string' 
-        ? JSON.parse(conv.messages) 
-        : conv.messages;
+      // Create messages array from customer_message and chatbot_response
+      const messages = [];
+      if (conv.customer_message) messages.push({ content: conv.customer_message });
+      if (conv.chatbot_response) messages.push({ content: conv.chatbot_response });
       return [
         conv.id,
         conv.session_id,

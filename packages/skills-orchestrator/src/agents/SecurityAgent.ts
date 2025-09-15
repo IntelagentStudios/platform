@@ -216,9 +216,9 @@ export class SecurityAgent extends EventEmitter {
     const injectionCheck = this.checkInjectionAttacks(activity);
     if (injectionCheck.detected) {
       threats.push({
-        type: injectionCheck.type,
+        type: injectionCheck.type || 'injection_attack',
         severity: 'high',
-        description: `${injectionCheck.type} attack pattern detected`,
+        description: `${injectionCheck.type || 'Injection'} attack pattern detected`,
         mitigation: 'Input sanitized and request logged'
       });
       threatLevel = threatLevel === 'critical' ? 'critical' : 'high';
@@ -433,57 +433,57 @@ export class SecurityAgent extends EventEmitter {
   public async performSecurityAudit(): Promise<any> {
     const audit = {
       timestamp: new Date(),
-      vulnerabilities: [],
-      recommendations: [],
+      vulnerabilities: [] as any[],
+      recommendations: [] as string[],
       score: 100
     };
 
     // Check for weak passwords
     const weakPasswords = await this.findWeakPasswords();
     if (weakPasswords.length > 0) {
-      audit.vulnerabilities.push({
+      (audit.vulnerabilities as any[]).push({
         type: 'weak_passwords',
         count: weakPasswords.length,
         severity: 'high'
       });
       audit.score -= 20;
-      audit.recommendations.push('Enforce stronger password policies');
+      (audit.recommendations as string[]).push('Enforce stronger password policies');
     }
 
     // Check for inactive sessions
     const inactiveSessions = await this.findInactiveSessions();
     if (inactiveSessions.length > 0) {
-      audit.vulnerabilities.push({
+      (audit.vulnerabilities as any[]).push({
         type: 'inactive_sessions',
         count: inactiveSessions.length,
         severity: 'medium'
       });
       audit.score -= 10;
-      audit.recommendations.push('Implement automatic session timeout');
+      (audit.recommendations as string[]).push('Implement automatic session timeout');
     }
 
     // Check for unusual access patterns
     const unusualPatterns = await this.findUnusualAccessPatterns();
     if (unusualPatterns.length > 0) {
-      audit.vulnerabilities.push({
+      (audit.vulnerabilities as any[]).push({
         type: 'unusual_access',
         patterns: unusualPatterns,
         severity: 'high'
       });
       audit.score -= 15;
-      audit.recommendations.push('Review and investigate unusual access patterns');
+      (audit.recommendations as string[]).push('Review and investigate unusual access patterns');
     }
 
     // Check encryption status
     const encryptionStatus = await this.checkEncryptionStatus();
     if (!encryptionStatus.allEncrypted) {
-      audit.vulnerabilities.push({
+      (audit.vulnerabilities as any[]).push({
         type: 'unencrypted_data',
         details: encryptionStatus.unencrypted,
         severity: 'critical'
       });
       audit.score -= 30;
-      audit.recommendations.push('Encrypt all sensitive data at rest');
+      (audit.recommendations as string[]).push('Encrypt all sensitive data at rest');
     }
 
     return audit;

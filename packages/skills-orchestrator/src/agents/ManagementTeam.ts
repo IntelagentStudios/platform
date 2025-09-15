@@ -82,6 +82,19 @@ export class ManagementTeam extends EventEmitter {
 
   private constructor() {
     super();
+
+    // Initialize properties with null assertion operator
+    // These will be properly initialized in initializeAgents()
+    this.finance = null!;
+    this.operations = null!;
+    this.infrastructure = null!;
+    this.security = null!;
+    this.compliance = null!;
+    this.integration = null!;
+    this.analytics = null!;
+    this.communications = null!;
+    this.skillsMatrix = null!;
+
     this.initializeAgents();
     this.setupInterAgentCommunication();
   }

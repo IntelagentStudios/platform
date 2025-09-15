@@ -4,12 +4,17 @@
  */
 
 import { SkillResult, SkillParams, SkillMetadata } from '../types';
+import { BaseSkill } from './BaseSkill';
 import { PrismaClient } from '@prisma/client';
 
 // Initialize shared Prisma instance
 const prisma = new PrismaClient();
 
 export interface EnhancedSkillContext {
+  conversationHistory: any[];
+  currentMood: string;
+  userProfile: any;
+  sessionData: any;
   userId?: string;
   sessionId?: string;
   productKey?: string;
@@ -33,7 +38,7 @@ export interface DualAgentResult {
   metadata?: any;
 }
 
-export abstract class EnhancedBaseSkill {
+export abstract class EnhancedBaseSkill extends BaseSkill {
   abstract metadata: SkillMetadata;
   
   /**

@@ -41,7 +41,7 @@ export class FinanceAgent extends EventEmitter {
     // Initialize Stripe
     if (process.env.STRIPE_SECRET_KEY) {
       this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-        apiVersion: '2023-10-16'
+        apiVersion: '2025-08-27.basil'
       });
       console.log('[FinanceAgent] Stripe initialized');
     }
@@ -92,8 +92,8 @@ export class FinanceAgent extends EventEmitter {
     
     try {
       // Check daily limit
-      const dailySpend = this.getDailySpend(licenseKey);
-      const dailyLimit = this.dailyLimits.get(licenseKey) || 10000; // $100 default
+      const dailySpend = this.getDailySpend(licenseKey || 'unknown');
+      const dailyLimit = this.dailyLimits.get(licenseKey || 'unknown') || 10000; // $100 default
       
       if (dailySpend + cost > dailyLimit) {
         return {
@@ -105,7 +105,7 @@ export class FinanceAgent extends EventEmitter {
       }
       
       // Check account balance or credit
-      const balance = await this.checkAccountBalance(licenseKey);
+      const balance = await this.checkAccountBalance(licenseKey || 'unknown');
       if (balance < cost) {
         return {
           approved: false,
@@ -116,7 +116,7 @@ export class FinanceAgent extends EventEmitter {
       }
       
       // Pre-authorize transaction
-      const transactionId = await this.preAuthorize(licenseKey, cost, skillId);
+      const transactionId = await this.preAuthorize(licenseKey || 'unknown', cost, skillId || 'unknown');
       
       return {
         approved: true,
@@ -266,8 +266,8 @@ export class FinanceAgent extends EventEmitter {
         }
         
         // Finalize and send
-        const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id);
-        await this.stripe.invoices.sendInvoice(invoice.id);
+        const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id!);
+        await this.stripe.invoices.sendInvoice(invoice.id!);
         
         return {
           success: true,

@@ -117,7 +117,7 @@ export class AIVisionDocumentSkill extends EnhancedBaseSkill {
     }
     
     if (strategy.intent === 'vision_analysis' && visionAnalysis) {
-      const objects = visionAnalysis.objects.slice(0, 3).map(o => o.name).join(', ');
+      const objects = visionAnalysis.objects.slice(0, 3).map((o: any) => o.name).join(', ');
       return `Image analyzed. Detected: ${objects || 'various objects'}. Scene: ${visionAnalysis.scene?.type || 'general'}. ${visionAnalysis.text.length} text regions found. ${visionAnalysis.faces ? `${visionAnalysis.faces.length} faces detected.` : ''}`;
     }
     
@@ -469,6 +469,37 @@ export class AIVisionDocumentSkill extends EnhancedBaseSkill {
     if (['doc', 'docx'].includes(extension || '')) return 'document';
     
     return 'unknown';
+  }
+
+  /**
+   * Required executeImpl method for BaseSkill compatibility
+   */
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
+    try {
+      const context: EnhancedSkillContext = {
+        conversationHistory: [],
+        currentMood: 'neutral',
+        userProfile: {},
+        sessionData: {}
+      };
+
+      // Analyze strategy for this request
+      const strategy = await this.analyzeStrategy(params, context);
+
+      // Perform the action based on strategy
+      const actionResult = await this.performAction(params, strategy, context);
+
+      // Generate human-readable response
+      const response = await this.generateResponse(strategy, actionResult, context);
+
+      return this.success({
+        ...actionResult,
+        response,
+        strategy: strategy.intent
+      });
+    } catch (error: any) {
+      return this.error(error.message || 'Failed to process document');
+    }
   }
 
   validate(params: SkillParams): boolean {

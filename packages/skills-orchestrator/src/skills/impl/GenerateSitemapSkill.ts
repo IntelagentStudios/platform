@@ -1,12 +1,12 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillResult, SkillParams } from '../types';
+import { SkillResult, SkillParams, SkillCategory } from '../../types';
 
 export class GenerateSitemapSkill extends BaseSkill {
   metadata = {
     id: 'generate-sitemap_v1',
     name: 'Generate Multilingual Sitemap',
     description: 'Generate localized sitemaps for SEO optimization across multiple languages',
-    category: 'seo' as const,
+    category: SkillCategory.MARKETING,
     version: '1.0.0',
     author: 'Intelagent',
     tags: ['sitemap', 'seo', 'multilingual', 'localization', 'indexing'],

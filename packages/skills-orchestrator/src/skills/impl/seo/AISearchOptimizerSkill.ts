@@ -1,5 +1,5 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillResult } from '../../types';
+import { SkillResult, SkillCategory } from '../../../types';
 
 interface AISearchOptimizerInput {
   content: string;
@@ -13,7 +13,7 @@ export class AISearchOptimizerSkill extends BaseSkill {
     id: 'ai-search-optimizer_v1',
     name: 'AI Search Optimizer',
     description: 'Optimize content for AI chatbots and answer engines like ChatGPT, Perplexity, Claude, and Bard',
-    category: 'seo' as const,
+    category: SkillCategory.MARKETING,
     version: '1.0.0',
     author: 'Intelagent',
     tags: ['ai-seo', 'chatgpt', 'perplexity', 'claude', 'bard', 'answer-engine', 'llm-optimization'],

@@ -1,12 +1,12 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillResult, SkillParams } from '../types';
+import { SkillResult, SkillParams, SkillCategory } from '../../types';
 
 export class TranslateContentSkill extends BaseSkill {
   metadata = {
     id: 'translate-content_v1',
     name: 'Translate Content',
     description: 'Translate web pages or HTML content with advanced caching and translation memory',
-    category: 'communication' as const,
+    category: SkillCategory.COMMUNICATION,
     version: '1.0.0',
     author: 'Intelagent',
     tags: ['translation', 'multilingual', 'i18n', 'localization', 'seo'],

@@ -1,5 +1,5 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillResult } from '../../types';
+import { SkillResult, SkillCategory } from '../../../types';
 
 interface TechnicalSEOAuditInput {
   url: string;
@@ -14,7 +14,7 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
     id: 'technical-seo-audit_v1',
     name: 'Technical SEO Audit',
     description: 'Comprehensive technical SEO analysis including crawlability, indexability, performance, and security',
-    category: 'seo' as const,
+    category: SkillCategory.MARKETING,
     version: '1.0.0',
     author: 'Intelagent',
     tags: ['seo', 'technical', 'audit', 'crawlability', 'performance', 'core-web-vitals'],
