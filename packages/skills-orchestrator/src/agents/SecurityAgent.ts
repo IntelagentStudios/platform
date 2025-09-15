@@ -45,7 +45,7 @@ interface AuditLog {
 
 export class SecurityAgent extends EventEmitter {
   private static instance: SecurityAgent;
-  private readonly jwtSecret: string;
+  private readonly jwtSecret: Buffer;
   private suspiciousPatterns: Map<string, RegExp>;
   private blacklistedIPs: Set<string>;
   private rateLimits: Map<string, { count: number; resetTime: number }>;
@@ -71,7 +71,8 @@ export class SecurityAgent extends EventEmitter {
 
   private constructor() {
     super();
-    this.jwtSecret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+    const secret = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+    this.jwtSecret = Buffer.from(secret, 'utf-8');
     this.suspiciousPatterns = new Map();
     this.blacklistedIPs = new Set();
     this.rateLimits = new Map();
