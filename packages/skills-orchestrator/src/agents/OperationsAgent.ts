@@ -648,7 +648,7 @@ export class OperationsAgent extends EventEmitter {
       select: {
         skill_id: true,
         status: true,
-        execution_time: true,
+        execution_time_ms: true,
         created_at: true
       }
     });
@@ -657,7 +657,7 @@ export class OperationsAgent extends EventEmitter {
     const totalExecutions = recentExecutions.length;
     const successfulExecutions = recentExecutions.filter(e => e.status === 'completed').length;
     const failedExecutions = recentExecutions.filter(e => e.status === 'failed').length;
-    const avgExecutionTime = recentExecutions.reduce((sum, e) => sum + (e.execution_time || 0), 0) / totalExecutions || 0;
+    const avgExecutionTime = recentExecutions.reduce((sum, e) => sum + (e.execution_time_ms || 0), 0) / totalExecutions || 0;
 
     // Get skill distribution
     const skillDistribution = recentExecutions.reduce((acc, e) => {
