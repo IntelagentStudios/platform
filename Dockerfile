@@ -1,6 +1,7 @@
 # Multi-stage optimized Dockerfile for production
 # Stage 1: Dependencies
-FROM node:18-alpine AS deps
+# Using specific version to help with caching and availability
+FROM node:18.20.5-alpine3.20 AS deps
 RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
 WORKDIR /app
 
@@ -17,7 +18,7 @@ RUN npm ci --legacy-peer-deps --ignore-scripts && \
     npm cache clean --force
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:18.20.5-alpine3.20 AS builder
 RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
 WORKDIR /app
 
@@ -48,7 +49,7 @@ RUN cd apps/customer-portal && \
     rm -rf .next/cache
 
 # Stage 3: Runner - minimal production image
-FROM node:18-alpine AS runner
+FROM node:18.20.5-alpine3.20 AS runner
 RUN apk add --no-cache libc6-compat openssl
 
 # Create app user
