@@ -90,7 +90,7 @@ export class StripePaymentSkill extends BaseSkill {
         
         if (stripe) {
           const stripeClient = new stripe.default(stripeSecretKey, {
-            apiVersion: '2023-10-16'
+            apiVersion: '2025-08-27.basil'
           });
           
           let result;

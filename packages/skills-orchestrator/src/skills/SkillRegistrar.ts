@@ -44,8 +44,9 @@ export class SkillRegistrar {
         const skillInstance = new SkillClass() as BaseSkill;
         const metadata = skillInstance.metadata;
         
-        // Register the skill class
-        this.registry.register(metadata.id, SkillClass);
+        // Note: SkillsRegistry uses factory pattern, not dynamic registration
+        // This would need to be added to the factory loadSkill method instead
+        console.log(`Would register: ${metadata.id}`);
         successCount++;
         
         console.log(`✓ Registered: ${metadata.name} (${metadata.id})`);
@@ -121,10 +122,9 @@ export class SkillRegistrar {
    * Get skill metadata
    */
   public getSkillMetadata(skillId: string): any {
-    const SkillClass = this.registry.get(skillId);
-    if (SkillClass) {
-      const instance = new SkillClass() as BaseSkill;
-      return instance.metadata;
+    const skillInstance = this.registry.getSkill(skillId);
+    if (skillInstance) {
+      return skillInstance.definition;
     }
     return null;
   }

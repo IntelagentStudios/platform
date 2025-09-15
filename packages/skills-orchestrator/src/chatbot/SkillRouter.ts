@@ -169,7 +169,7 @@ export class SkillRouter {
   };
   
   // Intent to workflow mapping
-  private readonly intentMapping = {
+  private readonly intentMapping: { [key: string]: string } = {
     // Purchase intents
     'buy': 'purchase_flow',
     'purchase': 'purchase_flow',
@@ -222,7 +222,7 @@ export class SkillRouter {
   
   private constructor() {
     this.skillsMatrix = SkillsMatrix.getInstance();
-    this.orchestrator = new OrchestratorAgent();
+    this.orchestrator = OrchestratorAgent.getInstance();
   }
   
   public static getInstance(): SkillRouter {
@@ -275,29 +275,39 @@ export class SkillRouter {
    */
   public async executeWorkflow(
     decision: RoutingDecision,
-    params: any
+    params: any,
+    context: { userId?: string; licenseKey: string; sessionId?: string; metadata?: Record<string, any> }
   ): Promise<any> {
     const results = {
-      primary: {},
-      secondary: {},
-      fallback: {},
+      primary: {} as { [key: string]: any },
+      secondary: {} as { [key: string]: any },
+      fallback: {} as { [key: string]: any },
       success: true,
-      errors: []
+      errors: [] as any[]
     };
     
     try {
       // Execute primary skills (required)
       for (const skill of decision.primarySkills) {
         try {
-          const result = await this.orchestrator.executeSkill(skill.id, {
-            ...params,
-            ...skill.params
+          const result = await this.orchestrator.execute({
+            skillId: skill.id,
+            params: {
+              ...params,
+              ...skill.params
+            },
+            context: {
+              userId: context.userId || 'unknown',
+              licenseKey: context.licenseKey,
+              sessionId: context.sessionId,
+              metadata: context.metadata
+            }
           });
           results.primary[skill.id] = result;
-        } catch (error) {
+        } catch (error: any) {
           results.errors.push({
             skill: skill.id,
-            error: error.message,
+            error: error?.message || 'Unknown error',
             required: skill.required
           });
           
@@ -312,14 +322,23 @@ export class SkillRouter {
       if (results.success && decision.secondarySkills.length > 0) {
         const secondaryPromises = decision.secondarySkills.map(async (skill) => {
           try {
-            const result = await this.orchestrator.executeSkill(skill.id, {
-              ...params,
-              ...skill.params,
-              primaryResults: results.primary
+            const result = await this.orchestrator.execute({
+              skillId: skill.id,
+              params: {
+                ...params,
+                ...skill.params,
+                primaryResults: results.primary
+              },
+              context: {
+                userId: context.userId || 'unknown',
+                licenseKey: context.licenseKey,
+                sessionId: context.sessionId,
+                metadata: context.metadata
+              }
             });
             return { skillId: skill.id, result };
-          } catch (error) {
-            return { skillId: skill.id, error: error.message };
+          } catch (error: any) {
+            return { skillId: skill.id, error: error?.message || 'Unknown error' };
           }
         });
         
@@ -337,28 +356,37 @@ export class SkillRouter {
       if (!results.success && decision.fallbackSkills.length > 0) {
         for (const skill of decision.fallbackSkills) {
           try {
-            const result = await this.orchestrator.executeSkill(skill.id, {
-              ...params,
-              ...skill.params,
-              failureContext: results.errors
+            const result = await this.orchestrator.execute({
+              skillId: skill.id,
+              params: {
+                ...params,
+                ...skill.params,
+                failureContext: results.errors
+              },
+              context: {
+                userId: context.userId || 'unknown',
+                licenseKey: context.licenseKey,
+                sessionId: context.sessionId,
+                metadata: context.metadata
+              }
             });
             results.fallback[skill.id] = result;
             results.success = true; // Fallback succeeded
             break;
-          } catch (error) {
+          } catch (error: any) {
             results.errors.push({
               skill: skill.id,
-              error: error.message,
+              error: error?.message || 'Unknown error',
               fallback: true
             });
           }
         }
       }
       
-    } catch (error) {
+    } catch (error: any) {
       results.success = false;
       results.errors.push({
-        general: error.message
+        general: error?.message || 'Unknown error'
       });
     }
     

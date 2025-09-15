@@ -639,7 +639,7 @@ export class SecurityAgent extends EventEmitter {
       }
     });
 
-    if (lockout) {
+    if (lockout && lockout.created_at) {
       const lockoutEnd = new Date(lockout.created_at.getTime() + this.securityPolicies.lockoutDuration);
       if (lockoutEnd > new Date()) {
         return { locked: true, until: lockoutEnd };

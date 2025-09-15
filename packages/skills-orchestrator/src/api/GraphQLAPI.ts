@@ -330,8 +330,10 @@ export class GraphQLAPI extends EventEmitter {
           const cleanValue = value.replace(/['"]/g, '');
           if (key === 'limit' || key === 'offset') {
             filters[key] = parseInt(cleanValue);
+          } else if (key === 'startDate' || key === 'endDate') {
+            filters[key as keyof QueryFilters] = new Date(cleanValue);
           } else {
-            filters[key as keyof QueryFilters] = cleanValue;
+            filters[key as keyof QueryFilters] = cleanValue as any;
           }
         }
       }

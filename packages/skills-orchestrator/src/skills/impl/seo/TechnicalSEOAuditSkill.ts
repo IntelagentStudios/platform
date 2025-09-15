@@ -29,7 +29,7 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
     const { url, crawlDepth = 50, includeSubdomains = false, checkRedirects = true, analyzeJavaScript = true } = params;
 
     if (!url) {
-      return this.error('URL is required for technical SEO audit');
+      return this.createError('URL is required for technical SEO audit');
     }
 
     try {
@@ -86,7 +86,7 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
         }
       };
     } catch (error: any) {
-      return this.error(error.message);
+      return this.createError(error.message);
     }
   }
 
@@ -396,7 +396,7 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
     };
   }
 
-  private error(message: string): SkillResult {
+  private createError(message: string): SkillResult {
     return {
       success: false,
       error: message,

@@ -299,13 +299,13 @@ export class ConversationContextManager {
     }
     
     // Based on current intent
-    const intentFlows = {
+    const intentFlows: { [key: string]: string[] } = {
       'purchase': ['payment', 'shipping', 'confirmation'],
       'support': ['troubleshooting', 'escalation', 'resolution'],
       'information': ['details', 'comparison', 'decision'],
       'account': ['update', 'security', 'preferences']
     };
-    
+
     if (intentFlows[context.intent.current]) {
       predictions.push(...intentFlows[context.intent.current]);
     }
@@ -400,7 +400,7 @@ export class ConversationContextManager {
     }
     
     // Calculate overall sentiment
-    const sentimentValues = {
+    const sentimentValues: { [key: string]: number } = {
       'positive': 1,
       'neutral': 0,
       'negative': -1

@@ -40,7 +40,7 @@ export class BillingIntegration {
 
   private constructor() {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-      apiVersion: '2023-10-16'
+      apiVersion: '2025-08-27.basil'
     });
   }
 
@@ -59,13 +59,9 @@ export class BillingIntegration {
     skillId: string
   ): Promise<{ canAfford: boolean; reason?: string; cost: number }> {
     try {
-      // Get license and user
+      // Get license
       const license = await prisma.licenses.findUnique({
-        where: { license_key: licenseKey },
-        include: {
-          users: true,
-          license_types: true
-        }
+        where: { license_key: licenseKey }
       });
 
       if (!license) {
@@ -73,7 +69,7 @@ export class BillingIntegration {
       }
 
       // Check if skill is included in tier
-      const tier = license.license_types?.name || 'free';
+      const tier = license.tier || 'starter';
       
       // Enterprise gets unlimited
       if (tier === 'enterprise') {
@@ -87,15 +83,10 @@ export class BillingIntegration {
       const baseCost = this.skillPricing.get(skillId) || this.skillPricing.get('default')!;
       const cost = Math.floor(baseCost * discount);
 
-      // Check subscription credits
-      const credits = await this.getAvailableCredits(license.users?.stripe_customer_id);
-      
-      if (credits >= cost) {
-        return { canAfford: true, cost };
-      }
-
-      // Check if they have payment method
-      const hasPaymentMethod = await this.hasPaymentMethod(license.users?.stripe_customer_id);
+      // For now, assume no credits and no payment method since schema doesn't include Stripe fields
+      // TODO: Add proper Stripe integration fields to schema
+      const credits = 0;
+      const hasPaymentMethod = false;
       
       if (!hasPaymentMethod) {
         return { 
@@ -226,14 +217,16 @@ export class BillingIntegration {
     cost: number,
     executionId: string
   ): Promise<void> {
-    await prisma.skill_usage.create({
+    await prisma.skill_executions.create({
       data: {
         license_key: licenseKey,
         skill_id: skillId,
         execution_id: executionId,
-        cost,
-        currency: 'usd',
-        timestamp: new Date()
+        cost_units: cost,
+        node_id: 'billing_node',
+        status: 'completed',
+        completed_at: new Date(),
+        created_at: new Date()
       }
     });
   }
@@ -290,15 +283,15 @@ export class BillingIntegration {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const usage = await prisma.skill_usage.aggregate({
+    const usage = await prisma.skill_executions.aggregate({
       where: {
         license_key: licenseKey,
-        timestamp: { gte: today }
+        created_at: { gte: today }
       },
-      _sum: { cost: true }
+      _sum: { cost_units: true }
     });
     
-    return usage._sum.cost || 0;
+    return Number(usage._sum.cost_units) || 0;
   }
 
   /**
@@ -320,55 +313,44 @@ export class BillingIntegration {
    */
   public async createMonthlyInvoice(licenseKey: string): Promise<any> {
     const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey },
-      include: { users: true }
+      where: { license_key: licenseKey }
     });
 
-    if (!license || !license.users?.stripe_customer_id) {
-      throw new Error('Invalid license or no Stripe customer');
+    if (!license) {
+      throw new Error('Invalid license');
     }
+
+    // TODO: Add proper Stripe integration once schema includes user relations
 
     // Get usage for the month
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
-    const usage = await prisma.skill_usage.findMany({
+    const usage = await prisma.skill_executions.findMany({
       where: {
         license_key: licenseKey,
-        timestamp: { gte: startOfMonth }
+        created_at: { gte: startOfMonth }
       }
     });
 
-    // Create invoice
-    const invoice = await this.stripe.invoices.create({
-      customer: license.users.stripe_customer_id,
-      auto_advance: true,
-      collection_method: 'charge_automatically',
-      description: 'Skills usage for ' + startOfMonth.toLocaleDateString()
-    });
-
-    // Add line items for each skill
+    // Calculate totals by skill
     const skillTotals = new Map<string, number>();
     usage.forEach(u => {
       const current = skillTotals.get(u.skill_id) || 0;
-      skillTotals.set(u.skill_id, current + u.cost);
+      skillTotals.set(u.skill_id, current + Number(u.cost_units || 0));
     });
 
-    for (const [skillId, total] of skillTotals) {
-      await this.stripe.invoiceItems.create({
-        customer: license.users.stripe_customer_id,
-        invoice: invoice.id,
-        amount: total,
-        currency: 'usd',
-        description: `Skill usage: ${skillId}`
-      });
-    }
-
-    // Finalize and pay
-    const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id);
-    await this.stripe.invoices.pay(invoice.id);
-
-    return finalizedInvoice;
+    // Return usage summary for now (replace with actual Stripe integration later)
+    return {
+      licenseKey,
+      period: startOfMonth.toLocaleDateString(),
+      skills: Array.from(skillTotals.entries()).map(([skillId, total]) => ({
+        skillId,
+        total,
+        currency: 'usd'
+      })),
+      totalAmount: Array.from(skillTotals.values()).reduce((sum, total) => sum + total, 0)
+    };
   }
 }

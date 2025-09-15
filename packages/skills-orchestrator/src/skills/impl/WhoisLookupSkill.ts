@@ -35,7 +35,7 @@ export class WhoisLookupSkill extends BaseSkill {
       const { input, options = {} } = params;
       
       // Internal utility processing
-      const result = this.processWHOISLookup(input, options);
+      const result = this.processWHOISLookup(input);
       
       return {
         success: true,

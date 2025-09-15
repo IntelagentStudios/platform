@@ -33,7 +33,7 @@ export class AISearchOptimizerSkill extends BaseSkill {
     } = params;
 
     if (!content) {
-      return this.error('Content is required for AI search optimization');
+      return this.createError('Content is required for AI search optimization');
     }
 
     try {
@@ -91,7 +91,7 @@ export class AISearchOptimizerSkill extends BaseSkill {
         }
       };
     } catch (error: any) {
-      return this.error(error.message);
+      return this.createError(error.message);
     }
   }
 
@@ -546,7 +546,7 @@ export class AISearchOptimizerSkill extends BaseSkill {
     };
   }
 
-  private error(message: string): SkillResult {
+  private createError(message: string): SkillResult {
     return {
       success: false,
       error: message,

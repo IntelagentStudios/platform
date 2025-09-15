@@ -37,7 +37,7 @@ export class WebScraperSkill extends BaseSkill {
       await new Promise(resolve => setTimeout(resolve, waitTime));
       
       // Mock scraped data
-      const scrapedData = {
+      const scrapedData: { [key: string]: any } = {
         title: 'Page Title',
         content: 'Page content here',
         links: ['link1', 'link2'],

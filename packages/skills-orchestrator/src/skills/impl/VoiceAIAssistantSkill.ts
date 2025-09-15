@@ -63,24 +63,13 @@ interface ConversationContext {
 
 export class VoiceAIAssistantSkill extends EnhancedBaseSkill {
   metadata: SkillMetadata = {
+    id: 'voice_ai_assistant',
     name: 'VoiceAIAssistant',
     description: 'Advanced voice AI assistant with real-time sentiment analysis and emotional intelligence',
     version: '2.0.0',
+    author: 'Intelagent',
     category: SkillCategory.CUSTOMER_SERVICE,
-    tags: ['voice', 'ai', 'sentiment', 'nlp', 'speech', 'emotion'],
-    complexity: 'advanced',
-    estimatedResponseTime: 500,
-    supportedLanguages: ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'],
-    features: [
-      'real-time-transcription',
-      'sentiment-analysis',
-      'emotion-detection',
-      'multi-language',
-      'voice-synthesis',
-      'context-aware',
-      'escalation-management',
-      'accessibility-support'
-    ]
+    tags: ['voice', 'ai', 'sentiment', 'nlp', 'speech', 'emotion']
   };
 
   private sentimentThresholds = {
@@ -99,7 +88,7 @@ export class VoiceAIAssistantSkill extends EnhancedBaseSkill {
     disgust: -2.5
   };
 
-  async execute(input: SkillInput): Promise<SkillOutput> {
+  async executeVoiceAI(input: any): Promise<any> {
     try {
       const {
         audioData,
@@ -179,7 +168,7 @@ export class VoiceAIAssistantSkill extends EnhancedBaseSkill {
         }
       };
     } catch (error) {
-      return this.handleError(error);
+      throw error;
     }
   }
 
@@ -539,5 +528,36 @@ export class VoiceAIAssistantSkill extends EnhancedBaseSkill {
     });
     
     return response.text;
+  }
+
+  // Required method from BaseSkill
+  validate(params: any): boolean {
+    return params && (params.audioData || params.transcript);
+  }
+
+  // Required method from BaseSkill
+  protected async executeImpl(params: any): Promise<any> {
+    // This will be called by the base class
+    const voiceCommand = await this.processVoiceInput(params);
+    const sentiment = await this.analyzeSentiment(voiceCommand.transcript, params.context || {});
+    const response = await this.generateVoiceResponse({
+      ...params,
+      voiceCommand,
+      sentiment
+    });
+    return response;
+  }
+
+  // Required method from EnhancedBaseSkill
+  protected async performAction(params: any, strategy: any, context: any): Promise<any> {
+    const voiceCommand = await this.processVoiceInput(params);
+    const sentiment = await this.analyzeSentiment(voiceCommand.transcript, context);
+    const response = await this.generateVoiceResponse({
+      ...params,
+      voiceCommand,
+      sentiment,
+      strategy
+    });
+    return response;
   }
 }
