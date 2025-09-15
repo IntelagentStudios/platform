@@ -173,15 +173,14 @@ export class OperationsAgent extends EventEmitter {
   ): Promise<{ approved: boolean; allocated?: any; reason?: string }> {
     // Check license tier
     const license = await prisma.licenses.findUnique({
-      where: { license_key: licenseKey },
-      include: { license_types: true }
+      where: { license_key: licenseKey }
     });
 
     if (!license) {
       return { approved: false, reason: 'Invalid license' };
     }
 
-    const tier = license.license_types?.name || 'free';
+    const tier = license.tier || license.plan || 'free';
 
     // Define resource limits by tier
     const resourceLimits: Record<string, any> = {
