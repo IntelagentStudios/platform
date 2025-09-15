@@ -634,6 +634,60 @@ export class OperationsAgent extends EventEmitter {
   }
 
   /**
+   * Get operational metrics for a time period
+   */
+  private async getOperationalMetrics(startDate: Date, endDate: Date): Promise<any> {
+    // Get recent skill executions
+    const recentExecutions = await prisma.skill_executions.findMany({
+      where: {
+        created_at: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      select: {
+        skill_id: true,
+        status: true,
+        execution_time: true,
+        created_at: true
+      }
+    });
+
+    // Calculate metrics
+    const totalExecutions = recentExecutions.length;
+    const successfulExecutions = recentExecutions.filter(e => e.status === 'completed').length;
+    const failedExecutions = recentExecutions.filter(e => e.status === 'failed').length;
+    const avgExecutionTime = recentExecutions.reduce((sum, e) => sum + (e.execution_time || 0), 0) / totalExecutions || 0;
+
+    // Get skill distribution
+    const skillDistribution = recentExecutions.reduce((acc, e) => {
+      acc[e.skill_id] = (acc[e.skill_id] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      period: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString()
+      },
+      executions: {
+        total: totalExecutions,
+        successful: successfulExecutions,
+        failed: failedExecutions,
+        successRate: totalExecutions > 0 ? (successfulExecutions / totalExecutions) * 100 : 0
+      },
+      performance: {
+        avgExecutionTime: Math.round(avgExecutionTime),
+        unit: 'ms'
+      },
+      topSkills: Object.entries(skillDistribution)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([skillId, count]) => ({ skillId, count }))
+    };
+  }
+
+  /**
    * Get agent status
    */
   public async getStatus(): Promise<any> {
