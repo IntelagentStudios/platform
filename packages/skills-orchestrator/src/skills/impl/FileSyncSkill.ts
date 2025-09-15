@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileSyncSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { source, destination, mode = 'mirror', realtime = false } = params;
     
     console.log(`[FileSyncSkill] Syncing from ${source} to ${destination}`);

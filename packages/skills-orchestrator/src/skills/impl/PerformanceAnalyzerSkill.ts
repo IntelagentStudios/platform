@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class PerformanceAnalyzerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { target = 'system', timeRange = '1h', metrics = [] } = params;
     
     console.log(`[PerformanceAnalyzerSkill] Analyzing ${target} performance for ${timeRange}`);

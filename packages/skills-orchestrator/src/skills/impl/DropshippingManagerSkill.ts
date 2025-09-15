@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DropshippingManagerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { action = 'overview', productId, orderId, supplier } = params;
     
     console.log(`[DropshippingManagerSkill] Action: ${action}`);

@@ -21,7 +21,7 @@ export class DataTransformerSkill extends BaseSkill {
     return !!(params.data && params.transformation);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { data, transformation, options = {} } = params;
       let transformedData: any;

@@ -21,7 +21,7 @@ export class EmailComposerSkill extends BaseSkill {
     return !!(params.recipient && params.subject && params.context);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { recipient, subject, context, tone = 'professional', template = 'standard' } = params;
 

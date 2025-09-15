@@ -1,5 +1,5 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillResult } from '../types';
+import { SkillResult, SkillParams } from '../types';
 
 export class GenerateSitemapSkill extends BaseSkill {
   metadata = {
@@ -17,7 +17,7 @@ export class GenerateSitemapSkill extends BaseSkill {
     tier: 'Pro' as const
   };
 
-  async execute(params: any): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { locales, baseUrl, urls, licenseKey, userId, tier, serviceUrl } = params;
 
     if (!locales || !Array.isArray(locales) || locales.length === 0) {

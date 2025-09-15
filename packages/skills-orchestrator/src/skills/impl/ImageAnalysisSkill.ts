@@ -21,7 +21,7 @@ export class ImageAnalysisSkill extends BaseSkill {
     return !!(params.image || params.imageUrl || params.imageData);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         image,

@@ -54,7 +54,7 @@ export class ${className} extends BaseSkill {
     return params !== null && params !== undefined;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       // Simulate skill execution
       const startTime = Date.now();

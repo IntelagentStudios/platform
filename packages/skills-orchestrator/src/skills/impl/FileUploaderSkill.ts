@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileUploaderSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { files = [], destination = 'cloud', options = {} } = params;
     
     console.log(`[FileUploaderSkill] Uploading ${files.length} file(s) to ${destination}`);

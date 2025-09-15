@@ -21,7 +21,7 @@ export class DataEnricherSkill extends BaseSkill {
     return !!(params.data && params.enrichmentType);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { data, enrichmentType, options = {} } = params;
       let enrichedData: any;

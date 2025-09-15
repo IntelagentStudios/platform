@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class NetworkMonitorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { action = 'monitor', target, protocol = 'tcp' } = params;
     
     console.log(`[NetworkMonitorSkill] ${action} network: ${target || 'all'}`);

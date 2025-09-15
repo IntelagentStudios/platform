@@ -36,7 +36,7 @@ export class FinancialAnalyticsSkill extends BaseSkill {
     return params !== null && params !== undefined;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const startTime = Date.now();
       const { action = 'get_metrics', period = '30d' } = params;

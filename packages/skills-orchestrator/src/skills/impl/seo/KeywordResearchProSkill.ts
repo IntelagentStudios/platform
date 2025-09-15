@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class KeywordResearchProSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { seedKeywords, locale = 'en', includeCompetitors = true } = params;
     
     console.log(`[KeywordResearchProSkill] Researching keywords for: ${seedKeywords}`);

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileConverterProSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { source, targetFormat, options = {} } = params;
     
     console.log(`[FileConverterProSkill] Converting to ${targetFormat}`);

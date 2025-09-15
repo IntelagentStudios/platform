@@ -23,7 +23,7 @@ export class ChatbotSkill extends BaseSkill {
     return !!(params.message && params.sessionId);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         message, 

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileManagerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { action = 'list', path = '/', pattern, recursive = false } = params;
     
     console.log(`[FileManagerSkill] Executing ${action} at ${path}`);

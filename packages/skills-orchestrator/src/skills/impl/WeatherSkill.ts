@@ -31,7 +31,7 @@ export class WeatherSkill extends BaseSkill {
     return !!(params.city || (params.lat && params.lon));
   }
   
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       this.log('Fetching weather information');
       

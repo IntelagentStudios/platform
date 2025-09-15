@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class MonitoringDashboardSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { view = 'overview', timeRange = '1h', filters = {} } = params;
     
     console.log(`[MonitoringDashboardSkill] Loading ${view} view for ${timeRange}`);

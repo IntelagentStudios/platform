@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class ContentCannibalizationDetectorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { domain, checkDepth = 100 } = params;
     
     console.log(`[ContentCannibalizationDetectorSkill] Detecting content cannibalization for: ${domain}`);

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class EmailMarketingSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { action = 'campaign', recipients = [], template, subject, content } = params;
     
     console.log(`[EmailMarketingSkill] Executing action: ${action}`);

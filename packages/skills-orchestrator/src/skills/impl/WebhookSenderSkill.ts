@@ -21,7 +21,7 @@ export class WebhookSenderSkill extends BaseSkill {
     return !!(params.url && params.method);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         url, 

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class VoiceSearchOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { content, targetAssistants = ['alexa', 'siri', 'google'] } = params;
     
     console.log(`[VoiceSearchOptimizerSkill] Optimizing for voice search`);

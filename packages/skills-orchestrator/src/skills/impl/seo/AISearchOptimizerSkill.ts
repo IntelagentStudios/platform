@@ -24,7 +24,7 @@ export class AISearchOptimizerSkill extends BaseSkill {
     tier: 'Pro' as const
   };
 
-  async execute(params: AISearchOptimizerInput): Promise<SkillResult> {
+  protected async executeImpl(params: AISearchOptimizerInput): Promise<SkillResult> {
     const { 
       content, 
       url,

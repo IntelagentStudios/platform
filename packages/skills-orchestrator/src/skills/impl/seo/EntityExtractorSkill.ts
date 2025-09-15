@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class EntityExtractorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { content, linkToKnowledgeGraph = true } = params;
     
     console.log(`[EntityExtractorSkill] Extracting entities from content`);

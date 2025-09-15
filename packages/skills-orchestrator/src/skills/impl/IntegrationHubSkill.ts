@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class IntegrationHubSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { service, action = 'connect', config = {} } = params;
     
     console.log(`[IntegrationHubSkill] ${action} with ${service}`);

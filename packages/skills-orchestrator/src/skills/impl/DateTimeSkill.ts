@@ -36,7 +36,7 @@ export class DateTimeSkill extends BaseSkill {
     return params.action && validActions.includes(params.action);
   }
   
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       this.log('Executing date/time operation');
       

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DataMapperSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { sourceData, targetSchema, rules = {} } = params;
     
     console.log(`[DataMapperSkill] Mapping data to target schema`);

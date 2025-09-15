@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class JsonProcessorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { json, action = 'validate', schema, path, transform } = params;
     
     console.log(`[JsonProcessorSkill] ${action} JSON data`);

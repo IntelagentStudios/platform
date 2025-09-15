@@ -23,7 +23,7 @@ export class EmotionAnalyzerSkill extends BaseSkill {
     return params !== null && params !== undefined;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const startTime = Date.now();
       const licenseKey = params._context?.licenseKey;

@@ -21,7 +21,7 @@ export class PredictiveAnalyticsSkill extends BaseSkill {
     return !!(params.data && params.predictionType);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         data,

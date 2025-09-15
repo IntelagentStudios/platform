@@ -25,7 +25,7 @@ export class UserManagementSkill extends BaseSkill {
     return params !== null && params !== undefined && params.action !== undefined;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const startTime = Date.now();
       const { action } = params;

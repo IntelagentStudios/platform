@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class LLMTrainingOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { content, targetModels = ['gpt', 'claude', 'gemini'] } = params;
     
     console.log(`[LLMTrainingOptimizerSkill] Optimizing content for LLM training datasets`);

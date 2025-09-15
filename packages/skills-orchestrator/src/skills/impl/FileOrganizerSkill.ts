@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileOrganizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { path = '/', strategy = 'type', autoClean = true } = params;
     
     console.log(`[FileOrganizerSkill] Organizing files with strategy: ${strategy}`);

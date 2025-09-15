@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DocumentGeneratorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { type = 'report', template, data = {}, format = 'pdf' } = params;
     
     console.log(`[DocumentGeneratorSkill] Generating ${type} document in ${format} format`);

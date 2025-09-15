@@ -92,7 +92,7 @@ export class EmailComposerSkill extends BaseSkill {
     return emails.every(email => emailRegex.test(email));
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const emailParams = params as EmailParams;
       

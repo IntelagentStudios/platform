@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DatabaseMigratorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { source, target, strategy = 'incremental', options = {} } = params;
     
     console.log(`[DatabaseMigratorSkill] Migrating from ${source.type} to ${target.type}`);

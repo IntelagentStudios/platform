@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DatabaseOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { database, type = 'postgresql', deepAnalysis = true } = params;
     
     console.log(`[DatabaseOptimizerSkill] Optimizing ${type} database: ${database}`);

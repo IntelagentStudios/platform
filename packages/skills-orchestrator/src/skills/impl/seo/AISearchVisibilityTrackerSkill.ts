@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class AISearchVisibilityTrackerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { domain, checkPlatforms = ['chatgpt', 'perplexity', 'claude', 'bard'] } = params;
     
     console.log(`[AISearchVisibilityTrackerSkill] Tracking AI search visibility for: ${domain}`);

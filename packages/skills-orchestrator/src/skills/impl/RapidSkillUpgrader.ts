@@ -354,7 +354,7 @@ ${template.config}`
       )
       .replace(
         /async execute\(params: SkillParams\): Promise<SkillResult> \{[^}]+\}/s,
-        `async execute(params: SkillParams): Promise<SkillResult> {
+        `protected async executeImpl(params: SkillParams): Promise<SkillResult> {
 ${template.implementation}
   }`
       );

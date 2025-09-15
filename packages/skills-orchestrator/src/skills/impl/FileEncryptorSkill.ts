@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class FileEncryptorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { action = 'encrypt', files = [], algorithm = 'AES-256', password } = params;
     
     console.log(`[FileEncryptorSkill] ${action}ing ${files.length || 1} file(s)`);

@@ -83,7 +83,7 @@ View Details: {{link}}
     return !!(params.template || params.templateId || params.templateString);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         templateId, 

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class EcommerceAnalyticsSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { period = '30d', metrics = 'all', storeId } = params;
     
     console.log(`[EcommerceAnalyticsSkill] Analyzing e-commerce metrics for period: ${period}`);

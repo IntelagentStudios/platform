@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class SERPMonitorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { keywords, domain, location = 'US' } = params;
     
     console.log(`[SERPMonitorSkill] Monitoring SERP for: ${domain}`);

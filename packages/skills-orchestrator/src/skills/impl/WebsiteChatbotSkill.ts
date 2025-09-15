@@ -41,7 +41,7 @@ export class WebsiteChatbotSkill extends BaseSkill {
     return true;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         action = 'chat',

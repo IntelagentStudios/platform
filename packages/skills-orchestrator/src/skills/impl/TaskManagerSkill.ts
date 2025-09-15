@@ -24,7 +24,7 @@ export class TaskManagerSkill extends BaseSkill {
     return !!(params.action);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         action,

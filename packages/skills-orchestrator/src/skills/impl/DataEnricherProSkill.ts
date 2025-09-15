@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DataEnricherProSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { data, enrichmentType = 'all', sources = [] } = params;
     
     console.log(`[DataEnricherProSkill] Enriching data with type: ${enrichmentType}`);

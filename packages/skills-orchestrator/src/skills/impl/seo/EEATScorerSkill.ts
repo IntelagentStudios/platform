@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class EEATScorerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { url, checkAuthors = true } = params;
     
     console.log(`[EEATScorerSkill] Evaluating E-E-A-T signals for: ${url}`);

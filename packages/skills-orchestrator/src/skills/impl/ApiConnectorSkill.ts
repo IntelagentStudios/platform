@@ -23,7 +23,7 @@ export class ApiConnectorSkill extends BaseSkill {
     return !!(params.endpoint || params.apiName);
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       const { 
         endpoint,

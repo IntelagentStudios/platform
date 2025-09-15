@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class ContentGapAnalyzerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { domain, competitors = [], topics = [] } = params;
     
     console.log(`[ContentGapAnalyzerSkill] Analyzing content gaps for: ${domain}`);

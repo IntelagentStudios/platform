@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class AuthorAuthorityBuilderSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { authorName, currentProfile = {} } = params;
     
     console.log(`[AuthorAuthorityBuilderSkill] Building authority for: ${authorName}`);

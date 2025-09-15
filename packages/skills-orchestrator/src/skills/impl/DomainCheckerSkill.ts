@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DomainCheckerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { domain, extensions = ['.com', '.net', '.org', '.io'] } = params;
     
     console.log(`[DomainCheckerSkill] Checking availability for: ${domain}`);

@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class LocalSEOOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { businessName, location, category = 'general' } = params;
     
     console.log(`[LocalSEOOptimizerSkill] Optimizing local SEO for: ${businessName} in ${location}`);

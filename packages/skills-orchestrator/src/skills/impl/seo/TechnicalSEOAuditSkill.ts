@@ -25,7 +25,7 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
     tier: 'Custom' as const
   };
 
-  async execute(params: TechnicalSEOAuditInput): Promise<SkillResult> {
+  protected async executeImpl(params: TechnicalSEOAuditInput): Promise<SkillResult> {
     const { url, crawlDepth = 50, includeSubdomains = false, checkRedirects = true, analyzeJavaScript = true } = params;
 
     if (!url) {

@@ -1,33 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(while read id)",
-      "Bash(do if [ ! -z \"$id\" ])",
-      "Bash(then echo \"$id:$file\")",
-      "Bash(fi)",
-      "Bash(npm run build:*)",
-      "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)",
-      "Read(//c//**)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(node:*)",
-      "Bash(npx tsx:*)",
-      "Bash(curl:*)",
-      "Bash(find:*)",
-      "Bash(npx next:*)",
-      "Bash(npx eslint:*)",
-      "Bash(sed:*)",
-      "Bash(npx tsc:*)",
-      "Bash(npx prisma studio:*)",
-      "Bash(npx prisma migrate dev:*)",
-      "Bash(npm install:*)",
-      "Bash(vercel:*)",
-      "Bash(npx prisma generate:*)",
-      "Bash(xargs:*)",
-      "Bash(npx prisma:*)",
-      "Bash(npm update:*)"
+      "Bash(powershell:*)",
+      "Bash(for file in DeliveryTrackerSkill.ts DiscountCalculatorSkill.ts DocumentGeneratorSkill.ts DocumentProcessorSkill.ts DocumentScannerSkill.ts)",
+      "Bash(do echo \"Processing $file...\")"
     ],
     "deny": [],
     "ask": []

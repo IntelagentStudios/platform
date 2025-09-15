@@ -25,7 +25,7 @@ export class ViralContentPredictorSkill extends BaseSkill {
     tier: 'Pro' as const
   };
 
-  async execute(params: ViralContentPredictorInput): Promise<SkillResult> {
+  protected async executeImpl(params: ViralContentPredictorInput): Promise<SkillResult> {
     const { content, contentType, platform, targetAudience, publishTime } = params;
 
     if (!content || !contentType || !platform || platform.length === 0) {

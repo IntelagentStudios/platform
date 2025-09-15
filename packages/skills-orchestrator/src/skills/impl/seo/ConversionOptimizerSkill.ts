@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class ConversionOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { url, goals = ['form_submit', 'purchase', 'signup'] } = params;
     
     console.log(`[ConversionOptimizerSkill] Optimizing conversions for: ${url}`);

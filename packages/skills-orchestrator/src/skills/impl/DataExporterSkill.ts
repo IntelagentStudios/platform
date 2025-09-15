@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DataExporterSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { data, format = 'csv', destination = 'download' } = params;
     
     console.log(`[DataExporterSkill] Exporting data to ${format} format`);

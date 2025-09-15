@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DocumentProcessorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { document, action = 'analyze', options = {} } = params;
     
     console.log(`[DocumentProcessorSkill] Processing document with action: ${action}`);

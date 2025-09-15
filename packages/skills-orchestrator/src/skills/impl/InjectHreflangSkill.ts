@@ -1,5 +1,5 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillResult } from '../types';
+import { SkillResult, SkillParams } from '../types';
 
 export class InjectHreflangSkill extends BaseSkill {
   metadata = {
@@ -17,7 +17,7 @@ export class InjectHreflangSkill extends BaseSkill {
     tier: 'Custom' as const
   };
 
-  async execute(params: any): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, locales, currentLocale, licenseKey, userId, tier, serviceUrl } = params;
 
     if (!url || !locales || !Array.isArray(locales)) {

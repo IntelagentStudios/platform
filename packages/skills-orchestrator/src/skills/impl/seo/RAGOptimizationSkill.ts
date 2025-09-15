@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class RAGOptimizationSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { content, chunkSize = 500 } = params;
     
     console.log(`[RAGOptimizationSkill] Optimizing content for RAG systems`);

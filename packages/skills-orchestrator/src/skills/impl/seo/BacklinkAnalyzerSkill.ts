@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class BacklinkAnalyzerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { domain, checkToxicity = true } = params;
     
     console.log(`[BacklinkAnalyzerSkill] Analyzing backlinks for: ${domain}`);

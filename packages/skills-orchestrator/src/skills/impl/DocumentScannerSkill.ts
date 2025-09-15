@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DocumentScannerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { source = 'scanner', format = 'pdf', quality = 'high' } = params;
     
     console.log(`[DocumentScannerSkill] Scanning from ${source} to ${format}`);

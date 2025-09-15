@@ -23,7 +23,7 @@ export class SpeechToTextSkill extends BaseSkill {
     return params !== null && params !== undefined;
   }
 
-  async execute(params: SkillParams): Promise<SkillResult> {
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     try {
       
       const core = SkillCore.getInstance();

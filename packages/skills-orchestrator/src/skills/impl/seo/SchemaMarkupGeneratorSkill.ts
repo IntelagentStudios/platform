@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class SchemaMarkupGeneratorSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { url, type = 'auto-detect' } = params;
     
     console.log(`[SchemaMarkupGeneratorSkill] Generating schema markup for: ${url}`);

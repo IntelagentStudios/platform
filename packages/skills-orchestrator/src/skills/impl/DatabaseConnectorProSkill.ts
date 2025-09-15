@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DatabaseConnectorProSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { type = 'postgresql', action = 'connect', config = {} } = params;
     
     console.log(`[DatabaseConnectorProSkill] ${action} to ${type} database`);

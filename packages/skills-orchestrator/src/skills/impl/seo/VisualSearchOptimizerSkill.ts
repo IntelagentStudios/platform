@@ -1,7 +1,8 @@
 import { BaseSkill } from '../../BaseSkill';
+import { SkillParams } from '../../types';
 
 export class VisualSearchOptimizerSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { mediaUrls, platform = 'all' } = params;
     
     console.log(`[VisualSearchOptimizerSkill] Optimizing visual content for search`);

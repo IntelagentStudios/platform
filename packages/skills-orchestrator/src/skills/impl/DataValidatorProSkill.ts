@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DataValidatorProSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { data, rules = {}, schema = {} } = params;
     
     console.log(`[DataValidatorProSkill] Validating data with ${Object.keys(rules).length} rules`);

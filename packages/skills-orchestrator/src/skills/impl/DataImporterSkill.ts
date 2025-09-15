@@ -1,7 +1,8 @@
 import { BaseSkill } from '../BaseSkill';
+import { SkillParams } from '../types';
 
 export class DataImporterSkill extends BaseSkill {
-  async execute(params: any): Promise<any> {
+  protected async executeImpl(params: SkillParams): Promise<any> {
     const { source, format = 'auto', mapping = {} } = params;
     
     console.log(`[DataImporterSkill] Importing data from: ${source}`);
