@@ -398,18 +398,26 @@ export class FinanceAgent extends EventEmitter {
   /**
    * Estimate cost for a request
    */
-  public async estimateCost(request: ManagementRequest): Promise<number> {
+  public async estimateCost(request: ManagementRequest): Promise<any> {
     const skillId = request.params?.skillId;
-    if (!skillId) return 0;
-    
-    const baseCost = this.skillPricing.get(skillId) || 0;
-    
+    const baseCost = skillId ? (this.skillPricing.get(skillId) || 0) : 0.001;
+
     // Add multipliers based on usage
     let multiplier = 1;
     if (request.context.priority === 'high') multiplier *= 1.5;
     if (request.context.priority === 'critical') multiplier *= 2;
-    
-    return baseCost * multiplier;
+
+    const estimatedCost = baseCost * multiplier;
+
+    return {
+      estimatedCost,
+      currency: 'USD',
+      breakdown: {
+        base: baseCost,
+        multiplier,
+        priority: request.context.priority || 'normal'
+      }
+    };
   }
 
   /**
@@ -468,38 +476,6 @@ export class FinanceAgent extends EventEmitter {
       .filter(t => new Date(t.timestamp).toDateString() === today)
       .filter(t => t.status === 'completed')
       .reduce((sum, t) => sum + t.amount, 0);
-  }
-
-  /**
-   * Estimate cost for a request
-   */
-  public async estimateCost(request: any): Promise<any> {
-    let estimatedCost = 0;
-
-    // Base cost calculation
-    if (request.type === 'skill') {
-      estimatedCost = 0.001; // $0.001 per skill execution
-    } else if (request.type === 'workflow') {
-      estimatedCost = 0.01; // $0.01 per workflow
-    } else if (request.type === 'system') {
-      estimatedCost = 0.1; // $0.10 per system operation
-    }
-
-    // Priority multiplier
-    if (request.context?.priority === 'high') {
-      estimatedCost *= 2;
-    } else if (request.context?.priority === 'critical') {
-      estimatedCost *= 5;
-    }
-
-    return {
-      estimatedCost,
-      currency: 'USD',
-      breakdown: {
-        base: estimatedCost,
-        priority: request.context?.priority || 'normal'
-      }
-    };
   }
 
   /**
