@@ -494,15 +494,4 @@ export class FinanceAgent extends EventEmitter {
     // Cleanup resources
     this.removeAllListeners();
   }
-
-  /**
-   * Get agent status
-   */
-  public async getStatus(): Promise<any> {
-    return {
-      active: true,
-      transactionCount: this.transactions.size,
-      todayRevenue: this.calculateTodayRevenue()
-    };
-  }
 }
