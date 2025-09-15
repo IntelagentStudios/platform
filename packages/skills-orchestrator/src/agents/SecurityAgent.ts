@@ -774,7 +774,10 @@ export class SecurityAgent extends EventEmitter {
       case 'audit':
         return await this.performSecurityAudit();
       case 'threat_scan':
-        return await this.detectThreats({ context: request.context || {} });
+        return await this.detectThreats(
+          request.params || {},
+          request.context || {}
+        );
       default:
         return { success: true, action: request.action };
     }
