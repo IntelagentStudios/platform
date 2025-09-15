@@ -389,7 +389,8 @@ export class SkillsMatrix {
           skillId: skill.id,
           skillName: skill.name,
           primaryAgent: agents[0],
-          secondaryAgents: agents.slice(1)
+          secondaryAgents: agents.slice(1),
+          complexity: skill.complexity as 'low' | 'medium' | 'high'
         });
       });
     });
