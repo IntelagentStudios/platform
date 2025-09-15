@@ -70,7 +70,7 @@ export class InternalEmailService extends EventEmitter {
   private async initializeTransporter() {
     try {
       // Create transporter with our config
-      this.transporter = nodemailer.createTransporter(this.config);
+      this.transporter = nodemailer.createTransport(this.config);
       
       // Verify connection
       await this.transporter.verify();
