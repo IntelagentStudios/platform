@@ -1,7 +1,8 @@
 # Multi-stage optimized Dockerfile for production
 # Stage 1: Dependencies
-# Using specific version to help with caching and availability
-FROM node:18.20.5-alpine3.20 AS deps
+# Using Alpine Linux base and installing Node.js to bypass Docker Hub issues
+FROM alpine:3.20 AS deps
+RUN apk add --no-cache nodejs npm
 RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
 WORKDIR /app
 
@@ -18,7 +19,8 @@ RUN npm ci --legacy-peer-deps --ignore-scripts && \
     npm cache clean --force
 
 # Stage 2: Builder
-FROM node:18.20.5-alpine3.20 AS builder
+FROM alpine:3.20 AS builder
+RUN apk add --no-cache nodejs npm
 RUN apk add --no-cache libc6-compat python3 make g++ openssl openssl-dev
 WORKDIR /app
 
@@ -49,7 +51,8 @@ RUN cd apps/customer-portal && \
     rm -rf .next/cache
 
 # Stage 3: Runner - minimal production image
-FROM node:18.20.5-alpine3.20 AS runner
+FROM alpine:3.20 AS runner
+RUN apk add --no-cache nodejs
 RUN apk add --no-cache libc6-compat openssl
 
 # Create app user
