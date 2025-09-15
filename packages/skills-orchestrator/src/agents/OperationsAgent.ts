@@ -568,6 +568,32 @@ export class OperationsAgent extends EventEmitter {
   }
 
   /**
+   * Execute an operations-related request
+   */
+  public async execute(request: any): Promise<any> {
+    console.log('[OperationsAgent] Executing request:', request.action);
+
+    // Use existing methods based on action
+    switch (request.action) {
+      case 'execute_skill':
+        return await this.executeSkill(
+          request.params?.skillName || 'unknown',
+          request.params || {}
+        );
+      case 'workflow':
+        return await this.optimizeWorkflow(request.params?.steps || []);
+      case 'incident':
+        return await this.handleIncident(
+          request.params?.type || 'unknown',
+          request.params?.severity || 'low',
+          request.params || {}
+        );
+      default:
+        return { success: true, action: request.action };
+    }
+  }
+
+  /**
    * Handle external events from other agents
    */
   public handleExternalEvent(event: string, data: any): void {

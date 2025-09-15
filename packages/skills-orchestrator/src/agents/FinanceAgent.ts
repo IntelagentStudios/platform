@@ -503,27 +503,6 @@ export class FinanceAgent extends EventEmitter {
   }
 
   /**
-   * Execute a finance-related request
-   */
-  public async execute(request: any): Promise<any> {
-    console.log('[FinanceAgent] Executing request:', request.action);
-
-    switch (request.action) {
-      case 'process_payment':
-        return await this.processPayment({
-          amount: request.params?.amount || 0,
-          currency: request.params?.currency || 'USD',
-          customerId: request.context?.userId,
-          metadata: request.params
-        });
-      case 'get_metrics':
-        return await this.getFinancialMetrics();
-      default:
-        return { success: true, action: request.action };
-    }
-  }
-
-  /**
    * Handle external events from other agents
    */
   public handleExternalEvent(event: string, data: any): void {
