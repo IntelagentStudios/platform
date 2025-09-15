@@ -617,13 +617,21 @@ export class InfrastructureAgent extends EventEmitter {
 
     switch (request.action) {
       case 'scale':
-        return await this.scaleResources({
-          cpu: request.params?.cpu || 1,
-          memory: request.params?.memory || 1024,
-          instances: request.params?.instances || 1
-        });
+        // Use auto-scaling decision instead
+        const scalingDecision = await this.decideAutoScaling();
+        return {
+          success: true,
+          action: 'scale',
+          decision: scalingDecision
+        };
       case 'health_check':
-        return await this.performHealthCheck('system');
+        // Check server health
+        const health = await this.checkServerHealth('main-server');
+        return {
+          success: true,
+          action: 'health_check',
+          health
+        };
       case 'allocate':
         return await this.getResourceAllocation();
       default:
