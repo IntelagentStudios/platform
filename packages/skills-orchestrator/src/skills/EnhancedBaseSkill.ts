@@ -289,19 +289,22 @@ export abstract class EnhancedBaseSkill {
    */
   protected async getHistory(sessionId: string, limit: number = 10): Promise<any[]> {
     try {
-      const logs = await prisma.skill_logs.findMany({
+      const logs = await prisma.skill_audit_log.findMany({
         where: {
-          session_id: sessionId,
-          log_type: { in: ['request', 'response'] }
+          event_type: { in: ['request', 'response'] },
+          event_data: {
+            path: ['session_id'],
+            equals: sessionId
+          }
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: limit
       });
-      
+
       return logs.map(log => ({
-        type: log.log_type,
-        data: JSON.parse(log.data as string),
-        timestamp: log.timestamp
+        type: log.event_type,
+        data: log.event_data,
+        timestamp: log.created_at
       }));
     } catch (error) {
       this.log(`Failed to fetch history: ${error}`, 'warn');
