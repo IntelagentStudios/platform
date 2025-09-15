@@ -103,13 +103,10 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
       const monthStart = new Date();
       monthStart.setMonth(monthStart.getMonth() - 1);
 
-      // Get all conversations for the product key or license
+      // Get all conversations for the product key
       const conversations = await prisma.chatbot_logs.findMany({
         where: {
-          OR: [
-            { product_key: identifier },
-            { license_key: identifier }
-          ],
+          product_key: identifier,
           created_at: {
             gte: startDate,
             lte: endDate
