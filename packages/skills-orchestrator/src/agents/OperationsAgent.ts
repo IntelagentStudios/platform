@@ -52,12 +52,17 @@ export class OperationsAgent extends EventEmitter {
    */
   public async executeSkill(skillName: string, params: any): Promise<any> {
     try {
-      const skill = this.skillsRegistry.getSkill(skillName);
-      if (!skill) {
+      const skillInstance = this.skillsRegistry.getSkill(skillName);
+      if (!skillInstance) {
         throw new Error(`Skill ${skillName} not found`);
       }
-      
-      const result = await skill.execute(params);
+
+      // Check if skill has implementation
+      if (!skillInstance.implementation) {
+        throw new Error(`Skill ${skillName} has no implementation`);
+      }
+
+      const result = await skillInstance.implementation.execute(params);
       
       // Log execution
       console.log(`[OperationsAgent] Executed skill: ${skillName}`, {
