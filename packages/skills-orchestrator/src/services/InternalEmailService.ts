@@ -87,13 +87,13 @@ export class InternalEmailService extends EventEmitter {
   }
   
   private setupDirectDelivery() {
-    // This creates a transporter that connects directly to recipient's mail server
-    // Useful for development or when no SMTP server is available
+    // Use JSON transport for testing/development when no SMTP server is available
+    // This will output the email to console in JSON format
     this.transporter = nodemailer.createTransport({
-      direct: true,
-      logger: false,
-      debug: false
+      jsonTransport: true
     });
+
+    console.log('[InternalEmailService] Using JSON transport (development mode)');
   }
   
   /**
