@@ -131,16 +131,22 @@ export abstract class EnhancedBaseSkill {
           where: {
             product_key: productKey,
             status: 'active'
-          },
-          include: {
-            licenses: true
           }
         });
-        
+
         if (productKeyRecord) {
           const metadata = productKeyRecord.metadata as any;
-          enhanced.domain = metadata?.domain || productKeyRecord.licenses?.domain || enhanced.domain;
-          enhanced.companyName = metadata?.company_name || productKeyRecord.licenses?.customer_name || enhanced.companyName;
+
+          // Get license info if available
+          let licenseInfo = null;
+          if (productKeyRecord.license_key) {
+            licenseInfo = await prisma.licenses.findUnique({
+              where: { license_key: productKeyRecord.license_key }
+            });
+          }
+
+          enhanced.domain = metadata?.domain || licenseInfo?.domain || enhanced.domain;
+          enhanced.companyName = metadata?.company_name || licenseInfo?.customer_name || enhanced.companyName;
           enhanced.customKnowledge = metadata?.custom_knowledge || enhanced.customKnowledge;
         }
       } catch (error) {
