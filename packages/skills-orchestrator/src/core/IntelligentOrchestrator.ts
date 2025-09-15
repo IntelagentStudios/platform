@@ -273,22 +273,20 @@ export class IntelligentOrchestrator {
     context?: OrchestrationContext
   ): Promise<void> {
     try {
-      await prisma.skill_logs.create({
+      await prisma.skill_audit_log.create({
         data: {
           skill_id: route.skillId,
-          skill_name: route.skillId,
-          session_id: context?.sessionId || 'orchestrator',
+          event_type: 'routing',
           user_id: context?.userId,
-          product_key: context?.productKey,
-          domain: context?.domain,
-          log_type: 'routing',
-          data: {
+          license_key: context?.productKey,
+          event_data: {
             route,
             request: typeof request === 'string' ? request : request.action,
             confidence: route.confidence,
-            reason: route.reason
-          },
-          timestamp: new Date()
+            reason: route.reason,
+            sessionId: context?.sessionId || 'orchestrator',
+            domain: context?.domain
+          }
         }
       });
     } catch (error) {
@@ -306,17 +304,20 @@ export class IntelligentOrchestrator {
     
     try {
       // Get recent skill usage
-      const recentLogs = await prisma.skill_logs.findMany({
+      const recentLogs = await prisma.skill_audit_log.findMany({
         where: {
-          session_id: context.sessionId,
-          log_type: 'response'
+          event_type: 'response',
+          event_data: {
+            path: ['sessionId'],
+            equals: context.sessionId
+          }
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 5
       });
-      
+
       // Analyze patterns and recommend complementary skills
-      const usedSkills = new Set(recentLogs.map(log => log.skill_id));
+      const usedSkills = new Set(recentLogs.map(log => log.skill_id).filter(Boolean));
       
       // Recommend related skills
       for (const skillId of usedSkills) {

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(powershell:*)",
       "Bash(for file in DeliveryTrackerSkill.ts DiscountCalculatorSkill.ts DocumentGeneratorSkill.ts DocumentProcessorSkill.ts DocumentScannerSkill.ts)",
-      "Bash(do echo \"Processing $file...\")"
+      "Bash(do echo \"Processing $file...\")",
+      "Bash(railway status:*)"
     ],
     "deny": [],
     "ask": []

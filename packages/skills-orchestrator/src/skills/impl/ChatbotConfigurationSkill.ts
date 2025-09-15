@@ -51,7 +51,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     id: 'chatbot_configuration',
     name: 'Chatbot Configuration Manager',
     description: 'Manages chatbot configuration, settings, integration, and deployment',
-    category: SkillCategory.SYSTEM,
+    category: SkillCategory.AUTOMATION,
     version: '1.0.0',
     author: 'Intelagent Management Team',
     tags: ['chatbot', 'configuration', 'settings', 'integration', 'deployment', 'management']
@@ -197,19 +197,15 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         }
       });
 
-      // Store configuration separately for quick access
-      await prisma.chatbot_configurations.upsert({
-        where: { product_key: productKey },
-        update: {
-          configuration: defaultConfig as any,
-          updated_at: new Date()
-        },
-        create: {
-          product_key: productKey,
-          license_key: licenseKey,
-          domain,
-          configuration: defaultConfig as any,
-          status: 'active'
+      // Store basic chatbot settings in chatbot_config table
+      await prisma.chatbot_config.create({
+        data: {
+          name: defaultConfig.settings.personality || 'Assistant',
+          welcome_message: 'Hello! How can I help you today?',
+          primary_color: defaultConfig.integration.widgetColor,
+          position: defaultConfig.integration.widgetPosition,
+          active: true,
+          settings: defaultConfig as any
         }
       });
 
@@ -254,12 +250,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         integration
       } = params;
 
-      // Get existing configuration
-      const existing = await prisma.chatbot_configurations.findUnique({
+      // Get existing configuration from product_keys metadata
+      const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!existing) {
+      if (!productKeyRecord) {
         return {
           success: false,
           data: null,
@@ -267,7 +263,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const currentConfig = existing.configuration as ChatbotConfig;
+      const currentConfig = productKeyRecord.metadata as ChatbotConfig;
 
       // Merge updates
       const updatedConfig: ChatbotConfig = {
@@ -288,11 +284,19 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      // Update database
-      await prisma.chatbot_configurations.update({
-        where: { product_key: productKey },
+      // Update chatbot_config table if needed
+      await prisma.chatbot_config.updateMany({
+        where: {
+          settings: {
+            path: ['product_key'],
+            equals: productKey
+          }
+        },
         data: {
-          configuration: updatedConfig as any,
+          name: updatedConfig.settings.personality || 'Assistant',
+          primary_color: updatedConfig.integration.widgetColor,
+          position: updatedConfig.integration.widgetPosition,
+          settings: updatedConfig as any,
           updated_at: new Date()
         }
       });
@@ -335,12 +339,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { productKey } = params;
 
-      // Get configuration
-      const config = await prisma.chatbot_configurations.findUnique({
+      // Get configuration from product_keys metadata
+      const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!config) {
+      if (!productKeyRecord) {
         return {
           success: false,
           data: null,
@@ -348,17 +352,17 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const chatbotConfig = config.configuration as ChatbotConfig;
+      const chatbotConfig = productKeyRecord.metadata as ChatbotConfig;
       const embedCode = this.generateEmbedCodeInternal(productKey, chatbotConfig);
 
       // Update configuration with new embed code
       chatbotConfig.integration.embedCode = embedCode;
-      
-      await prisma.chatbot_configurations.update({
+
+      await prisma.product_keys.update({
         where: { product_key: productKey },
         data: {
-          configuration: chatbotConfig as any,
-          updated_at: new Date()
+          metadata: chatbotConfig as any,
+          last_used_at: new Date()
         }
       });
 
@@ -367,7 +371,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         data: {
           embedCode,
           productKey,
-          domain: config.domain
+          domain: chatbotConfig.domain
         }
       };
     } catch (error) {
@@ -396,12 +400,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { productKey } = params;
 
-      // Get configuration
-      const config = await prisma.chatbot_configurations.findUnique({
+      // Get configuration from product_keys metadata
+      const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!config) {
+      if (!productKeyRecord) {
         return {
           success: false,
           data: null,
@@ -409,8 +413,10 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
+      const config = productKeyRecord.metadata as ChatbotConfig;
+
       // Run deployment checks
-      const deploymentChecks = await this.runDeploymentChecks(config);
+      const deploymentChecks = await this.runDeploymentChecks({ configuration: config });
       if (!deploymentChecks.passed) {
         return {
           success: false,
@@ -419,18 +425,17 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      // Update status to deployed
-      await prisma.chatbot_configurations.update({
+      // Update product key status to deployed
+      await prisma.product_keys.update({
         where: { product_key: productKey },
         data: {
           status: 'deployed',
-          deployed_at: new Date(),
-          updated_at: new Date()
+          last_used_at: new Date()
         }
       });
 
       // Initialize chatbot services
-      await this.initializeChatbotServices(productKey, config);
+      await this.initializeChatbotServices(productKey, { configuration: config });
 
       // Log deployment
       await this.logInsight({
@@ -468,12 +473,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { productKey } = params;
 
-      // Get configuration
-      const config = await prisma.chatbot_configurations.findUnique({
+      // Get configuration from product_keys metadata
+      const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!config) {
+      if (!productKeyRecord) {
         return {
           success: false,
           data: null,
@@ -481,13 +486,13 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const chatbotConfig = config.configuration as ChatbotConfig;
+      const chatbotConfig = productKeyRecord.metadata as ChatbotConfig;
 
       // Run test suite
       const tests = {
         configuration: await this.testConfigurationValidity(chatbotConfig),
         webhook: await this.testWebhookConnection(chatbotConfig),
-        domain: await this.testDomainAccess(config.domain),
+        domain: await this.testDomainAccess(chatbotConfig.domain),
         security: await this.testSecuritySettings(chatbotConfig),
         features: await this.testFeatures(chatbotConfig)
       };
@@ -521,12 +526,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { productKey } = params;
 
-      // Get current configuration
-      const config = await prisma.chatbot_configurations.findUnique({
+      // Get current configuration from product_keys metadata
+      const productKeyRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!config) {
+      if (!productKeyRecord) {
         return {
           success: false,
           data: null,
@@ -534,22 +539,25 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
+      const config = productKeyRecord.metadata as ChatbotConfig;
+
       // Create backup
       const backup = {
         productKey,
-        configuration: config.configuration,
+        configuration: config,
         domain: config.domain,
-        status: config.status,
+        status: productKeyRecord.status,
         backedUpAt: new Date(),
         backupId: `backup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       };
 
-      // Store backup
-      await prisma.configuration_backups.create({
+      // Store backup in a shared_items table or similar (since configuration_backups doesn't exist)
+      await prisma.shared_items.create({
         data: {
-          backup_id: backup.backupId,
-          product_key: productKey,
-          configuration: backup.configuration as any,
+          shared_by: productKey,
+          shared_with: 'system',
+          item_type: 'config_backup',
+          item_config: backup as any,
           created_at: backup.backedUpAt
         }
       });
@@ -579,9 +587,16 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { productKey, backupId } = params;
 
-      // Get backup
-      const backup = await prisma.configuration_backups.findUnique({
-        where: { backup_id: backupId }
+      // Get backup from shared_items
+      const backup = await prisma.shared_items.findFirst({
+        where: {
+          shared_by: productKey,
+          item_type: 'config_backup',
+          item_config: {
+            path: ['backupId'],
+            equals: backupId
+          }
+        }
       });
 
       if (!backup) {
@@ -592,21 +607,14 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      // Restore configuration
-      await prisma.chatbot_configurations.update({
-        where: { product_key: productKey },
-        data: {
-          configuration: backup.configuration,
-          updated_at: new Date()
-        }
-      });
+      const backupConfig = (backup.item_config as any).configuration;
 
       // Update product key metadata
       await prisma.product_keys.update({
         where: { product_key: productKey },
         data: {
-          metadata: backup.configuration,
-          updated_at: new Date()
+          metadata: backupConfig,
+          last_used_at: new Date()
         }
       });
 
@@ -619,14 +627,14 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       });
 
       // Notify active sessions
-      await this.notifyActiveSessions(productKey, 'configuration_restored', backup.configuration);
+      await this.notifyActiveSessions(productKey, 'configuration_restored', backupConfig);
 
       return {
         success: true,
         data: {
           restored: true,
           backupId,
-          configuration: backup.configuration,
+          configuration: backupConfig,
           restoredAt: new Date()
         }
       };
@@ -640,18 +648,20 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     try {
       const { sourceProductKey, targetDomain, licenseKey } = params;
 
-      // Get source configuration
-      const source = await prisma.chatbot_configurations.findUnique({
+      // Get source configuration from product_keys metadata
+      const sourceRecord = await prisma.product_keys.findUnique({
         where: { product_key: sourceProductKey }
       });
 
-      if (!source) {
+      if (!sourceRecord) {
         return {
           success: false,
           data: null,
           error: 'Source configuration not found'
         };
       }
+
+      const sourceConfig = sourceRecord.metadata as ChatbotConfig;
 
       // Validate target domain
       const domainValidation = await this.validateDomainInternal(targetDomain);
@@ -668,7 +678,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
 
       // Clone configuration
       const clonedConfig = {
-        ...(source.configuration as ChatbotConfig),
+        ...sourceConfig,
         product_key: newProductKey,
         license_key: licenseKey,
         domain: targetDomain
@@ -677,14 +687,15 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       // Generate new embed code
       clonedConfig.integration.embedCode = this.generateEmbedCodeInternal(newProductKey, clonedConfig);
 
-      // Create new configuration
-      await prisma.chatbot_configurations.create({
+      // Create basic chatbot settings in chatbot_config table
+      await prisma.chatbot_config.create({
         data: {
-          product_key: newProductKey,
-          license_key: licenseKey,
-          domain: targetDomain,
-          configuration: clonedConfig as any,
-          status: 'active'
+          name: clonedConfig.settings.personality || 'Assistant',
+          welcome_message: 'Hello! How can I help you today?',
+          primary_color: clonedConfig.integration.widgetColor,
+          position: clonedConfig.integration.widgetPosition,
+          active: true,
+          settings: clonedConfig as any
         }
       });
 
@@ -730,11 +741,11 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       const { productKey } = params;
 
       // Get current configuration to preserve essential info
-      const current = await prisma.chatbot_configurations.findUnique({
+      const currentRecord = await prisma.product_keys.findUnique({
         where: { product_key: productKey }
       });
 
-      if (!current) {
+      if (!currentRecord) {
         return {
           success: false,
           data: null,
@@ -742,10 +753,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
+      const current = currentRecord.metadata as ChatbotConfig;
+
       // Create default configuration preserving key info
       const resetConfig: ChatbotConfig = {
         product_key: productKey,
-        license_key: current.license_key,
+        license_key: currentRecord.license_key,
         domain: current.domain,
         settings: {
           personality: 'professional',
@@ -783,12 +796,12 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       // Generate new embed code
       resetConfig.integration.embedCode = this.generateEmbedCodeInternal(productKey, resetConfig);
 
-      // Update configuration
-      await prisma.chatbot_configurations.update({
+      // Update configuration in product_keys metadata
+      await prisma.product_keys.update({
         where: { product_key: productKey },
         data: {
-          configuration: resetConfig as any,
-          updated_at: new Date()
+          metadata: resetConfig as any,
+          last_used_at: new Date()
         }
       });
 
@@ -845,9 +858,14 @@ export class ChatbotConfigurationSkill extends BaseSkill {
       return { valid: false, error: 'Invalid domain format' };
     }
 
-    // Check if domain is already in use
-    const existing = await prisma.chatbot_configurations.findFirst({
-      where: { domain: domain.toLowerCase() }
+    // Check if domain is already in use by checking product_keys metadata
+    const existing = await prisma.product_keys.findFirst({
+      where: {
+        metadata: {
+          path: ['domain'],
+          equals: domain.toLowerCase()
+        }
+      }
     });
 
     if (existing) {
@@ -897,7 +915,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
     }
 
     // Check domain accessibility
-    const domainTest = await this.testDomainAccess(config.domain);
+    const domainTest = await this.testDomainAccess(chatbotConfig.domain);
     if (!domainTest.passed) {
       errors.push('Domain not accessible');
     }

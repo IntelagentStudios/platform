@@ -359,21 +359,21 @@ export class CustomerJourneyOrchestratorSkill extends EnhancedBaseSkill {
    */
   private async getCustomerHistory(customerId: string): Promise<any[]> {
     try {
-      const logs = await prisma.skill_logs.findMany({
-        where: { 
+      const logs = await prisma.skill_audit_log.findMany({
+        where: {
           OR: [
             { user_id: customerId },
-            { session_id: customerId }
+            { event_data: { path: ['sessionId'], equals: customerId } }
           ]
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { created_at: 'desc' },
         take: 50
       });
-      
+
       return logs.map(log => ({
-        action: (log.data as any)?.action || 'view',
-        timestamp: log.timestamp,
-        data: log.data
+        action: (log.event_data as any)?.action || 'view',
+        timestamp: log.created_at,
+        data: log.event_data
       }));
     } catch {
       return [];
@@ -385,15 +385,16 @@ export class CustomerJourneyOrchestratorSkill extends EnhancedBaseSkill {
    */
   private async trackJourneyEvent(event: any): Promise<void> {
     try {
-      await prisma.skill_logs.create({
+      await prisma.skill_audit_log.create({
         data: {
           skill_id: this.metadata.id,
-          skill_name: this.metadata.name,
-          session_id: event.customerId,
+          event_type: 'journey_event',
           user_id: event.customerId,
-          log_type: 'journey_event',
-          data: event,
-          timestamp: event.timestamp
+          event_data: {
+            ...event,
+            sessionId: event.customerId,
+            skillName: this.metadata.name
+          }
         }
       });
     } catch (error) {

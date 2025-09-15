@@ -9,7 +9,7 @@ export class SystemIntegrationSkill extends BaseSkill {
     id: 'system_integration',
     name: 'System Integration Service',
     description: 'Core integration skill for system-wide visibility, management, and coordination',
-    category: SkillCategory.SYSTEM,
+    category: SkillCategory.AUTOMATION,
     version: '1.0.0',
     author: 'Intelagent Platform',
     tags: ['system', 'integration', 'management', 'monitoring', 'core']

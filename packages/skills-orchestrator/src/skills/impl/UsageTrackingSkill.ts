@@ -9,7 +9,7 @@ export class UsageTrackingSkill extends BaseSkill {
     id: 'usage_tracking',
     name: 'Usage Tracking & Billing Integration',
     description: 'Comprehensive usage tracking, quota management, and billing integration for all platform services',
-    category: SkillCategory.SYSTEM,
+    category: SkillCategory.AUTOMATION,
     version: '1.0.0',
     author: 'Intelagent Platform',
     tags: ['usage', 'tracking', 'billing', 'quota', 'metrics', 'finance']

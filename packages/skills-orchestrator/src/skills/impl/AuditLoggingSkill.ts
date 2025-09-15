@@ -9,7 +9,7 @@ export class AuditLoggingSkill extends BaseSkill {
     id: 'audit_logging',
     name: 'Audit & Logging Service',
     description: 'Comprehensive audit logging and activity tracking for all system operations',
-    category: SkillCategory.SYSTEM,
+    category: SkillCategory.AUTOMATION,
     version: '1.0.0',
     author: 'Intelagent Platform',
     tags: ['audit', 'logging', 'compliance', 'tracking', 'monitoring', 'security']
