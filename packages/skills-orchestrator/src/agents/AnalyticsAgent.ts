@@ -481,22 +481,6 @@ export class AnalyticsAgent extends SpecialistAgent {
   }
 
   /**
-   * Execute an analytics-related request
-   */
-  public async execute(request: any): Promise<any> {
-    console.log('[AnalyticsAgent] Executing request:', request.action);
-
-    switch (request.action) {
-      case 'analyze':
-        return { success: true, analysis: 'completed' };
-      case 'report':
-        return { success: true, report: 'generated' };
-      default:
-        return { success: true, action: request.action };
-    }
-  }
-
-  /**
    * Shutdown the agent
    */
   public async shutdown(): Promise<void> {
