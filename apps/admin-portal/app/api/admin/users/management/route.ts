@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { OperationsAgent } from '@repo/skills-orchestrator';
-import { PrismaClient } from '@repo/database';
+import { OperationsAgent } from '@intelagent/skills-orchestrator';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

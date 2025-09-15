@@ -161,7 +161,7 @@ export function validateEnv(): ValidatedEnv {
 export function getEnvVar<K extends keyof ValidatedEnv>(
   key: K,
   fallback?: ValidatedEnv[K]
-): ValidatedEnv[K] {
+): ValidatedEnv[K] | undefined {
   const validated = validateEnv();
   return validated[key] ?? fallback;
 }

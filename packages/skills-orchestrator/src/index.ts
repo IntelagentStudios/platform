@@ -8,12 +8,26 @@
 // ORCHESTRATOR AGENT - PRIMARY INTERFACE
 // ============================================
 export { OrchestratorAgent } from './core/OrchestratorAgent';
-export type { 
-  OrchestrationRequest, 
+export type {
+  OrchestrationRequest,
   OrchestrationResult,
   WorkflowDefinition,
-  WorkflowStep 
+  WorkflowStep
 } from './core/OrchestratorAgent';
+
+// ============================================
+// MANAGEMENT AGENTS
+// ============================================
+export { FinanceAgent } from './agents/FinanceAgent';
+export { OperationsAgent } from './agents/OperationsAgent';
+export { InfrastructureAgent } from './agents/InfrastructureAgent';
+export { SecurityAgent } from './agents/SecurityAgent';
+export { ComplianceAgent } from './agents/ComplianceAgent';
+export { IntegrationAgent } from './agents/IntegrationAgent';
+export { AnalyticsAgent } from './agents/AnalyticsAgent';
+export { CommunicationsAgent } from './agents/CommunicationsAgent';
+export { ManagementTeam } from './agents/ManagementTeam';
+export type { ManagementRequest, ManagementDecision, ManagementResult } from './agents/ManagementTeam';
 
 // ============================================
 // INTERNAL COMPONENTS (Not for external use)

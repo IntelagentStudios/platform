@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FinanceAgent } from '@repo/skills-orchestrator';
+import { FinanceAgent } from '@intelagent/skills-orchestrator';
 
 export async function GET(request: NextRequest) {
   try {

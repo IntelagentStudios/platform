@@ -123,7 +123,7 @@ export default function SkillsConfigPage() {
   const [showValues, setShowValues] = useState<{ [key: string]: boolean }>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('communication');
+  const [selectedCategory, setSelectedCategory] = useState<keyof typeof SKILL_CATEGORIES>('communication');
   const [testResults, setTestResults] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
@@ -275,7 +275,7 @@ export default function SkillsConfigPage() {
                 return (
                   <button
                     key={key}
-                    onClick={() => setSelectedCategory(key)}
+                    onClick={() => setSelectedCategory(key as keyof typeof SKILL_CATEGORIES)}
                     className={`w-full p-3 rounded-lg flex items-center gap-3 transition ${
                       selectedCategory === key 
                         ? 'bg-blue-600 text-white' 

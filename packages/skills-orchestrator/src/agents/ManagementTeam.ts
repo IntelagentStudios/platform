@@ -106,10 +106,10 @@ export class ManagementTeam extends EventEmitter {
     this.security = SecurityAgent.getInstance();
     
     // Initialize specialized agents
-    this.compliance = ComplianceAgent.getInstance();
-    this.integration = IntegrationAgent.getInstance();
-    this.analytics = AnalyticsAgent.getInstance();
-    this.communications = CommunicationsAgent.getInstance();
+    this.compliance = new ComplianceAgent();
+    this.integration = new IntegrationAgent();
+    this.analytics = new AnalyticsAgent();
+    this.communications = new CommunicationsAgent();
     
     // Initialize skills matrix
     this.skillsMatrix = SkillsMatrix.getInstance();
