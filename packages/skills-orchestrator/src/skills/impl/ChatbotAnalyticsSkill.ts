@@ -159,7 +159,7 @@ export class ChatbotAnalyticsSkill extends BaseSkill {
   private async analyzeConversation(conversationId: string): Promise<SkillResult> {
     try {
       const conversation = await prisma.chatbot_logs.findUnique({
-        where: { id: conversationId }
+        where: { id: parseInt(conversationId, 10) }
       });
 
       if (!conversation) {
