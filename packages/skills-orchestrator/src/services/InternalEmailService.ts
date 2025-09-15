@@ -89,7 +89,7 @@ export class InternalEmailService extends EventEmitter {
   private setupDirectDelivery() {
     // This creates a transporter that connects directly to recipient's mail server
     // Useful for development or when no SMTP server is available
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       direct: true,
       logger: false,
       debug: false
