@@ -481,6 +481,37 @@ export class AnalyticsAgent extends SpecialistAgent {
   }
 
   /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[AnalyticsAgent] Handling external event: ${event}`, data);
+
+    // Handle specific events
+    switch (event) {
+      case 'anomaly:detected':
+        // Track anomaly in analytics
+        this.addInsight(this.createInsight(
+          'warning',
+          'Anomaly Tracked',
+          'Anomaly detected and tracked for analysis',
+          0.8,
+          data
+        ));
+        break;
+      case 'resource:limit':
+        // Analyze resource usage patterns
+        this.addInsight(this.createInsight(
+          'info',
+          'Resource Limit Analysis',
+          'Analyzing resource usage patterns due to limit reached',
+          0.7,
+          data
+        ));
+        break;
+    }
+  }
+
+  /**
    * Shutdown the agent
    */
   public async shutdown(): Promise<void> {

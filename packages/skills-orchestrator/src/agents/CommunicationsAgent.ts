@@ -522,6 +522,27 @@ export class CommunicationsAgent extends SpecialistAgent {
   }
 
   /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[CommunicationsAgent] Handling external event: ${event}`, data);
+
+    // Handle specific events
+    switch (event) {
+      case 'integration:failed':
+        // Retry communications through alternative channels
+        this.addInsight(this.createInsight(
+          'warning',
+          'Integration Failed - Retrying',
+          'Integration failed - attempting alternative communication channels',
+          0.8,
+          data
+        ));
+        break;
+    }
+  }
+
+  /**
    * Shutdown the agent
    */
   public async shutdown(): Promise<void> {

@@ -303,6 +303,27 @@ export class IntegrationAgent extends SpecialistAgent {
   }
 
   /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[IntegrationAgent] Handling external event: ${event}`, data);
+
+    // Handle specific events
+    switch (event) {
+      case 'delivery:failed':
+        // Check external service status
+        this.addInsight(this.createInsight(
+          'warning',
+          'Delivery Failure',
+          'Message delivery failed - checking external services',
+          0.8,
+          data
+        ));
+        break;
+    }
+  }
+
+  /**
    * Shutdown the agent
    */
   public async shutdown(): Promise<void> {

@@ -231,6 +231,27 @@ export class ComplianceAgent extends SpecialistAgent {
   }
 
   /**
+   * Handle external events from other agents
+   */
+  public handleExternalEvent(event: string, data: any): void {
+    console.log(`[ComplianceAgent] Handling external event: ${event}`, data);
+
+    // Handle specific events
+    switch (event) {
+      case 'threat:detected':
+        // Review compliance implications of threat
+        this.addInsight(this.createInsight(
+          'warning',
+          'Security Threat - Compliance Review',
+          'Security threat detected - reviewing compliance implications',
+          0.9,
+          data
+        ));
+        break;
+    }
+  }
+
+  /**
    * Shutdown the agent
    */
   public async shutdown(): Promise<void> {
