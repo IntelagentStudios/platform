@@ -5,6 +5,7 @@
 
 import { SkillResult, SkillParams, SkillMetadata, SkillCategory } from '../types';
 import { PrismaClient } from '@prisma/client';
+import { complexityAnalyzer } from '../core/SkillComplexityAnalyzer';
 
 const prisma = new PrismaClient();
 
@@ -19,12 +20,24 @@ export abstract class BaseSkill {
   protected abstract executeImpl(params: SkillParams): Promise<SkillResult>;
   
   /**
-   * Public execute method that wraps execution with logging
+   * Public execute method that wraps execution with logging and complexity monitoring
    */
   async execute(params: SkillParams): Promise<SkillResult> {
     const startTime = new Date();
     this.executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
+    // Analyze complexity before execution
+    try {
+      const metrics = await complexityAnalyzer.analyzeSkill(this, params);
+      if (metrics.recommendation === 'refactor') {
+        console.warn(`[${this.metadata.name}] High complexity detected:`);
+        metrics.suggestions.forEach(s => console.warn(`  - ${s}`));
+      }
+    } catch (err) {
+      // Don't fail execution if complexity analysis fails
+      console.debug('Complexity analysis skipped:', err);
+    }
+
     // Log execution start (commented out - skill_executions table fields don't exist)
     // try {
     //   await prisma.skill_executions.create({
@@ -46,9 +59,23 @@ export abstract class BaseSkill {
     try {
       // Execute the actual skill logic
       const result = await this.executeImpl(params);
-      
+
+      // Monitor execution performance
+      const endTime = new Date();
+      const executionTime = endTime.getTime() - startTime.getTime();
+
+      try {
+        await complexityAnalyzer.monitorExecution(
+          this,
+          startTime.getTime(),
+          endTime.getTime(),
+          result
+        );
+      } catch (err) {
+        console.debug('Execution monitoring skipped:', err);
+      }
+
       // Log successful execution (commented out - skill_executions table fields don't exist)
-      // const endTime = new Date();
       // const executionTime = endTime.getTime() - startTime.getTime();
       
       // try {

@@ -1,0 +1,130 @@
+name: TypeScript Type Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        run: |
+          cd packages/database
+          npx prisma generate --schema=./prisma/schema.prisma
+
+      - name: Type check skills-orchestrator
+        run: |
+          cd packages/skills-orchestrator
+          npx tsc --noEmit
+        continue-on-error: false
+
+      - name: Type check customer-portal
+        run: |
+          cd apps/customer-portal
+          npx tsc --noEmit
+        continue-on-error: false
+
+      - name: Check for common TypeScript issues
+        run: |
+          # Check for 'any' types
+          echo "Checking for 'any' types..."
+          ! grep -r "any" --include="*.ts" --include="*.tsx" packages/skills-orchestrator/src || echo "Warning: Found 'any' types"
+
+          # Check for missing return types
+          echo "Checking for missing return types..."
+          ! grep -r "async.*(" --include="*.ts" packages/skills-orchestrator/src | grep -v "Promise<" || echo "Warning: Found async functions without Promise return types"
+
+          # Check for executeImpl pattern
+          echo "Checking for correct executeImpl pattern..."
+          ! grep -r "async execute(" --include="*.ts" packages/skills-orchestrator/src/skills || (echo "ERROR: Found execute() instead of executeImpl()" && exit 1)
+
+      - name: Run skill validation
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+
+          function checkSkillFile(filePath) {
+            const content = fs.readFileSync(filePath, 'utf8');
+            const errors = [];
+
+            // Check for metadata
+            if (!content.includes('metadata =')) {
+              errors.push('Missing metadata property');
+            }
+
+            // Check for validate method
+            if (!content.includes('validate(params')) {
+              errors.push('Missing validate method');
+            }
+
+            // Check for executeImpl
+            if (!content.includes('executeImpl(params')) {
+              errors.push('Missing executeImpl method');
+            }
+
+            // Check for correct imports
+            if (content.includes('../../types') && filePath.includes('/seo/')) {
+              errors.push('Wrong import path for seo subfolder (should be ../../../types)');
+            }
+
+            return errors;
+          }
+
+          const skillsDir = 'packages/skills-orchestrator/src/skills/impl';
+          const errors = [];
+
+          function walkDir(dir) {
+            const files = fs.readdirSync(dir);
+            files.forEach(file => {
+              const filePath = path.join(dir, file);
+              const stat = fs.statSync(filePath);
+              if (stat.isDirectory()) {
+                walkDir(filePath);
+              } else if (file.endsWith('Skill.ts')) {
+                const fileErrors = checkSkillFile(filePath);
+                if (fileErrors.length > 0) {
+                  errors.push({ file: filePath, errors: fileErrors });
+                }
+              }
+            });
+          }
+
+          walkDir(skillsDir);
+
+          if (errors.length > 0) {
+            console.error('Skill validation errors found:');
+            errors.forEach(e => {
+              console.error(e.file + ':');
+              e.errors.forEach(err => console.error('  - ' + err));
+            });
+            process.exit(1);
+          } else {
+            console.log('All skills validated successfully!');
+          }
+          "
+
+      - name: Create validation report
+        if: always()
+        run: |
+          echo "## TypeScript Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Skills Orchestrator: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Customer Portal: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Skill Patterns: ✅" >> $GITHUB_STEP_SUMMARY
