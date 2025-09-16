@@ -307,7 +307,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         where: { product_key: productKey },
         data: {
           metadata: updatedConfig as any,
-          updated_at: new Date()
+          last_used_at: new Date()
         }
       });
 
