@@ -12,8 +12,7 @@ export class SalesOutreachSkill extends BaseSkill {
     category: SkillCategory.COMMUNICATION,
     version: '2.0.0',
     author: 'Intelagent Platform',
-    tags: ['sales', 'outreach', 'campaigns', 'email', 'automation'],
-    dependencies: ['email_sender', 'lead_management', 'email_composer']
+    tags: ['sales', 'outreach', 'campaigns', 'email', 'automation']
   };
 
   async executeImpl(params: SkillParams): Promise<SkillResult> {
