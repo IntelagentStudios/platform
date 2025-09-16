@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class AISearchVisibilityTrackerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'ai_search_visibility_tracker',
+    name: 'AI Search Visibility Tracker',
+    description: 'Track visibility in AI search platforms like ChatGPT, Perplexity, Claude, and Bard',
+    category: SkillCategory.AI_ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['ai', 'search', 'visibility', 'seo', 'analytics']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.domain;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { domain, checkPlatforms = ['chatgpt', 'perplexity', 'claude', 'bard'] } = params;
     
     console.log(`[AISearchVisibilityTrackerSkill] Tracking AI search visibility for: ${domain}`);
     
-    return {
-      success: true,
+    return this.success({
       domain,
       timestamp: new Date().toISOString(),
       platforms: checkPlatforms.map(platform => ({

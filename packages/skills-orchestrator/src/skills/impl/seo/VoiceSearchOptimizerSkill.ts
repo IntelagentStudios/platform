@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class VoiceSearchOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'voice_search_optimizer',
+    name: 'Voice Search Optimizer',
+    description: 'Optimize content for voice search queries and virtual assistants',
+    category: SkillCategory.AI_POWERED,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'voice-search', 'conversational', 'alexa', 'siri', 'google-assistant']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.content;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { content, targetAssistants = ['alexa', 'siri', 'google'] } = params;
     
     console.log(`[VoiceSearchOptimizerSkill] Optimizing for voice search`);
     
-    return {
-      success: true,
+    return this.success({
       optimizations: {
         conversational: {
           score: 0.76,

@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class BacklinkAnalyzerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'backlink_analyzer',
+    name: 'Backlink Analyzer',
+    description: 'Analyze backlink profiles, identify toxic links, and discover linking opportunities',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'backlinks', 'link-building', 'analytics', 'toxicity']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.domain;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { domain, checkToxicity = true } = params;
     
     console.log(`[BacklinkAnalyzerSkill] Analyzing backlinks for: ${domain}`);
     
-    return {
-      success: true,
+    return this.success({
       domain,
       metrics: {
         totalBacklinks: 2450,

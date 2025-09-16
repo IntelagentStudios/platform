@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class KeywordResearchProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'keyword_research_pro',
+    name: 'Keyword Research Pro',
+    description: 'Advanced keyword research with competitor analysis and search intent detection',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'keywords', 'research', 'competitors', 'search-intent']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.seedKeywords && Array.isArray(params.seedKeywords) && params.seedKeywords.length > 0;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { seedKeywords, locale = 'en', includeCompetitors = true } = params;
     
     console.log(`[KeywordResearchProSkill] Researching keywords for: ${seedKeywords}`);
     
-    return {
-      success: true,
+    return this.success({
       keywords: [
         {
           keyword: seedKeywords[0],

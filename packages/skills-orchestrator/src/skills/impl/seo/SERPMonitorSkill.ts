@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class SERPMonitorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'serp_monitor',
+    name: 'SERP Monitor',
+    description: 'Monitor search engine result pages for keyword rankings and competitor analysis',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'serp', 'rankings', 'monitoring', 'competitors']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.keywords && Array.isArray(params.keywords) && params.keywords.length > 0 && !!params.domain;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { keywords, domain, location = 'US' } = params;
     
     console.log(`[SERPMonitorSkill] Monitoring SERP for: ${domain}`);
     
-    return {
-      success: true,
+    return this.success({
       domain,
       location,
       timestamp: new Date().toISOString(),

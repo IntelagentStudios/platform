@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class ConversionOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'conversion_optimizer',
+    name: 'Conversion Optimizer',
+    description: 'Optimize website conversions through SEO and UX improvements',
+    category: SkillCategory.MARKETING,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'conversion', 'optimization', 'cro', 'ux']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.url;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, goals = ['form_submit', 'purchase', 'signup'] } = params;
     
     console.log(`[ConversionOptimizerSkill] Optimizing conversions for: ${url}`);
     
-    return {
-      success: true,
+    return this.success({
       url,
       currentMetrics: {
         conversionRate: 2.3,

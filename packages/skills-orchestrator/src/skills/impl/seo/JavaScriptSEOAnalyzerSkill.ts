@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class JavaScriptSEOAnalyzerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'javascript_seo_analyzer',
+    name: 'JavaScript SEO Analyzer',
+    description: 'Analyze and optimize JavaScript-heavy websites for SEO',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'javascript', 'spa', 'ssr', 'crawlability']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.url;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, checkFramework = true } = params;
     
     console.log(`[JavaScriptSEOAnalyzerSkill] Analyzing JavaScript SEO for: ${url}`);
     
-    return {
-      success: true,
+    return this.success({
       url,
       framework: checkFramework ? {
         detected: 'Next.js',

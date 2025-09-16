@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class ContentOptimizerAISkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'content_optimizer_ai',
+    name: 'AI Content Optimizer',
+    description: 'AI-powered content optimization for SEO, readability, and user engagement',
+    category: SkillCategory.AI_POWERED,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'content', 'ai', 'optimization', 'readability']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.content && !!params.targetKeyword;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { content, targetKeyword, intent = 'informational' } = params;
     
     console.log(`[ContentOptimizerAISkill] Optimizing content for: ${targetKeyword}`);
     
-    return {
-      success: true,
+    return this.success({
       optimization: {
         seo: {
           keywordDensity: {

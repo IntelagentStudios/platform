@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class CoreWebVitalsOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'core_web_vitals_optimizer',
+    name: 'Core Web Vitals Optimizer',
+    description: 'Analyze and optimize Core Web Vitals for better page experience',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'core-web-vitals', 'performance', 'page-experience', 'optimization']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.url;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, device = 'mobile' } = params;
     
     console.log(`[CoreWebVitalsOptimizerSkill] Analyzing Core Web Vitals for: ${url}`);
     
-    return {
-      success: true,
+    return this.success({
       url,
       device,
       metrics: {

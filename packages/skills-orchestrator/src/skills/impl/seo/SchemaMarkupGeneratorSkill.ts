@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class SchemaMarkupGeneratorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'schema_markup_generator',
+    name: 'Schema Markup Generator',
+    description: 'Generate and validate structured data markup for better search results',
+    category: SkillCategory.AI_POWERED,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'schema', 'structured-data', 'rich-results', 'markup']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.url;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, type = 'auto-detect' } = params;
     
     console.log(`[SchemaMarkupGeneratorSkill] Generating schema markup for: ${url}`);
     
-    return {
-      success: true,
+    return this.success({
       url,
       detectedType: type === 'auto-detect' ? 'Article' : type,
       schema: {

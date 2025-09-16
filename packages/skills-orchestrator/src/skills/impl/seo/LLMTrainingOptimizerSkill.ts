@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class LLMTrainingOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'llm_training_optimizer',
+    name: 'LLM Training Optimizer',
+    description: 'Optimize content for inclusion in LLM training datasets',
+    category: SkillCategory.AI_POWERED,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['ai', 'llm', 'training-data', 'optimization', 'machine-learning']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.content;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { content, targetModels = ['gpt', 'claude', 'gemini'] } = params;
     
     console.log(`[LLMTrainingOptimizerSkill] Optimizing content for LLM training datasets`);
     
-    return {
-      success: true,
+    return this.success({
       optimizations: {
         structure: {
           score: 0.82,

@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class ContentCannibalizationDetectorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'content_cannibalization_detector',
+    name: 'Content Cannibalization Detector',
+    description: 'Detect and analyze content cannibalization issues across your website',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'content', 'cannibalization', 'analytics', 'keywords']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.domain;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { domain, checkDepth = 100 } = params;
     
     console.log(`[ContentCannibalizationDetectorSkill] Detecting content cannibalization for: ${domain}`);
     
-    return {
-      success: true,
+    return this.success({
       domain,
       analysis: {
         pagesAnalyzed: checkDepth,

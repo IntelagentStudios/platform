@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class EEATScorerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'eeat_scorer',
+    name: 'E-E-A-T Scorer',
+    description: 'Evaluate Experience, Expertise, Authoritativeness, and Trust signals',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'eeat', 'expertise', 'authority', 'trust']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.url;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { url, checkAuthors = true } = params;
     
     console.log(`[EEATScorerSkill] Evaluating E-E-A-T signals for: ${url}`);
     
-    return {
-      success: true,
+    return this.success({
       url,
       scores: {
         experience: {

@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class ContentGapAnalyzerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'content_gap_analyzer',
+    name: 'Content Gap Analyzer',
+    description: 'Analyze content gaps and identify content opportunities against competitors',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'content', 'gap-analysis', 'competitors', 'strategy']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.domain;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { domain, competitors = [], topics = [] } = params;
     
     console.log(`[ContentGapAnalyzerSkill] Analyzing content gaps for: ${domain}`);
     
-    return {
-      success: true,
+    return this.success({
       domain,
       analysis: {
         totalGaps: 47,

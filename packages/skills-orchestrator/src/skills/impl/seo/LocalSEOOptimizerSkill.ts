@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class LocalSEOOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'local_seo_optimizer',
+    name: 'Local SEO Optimizer',
+    description: 'Optimize local SEO for businesses with GMB, citations, and local rankings',
+    category: SkillCategory.MARKETING,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['seo', 'local', 'gmb', 'citations', 'local-rankings']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.businessName && !!params.location;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { businessName, location, category = 'general' } = params;
     
     console.log(`[LocalSEOOptimizerSkill] Optimizing local SEO for: ${businessName} in ${location}`);
     
-    return {
-      success: true,
+    return this.success({
       business: businessName,
       location,
       optimizations: {

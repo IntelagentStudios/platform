@@ -1,14 +1,26 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../../types';
 
 export class RAGOptimizationSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'rag_optimization',
+    name: 'RAG Optimization',
+    description: 'Optimize content for Retrieval-Augmented Generation (RAG) systems',
+    category: SkillCategory.AI_POWERED,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['ai', 'rag', 'retrieval', 'embeddings', 'vectorization']
+  };
+
+  validate(params: SkillParams): boolean {
+    return !!params.content;
+  }
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { content, chunkSize = 500 } = params;
     
     console.log(`[RAGOptimizationSkill] Optimizing content for RAG systems`);
     
-    return {
-      success: true,
+    return this.success({
       optimizations: {
         chunking: {
           recommendedSize: chunkSize,
