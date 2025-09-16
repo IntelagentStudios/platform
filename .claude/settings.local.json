@@ -6,7 +6,8 @@
       "Bash(do echo \"Processing $file...\")",
       "Bash(railway status:*)",
       "Bash(for:*)",
-      "Bash(do echo \"Processing $file\")"
+      "Bash(do echo \"Processing $file\")",
+      "Bash(do sed -i \"s|from ''../../types''|from ''../../../types''|g\" \"$file\")"
     ],
     "deny": [],
     "ask": []

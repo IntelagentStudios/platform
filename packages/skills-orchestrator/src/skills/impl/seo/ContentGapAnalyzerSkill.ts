@@ -1,5 +1,5 @@
 import { BaseSkill } from '../../BaseSkill';
-import { SkillParams } from '../../types';
+import { SkillParams } from '../../../types';
 
 export class ContentGapAnalyzerSkill extends BaseSkill {
   protected async executeImpl(params: SkillParams): Promise<any> {
