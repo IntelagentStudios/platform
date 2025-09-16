@@ -209,8 +209,8 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         }
       });
 
-      // Log configuration
-      // TODO: Implement proper logging
+      // TODO: Implement proper logging when logInsight method is available
+      // Log configuration (commented out - method doesn't exist yet)
       // await this.logInsight({
       //   type: 'chatbot_configured',
       //   productKey,
