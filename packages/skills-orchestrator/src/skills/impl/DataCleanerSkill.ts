@@ -33,16 +33,14 @@ export class DataCleanerSkill extends BaseSkill {
         removeNulls,
         trimStrings
       });
-      
-      return {
-        data: result,
-        original: data,
-        timestamp: new Date()
-      };
-      
+
       return {
         success: true,
-        data: result,
+        data: {
+          cleaned: result,
+          original: data,
+          timestamp: new Date()
+        },
         metadata: {
           skillId: this.metadata.id,
           skillName: this.metadata.name,
