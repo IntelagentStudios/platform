@@ -299,18 +299,18 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
         });
         
         // Check Open Graph tags
-        const ogMatches = html.match(/<meta[^>]*property=["']og:([^"']+)["'][^>]*content=["']([^"']+)["']/gi) || [];
-        ogMatches.forEach(match => {
+        const ogMatches: string[] = html.match(/<meta[^>]*property=["']og:([^"']+)["'][^>]*content=["']([^"']+)["']/gi) || [];
+        ogMatches.forEach((match: string) => {
           const propertyMatch = match.match(/property=["']og:([^"']+)["']/i);
           const contentMatch = match.match(/content=["']([^"']+)["']/i);
           if (propertyMatch && contentMatch) {
             results.openGraph[propertyMatch[1]] = contentMatch[1];
           }
         });
-        
+
         // Check Twitter Cards
-        const twitterMatches = html.match(/<meta[^>]*name=["']twitter:([^"']+)["'][^>]*content=["']([^"']+)["']/gi) || [];
-        twitterMatches.forEach(match => {
+        const twitterMatches: string[] = html.match(/<meta[^>]*name=["']twitter:([^"']+)["'][^>]*content=["']([^"']+)["']/gi) || [];
+        twitterMatches.forEach((match: string) => {
           const nameMatch = match.match(/name=["']twitter:([^"']+)["']/i);
           const contentMatch = match.match(/content=["']([^"']+)["']/i);
           if (nameMatch && contentMatch) {
