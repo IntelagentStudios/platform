@@ -27,15 +27,16 @@ export class FileUploaderSkill extends BaseSkill {
       upload: {
         destination,
         status: 'completed',
-        files: fileList.map((file: string) => ({
-          name: typeof file === 'string' ? file : file.name,
+        files: fileList.map((file: any) => ({
+          name: typeof file === 'string' ? file : (file.name || file),
           size: '2.4MB',
           status: 'uploaded',
           progress: 100,
-          url: `https://storage.example.com/${Date.now()}/${file}`,
-          publicUrl: options.public ? `https://cdn.example.com/${file}` : null,
-          thumbnailUrl: file.includes('.jpg') || file.includes('.png') ? 
-            `https://cdn.example.com/thumb_${file}` : null
+          url: `https://storage.example.com/${Date.now()}/${typeof file === 'string' ? file : file.name}`,
+          publicUrl: options.public ? `https://cdn.example.com/${typeof file === 'string' ? file : file.name}` : null,
+          thumbnailUrl: (typeof file === 'string' ? file : file.name || '').includes('.jpg') ||
+            (typeof file === 'string' ? file : file.name || '').includes('.png') ?
+            `https://cdn.example.com/thumb_${typeof file === 'string' ? file : file.name}` : null
         })),
         totalSize: '12.4MB',
         duration: '8.3s',
