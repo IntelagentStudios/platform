@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class IntegrationHubSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'integration-hub',
+    name: 'Integration Hub',
+    description: 'Central hub for managing third-party service integrations',
+    category: SkillCategory.INTEGRATION,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { service, action = 'connect', config = {} } = params;
     
     console.log(`[IntegrationHubSkill] ${action} with ${service}`);
     
-    return {
-      success: true,
+    const data = {
       integration: {
         service: service || 'slack',
         status: 'connected',
@@ -119,5 +131,7 @@ export class IntegrationHubSkill extends BaseSkill {
         ]
       }
     };
+
+    return this.success(data);
   }
 }

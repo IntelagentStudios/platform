@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class NetworkMonitorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'network-monitor',
+    name: 'Network Monitor',
+    description: 'Monitors network connections, interfaces, and performance',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'monitor', target, protocol = 'tcp' } = params;
     
     console.log(`[NetworkMonitorSkill] ${action} network: ${target || 'all'}`);
     
-    return {
-      success: true,
+    const data = {
       action,
       network: {
         status: 'healthy',
@@ -166,5 +178,7 @@ export class NetworkMonitorSkill extends BaseSkill {
         alerts: []
       }
     };
+
+    return this.success(data);
   }
 }

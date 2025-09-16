@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataExporterSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-exporter',
+    name: 'Data Exporter',
+    description: 'Exports data to various formats including CSV, JSON, Excel, and PDF',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { data, format = 'csv', destination = 'download' } = params;
     
     console.log(`[DataExporterSkill] Exporting data to ${format} format`);
@@ -37,8 +50,7 @@ export class DataExporterSkill extends BaseSkill {
     
     const formatInfo = exportFormats[format] || exportFormats.csv;
     
-    return {
-      success: true,
+    const data = {
       export: {
         format,
         destination,
@@ -63,5 +75,7 @@ export class DataExporterSkill extends BaseSkill {
         dateFormat: 'ISO8601'
       }
     };
+
+    return this.success(data);
   }
 }

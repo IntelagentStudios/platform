@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DatabaseOptimizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'database-optimizer',
+    name: 'Database Optimizer',
+    description: 'Optimizes database performance through analysis and recommendations',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { database, type = 'postgresql', deepAnalysis = true } = params;
     
     console.log(`[DatabaseOptimizerSkill] Optimizing ${type} database: ${database}`);
     
-    return {
-      success: true,
+    const data = {
       analysis: {
         database,
         type,
@@ -89,5 +101,7 @@ export class DatabaseOptimizerSkill extends BaseSkill {
         'Archive old data to reduce table size'
       ]
     };
+
+    return this.success(data);
   }
 }

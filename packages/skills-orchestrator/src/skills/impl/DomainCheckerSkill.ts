@@ -1,15 +1,28 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DomainCheckerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'domain-checker',
+    name: 'Domain Checker',
+    description: 'Checks domain availability and provides registration information',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { domain, extensions = ['.com', '.net', '.org', '.io'] } = params;
     
     console.log(`[DomainCheckerSkill] Checking availability for: ${domain}`);
     
     const domainBase = domain.replace(/\.[^.]+$/, '');
     
-    return {
+    const data = {
       success: true,
       query: domain,
       results: extensions.map(ext => ({
@@ -65,5 +78,7 @@ export class DomainCheckerSkill extends BaseSkill {
         length: domainBase.length < 10 ? 'excellent' : domainBase.length < 15 ? 'good' : 'fair'
       }
     };
+
+    return this.success(data);
   }
 }

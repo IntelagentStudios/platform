@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileManagerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-manager',
+    name: 'File Manager',
+    description: 'Manages files and directories with comprehensive operations',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'list', path = '/', pattern, recursive = false } = params;
     
     console.log(`[FileManagerSkill] Executing ${action} at ${path}`);
     
-    return {
+    const data = {
       success: true,
       action,
       path,
@@ -115,5 +128,7 @@ export class FileManagerSkill extends BaseSkill {
         ]
       }
     };
+
+    return this.success(data);
   }
 }

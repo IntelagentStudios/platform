@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class JwtGeneratorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'jwt-generator',
+    name: 'JWT Generator',
+    description: 'JSON Web Token generation, verification, and management',
+    category: SkillCategory.SECURITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       action = 'generate',
       payload = {},
@@ -16,8 +29,7 @@ export class JwtGeneratorSkill extends BaseSkill {
     
     const sampleToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
     
-    return {
-      success: true,
+    const data = {
       action,
       token: action === 'generate' ? {
         jwt: sampleToken,
@@ -112,5 +124,7 @@ export class JwtGeneratorSkill extends BaseSkill {
         ]
       }
     };
+
+    return this.success(data);
   }
 }

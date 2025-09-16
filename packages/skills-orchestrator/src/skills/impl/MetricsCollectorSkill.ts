@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class MetricsCollectorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'metrics-collector',
+    name: 'Metrics Collector',
+    description: 'Collects and manages system and application metrics',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       metric,
       value,
@@ -13,8 +26,7 @@ export class MetricsCollectorSkill extends BaseSkill {
     
     console.log(`[MetricsCollectorSkill] ${action} metric: ${metric}`);
     
-    return {
-      success: true,
+    const data = {
       action,
       metric: action === 'record' ? {
         name: metric || 'custom.metric',
@@ -164,5 +176,7 @@ export class MetricsCollectorSkill extends BaseSkill {
         history: '7d'
       }
     };
+
+    return this.success(data);
   }
 }

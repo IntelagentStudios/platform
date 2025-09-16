@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class EcommerceAnalyticsSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'ecommerce-analytics',
+    name: 'Ecommerce Analytics',
+    description: 'Analyzes ecommerce metrics and provides business insights',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { period = '30d', metrics = 'all', storeId } = params;
     
     console.log(`[EcommerceAnalyticsSkill] Analyzing e-commerce metrics for period: ${period}`);
     
-    return {
+    const data = {
       success: true,
       period,
       storeId,
@@ -93,5 +106,7 @@ export class EcommerceAnalyticsSkill extends BaseSkill {
         'Optimize mobile conversion funnel'
       ]
     };
+
+    return this.success(data);
   }
 }

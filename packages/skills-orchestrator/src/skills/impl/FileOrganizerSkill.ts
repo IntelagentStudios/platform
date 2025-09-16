@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileOrganizerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-organizer',
+    name: 'File Organizer',
+    description: 'Organizes files and folders using various strategies',
+    category: SkillCategory.PRODUCTIVITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { path = '/', strategy = 'type', autoClean = true } = params;
     
     console.log(`[FileOrganizerSkill] Organizing files with strategy: ${strategy}`);
     
-    return {
+    const data = {
       success: true,
       organization: {
         path,
@@ -109,5 +122,7 @@ export class FileOrganizerSkill extends BaseSkill {
         nextRun: autoClean ? 'in 7 days' : 'manual'
       }
     };
+
+    return this.success(data);
   }
 }

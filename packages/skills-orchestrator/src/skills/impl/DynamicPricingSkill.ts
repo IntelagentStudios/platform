@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DynamicPricingSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'dynamic-pricing',
+    name: 'Dynamic Pricing',
+    description: 'Implements dynamic pricing strategies based on market conditions',
+    category: SkillCategory.ECOMMERCE,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       product, 
       basePrice = 100, 
@@ -26,7 +39,7 @@ export class DynamicPricingSkill extends BaseSkill {
       inventoryMultiplier * 
       timeMultiplier;
     
-    return {
+    const data = {
       success: true,
       pricing: {
         product,
@@ -112,5 +125,7 @@ export class DynamicPricingSkill extends BaseSkill {
         ]
       }
     };
+
+    return this.success(data);
   }
 }

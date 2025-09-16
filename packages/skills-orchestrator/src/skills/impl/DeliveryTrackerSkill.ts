@@ -1,16 +1,28 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DeliveryTrackerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'delivery-tracker',
+    name: 'Delivery Tracker',
+    description: 'Tracks package deliveries across multiple carriers',
+    category: SkillCategory.ECOMMERCE,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { trackingNumber, carrier = 'auto-detect' } = params;
     
     console.log(`[DeliveryTrackerSkill] Tracking package: ${trackingNumber}`);
     
     const detectedCarrier = carrier === 'auto-detect' ? 'UPS' : carrier;
     
-    return {
-      success: true,
+    const data = {
       tracking: {
         number: trackingNumber,
         carrier: detectedCarrier,
@@ -74,5 +86,7 @@ export class DeliveryTrackerSkill extends BaseSkill {
         push: true
       }
     };
+
+    return this.success(data);
   }
 }

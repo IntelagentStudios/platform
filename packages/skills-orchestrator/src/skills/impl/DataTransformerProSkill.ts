@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataTransformerProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-transformer-pro',
+    name: 'Data Transformer Pro',
+    description: 'Advanced data transformation with multiple operations and quality checks',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { data, transformations = [], outputFormat = 'json' } = params;
     
     console.log(`[DataTransformerProSkill] Applying ${transformations.length} transformations`);
@@ -17,8 +30,7 @@ export class DataTransformerProSkill extends BaseSkill {
       ? transformations 
       : ['normalize', 'clean', 'validate'];
     
-    return {
-      success: true,
+    const data = {
       transformations: {
         requested: appliedTransformations,
         applied: appliedTransformations.map(t => ({
@@ -71,5 +83,7 @@ export class DataTransformerProSkill extends BaseSkill {
         'Date formats were standardized to ISO8601'
       ]
     };
+
+    return this.success(data);
   }
 }

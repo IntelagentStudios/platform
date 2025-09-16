@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileEncryptorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-encryptor',
+    name: 'File Encryptor',
+    description: 'Encrypts and decrypts files using various algorithms',
+    category: SkillCategory.SECURITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'encrypt', files = [], algorithm = 'AES-256', password } = params;
     
     console.log(`[FileEncryptorSkill] ${action}ing ${files.length || 1} file(s)`);
     
-    return {
+    const data = {
       success: true,
       operation: action,
       encryption: {
@@ -94,5 +107,7 @@ export class FileEncryptorSkill extends BaseSkill {
         'Regularly rotate encryption keys'
       ]
     };
+
+    return this.success(data);
   }
 }

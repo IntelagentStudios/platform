@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DocumentGeneratorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'document-generator',
+    name: 'Document Generator',
+    description: 'Generates documents from templates and data in various formats',
+    category: SkillCategory.PRODUCTIVITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { type = 'report', template, data = {}, format = 'pdf' } = params;
     
     console.log(`[DocumentGeneratorSkill] Generating ${type} document in ${format} format`);
     
-    return {
+    const data = {
       success: true,
       document: {
         id: `doc_${Date.now()}`,
@@ -139,5 +152,7 @@ export class DocumentGeneratorSkill extends BaseSkill {
         }
       }
     };
+
+    return this.success(data);
   }
 }

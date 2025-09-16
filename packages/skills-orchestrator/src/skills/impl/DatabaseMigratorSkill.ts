@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DatabaseMigratorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'database-migrator',
+    name: 'Database Migrator',
+    description: 'Migrates data between different database systems',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { source, target, strategy = 'incremental', options = {} } = params;
     
     console.log(`[DatabaseMigratorSkill] Migrating from ${source.type} to ${target.type}`);
     
-    return {
-      success: true,
+    const data = {
       migration: {
         id: `migration_${Date.now()}`,
         status: 'completed',
@@ -77,5 +89,7 @@ export class DatabaseMigratorSkill extends BaseSkill {
         'Create backup before switching'
       ]
     };
+
+    return this.success(data);
   }
 }

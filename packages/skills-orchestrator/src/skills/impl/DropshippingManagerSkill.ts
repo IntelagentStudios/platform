@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DropshippingManagerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'dropshipping-manager',
+    name: 'Dropshipping Manager',
+    description: 'Manages dropshipping operations including orders, suppliers, and inventory',
+    category: SkillCategory.ECOMMERCE,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'overview', productId, orderId, supplier } = params;
     
     console.log(`[DropshippingManagerSkill] Action: ${action}`);
     
-    return {
+    const data = {
       success: true,
       action,
       overview: {
@@ -116,5 +129,7 @@ export class DropshippingManagerSkill extends BaseSkill {
         'Negotiate better rates with top suppliers'
       ]
     };
+
+    return this.success(data);
   }
 }

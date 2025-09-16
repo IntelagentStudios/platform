@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class PasswordManagerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'password-manager',
+    name: 'Password Manager',
+    description: 'Manages passwords and secure credentials',
+    category: SkillCategory.SECURITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'list', site, username, password } = params;
     
     console.log(`[PasswordManagerSkill] Action: ${action}`);
     
-    return {
-      success: true,
+    const data = {
       action,
       vault: {
         status: 'locked',
@@ -145,5 +157,7 @@ export class PasswordManagerSkill extends BaseSkill {
         { name: 'Passwords', count: 25, icon: 'lock' }
       ]
     };
+
+    return this.success(data);
   }
 }

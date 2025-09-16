@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileConverterProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-converter-pro',
+    name: 'File Converter Pro',
+    description: 'Advanced file format conversion with comprehensive options',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { source, targetFormat, options = {} } = params;
     
     console.log(`[FileConverterProSkill] Converting to ${targetFormat}`);
@@ -28,7 +41,7 @@ export class FileConverterProSkill extends BaseSkill {
     const sourceCategory = getCategory(sourceFormat);
     const targetCategory = getCategory(targetFormat);
     
-    return {
+    const data = {
       success: true,
       conversion: {
         source: {
@@ -96,5 +109,7 @@ export class FileConverterProSkill extends BaseSkill {
         'Use lossless formats for archival purposes'
       ].filter(Boolean)
     };
+
+    return this.success(data);
   }
 }

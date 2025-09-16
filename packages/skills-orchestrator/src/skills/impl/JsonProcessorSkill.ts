@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class JsonProcessorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'json-processor',
+    name: 'JSON Processor',
+    description: 'Comprehensive JSON processing, validation, and transformation',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { json, action = 'validate', schema, path, transform } = params;
     
     console.log(`[JsonProcessorSkill] ${action} JSON data`);
@@ -16,8 +29,7 @@ export class JsonProcessorSkill extends BaseSkill {
       }
     };
     
-    return {
-      success: true,
+    const data = {
       action,
       input: {
         size: JSON.stringify(sampleJson).length + ' bytes',
@@ -133,5 +145,7 @@ export class JsonProcessorSkill extends BaseSkill {
         converted: action === 'convert' ? params.targetFormat : null
       }
     };
+
+    return this.success(data);
   }
 }

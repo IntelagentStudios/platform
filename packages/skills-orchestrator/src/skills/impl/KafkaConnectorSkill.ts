@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class KafkaConnectorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'kafka-connector',
+    name: 'Kafka Connector',
+    description: 'Apache Kafka messaging and streaming connector',
+    category: SkillCategory.INTEGRATION,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       action = 'produce',
       topic = 'events',
@@ -13,8 +26,7 @@ export class KafkaConnectorSkill extends BaseSkill {
     
     console.log(`[KafkaConnectorSkill] ${action} on topic: ${topic}`);
     
-    return {
-      success: true,
+    const data = {
       connection: {
         brokers,
         status: 'connected',
@@ -140,5 +152,7 @@ export class KafkaConnectorSkill extends BaseSkill {
         }
       }
     };
+
+    return this.success(data);
   }
 }

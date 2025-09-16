@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DocumentScannerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'document-scanner',
+    name: 'Document Scanner',
+    description: 'Scans documents from various sources with OCR capabilities',
+    category: SkillCategory.PRODUCTIVITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { source = 'scanner', format = 'pdf', quality = 'high' } = params;
     
     console.log(`[DocumentScannerSkill] Scanning from ${source} to ${format}`);
     
-    return {
+    const data = {
       success: true,
       scan: {
         source,
@@ -112,5 +125,7 @@ export class DocumentScannerSkill extends BaseSkill {
         'Use OCR for searchable PDFs'
       ].filter(Boolean)
     };
+
+    return this.success(data);
   }
 }

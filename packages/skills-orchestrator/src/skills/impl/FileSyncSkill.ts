@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileSyncSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-sync',
+    name: 'File Sync',
+    description: 'Synchronizes files between locations with various modes',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { source, destination, mode = 'mirror', realtime = false } = params;
     
     console.log(`[FileSyncSkill] Syncing from ${source} to ${destination}`);
     
-    return {
+    const data = {
       success: true,
       sync: {
         source,
@@ -112,5 +125,7 @@ export class FileSyncSkill extends BaseSkill {
         'Monitor sync logs for errors'
       ]
     };
+
+    return this.success(data);
   }
 }

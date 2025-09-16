@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class HttpClientSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'http-client',
+    name: 'HTTP Client',
+    description: 'Advanced HTTP client for making API requests with comprehensive features',
+    category: SkillCategory.INTEGRATION,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       url, 
       method = 'GET', 
@@ -13,8 +26,7 @@ export class HttpClientSkill extends BaseSkill {
     
     console.log(`[HttpClientSkill] ${method} request to ${url}`);
     
-    return {
-      success: true,
+    const data = {
       request: {
         url,
         method,
@@ -115,5 +127,7 @@ export class HttpClientSkill extends BaseSkill {
         response: ['json', 'xml', 'html', 'text', 'binary']
       }
     };
+
+    return this.success(data);
   }
 }

@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataMapperSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-mapper',
+    name: 'Data Mapper',
+    description: 'Maps data fields between different schemas with transformations',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { sourceData, targetSchema, rules = {} } = params;
     
     console.log(`[DataMapperSkill] Mapping data to target schema`);
     
-    return {
-      success: true,
+    const data = {
       mapping: {
         sourceFields: Array.isArray(sourceData) && sourceData.length > 0 
           ? Object.keys(sourceData[0])
@@ -61,5 +73,7 @@ export class DataMapperSkill extends BaseSkill {
         consistency: 0.96
       }
     };
+
+    return this.success(data);
   }
 }

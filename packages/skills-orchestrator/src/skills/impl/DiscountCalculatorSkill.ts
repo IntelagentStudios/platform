@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DiscountCalculatorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'discount-calculator',
+    name: 'Discount Calculator',
+    description: 'Calculates discounts, taxes, and final prices with coupon support',
+    category: SkillCategory.ECOMMERCE,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       originalPrice = 0, 
       discounts = [], 
@@ -36,8 +49,7 @@ export class DiscountCalculatorSkill extends BaseSkill {
     const total = subtotal + tax + shipping;
     const totalSavings = (originalPrice * quantity) - subtotal;
     
-    return {
-      success: true,
+    const data = {
       calculation: {
         originalPrice: originalPrice * quantity,
         quantity,
@@ -90,5 +102,7 @@ export class DiscountCalculatorSkill extends BaseSkill {
         percentageSaved: ((totalSavings / (originalPrice * quantity)) * 100).toFixed(2) + '%'
       }
     };
+
+    return this.success(data);
   }
 }

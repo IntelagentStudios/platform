@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class PermissionManagerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'permission-manager',
+    name: 'Permission Manager',
+    description: 'Manages user permissions and access control',
+    category: SkillCategory.SECURITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'list', userId, roleId, resource, permission } = params;
     
     console.log(`[PermissionManagerSkill] ${action} permissions`);
     
-    return {
-      success: true,
+    const data = {
       action,
       permissions: action === 'list' ? {
         users: [
@@ -184,5 +196,7 @@ export class PermissionManagerSkill extends BaseSkill {
         }
       }
     };
+
+    return this.success(data);
   }
 }

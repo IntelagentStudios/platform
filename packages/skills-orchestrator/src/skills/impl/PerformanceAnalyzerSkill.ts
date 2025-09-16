@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class PerformanceAnalyzerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'performance-analyzer',
+    name: 'Performance Analyzer',
+    description: 'Analyzes system and application performance metrics',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { target = 'system', timeRange = '1h', metrics = [] } = params;
     
     console.log(`[PerformanceAnalyzerSkill] Analyzing ${target} performance for ${timeRange}`);
     
-    return {
-      success: true,
+    const data = {
       analysis: {
         target,
         timeRange,
@@ -179,5 +191,7 @@ export class PerformanceAnalyzerSkill extends BaseSkill {
         export: ['pdf', 'html', 'json']
       }
     };
+
+    return this.success(data);
   }
 }

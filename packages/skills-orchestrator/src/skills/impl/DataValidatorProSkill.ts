@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataValidatorProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-validator-pro',
+    name: 'Data Validator Pro',
+    description: 'Advanced data validation with comprehensive rules and quality metrics',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { data, rules = {}, schema = {} } = params;
     
     console.log(`[DataValidatorProSkill] Validating data with ${Object.keys(rules).length} rules`);
     
-    return {
-      success: true,
+    const data = {
       validation: {
         status: 'completed',
         valid: true,
@@ -85,5 +97,7 @@ export class DataValidatorProSkill extends BaseSkill {
         'Standardize date formats'
       ]
     };
+
+    return this.success(data);
   }
 }

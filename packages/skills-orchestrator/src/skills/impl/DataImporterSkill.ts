@@ -1,16 +1,28 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataImporterSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-importer',
+    name: 'Data Importer',
+    description: 'Imports data from various sources with validation and transformation',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { source, format = 'auto', mapping = {} } = params;
     
     console.log(`[DataImporterSkill] Importing data from: ${source}`);
     
     const detectedFormat = format === 'auto' ? 'csv' : format;
     
-    return {
-      success: true,
+    const data = {
       import: {
         source,
         format: detectedFormat,
@@ -59,5 +71,7 @@ export class DataImporterSkill extends BaseSkill {
         memoryUsed: '45MB'
       }
     };
+
+    return this.success(data);
   }
 }

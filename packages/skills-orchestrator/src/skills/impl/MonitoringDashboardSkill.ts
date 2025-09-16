@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class MonitoringDashboardSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'monitoring-dashboard',
+    name: 'Monitoring Dashboard',
+    description: 'Comprehensive monitoring dashboard for system metrics and health',
+    category: SkillCategory.ANALYTICS,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { view = 'overview', timeRange = '1h', filters = {} } = params;
     
     console.log(`[MonitoringDashboardSkill] Loading ${view} view for ${timeRange}`);
     
-    return {
-      success: true,
+    const data = {
       dashboard: {
         view,
         timeRange,
@@ -157,5 +169,7 @@ export class MonitoringDashboardSkill extends BaseSkill {
         { id: 'alerts', type: 'feed', position: { x: 1, y: 1 } }
       ]
     };
+
+    return this.success(data);
   }
 }

@@ -4,7 +4,9 @@
       "Bash(powershell:*)",
       "Bash(for file in DeliveryTrackerSkill.ts DiscountCalculatorSkill.ts DocumentGeneratorSkill.ts DocumentProcessorSkill.ts DocumentScannerSkill.ts)",
       "Bash(do echo \"Processing $file...\")",
-      "Bash(railway status:*)"
+      "Bash(railway status:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"Processing $file\")"
     ],
     "deny": [],
     "ask": []

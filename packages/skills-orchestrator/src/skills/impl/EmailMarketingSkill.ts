@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class EmailMarketingSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'email-marketing',
+    name: 'Email Marketing',
+    description: 'Manages email marketing campaigns and automation',
+    category: SkillCategory.MARKETING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { action = 'campaign', recipients = [], template, subject, content } = params;
     
     console.log(`[EmailMarketingSkill] Executing action: ${action}`);
     
-    return {
+    const data = {
       success: true,
       action,
       campaign: action === 'campaign' ? {
@@ -112,5 +125,7 @@ export class EmailMarketingSkill extends BaseSkill {
         'Implement re-engagement campaign'
       ]
     };
+
+    return this.success(data);
   }
 }

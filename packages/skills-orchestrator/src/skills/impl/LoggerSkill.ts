@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class LoggerSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'logger',
+    name: 'Logger',
+    description: 'Advanced logging system with multiple destinations and filtering',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       level = 'info',
       message = 'Log message',
@@ -12,8 +25,7 @@ export class LoggerSkill extends BaseSkill {
     
     console.log(`[LoggerSkill] ${level.toUpperCase()}: ${message}`);
     
-    return {
-      success: true,
+    const data = {
       action,
       log: action === 'log' ? {
         id: `log_${Date.now()}`,
@@ -144,5 +156,7 @@ export class LoggerSkill extends BaseSkill {
         encryption: false
       }
     };
+
+    return this.success(data);
   }
 }

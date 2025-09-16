@@ -1,13 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DocumentProcessorSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'document-processor',
+    name: 'Document Processor',
+    description: 'Processes and analyzes documents with OCR and text extraction',
+    category: SkillCategory.PRODUCTIVITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { document, action = 'analyze', options = {} } = params;
     
     console.log(`[DocumentProcessorSkill] Processing document with action: ${action}`);
     
-    return {
+    const data = {
       success: true,
       document: {
         name: document || 'document.pdf',
@@ -110,5 +123,7 @@ export class DocumentProcessorSkill extends BaseSkill {
         filename: `processed_${Date.now()}.pdf`
       }
     };
+
+    return this.success(data);
   }
 }

@@ -1,15 +1,28 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class FileUploaderSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'file-uploader',
+    name: 'File Uploader',
+    description: 'Uploads files to various cloud and local destinations',
+    category: SkillCategory.UTILITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { files = [], destination = 'cloud', options = {} } = params;
     
     console.log(`[FileUploaderSkill] Uploading ${files.length} file(s) to ${destination}`);
     
     const fileList = files.length > 0 ? files : ['example.pdf'];
     
-    return {
+    const data = {
       success: true,
       upload: {
         destination,
@@ -103,5 +116,7 @@ export class FileUploaderSkill extends BaseSkill {
         slack: options.slackChannel || null
       }
     };
+
+    return this.success(data);
   }
 }

@@ -1,14 +1,26 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DealFinderSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'deal-finder',
+    name: 'Deal Finder',
+    description: 'Finds and tracks deals, discounts, and special offers',
+    category: SkillCategory.ECOMMERCE,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { category = 'all', location = 'online', priceRange = {}, preferences = [] } = params;
     
     console.log(`[DealFinderSkill] Finding deals in category: ${category}`);
     
-    return {
-      success: true,
+    const data = {
       deals: [
         {
           id: 'deal_001',
@@ -104,5 +116,7 @@ export class DealFinderSkill extends BaseSkill {
         'Subscribe to alerts for your favorite categories'
       ]
     };
+
+    return this.success(data);
   }
 }

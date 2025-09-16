@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class PasswordGeneratorProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'password-generator-pro',
+    name: 'Password Generator Pro',
+    description: 'Advanced password generation with customizable options',
+    category: SkillCategory.SECURITY,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { 
       length = 16,
       includeUppercase = true,
@@ -45,8 +58,7 @@ export class PasswordGeneratorProSkill extends BaseSkill {
         generatePassword()
     );
     
-    return {
-      success: true,
+    const data = {
       passwords,
       strength: passwords.map(pwd => ({
         password: pwd,
@@ -120,5 +132,7 @@ export class PasswordGeneratorProSkill extends BaseSkill {
         encryption: 'AES-256'
       }
     };
+
+    return this.success(data);
   }
 }

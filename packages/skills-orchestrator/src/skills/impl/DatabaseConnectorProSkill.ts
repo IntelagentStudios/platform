@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DatabaseConnectorProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'database-connector-pro',
+    name: 'Database Connector Pro',
+    description: 'Advanced database connection and management capabilities',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { type = 'postgresql', action = 'connect', config = {} } = params;
     
     console.log(`[DatabaseConnectorProSkill] ${action} to ${type} database`);
@@ -12,8 +25,7 @@ export class DatabaseConnectorProSkill extends BaseSkill {
       'sqlite', 'mssql', 'oracle', 'dynamodb', 'cassandra'
     ];
     
-    return {
-      success: true,
+    const data = {
       connection: {
         type,
         status: 'connected',
@@ -62,5 +74,7 @@ export class DatabaseConnectorProSkill extends BaseSkill {
       },
       supported: supportedDatabases
     };
+
+    return this.success(data);
   }
 }

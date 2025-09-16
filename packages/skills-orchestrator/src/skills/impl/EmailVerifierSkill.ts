@@ -1,8 +1,21 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class EmailVerifierSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'email-verifier',
+    name: 'Email Verifier',
+    description: 'Verifies email addresses for validity and deliverability',
+    category: SkillCategory.COMMUNICATION,
+    version: '1.0.0',
+    author: 'Intelagent Platform'
+  };
+
+  validate(params: SkillParams): boolean {
+    return true;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { email, emails = [], deepCheck = true } = params;
     
     const emailList = email ? [email] : emails;
@@ -45,8 +58,7 @@ export class EmailVerifierSkill extends BaseSkill {
     
     const results = emailList.map(verifyEmail);
     
-    return {
-      success: true,
+    const data = {
       verification: {
         total: results.length,
         valid: results.filter(r => r.valid).length,
@@ -86,5 +98,7 @@ export class EmailVerifierSkill extends BaseSkill {
         downloadReport: true
       } : null
     };
+
+    return this.success(data);
   }
 }
