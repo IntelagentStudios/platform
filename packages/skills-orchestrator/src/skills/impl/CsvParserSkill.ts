@@ -33,20 +33,18 @@ export class CsvParserSkill extends BaseSkill {
         throw new Error('CSV data is required');
       }
       
-      const result = await core.processData(csvData, 'parse', { 
+      const result = await core.processData(csvData, 'parse', {
         format: 'csv',
-        delimiter 
+        delimiter
       });
-      
-      return {
-        data: result,
-        count: result.length,
-        headers: headers || Object.keys(result[0] || {})
-      };
-      
+
       return {
         success: true,
-        data: result,
+        data: {
+          records: result,
+          count: result.length,
+          headers: headers || Object.keys(result[0] || {})
+        },
         metadata: {
           skillId: this.metadata.id,
           skillName: this.metadata.name,
