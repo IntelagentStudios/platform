@@ -364,30 +364,30 @@ View Details: {{link}}
 
   private extractVariables(template: string): string[] {
     const variables = new Set<string>();
-    
+
     // Extract simple variables
-    const varMatches = template.match(/\{\{([^#/][^}]+)\}\}/g) || [];
-    varMatches.forEach(match => {
+    const varMatches: string[] = template.match(/\{\{([^#/][^}]+)\}\}/g) || [];
+    varMatches.forEach((match: string) => {
       const variable = match.replace(/\{\{|\}\}/g, '').trim();
       if (!variable.startsWith('>') && !variable.startsWith('@')) {
         variables.add(variable);
       }
     });
-    
+
     // Extract variables from conditionals
-    const ifMatches = template.match(/\{\{#if\s+([^}]+)\}\}/g) || [];
-    ifMatches.forEach(match => {
+    const ifMatches: string[] = template.match(/\{\{#if\s+([^}]+)\}\}/g) || [];
+    ifMatches.forEach((match: string) => {
       const variable = match.replace(/\{\{#if\s+|\}\}/g, '').trim();
       variables.add(variable);
     });
-    
+
     // Extract variables from loops
-    const eachMatches = template.match(/\{\{#each\s+([^}]+)\}\}/g) || [];
-    eachMatches.forEach(match => {
+    const eachMatches: string[] = template.match(/\{\{#each\s+([^}]+)\}\}/g) || [];
+    eachMatches.forEach((match: string) => {
       const variable = match.replace(/\{\{#each\s+|\}\}/g, '').trim();
       variables.add(variable);
     });
-    
+
     return Array.from(variables);
   }
 
