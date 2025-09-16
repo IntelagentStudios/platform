@@ -1,8 +1,22 @@
 import { BaseSkill } from '../BaseSkill';
-import { SkillParams } from '../types';
+import { SkillParams, SkillResult, SkillCategory } from '../../types';
 
 export class DataEnricherProSkill extends BaseSkill {
-  protected async executeImpl(params: SkillParams): Promise<any> {
+  metadata = {
+    id: 'data-enricher-pro',
+    name: 'Data Enricher Pro',
+    description: 'Advanced data enrichment with multiple sources',
+    category: SkillCategory.DATA_PROCESSING,
+    version: '1.0.0',
+    author: 'Intelagent',
+    tags: ['data', 'enrichment', 'enhancement']
+  };
+
+  validate(params: SkillParams): boolean {
+    return params.data !== undefined;
+  }
+
+  protected async executeImpl(params: SkillParams): Promise<SkillResult> {
     const { data, enrichmentType = 'all', sources = [] } = params;
     
     console.log(`[DataEnricherProSkill] Enriching data with type: ${enrichmentType}`);
