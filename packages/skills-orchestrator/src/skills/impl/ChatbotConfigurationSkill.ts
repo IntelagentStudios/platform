@@ -264,7 +264,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const currentConfig = productKeyRecord.metadata as ChatbotConfig;
+      const currentConfig = productKeyRecord.metadata as unknown as ChatbotConfig;
 
       // Merge updates
       const updatedConfig: ChatbotConfig = {
@@ -354,7 +354,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const chatbotConfig = productKeyRecord.metadata as ChatbotConfig;
+      const chatbotConfig = productKeyRecord.metadata as unknown as ChatbotConfig;
       const embedCode = this.generateEmbedCodeInternal(productKey, chatbotConfig);
 
       // Update configuration with new embed code
@@ -415,7 +415,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const config = productKeyRecord.metadata as ChatbotConfig;
+      const config = productKeyRecord.metadata as unknown as ChatbotConfig;
 
       // Run deployment checks
       const deploymentChecks = await this.runDeploymentChecks({ configuration: config });
@@ -489,7 +489,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const chatbotConfig = productKeyRecord.metadata as ChatbotConfig;
+      const chatbotConfig = productKeyRecord.metadata as unknown as ChatbotConfig;
 
       // Run test suite
       const tests = {
@@ -543,7 +543,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const config = productKeyRecord.metadata as ChatbotConfig;
+      const config = productKeyRecord.metadata as unknown as ChatbotConfig;
 
       // Create backup
       const backup = {
@@ -667,7 +667,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const sourceConfig = sourceRecord.metadata as ChatbotConfig;
+      const sourceConfig = sourceRecord.metadata as unknown as ChatbotConfig;
 
       // Validate target domain
       const domainValidation = await this.validateDomainInternal(targetDomain);
@@ -760,7 +760,7 @@ export class ChatbotConfigurationSkill extends BaseSkill {
         };
       }
 
-      const current = currentRecord.metadata as ChatbotConfig;
+      const current = currentRecord.metadata as unknown as ChatbotConfig;
 
       // Create default configuration preserving key info
       const resetConfig: ChatbotConfig = {
