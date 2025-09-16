@@ -86,6 +86,8 @@ export class ResponseCreatorSkill extends BaseSkill {
           word_count: this.countWords(finalResponse)
         },
         metadata: {
+          skillId: this.metadata.id,
+          skillName: this.metadata.name,
           timestamp: new Date(),
           domain,
           response_type: this.determineResponseType(intent)
