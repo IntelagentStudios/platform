@@ -84,6 +84,6 @@ export class AISearchVisibilityTrackerSkill extends BaseSkill {
           strongPlatforms: ['chatgpt']
         }
       ]
-    };
+    });
   }
 }

@@ -53,6 +53,6 @@ export class SchemaMarkupGeneratorSkill extends BaseSkill {
         warnings: 1,
         message: 'Schema is valid with minor improvements suggested'
       }
-    };
+    });
   }
 }

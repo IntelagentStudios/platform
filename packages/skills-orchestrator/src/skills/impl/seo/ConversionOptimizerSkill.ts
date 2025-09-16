@@ -113,6 +113,6 @@ export class ConversionOptimizerSkill extends BaseSkill {
         revenue: '+52%',
         implementation: '2-4 weeks'
       }
-    };
+    });
   }
 }

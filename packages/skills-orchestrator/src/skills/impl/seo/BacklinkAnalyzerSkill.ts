@@ -47,6 +47,6 @@ export class BacklinkAnalyzerSkill extends BaseSkill {
           strategy: 'guest post'
         }
       ]
-    };
+    });
   }
 }

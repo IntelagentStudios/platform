@@ -87,6 +87,6 @@ export class ContentOptimizerAISkill extends BaseSkill {
       suggestedTitle: `Ultimate Guide: ${targetKeyword} (2024 Updated)`,
       suggestedMeta: `Discover everything about ${targetKeyword}. Expert tips, best practices, and comprehensive guide updated for 2024.`,
       contentScore: 78
-    };
+    });
   }
 }

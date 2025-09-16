@@ -81,6 +81,6 @@ export class EEATScorerSkill extends BaseSkill {
         ranking: 3,
         total: 10
       }
-    };
+    });
   }
 }

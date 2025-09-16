@@ -56,6 +56,6 @@ export class RAGOptimizationSkill extends BaseSkill {
         dimensionality: 1536,
         estimatedTokens: Math.ceil(content.length / 4)
       }
-    };
+    });
   }
 }

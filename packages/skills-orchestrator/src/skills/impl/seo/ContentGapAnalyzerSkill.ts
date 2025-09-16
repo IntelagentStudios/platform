@@ -86,6 +86,6 @@ export class ContentGapAnalyzerSkill extends BaseSkill {
         topPerformingTopics: ['topic1', 'topic2'],
         publishingFrequency: 'weekly'
       }))
-    };
+    });
   }
 }

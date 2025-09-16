@@ -80,6 +80,6 @@ export class ContentCannibalizationDetectorSkill extends BaseSkill {
         'Develop keyword mapping document'
       ],
       estimatedTrafficRecovery: 1250
-    };
+    });
   }
 }

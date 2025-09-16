@@ -62,6 +62,6 @@ export class LLMTrainingOptimizerSkill extends BaseSkill {
         claude: 0.82,
         gemini: 0.68
       }
-    };
+    });
   }
 }

@@ -54,6 +54,6 @@ export class EntityExtractorSkill extends BaseSkill {
         'machine learning',
         'data processing'
       ]
-    };
+    });
   }
 }

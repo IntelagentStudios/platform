@@ -94,6 +94,6 @@ export class CoreWebVitalsOptimizerSkill extends BaseSkill {
           estimatedSaving: '0.5s'
         }
       ]
-    };
+    });
   }
 }

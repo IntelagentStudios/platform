@@ -71,6 +71,6 @@ export class AuthorAuthorityBuilderSkill extends BaseSkill {
           impact: 0.6
         }
       ]
-    };
+    });
   }
 }

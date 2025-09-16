@@ -74,6 +74,6 @@ export class JavaScriptSEOAnalyzerSkill extends BaseSkill {
         unusedJS: '32%',
         blockingTime: 340
       }
-    };
+    });
   }
 }

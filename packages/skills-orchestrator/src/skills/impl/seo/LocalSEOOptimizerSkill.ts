@@ -54,6 +54,6 @@ export class LocalSEOOptimizerSkill extends BaseSkill {
           `${location} ${category} services`
         ]
       }
-    };
+    });
   }
 }

@@ -78,6 +78,6 @@ export class SERPMonitorSkill extends BaseSkill {
           message: 'Dropped 5 positions in last 7 days'
         }
       ]
-    };
+    });
   }
 }

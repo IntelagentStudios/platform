@@ -61,6 +61,6 @@ export class VisualSearchOptimizerSkill extends BaseSkill {
         description: 'Image description',
         name: 'Image name'
       }
-    };
+    });
   }
 }

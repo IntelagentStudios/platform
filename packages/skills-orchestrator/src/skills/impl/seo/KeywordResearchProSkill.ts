@@ -45,6 +45,6 @@ export class KeywordResearchProSkill extends BaseSkill {
         `how to ${seedKeywords[0]}`
       ],
       locale
-    };
+    });
   }
 }

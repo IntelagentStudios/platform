@@ -54,6 +54,6 @@ export class VoiceSearchOptimizerSkill extends BaseSkill {
         compatibility: 0.8 + Math.random() * 0.2,
         recommendations: [`Optimize for ${assistant}-specific queries`]
       }))
-    };
+    });
   }
 }
