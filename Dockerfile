@@ -52,7 +52,7 @@ RUN cd apps/customer-portal && \
 
 # Stage 3: Runner - minimal production image
 FROM alpine:3.20 AS runner
-RUN apk add --no-cache nodejs
+RUN apk add --no-cache nodejs npm
 RUN apk add --no-cache libc6-compat openssl
 
 # Create app user
