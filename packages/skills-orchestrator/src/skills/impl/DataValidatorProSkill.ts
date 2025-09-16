@@ -20,7 +20,7 @@ export class DataValidatorProSkill extends BaseSkill {
     
     console.log(`[DataValidatorProSkill] Validating data with ${Object.keys(rules).length} rules`);
     
-    const data = {
+    const resultData = {
       validation: {
         status: 'completed',
         valid: true,
@@ -98,6 +98,6 @@ export class DataValidatorProSkill extends BaseSkill {
       ]
     };
 
-    return this.success(data);
+    return this.success(resultData);
   }
 }

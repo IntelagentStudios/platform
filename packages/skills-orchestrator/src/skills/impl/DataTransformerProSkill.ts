@@ -30,7 +30,7 @@ export class DataTransformerProSkill extends BaseSkill {
       ? transformations 
       : ['normalize', 'clean', 'validate'];
     
-    const data = {
+    const resultData = {
       transformations: {
         requested: appliedTransformations,
         applied: appliedTransformations.map(t => ({
@@ -84,6 +84,6 @@ export class DataTransformerProSkill extends BaseSkill {
       ]
     };
 
-    return this.success(data);
+    return this.success(resultData);
   }
 }

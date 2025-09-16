@@ -50,7 +50,7 @@ export class DataExporterSkill extends BaseSkill {
     
     const formatInfo = exportFormats[format] || exportFormats.csv;
     
-    const data = {
+    const resultData = {
       export: {
         format,
         destination,
@@ -58,7 +58,7 @@ export class DataExporterSkill extends BaseSkill {
         mimeType: formatInfo.mimeType,
         size: formatInfo.size,
         records: Array.isArray(data) ? data.length : 1,
-        url: destination === 'download' 
+        url: destination === 'download'
           ? `https://example.com/downloads/export_${Date.now()}${formatInfo.extension}`
           : null,
         location: destination !== 'download' ? destination : null
@@ -76,6 +76,6 @@ export class DataExporterSkill extends BaseSkill {
       }
     };
 
-    return this.success(data);
+    return this.success(resultData);
   }
 }

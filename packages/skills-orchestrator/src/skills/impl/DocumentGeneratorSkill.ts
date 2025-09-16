@@ -20,7 +20,7 @@ export class DocumentGeneratorSkill extends BaseSkill {
     
     console.log(`[DocumentGeneratorSkill] Generating ${type} document in ${format} format`);
     
-    const data = {
+    const resultData = {
       success: true,
       document: {
         id: `doc_${Date.now()}`,
@@ -36,7 +36,7 @@ export class DocumentGeneratorSkill extends BaseSkill {
       content: {
         sections: type === 'report' ? [
           'Executive Summary',
-          'Introduction', 
+          'Introduction',
           'Analysis',
           'Results',
           'Conclusions',
@@ -153,6 +153,6 @@ export class DocumentGeneratorSkill extends BaseSkill {
       }
     };
 
-    return this.success(data);
+    return this.success(resultData);
   }
 }
