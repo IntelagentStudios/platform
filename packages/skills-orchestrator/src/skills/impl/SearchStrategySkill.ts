@@ -86,10 +86,12 @@ export class SearchStrategySkill extends BaseSkill {
           conversation_context: this.buildConversationContext(chat_history, customer_message)
         },
         metadata: {
+          skillId: this.metadata.id,
+          skillName: this.metadata.name,
+          timestamp: new Date(),
           intent,
           industry,
-          session_id,
-          timestamp: new Date().toISOString()
+          session_id
         }
       };
     } catch (error: any) {
