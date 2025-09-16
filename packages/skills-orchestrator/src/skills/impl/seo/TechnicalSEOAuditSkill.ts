@@ -205,16 +205,16 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
         const html = await response.text();
         
         // Identify render-blocking resources
-        const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
-        const styleMatches = html.match(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi) || [];
-        
-        scriptMatches.forEach(script => {
+        const scriptMatches: string[] = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
+        const styleMatches: string[] = html.match(/<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi) || [];
+
+        scriptMatches.forEach((script: string) => {
           if (!script.includes('async') && !script.includes('defer')) {
             results.renderBlocking.push('Script: ' + script);
           }
         });
-        
-        styleMatches.forEach(style => {
+
+        styleMatches.forEach((style: string) => {
           results.renderBlocking.push('Stylesheet: ' + style);
         });
         
