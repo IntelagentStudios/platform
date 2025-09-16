@@ -281,8 +281,8 @@ export class TechnicalSEOAuditSkill extends BaseSkill {
         const html = await response.text();
         
         // Check for JSON-LD
-        const jsonLdMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gis) || [];
-        jsonLdMatches.forEach(match => {
+        const jsonLdMatches: string[] = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
+        jsonLdMatches.forEach((match: string) => {
           try {
             const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '');
             const data = JSON.parse(jsonContent);
