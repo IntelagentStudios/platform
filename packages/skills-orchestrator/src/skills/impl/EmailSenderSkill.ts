@@ -66,7 +66,7 @@ export class EmailSenderSkill extends BaseSkill {
       }
 
       // Create transporter based on integration type
-      const transporter = await this.createTransporter(integration);
+      const transporter = await this.createTransport(integration);
 
       // Send email
       const info = await transporter.sendMail({
@@ -371,7 +371,7 @@ export class EmailSenderSkill extends BaseSkill {
       }
 
       // Test the integration
-      const transporter = await this.createTransporter(integration);
+      const transporter = await this.createTransport(integration);
       await transporter.verify();
 
       // Update verification status
@@ -433,12 +433,12 @@ export class EmailSenderSkill extends BaseSkill {
     });
   }
 
-  private async createTransporter(integration: any): Promise<any> {
+  private async createTransport(integration: any): Promise<any> {
     const config = integration.config as any;
 
     switch (integration.integration_type) {
       case 'smtp':
-        return nodemailer.createTransporter({
+        return nodemailer.createTransport({
           host: config.host,
           port: config.port,
           secure: config.secure || false,
@@ -451,7 +451,7 @@ export class EmailSenderSkill extends BaseSkill {
       case 'sendgrid':
         // For SendGrid, we'd use their API
         // This is a simplified version
-        return nodemailer.createTransporter({
+        return nodemailer.createTransport({
           host: 'smtp.sendgrid.net',
           port: 587,
           auth: {
@@ -463,7 +463,7 @@ export class EmailSenderSkill extends BaseSkill {
       case 'mailgun':
         // For Mailgun, we'd use their API
         // This is a simplified version
-        return nodemailer.createTransporter({
+        return nodemailer.createTransport({
           host: 'smtp.mailgun.org',
           port: 587,
           auth: {
