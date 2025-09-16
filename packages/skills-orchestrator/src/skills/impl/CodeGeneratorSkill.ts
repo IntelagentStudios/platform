@@ -35,7 +35,7 @@ export class CodeGeneratorSkill extends BaseSkill {
       const { input, options = {} } = params;
       
       // Internal utility processing
-      const result = this.processCodeGenerator(input, options);
+      const result = await this.processCodeGenerator({ input, options });
       
       return {
         success: true,
