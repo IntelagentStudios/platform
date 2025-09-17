@@ -109,7 +109,8 @@ export async function POST(request: NextRequest) {
         await prisma.sales_integrations.update({
           where: { id: existingIntegration.id },
           data: {
-            configuration: {
+            name: `${configuration.emailProvider} - ${configuration.emailAddress}`,
+            config: {
               provider: configuration.emailProvider,
               email: configuration.emailAddress,
               host: configuration.smtpHost,
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
               // In production, encrypt sensitive data
               password: configuration.emailPassword
             },
-            status: 'active',
+            is_active: true,
             updated_at: new Date()
           }
         });
@@ -127,7 +128,8 @@ export async function POST(request: NextRequest) {
           data: {
             license_key: productKeyRecord.license_key,
             integration_type: 'email',
-            configuration: {
+            name: `${configuration.emailProvider} - ${configuration.emailAddress}`,
+            config: {
               provider: configuration.emailProvider,
               email: configuration.emailAddress,
               host: configuration.smtpHost,
@@ -135,7 +137,7 @@ export async function POST(request: NextRequest) {
               // In production, encrypt sensitive data
               password: configuration.emailPassword
             },
-            status: 'active'
+            is_active: true
           }
         });
       }
