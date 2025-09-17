@@ -54,15 +54,11 @@ export default function SalesOnboardingPage() {
     companyName: '',
     website: '',
     industry: '',
-    targetAudience: '',
     emailProvider: '',
     emailAddress: '',
     emailPassword: '',
     smtpHost: '',
-    smtpPort: '587',
-    timezone: 'UTC',
-    sendingHours: { start: '09:00', end: '17:00' },
-    dailyLimit: '100'
+    smtpPort: '587'
   });
 
   const steps: OnboardingStep[] = [
@@ -88,23 +84,9 @@ export default function SalesOnboardingPage() {
       completed: false
     },
     {
-      id: 'targeting',
-      title: 'Target Audience',
-      description: 'Define your ideal customer profile',
-      icon: Target,
-      completed: false
-    },
-    {
-      id: 'schedule',
-      title: 'Sending Schedule',
-      description: 'Set your campaign timing preferences',
-      icon: Calendar,
-      completed: false
-    },
-    {
       id: 'complete',
       title: 'Setup Complete',
-      description: 'You\'re ready to start selling!',
+      description: 'You\'re ready to create your first campaign!',
       icon: CheckCircle2,
       completed: false
     }
@@ -162,8 +144,7 @@ export default function SalesOnboardingPage() {
         setOnboardingData(prev => ({
           ...prev,
           companyName: data.companyName || prev.companyName,
-          industry: data.industry || prev.industry,
-          targetAudience: data.targetAudience || prev.targetAudience
+          industry: data.industry || prev.industry
         }));
       }
     } catch (error) {
@@ -265,37 +246,36 @@ export default function SalesOnboardingPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">What we'll set up:</h3>
+                  <h3 className="font-semibold mb-3">Quick 3-Step Setup:</h3>
                   <div className="grid gap-3">
                     <div className="flex items-start gap-3">
-                      <Building className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">1</div>
                       <div>
                         <p className="font-medium">Company Profile</p>
-                        <p className="text-sm text-muted-foreground">Basic information about your business</p>
+                        <p className="text-sm text-muted-foreground">Enter your website and let AI analyze your business</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">2</div>
                       <div>
                         <p className="font-medium">Email Integration</p>
-                        <p className="text-sm text-muted-foreground">Connect your email for sending campaigns</p>
+                        <p className="text-sm text-muted-foreground">Connect your email account for sending campaigns</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Target className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">3</div>
                       <div>
-                        <p className="font-medium">Target Audience</p>
-                        <p className="text-sm text-muted-foreground">Define your ideal customer profile</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="font-medium">Sending Schedule</p>
-                        <p className="text-sm text-muted-foreground">Set optimal times for your campaigns</p>
+                        <p className="font-medium">Start Creating Campaigns</p>
+                        <p className="text-sm text-muted-foreground">Launch targeted outreach with AI-powered emails</p>
                       </div>
                     </div>
                   </div>
+                  <Alert className="mt-4">
+                    <Sparkles className="h-4 w-4" />
+                    <AlertDescription>
+                      Campaign details like target audience, sales goals, and scheduling are configured per campaign for maximum flexibility.
+                    </AlertDescription>
+                  </Alert>
                 </div>
               </div>
             </div>
@@ -453,143 +433,9 @@ export default function SalesOnboardingPage() {
             </div>
           )}
 
-          {/* Target Audience Step */}
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="targetAudience">Describe Your Ideal Customer</Label>
-                <Textarea
-                  id="targetAudience"
-                  value={onboardingData.targetAudience}
-                  onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-                  placeholder="e.g., B2B SaaS companies with 10-50 employees, Marketing managers at e-commerce companies"
-                  className="mt-2"
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <h3 className="font-medium mb-3">Targeting Criteria</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Briefcase className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Job Titles</p>
-                      <p className="text-xs text-muted-foreground">CEO, CTO, Marketing Manager, etc.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Building className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Company Size</p>
-                      <p className="text-xs text-muted-foreground">1-10, 11-50, 51-200, etc.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Globe className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Location</p>
-                      <p className="text-xs text-muted-foreground">Countries, regions, or cities</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Industry</p>
-                      <p className="text-xs text-muted-foreground">Technology, Healthcare, Finance, etc.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Schedule Step */}
-          {currentStep === 4 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select
-                  value={onboardingData.timezone}
-                  onValueChange={(value) => handleInputChange('timezone', value)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="UTC">UTC</SelectItem>
-                    <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
-                    <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
-                    <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
-                    <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
-                    <SelectItem value="Europe/London">London (GMT)</SelectItem>
-                    <SelectItem value="Europe/Paris">Paris (CET)</SelectItem>
-                    <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
-                    <SelectItem value="Australia/Sydney">Sydney (AEDT)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Sending Hours</Label>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  <div>
-                    <Label htmlFor="startTime" className="text-xs">Start Time</Label>
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={onboardingData.sendingHours.start}
-                      onChange={(e) => handleInputChange('sendingHours', {
-                        ...onboardingData.sendingHours,
-                        start: e.target.value
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endTime" className="text-xs">End Time</Label>
-                    <Input
-                      id="endTime"
-                      type="time"
-                      value={onboardingData.sendingHours.end}
-                      onChange={(e) => handleInputChange('sendingHours', {
-                        ...onboardingData.sendingHours,
-                        end: e.target.value
-                      })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Emails will only be sent during these hours in your timezone
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="dailyLimit">Daily Email Limit</Label>
-                <Input
-                  id="dailyLimit"
-                  type="number"
-                  value={onboardingData.dailyLimit}
-                  onChange={(e) => handleInputChange('dailyLimit', e.target.value)}
-                  placeholder="100"
-                  className="mt-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Maximum number of emails to send per day (recommended: 50-150)
-                </p>
-              </div>
-
-              <Alert>
-                <AlertDescription>
-                  We'll automatically optimize sending to avoid spam filters and improve deliverability.
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
 
           {/* Complete Step */}
-          {currentStep === 5 && (
+          {currentStep === 3 && (
             <div className="space-y-6">
               <div className="text-center py-8">
                 <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />

@@ -26,13 +26,11 @@ export async function POST(request: Request) {
       Extract the following information:
       1. Company name
       2. Industry/sector they operate in
-      3. Their target audience (who are their customers)
 
       Return the information in JSON format:
       {
         "companyName": "extracted company name",
-        "industry": "their industry",
-        "targetAudience": "description of their ideal customers"
+        "industry": "their industry"
       }
       
       If you cannot access the website or extract certain information, use reasonable defaults based on the URL.
@@ -52,8 +50,8 @@ export async function POST(request: Request) {
         const html = await websiteResponse.text();
         // Extract text content from HTML (basic extraction)
         websiteContent = html
-          .replace(/<script[^>]*>.*?<\/script>/gis, '')
-          .replace(/<style[^>]*>.*?<\/style>/gis, '')
+          .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
           .replace(/<[^>]+>/g, ' ')
           .replace(/\s+/g, ' ')
           .substring(0, 5000); // Limit to first 5000 chars
@@ -82,8 +80,7 @@ export async function POST(request: Request) {
       // Ensure we have all fields with sensible defaults
       return NextResponse.json({
         companyName: result.companyName || new URL(website).hostname.replace('www.', '').split('.')[0],
-        industry: result.industry || 'Technology',
-        targetAudience: result.targetAudience || 'Businesses looking to improve their operations'
+        industry: result.industry || 'Technology'
       });
     } catch (aiError) {
       console.error('AI analysis error:', aiError);
@@ -94,8 +91,7 @@ export async function POST(request: Request) {
       
       return NextResponse.json({
         companyName: domainName.charAt(0).toUpperCase() + domainName.slice(1),
-        industry: 'Technology',
-        targetAudience: 'Small to medium-sized businesses'
+        industry: 'Technology'
       });
     }
   } catch (error) {
