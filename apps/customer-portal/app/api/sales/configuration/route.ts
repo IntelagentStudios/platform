@@ -109,8 +109,8 @@ export async function POST(request: NextRequest) {
         await prisma.sales_integrations.update({
           where: { id: existingIntegration.id },
           data: {
-            provider: configuration.emailProvider,
             configuration: {
+              provider: configuration.emailProvider,
               email: configuration.emailAddress,
               host: configuration.smtpHost,
               port: configuration.smtpPort,
@@ -127,8 +127,8 @@ export async function POST(request: NextRequest) {
           data: {
             license_key: productKeyRecord.license_key,
             integration_type: 'email',
-            provider: configuration.emailProvider,
             configuration: {
+              provider: configuration.emailProvider,
               email: configuration.emailAddress,
               host: configuration.smtpHost,
               port: configuration.smtpPort,
