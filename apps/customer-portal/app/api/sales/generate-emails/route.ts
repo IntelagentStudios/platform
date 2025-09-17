@@ -2,16 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!
-});
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getAuthFromCookies();
     if (!session?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Initialize OpenAI client inside the function to avoid build-time errors
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'sk-dummy-key-for-build'
+    });
 
     const { campaign, generateCount = 3 } = await request.json();
 

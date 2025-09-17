@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
           await sendWelcomeEmail({
             ...newUserDetails,
             tier: productType || 'chatbot',
-            productKey: createdProductKey?.key
+            productKey: createdProductKey?.product_key
           });
           console.log('Welcome email sent to:', newUserDetails.email);
         }

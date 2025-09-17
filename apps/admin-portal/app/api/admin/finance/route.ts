@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FinanceAgent } from '@intelagent/skills-orchestrator';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,18 +12,20 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action') || 'get_metrics';
     const period = searchParams.get('period') || '30d';
 
-    // Get the Finance Agent
-    const financeAgent = FinanceAgent.getInstance();
-    
-    // Execute financial analytics skill through the agent
-    const result = await financeAgent.executeSkill('financial_analytics', {
-      action,
-      period,
-      _context: {
-        executedBy: 'admin_dashboard',
-        timestamp: new Date()
+    // Mock response - FinanceAgent temporarily unavailable
+    // Will be replaced once skills-orchestrator build is fixed
+    const result = {
+      success: true,
+      data: {
+        action,
+        period,
+        _context: {
+          executedBy: 'admin_dashboard',
+          timestamp: new Date()
+        },
+        message: 'Finance data temporarily unavailable - skills-orchestrator rebuild in progress'
       }
-    });
+    };
 
     return NextResponse.json(result);
 

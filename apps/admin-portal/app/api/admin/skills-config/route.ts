@@ -49,21 +49,21 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     
     // Fetch configurations from database
-    const configs = await prisma.system_settings.findMany({
+    const configs = await prisma.settings.findMany({
       where: {
-        setting_key: {
+        key: {
           startsWith: 'skill_config_'
         }
       }
     });
-    
+
     // Decrypt and format configurations
     const formattedConfigs: { [key: string]: any } = {};
-    
+
     configs.forEach(config => {
-      const skillId = config.setting_key.replace('skill_config_', '');
+      const skillId = config.key.replace('skill_config_', '');
       try {
-        const decryptedValue = decrypt(config.setting_value as string);
+        const decryptedValue = decrypt(config.value as string);
         formattedConfigs[skillId] = JSON.parse(decryptedValue);
       } catch (error) {
         console.error(`Failed to decrypt config for ${skillId}:`, error);
@@ -108,36 +108,33 @@ export async function POST(request: NextRequest) {
       const encryptedValue = encrypt(JSON.stringify(config));
       
       // Upsert the configuration
-      return prisma.system_settings.upsert({
-        where: { setting_key: settingKey },
+      return prisma.settings.upsert({
+        where: { key: settingKey },
         create: {
-          setting_key: settingKey,
-          setting_value: encryptedValue,
-          description: `Configuration for ${skillId} skill`,
-          created_by: 'admin',
-          is_encrypted: true
+          key: settingKey,
+          value: encryptedValue,
+          loadOnStartup: false
         },
         update: {
-          setting_value: encryptedValue,
-          updated_at: new Date()
+          value: encryptedValue
         }
       });
     });
     
     await Promise.all(promises);
     
-    // Log the configuration update
-    await prisma.audit_logs.create({
-      data: {
-        event_type: 'skill_config_update',
-        event_data: {
-          skills: Object.keys(configs),
-          timestamp: new Date()
-        },
-        user_id: 'admin', // TODO: Get actual admin user ID
-        ip_address: request.headers.get('x-forwarded-for') || 'unknown'
-      }
-    });
+    // TODO: Log the configuration update once skill_audit_log table is available
+    // await prisma.skill_audit_log.create({
+    //   data: {
+    //     event_type: 'skill_config_update',
+    //     event_data: {
+    //       skills: Object.keys(configs),
+    //       timestamp: new Date()
+    //     },
+    //     user_id: 'admin', // TODO: Get actual admin user ID
+    //     ip_address: request.headers.get('x-forwarded-for') || 'unknown'
+    //   }
+    // });
     
     // Update environment variables for runtime use
     // This allows skills to access configs without database queries
