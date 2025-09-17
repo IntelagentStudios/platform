@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
         const createdProductKey = await prisma.product_keys.findFirst({
           where: {
             license_key: license.license_key,
-            product_type: productType === 'sales-outreach-agent' ? 'sales-agent' : productType
+            product: productType === 'sales-outreach-agent' ? 'sales-outreach' : productType
           }
         });
 
