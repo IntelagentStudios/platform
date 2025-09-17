@@ -96,40 +96,49 @@ export async function POST(request: NextRequest) {
 
     // If email configuration is provided, store it securely
     if (configuration.emailPassword) {
-      // Create or update email integration
-      await prisma.sales_integrations.upsert({
+      // Check if integration exists
+      const existingIntegration = await prisma.sales_integrations.findFirst({
         where: {
-          license_key_type: {
-            license_key: productKeyRecord.license_key,
-            integration_type: 'email'
-          }
-        },
-        create: {
           license_key: productKeyRecord.license_key,
-          integration_type: 'email',
-          provider: configuration.emailProvider,
-          configuration: {
-            email: configuration.emailAddress,
-            host: configuration.smtpHost,
-            port: configuration.smtpPort,
-            // In production, encrypt sensitive data
-            password: configuration.emailPassword
-          },
-          status: 'active'
-        },
-        update: {
-          provider: configuration.emailProvider,
-          configuration: {
-            email: configuration.emailAddress,
-            host: configuration.smtpHost,
-            port: configuration.smtpPort,
-            // In production, encrypt sensitive data
-            password: configuration.emailPassword
-          },
-          status: 'active',
-          updated_at: new Date()
+          integration_type: 'email'
         }
       });
+
+      if (existingIntegration) {
+        // Update existing integration
+        await prisma.sales_integrations.update({
+          where: { id: existingIntegration.id },
+          data: {
+            provider: configuration.emailProvider,
+            configuration: {
+              email: configuration.emailAddress,
+              host: configuration.smtpHost,
+              port: configuration.smtpPort,
+              // In production, encrypt sensitive data
+              password: configuration.emailPassword
+            },
+            status: 'active',
+            updated_at: new Date()
+          }
+        });
+      } else {
+        // Create new integration
+        await prisma.sales_integrations.create({
+          data: {
+            license_key: productKeyRecord.license_key,
+            integration_type: 'email',
+            provider: configuration.emailProvider,
+            configuration: {
+              email: configuration.emailAddress,
+              host: configuration.smtpHost,
+              port: configuration.smtpPort,
+              // In production, encrypt sensitive data
+              password: configuration.emailPassword
+            },
+            status: 'active'
+          }
+        });
+      }
     }
 
     return NextResponse.json({
