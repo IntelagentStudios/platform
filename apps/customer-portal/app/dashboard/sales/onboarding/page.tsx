@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -18,17 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  CheckCircle2,
-  ArrowRight,
   Building,
   Mail,
-  Target,
-  Calendar,
+  CheckCircle2,
   Rocket,
-  Users,
-  Globe,
-  Phone,
-  Briefcase,
   Sparkles,
   Loader2
 } from 'lucide-react';
@@ -47,8 +39,8 @@ export default function SalesOnboardingPage() {
   const { localize, isUK } = useLocalization();
   const [currentStep, setCurrentStep] = useState(0);
   const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
-  const [analysisMode, setAnalysisMode] = useState<'manual' | 'ai'>('manual');
   const [analysisProgress, setAnalysisProgress] = useState('');
+  const [companyResearchComplete, setCompanyResearchComplete] = useState(false);
   const [onboardingData, setOnboardingData] = useState({
     companyName: '',
     website: '',
@@ -57,6 +49,10 @@ export default function SalesOnboardingPage() {
     targetMarket: '',
     companySize: '',
     painPoints: [] as string[],
+    technologies: [] as string[],
+    competitors: [] as string[],
+    marketTrends: [] as string[],
+    valueProposition: '',
     emailProvider: '',
     emailAddress: '',
     emailPassword: '',
@@ -66,16 +62,9 @@ export default function SalesOnboardingPage() {
 
   const steps: OnboardingStep[] = [
     {
-      id: 'welcome',
-      title: 'Welcome to Sales Outreach Agent',
-      description: 'Let\'s get your sales automation set up',
-      icon: Rocket,
-      completed: false
-    },
-    {
       id: 'company',
       title: 'Company Information',
-      description: 'Tell us about your business',
+      description: 'Just your company name and website',
       icon: Building,
       completed: false
     },
@@ -88,13 +77,12 @@ export default function SalesOnboardingPage() {
     },
     {
       id: 'complete',
-      title: 'Setup Complete',
-      description: 'You\'re ready to create your first campaign!',
+      title: 'Ready to Launch!',
+      description: 'Start creating your first campaign',
       icon: CheckCircle2,
       completed: false
     }
   ];
-
 
   const handleInputChange = (field: string, value: any) => {
     setOnboardingData(prev => ({
@@ -110,13 +98,13 @@ export default function SalesOnboardingPage() {
     setAnalysisProgress(localize('Initializing AI research agent...'));
 
     try {
-      // Use the comprehensive analysis endpoint that leverages skills orchestrator
+      // Use the comprehensive analysis endpoint
       const response = await fetch('/api/sales/analyze-company', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           website: onboardingData.website,
-          useSkillsOrchestrator: true // Flag to use deep research
+          useSkillsOrchestrator: true
         })
       });
 
@@ -144,9 +132,9 @@ export default function SalesOnboardingPage() {
                   const data = JSON.parse(line.slice(6));
 
                   if (data.type === 'progress') {
-                    setAnalysisProgress(localize(data.message));
+                    setAnalysisProgress(data.message);
                   } else if (data.type === 'complete') {
-                    // Update all fields from the comprehensive analysis
+                    // Update ALL fields from the comprehensive analysis
                     setOnboardingData(prev => ({
                       ...prev,
                       companyName: data.data.companyName || prev.companyName,
@@ -154,11 +142,16 @@ export default function SalesOnboardingPage() {
                       description: data.data.description || prev.description,
                       targetMarket: data.data.targetMarket || prev.targetMarket,
                       companySize: data.data.companySize || prev.companySize,
-                      painPoints: data.data.painPoints || prev.painPoints
+                      painPoints: data.data.painPoints || prev.painPoints,
+                      technologies: data.data.technologies || prev.technologies,
+                      competitors: data.data.competitors || prev.competitors,
+                      marketTrends: data.data.marketTrends || prev.marketTrends,
+                      valueProposition: data.data.valueProposition || prev.valueProposition
                     }));
+                    setCompanyResearchComplete(true);
                     setAnalysisProgress('');
                   } else if (data.type === 'error') {
-                    setAnalysisProgress(localize('Analysis failed. Please try manual entry.'));
+                    setAnalysisProgress(localize('Analysis failed. Please try again.'));
                   }
                 } catch (e) {
                   console.error('Failed to parse SSE message:', e);
@@ -166,34 +159,35 @@ export default function SalesOnboardingPage() {
               }
             }
           }
-        } else {
-          // Fallback to regular response
-          const data = await response.json();
-          setOnboardingData(prev => ({
-            ...prev,
-            companyName: data.companyName || prev.companyName,
-            industry: data.industry || prev.industry
-          }));
         }
       }
     } catch (error) {
       console.error('Failed to analyze website:', error);
-      setAnalysisProgress(localize('Analysis failed. Please try manual entry.'));
+      setAnalysisProgress(localize('Analysis failed. Please try again.'));
     } finally {
       setAnalyzingWebsite(false);
-      if (!analysisProgress.includes('failed')) {
-        setAnalysisProgress('');
-      }
     }
   };
 
+  // Auto-start analysis if website is provided
+  useEffect(() => {
+    if (currentStep === 0 && onboardingData.website && !analyzingWebsite && !companyResearchComplete) {
+      // Auto-analyze after a short delay
+      const timer = setTimeout(() => {
+        analyzeWebsite();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, onboardingData.website]);
+
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
-      // Complete onboarding
+      // Save configuration and complete onboarding
+      await saveConfiguration();
       router.push('/dashboard/sales');
     } else {
-      // Save progress if on email or schedule step
-      if (steps[currentStep].id === 'email' || steps[currentStep].id === 'schedule') {
+      // Save progress if on email step
+      if (steps[currentStep].id === 'email') {
         await saveConfiguration();
       }
       setCurrentStep(currentStep + 1);
@@ -218,11 +212,20 @@ export default function SalesOnboardingPage() {
     }
   };
 
+  const canProceed = () => {
+    if (currentStep === 0) {
+      return onboardingData.companyName && onboardingData.website;
+    }
+    if (currentStep === 1) {
+      return onboardingData.emailProvider && onboardingData.emailAddress;
+    }
+    return true;
+  };
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="container max-w-4xl mx-auto p-6">
+    <div className="container max-w-2xl mx-auto p-6">
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
@@ -246,193 +249,97 @@ export default function SalesOnboardingPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Welcome Step */}
+          {/* Company Information Step - Super Simple */}
           {currentStep === 0 && (
-            <div className="space-y-6">
-              <Alert className="mb-6">
-                <Rocket className="h-4 w-4" />
+            <div className="space-y-4">
+              <Alert className="mb-4">
+                <Sparkles className="h-4 w-4" />
                 <AlertDescription>
-                  Welcome to Sales Outreach Agent! This quick setup will get you ready to start generating leads and closing deals.
+                  Just enter your company name and website. Our AI will automatically research everything about your business - the same way it researches your leads!
                 </AlertDescription>
               </Alert>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-3">Quick 3-Step Setup:</h3>
-                  <div className="grid gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">1</div>
-                      <div>
-                        <p className="font-medium">Company Profile</p>
-                        <p className="text-sm text-muted-foreground">Enter your website and let AI analyze your business</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">2</div>
-                      <div>
-                        <p className="font-medium">Email Integration</p>
-                        <p className="text-sm text-muted-foreground">Connect your email account for sending campaigns</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">3</div>
-                      <div>
-                        <p className="font-medium">Start Creating Campaigns</p>
-                        <p className="text-sm text-muted-foreground">Launch targeted outreach with AI-powered emails</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Company Information Step */}
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              {/* Mode Toggle */}
-              <div className="flex gap-2 p-1 bg-muted rounded-lg">
-                <Button
-                  type="button"
-                  variant={analysisMode === 'manual' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setAnalysisMode('manual')}
-                >
-                  Manual Entry
-                </Button>
-                <Button
-                  type="button"
-                  variant={analysisMode === 'ai' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setAnalysisMode('ai')}
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  AI Research
-                </Button>
+              <div>
+                <Label htmlFor="companyName">Company Name</Label>
+                <Input
+                  id="companyName"
+                  value={onboardingData.companyName}
+                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  placeholder="Acme Inc."
+                  className="mt-2"
+                />
               </div>
 
-              {analysisMode === 'manual' ? (
-                <>
-                  <div>
-                    <Label htmlFor="companyName">Company Name *</Label>
-                    <Input
-                      id="companyName"
-                      value={onboardingData.companyName}
-                      onChange={(e) => handleInputChange('companyName', e.target.value)}
-                      placeholder="Acme Inc."
-                      className="mt-2"
-                    />
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  type="url"
+                  value={onboardingData.website}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  placeholder="https://example.com"
+                  className="mt-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  AI will analyze your website to understand your business
+                </p>
+              </div>
+
+              {/* Auto-research status */}
+              {analyzingWebsite && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm font-medium">AI Research in Progress</span>
                   </div>
-
-                  <div>
-                    <Label htmlFor="website">Website *</Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      value={onboardingData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
-                      placeholder="https://example.com"
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="industry">Industry *</Label>
-                    <Select
-                      value={onboardingData.industry}
-                      onValueChange={(value) => handleInputChange('industry', value)}
-                    >
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Select your industry" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="saas">SaaS / Software</SelectItem>
-                        <SelectItem value="ecommerce">E-commerce</SelectItem>
-                        <SelectItem value="consulting">Consulting</SelectItem>
-                        <SelectItem value="services">Professional Services</SelectItem>
-                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Alert>
-                    <Sparkles className="h-4 w-4" />
-                    <AlertDescription>
-                      Our AI will perform deep research on your company using the same enrichment tools we use for lead research.
-                      This may take a moment but will provide comprehensive insights.
-                    </AlertDescription>
-                  </Alert>
-
-                  <div>
-                    <Label htmlFor="website">Enter Your Website</Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      value={onboardingData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
-                      placeholder="https://example.com"
-                      className="mt-2"
-                    />
-                  </div>
-
-                  <Button
-                    onClick={analyzeWebsite}
-                    disabled={!onboardingData.website || analyzingWebsite}
-                    className="w-full"
-                  >
-                    {analyzingWebsite ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {localize('Researching Your Company...')}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        {localize('Start AI Research')}
-                      </>
-                    )}
-                  </Button>
-
-                  {analyzingWebsite && analysisProgress && (
+                  {analysisProgress && (
                     <div className="p-3 bg-muted rounded-lg">
                       <p className="text-sm text-muted-foreground">{analysisProgress}</p>
                     </div>
                   )}
+                </div>
+              )}
 
-                  {onboardingData.companyName && (
-                    <div className="space-y-3 p-4 border rounded-lg">
-                      <h4 className="font-medium">Research Results</h4>
-                      <div className="space-y-2">
-                        <div>
-                          <Label className="text-xs">Company Name</Label>
-                          <p className="font-medium">{onboardingData.companyName}</p>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Industry</Label>
-                          <p className="font-medium">{onboardingData.industry || localize('Analyzing...')}</p>
-                        </div>
+              {/* Research Complete */}
+              {companyResearchComplete && onboardingData.description && (
+                <div className="space-y-3 p-4 border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <h4 className="font-medium text-green-900 dark:text-green-400">AI Research Complete!</h4>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <p className="text-muted-foreground">{onboardingData.description}</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="font-medium">Industry:</span> {onboardingData.industry}
                       </div>
+                      <div>
+                        <span className="font-medium">Size:</span> {onboardingData.companySize}
+                      </div>
+                      <div>
+                        <span className="font-medium">Market:</span> {onboardingData.targetMarket}
+                      </div>
+                      {onboardingData.technologies.length > 0 && (
+                        <div>
+                          <span className="font-medium">Tech:</span> {onboardingData.technologies.slice(0, 3).join(', ')}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    You can refine these details later in your company profile settings
+                  </p>
+                </div>
               )}
             </div>
           )}
 
           {/* Email Configuration Step */}
-          {currentStep === 2 && (
+          {currentStep === 1 && (
             <div className="space-y-4">
               <Alert>
                 <AlertDescription>
-                  Connect your email to send campaigns. We support SMTP, Gmail, and Microsoft 365.
+                  Connect your email to send campaigns. We support all major email providers.
                 </AlertDescription>
               </Alert>
 
@@ -455,6 +362,18 @@ export default function SalesOnboardingPage() {
                 </Select>
               </div>
 
+              <div>
+                <Label htmlFor="emailAddress">Email Address</Label>
+                <Input
+                  id="emailAddress"
+                  type="email"
+                  value={onboardingData.emailAddress}
+                  onChange={(e) => handleInputChange('emailAddress', e.target.value)}
+                  placeholder="sales@company.com"
+                  className="mt-2"
+                />
+              </div>
+
               {onboardingData.emailProvider === 'smtp' && (
                 <>
                   <div>
@@ -467,7 +386,6 @@ export default function SalesOnboardingPage() {
                       className="mt-2"
                     />
                   </div>
-
                   <div>
                     <Label htmlFor="smtpPort">SMTP Port</Label>
                     <Input
@@ -482,19 +400,9 @@ export default function SalesOnboardingPage() {
               )}
 
               <div>
-                <Label htmlFor="emailAddress">Email Address</Label>
-                <Input
-                  id="emailAddress"
-                  type="email"
-                  value={onboardingData.emailAddress}
-                  onChange={(e) => handleInputChange('emailAddress', e.target.value)}
-                  placeholder="sales@example.com"
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="emailPassword">Email Password / App Password</Label>
+                <Label htmlFor="emailPassword">
+                  {onboardingData.emailProvider === 'gmail' ? 'App Password' : 'Password'}
+                </Label>
                 <Input
                   id="emailPassword"
                   type="password"
@@ -503,79 +411,80 @@ export default function SalesOnboardingPage() {
                   placeholder="••••••••"
                   className="mt-2"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  For Gmail, use an App Password. For Outlook, use your regular password.
-                </p>
+                {onboardingData.emailProvider === 'gmail' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use an app-specific password, not your regular Gmail password
+                  </p>
+                )}
               </div>
             </div>
           )}
 
-
-          {/* Complete Step */}
-          {currentStep === 3 && (
-            <div className="space-y-6">
-              <div className="text-center py-8">
-                <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Setup Complete!</h2>
-                <p className="text-muted-foreground">
-                  Your Sales Outreach Agent is ready to start generating leads
-                </p>
-              </div>
-
-              <div className="grid gap-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="font-semibold mb-3">Next Steps</h3>
-                    <ol className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-semibold">1.</span>
-                        <span>Import your leads or use our lead finder</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-semibold">2.</span>
-                        <span>Create your first email campaign</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-semibold">3.</span>
-                        <span>Set up email sequences for automation</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary font-semibold">4.</span>
-                        <span>Monitor your campaign performance</span>
-                      </li>
-                    </ol>
-                  </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" onClick={() => router.push('/dashboard/sales/leads/import')}>
-                    <Users className="mr-2 h-4 w-4" />
-                    Import Leads
-                  </Button>
-                  <Button onClick={() => router.push('/dashboard/sales/campaigns/new')}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Create Campaign
-                  </Button>
+          {/* Completion Step */}
+          {currentStep === 2 && (
+            <div className="space-y-6 text-center py-4">
+              <div className="flex justify-center">
+                <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <CheckCircle2 className="h-10 w-10 text-green-600" />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold">You're All Set!</h3>
+                <p className="text-muted-foreground">
+                  Your Sales Outreach Agent is ready. Time to create your first campaign!
+                </p>
+              </div>
+
+              {companyResearchComplete && (
+                <div className="text-left p-4 bg-muted rounded-lg">
+                  <h4 className="font-medium mb-2">AI discovered about your company:</h4>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p>✓ Industry: {onboardingData.industry}</p>
+                    <p>✓ Target Market: {onboardingData.targetMarket}</p>
+                    <p>✓ Company Size: {onboardingData.companySize}</p>
+                    {onboardingData.competitors.length > 0 && (
+                      <p>✓ Competitors: {onboardingData.competitors.slice(0, 3).join(', ')}</p>
+                    )}
+                    {onboardingData.painPoints.length > 0 && (
+                      <p>✓ Customer Pain Points identified</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4">
+                <Button
+                  onClick={handleNext}
+                  size="lg"
+                  className="w-full"
+                >
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Go to Dashboard
+                </Button>
+              </div>
             </div>
           )}
+        </CardContent>
 
-          {/* Navigation */}
-          <div className="flex justify-between mt-8">
+        {/* Navigation */}
+        {currentStep < 2 && (
+          <div className="px-6 pb-6 flex justify-between">
             <Button
               variant="outline"
-              onClick={() => setCurrentStep(currentStep - 1)}
+              onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
               disabled={currentStep === 0}
             >
-              Previous
+              Back
             </Button>
-            <Button onClick={handleNext}>
-              {currentStep === steps.length - 1 ? 'Go to Dashboard' : 'Continue'}
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed() || (currentStep === 0 && analyzingWebsite)}
+            >
+              {currentStep === steps.length - 1 ? 'Complete Setup' : 'Next'}
             </Button>
           </div>
-        </CardContent>
+        )}
       </Card>
     </div>
   );
