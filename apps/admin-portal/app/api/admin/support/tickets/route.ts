@@ -4,9 +4,9 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     // Fetch support tickets from audit_logs (temporary storage)
-    const tickets = await prisma.audit_logs.findMany({
+    const tickets = await prisma.skill_audit_log.findMany({
       where: {
-        entity_type: 'support_ticket'
+        event_type: 'support_ticket'
       },
       orderBy: {
         created_at: 'desc'
@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
 
     // Transform audit logs into ticket format
     const formattedTickets = tickets.map(log => {
-      const metadata = log.metadata as any;
+      const metadata = log.event_data as any;
       return {
         id: log.id,
-        ticketId: log.entity_id,
+        ticketId: log.skill_id,
         type: metadata.type || 'general',
         agent: metadata.agent || 'communications',
         subject: metadata.subject || 'No subject',
@@ -41,10 +41,10 @@ export async function GET(request: NextRequest) {
       formattedTickets.map(async (ticket) => {
         try {
           // Check if agent is actively working on ticket
-          const recentActivity = await prisma.audit_logs.findFirst({
+          const recentActivity = await prisma.skill_audit_log.findFirst({
             where: {
-              entity_type: 'agent_activity',
-              entity_id: ticket.ticketId,
+              event_type: 'agent_activity',
+              skill_id: ticket.ticketId,
               created_at: {
                 gte: new Date(Date.now() - 5 * 60 * 1000) // Last 5 minutes
               }

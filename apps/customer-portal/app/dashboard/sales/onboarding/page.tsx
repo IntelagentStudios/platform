@@ -32,6 +32,7 @@ import {
   Sparkles,
   Loader2
 } from 'lucide-react';
+import { useLocalization } from '@/lib/localization';
 
 interface OnboardingStep {
   id: string;
@@ -43,12 +44,19 @@ interface OnboardingStep {
 
 export default function SalesOnboardingPage() {
   const router = useRouter();
+  const { localize, isUK } = useLocalization();
   const [currentStep, setCurrentStep] = useState(0);
   const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<'manual' | 'ai'>('manual');
+  const [analysisProgress, setAnalysisProgress] = useState('');
   const [onboardingData, setOnboardingData] = useState({
     companyName: '',
     website: '',
     industry: '',
+    description: '',
+    targetMarket: '',
+    companySize: '',
+    painPoints: [] as string[],
     emailProvider: '',
     emailAddress: '',
     emailPassword: '',
@@ -99,25 +107,83 @@ export default function SalesOnboardingPage() {
     if (!onboardingData.website) return;
 
     setAnalyzingWebsite(true);
+    setAnalysisProgress(localize('Initializing AI research agent...'));
+
     try {
-      const response = await fetch('/api/sales/analyze-website', {
+      // Use the comprehensive analysis endpoint that leverages skills orchestrator
+      const response = await fetch('/api/sales/analyze-company', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ website: onboardingData.website })
+        body: JSON.stringify({
+          website: onboardingData.website,
+          useSkillsOrchestrator: true // Flag to use deep research
+        })
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setOnboardingData(prev => ({
-          ...prev,
-          companyName: data.companyName || prev.companyName,
-          industry: data.industry || prev.industry
-        }));
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (reader) {
+          let buffer = '';
+
+          // Handle streaming response for progress updates
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // Process complete SSE messages
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+
+                  if (data.type === 'progress') {
+                    setAnalysisProgress(localize(data.message));
+                  } else if (data.type === 'complete') {
+                    // Update all fields from the comprehensive analysis
+                    setOnboardingData(prev => ({
+                      ...prev,
+                      companyName: data.data.companyName || prev.companyName,
+                      industry: data.data.industry || prev.industry,
+                      description: data.data.description || prev.description,
+                      targetMarket: data.data.targetMarket || prev.targetMarket,
+                      companySize: data.data.companySize || prev.companySize,
+                      painPoints: data.data.painPoints || prev.painPoints
+                    }));
+                    setAnalysisProgress('');
+                  } else if (data.type === 'error') {
+                    setAnalysisProgress(localize('Analysis failed. Please try manual entry.'));
+                  }
+                } catch (e) {
+                  console.error('Failed to parse SSE message:', e);
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback to regular response
+          const data = await response.json();
+          setOnboardingData(prev => ({
+            ...prev,
+            companyName: data.companyName || prev.companyName,
+            industry: data.industry || prev.industry
+          }));
+        }
       }
     } catch (error) {
       console.error('Failed to analyze website:', error);
+      setAnalysisProgress(localize('Analysis failed. Please try manual entry.'));
     } finally {
       setAnalyzingWebsite(false);
+      if (!analysisProgress.includes('failed')) {
+        setAnalysisProgress('');
+      }
     }
   };
 
@@ -216,12 +282,6 @@ export default function SalesOnboardingPage() {
                       </div>
                     </div>
                   </div>
-                  <Alert className="mt-4">
-                    <Sparkles className="h-4 w-4" />
-                    <AlertDescription>
-                      Campaign details like target audience, sales goals, and scheduling are configured per campaign for maximum flexibility.
-                    </AlertDescription>
-                  </Alert>
                 </div>
               </div>
             </div>
@@ -230,69 +290,140 @@ export default function SalesOnboardingPage() {
           {/* Company Information Step */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="companyName">Company Name *</Label>
-                <Input
-                  id="companyName"
-                  value={onboardingData.companyName}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  placeholder="Acme Inc."
-                  className="mt-2"
-                />
+              {/* Mode Toggle */}
+              <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                <Button
+                  type="button"
+                  variant={analysisMode === 'manual' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAnalysisMode('manual')}
+                >
+                  Manual Entry
+                </Button>
+                <Button
+                  type="button"
+                  variant={analysisMode === 'ai' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setAnalysisMode('ai')}
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  AI Research
+                </Button>
               </div>
 
-              <div>
-                <Label htmlFor="website">Website *</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="website"
-                    type="url"
-                    value={onboardingData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    placeholder="https://example.com"
-                    className="flex-1"
-                  />
+              {analysisMode === 'manual' ? (
+                <>
+                  <div>
+                    <Label htmlFor="companyName">Company Name *</Label>
+                    <Input
+                      id="companyName"
+                      value={onboardingData.companyName}
+                      onChange={(e) => handleInputChange('companyName', e.target.value)}
+                      placeholder="Acme Inc."
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="website">Website *</Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      value={onboardingData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      placeholder="https://example.com"
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="industry">Industry *</Label>
+                    <Select
+                      value={onboardingData.industry}
+                      onValueChange={(value) => handleInputChange('industry', value)}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Select your industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="saas">SaaS / Software</SelectItem>
+                        <SelectItem value="ecommerce">E-commerce</SelectItem>
+                        <SelectItem value="consulting">Consulting</SelectItem>
+                        <SelectItem value="services">Professional Services</SelectItem>
+                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="finance">Finance</SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Alert>
+                    <Sparkles className="h-4 w-4" />
+                    <AlertDescription>
+                      Our AI will perform deep research on your company using the same enrichment tools we use for lead research.
+                      This may take a moment but will provide comprehensive insights.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div>
+                    <Label htmlFor="website">Enter Your Website</Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      value={onboardingData.website}
+                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      placeholder="https://example.com"
+                      className="mt-2"
+                    />
+                  </div>
+
                   <Button
-                    type="button"
-                    variant="outline"
                     onClick={analyzeWebsite}
                     disabled={!onboardingData.website || analyzingWebsite}
+                    className="w-full"
                   >
                     {analyzingWebsite ? (
-                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Analyzing...</>
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {localize('Researching Your Company...')}
+                      </>
                     ) : (
-                      <><Sparkles className="h-4 w-4 mr-1" /> AI Research</>
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        {localize('Start AI Research')}
+                      </>
                     )}
                   </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Click "AI Research" to automatically analyze your website and fill company details
-                </p>
-              </div>
 
-              <div>
-                <Label htmlFor="industry">Industry *</Label>
-                <Select
-                  value={onboardingData.industry}
-                  onValueChange={(value) => handleInputChange('industry', value)}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select your industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="saas">SaaS / Software</SelectItem>
-                    <SelectItem value="ecommerce">E-commerce</SelectItem>
-                    <SelectItem value="consulting">Consulting</SelectItem>
-                    <SelectItem value="services">Professional Services</SelectItem>
-                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="healthcare">Healthcare</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {analyzingWebsite && analysisProgress && (
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">{analysisProgress}</p>
+                    </div>
+                  )}
 
+                  {onboardingData.companyName && (
+                    <div className="space-y-3 p-4 border rounded-lg">
+                      <h4 className="font-medium">Research Results</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs">Company Name</Label>
+                          <p className="font-medium">{onboardingData.companyName}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Industry</Label>
+                          <p className="font-medium">{onboardingData.industry || localize('Analyzing...')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
