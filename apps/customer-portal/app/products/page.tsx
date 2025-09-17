@@ -81,7 +81,7 @@ export default function ProductsPage() {
     return null;
   }
 
-  // Define all products - currently only chatbot is fully implemented
+  // Define all products
   const allProducts = [
     {
       id: 'chatbot',
@@ -91,6 +91,16 @@ export default function ProductsPage() {
       features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
       status: 'available',
       price: 'Included',
+      category: 'core'
+    },
+    {
+      id: 'sales-outreach',
+      name: 'Sales Outreach Agent',
+      description: 'AI-powered sales campaigns with automated email sequences and lead management',
+      icon: TrendingUp,
+      features: ['Email Campaigns', 'Lead Management', 'AI Email Generation', 'Analytics'],
+      status: 'available',
+      price: '£499/month',
       category: 'core'
     }
   ];
@@ -194,8 +204,8 @@ export default function ProductsPage() {
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/products/chatbot/configure');
-    } else if (productId === 'sales-agent') {
-      router.push('/platform/sales-agent');
+    } else if (productId === 'sales-outreach') {
+      router.push('/dashboard/sales/onboarding');
     } else if (productId === 'data-enrichment') {
       router.push('/platform/data-enrichment');
     } else if (productId === 'setup-agent') {
@@ -208,8 +218,8 @@ export default function ProductsPage() {
   const handleManage = (productId: string) => {
     if (productId === 'chatbot') {
       router.push('/chatbot');  // Go to main chatbot page
-    } else if (productId === 'sales-agent') {
-      router.push('/platform/sales-agent');
+    } else if (productId === 'sales-outreach') {
+      router.push('/dashboard/sales');
     } else if (productId === 'data-enrichment') {
       router.push('/platform/data-enrichment');
     } else if (productId === 'setup-agent') {
