@@ -118,17 +118,22 @@ export default function SalesOnboardingPage() {
       const response = await fetch('/api/dashboard/products');
       const data = await response.json();
 
-      // Find the sales agent product
+      // Find the sales agent product - check for 'product' field (not 'product_type')
       const salesProduct = data.products?.find((p: any) =>
-        p.product_type === 'sales-agent' || p.product_type === 'sales-outreach-agent'
+        p.product === 'sales-outreach'
       );
 
       if (salesProduct) {
-        setProductKey(salesProduct.key);
+        setProductKey(salesProduct.product_key || salesProduct.key || '');
         setLicenseKey(data.licenseKey || '');
+      } else {
+        // If no product key exists, we might need to create one
+        console.log('No sales-outreach product found, may need to create one');
+        setProductKey('Please complete checkout to get your product key');
       }
     } catch (error) {
       console.error('Failed to fetch product keys:', error);
+      setProductKey('Error loading product key');
     }
   };
 
