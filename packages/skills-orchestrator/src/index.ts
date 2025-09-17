@@ -60,3 +60,9 @@ export type {
 export { SearchStrategySkill } from './skills/impl/SearchStrategySkill';
 export { ResponseCreatorSkill } from './skills/impl/ResponseCreatorSkill';
 export { WebScraperSkill } from './skills/impl/WebScraperSkill';
+
+// ============================================
+// SKILL REGISTRATION
+// ============================================
+// Import to trigger auto-registration of sales skills
+import './skills/registerSalesSkills';
