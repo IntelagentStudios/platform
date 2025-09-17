@@ -22,7 +22,9 @@ import {
   CheckCircle2,
   Rocket,
   Sparkles,
-  Loader2
+  Loader2,
+  ChevronRight,
+  Home
 } from 'lucide-react';
 import { useLocalization } from '@/lib/localization';
 
@@ -169,16 +171,7 @@ export default function SalesOnboardingPage() {
     }
   };
 
-  // Auto-start analysis if website is provided
-  useEffect(() => {
-    if (currentStep === 0 && onboardingData.website && !analyzingWebsite && !companyResearchComplete) {
-      // Auto-analyze after a short delay
-      const timer = setTimeout(() => {
-        analyzeWebsite();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentStep, onboardingData.website]);
+  // Removed auto-start analysis - now manual only
 
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
@@ -226,6 +219,19 @@ export default function SalesOnboardingPage() {
 
   return (
     <div className="container max-w-2xl mx-auto p-6">
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+        <a href="/dashboard" className="hover:text-foreground transition-colors">
+          <Home className="h-4 w-4" />
+        </a>
+        <ChevronRight className="h-4 w-4" />
+        <a href="/dashboard/products" className="hover:text-foreground transition-colors">
+          Products
+        </a>
+        <ChevronRight className="h-4 w-4" />
+        <span className="text-foreground">Sales Outreach Setup</span>
+      </div>
+
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
@@ -252,13 +258,6 @@ export default function SalesOnboardingPage() {
           {/* Company Information Step - Super Simple */}
           {currentStep === 0 && (
             <div className="space-y-4">
-              <Alert className="mb-4">
-                <Sparkles className="h-4 w-4" />
-                <AlertDescription>
-                  Just enter your company name and website. Our AI will automatically research everything about your business - the same way it researches your leads!
-                </AlertDescription>
-              </Alert>
-
               <div>
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input
@@ -281,7 +280,7 @@ export default function SalesOnboardingPage() {
                   className="mt-2"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  AI will analyze your website to understand your business
+                  Enter your website URL for AI analysis
                 </p>
               </div>
 
@@ -300,12 +299,24 @@ export default function SalesOnboardingPage() {
                 </div>
               )}
 
+              {/* Add Analyze Button */}
+              {onboardingData.website && !analyzingWebsite && !companyResearchComplete && (
+                <Button
+                  onClick={analyzeWebsite}
+                  className="w-full"
+                  variant="default"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {localize('Analyze Company')}
+                </Button>
+              )}
+
               {/* Research Complete */}
               {companyResearchComplete && onboardingData.description && (
-                <div className="space-y-3 p-4 border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20 rounded-lg">
+                <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <h4 className="font-medium text-green-900 dark:text-green-400">AI Research Complete!</h4>
+                    <CheckCircle2 className="h-5 w-5" />
+                    <h4 className="font-medium">AI Research Complete!</h4>
                   </div>
                   <div className="space-y-2 text-sm">
                     <p className="text-muted-foreground">{onboardingData.description}</p>
@@ -326,9 +337,6 @@ export default function SalesOnboardingPage() {
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    You can refine these details later in your company profile settings
-                  </p>
                 </div>
               )}
             </div>
@@ -424,8 +432,8 @@ export default function SalesOnboardingPage() {
           {currentStep === 2 && (
             <div className="space-y-6 text-center py-4">
               <div className="flex justify-center">
-                <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                  <CheckCircle2 className="h-10 w-10 text-green-600" />
+                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
+                  <CheckCircle2 className="h-10 w-10 text-primary" />
                 </div>
               </div>
 
