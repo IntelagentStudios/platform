@@ -75,6 +75,7 @@ export default function NewCampaign() {
       includeRoleContext: true
     },
     contentSettings: {
+      salesGoals: '', // Campaign-specific sales goals
       mainCTA: '', // Primary call-to-action
       valueProposition: '',
       painPoints: [],
@@ -217,6 +218,47 @@ export default function NewCampaign() {
                     <SelectItem value="cold-call">Cold Calling</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="salesGoals">Sales Goals *</Label>
+                <Textarea
+                  id="salesGoals"
+                  placeholder="e.g., Generate 50 qualified leads, Book 15 discovery calls, Close 3 new deals worth $100K+"
+                  rows={3}
+                  value={campaign.contentSettings.salesGoals}
+                  onChange={(e) => setCampaign({
+                    ...campaign,
+                    contentSettings: { ...campaign.contentSettings, salesGoals: e.target.value }
+                  })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Define specific, measurable goals for this campaign
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="valueProposition">Value Proposition</Label>
+                <Textarea
+                  id="valueProposition"
+                  placeholder="What unique value does your solution provide?"
+                  rows={2}
+                  value={campaign.contentSettings.valueProposition}
+                  onChange={(e) => setCampaign({
+                    ...campaign,
+                    contentSettings: { ...campaign.contentSettings, valueProposition: e.target.value }
+                  })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purpose">Campaign Purpose / Main CTA</Label>
+                <Input
+                  id="purpose"
+                  placeholder="e.g., Schedule a demo, Download whitepaper, Free trial signup"
+                  value={campaign.purpose}
+                  onChange={(e) => setCampaign({ ...campaign, purpose: e.target.value })}
+                />
               </div>
             </CardContent>
           </>

@@ -30,7 +30,9 @@ import {
   Phone,
   Briefcase,
   Copy,
-  Check
+  Check,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 interface OnboardingStep {
@@ -47,12 +49,12 @@ export default function SalesOnboardingPage() {
   const [productKey, setProductKey] = useState('');
   const [licenseKey, setLicenseKey] = useState('');
   const [copied, setCopied] = useState(false);
+  const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
   const [onboardingData, setOnboardingData] = useState({
     companyName: '',
     website: '',
     industry: '',
     targetAudience: '',
-    salesGoals: '',
     emailProvider: '',
     emailAddress: '',
     emailPassword: '',
@@ -142,6 +144,33 @@ export default function SalesOnboardingPage() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const analyzeWebsite = async () => {
+    if (!onboardingData.website) return;
+
+    setAnalyzingWebsite(true);
+    try {
+      const response = await fetch('/api/sales/analyze-website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ website: onboardingData.website })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOnboardingData(prev => ({
+          ...prev,
+          companyName: data.companyName || prev.companyName,
+          industry: data.industry || prev.industry,
+          targetAudience: data.targetAudience || prev.targetAudience
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to analyze website:', error);
+    } finally {
+      setAnalyzingWebsite(false);
+    }
   };
 
   const handleNext = async () => {
@@ -288,14 +317,31 @@ export default function SalesOnboardingPage() {
 
               <div>
                 <Label htmlFor="website">Website *</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  value={onboardingData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  placeholder="https://example.com"
-                  className="mt-2"
-                />
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="website"
+                    type="url"
+                    value={onboardingData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    placeholder="https://example.com"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={analyzeWebsite}
+                    disabled={!onboardingData.website || analyzingWebsite}
+                  >
+                    {analyzingWebsite ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Analyzing...</>
+                    ) : (
+                      <><Sparkles className="h-4 w-4 mr-1" /> AI Research</>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Click "AI Research" to automatically analyze your website and fill company details
+                </p>
               </div>
 
               <div>
@@ -321,17 +367,6 @@ export default function SalesOnboardingPage() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="salesGoals">Sales Goals</Label>
-                <Textarea
-                  id="salesGoals"
-                  value={onboardingData.salesGoals}
-                  onChange={(e) => handleInputChange('salesGoals', e.target.value)}
-                  placeholder="e.g., Generate 50 qualified leads per month, Book 10 demos per week"
-                  className="mt-2"
-                  rows={3}
-                />
-              </div>
             </div>
           )}
 
