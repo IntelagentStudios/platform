@@ -2,6 +2,66 @@ import crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+// Helper to get product-specific information
+function getProductInfo(product: string) {
+  const productDetails: Record<string, any> = {
+    'chatbot': {
+      name: 'AI Chatbot',
+      price: '£299/month',
+      setupSteps: [
+        'Click the button above to set your password',
+        'Log in to your dashboard',
+        'Configure your AI chatbot settings',
+        'Get your embed code and add it to your website'
+      ],
+      features: [
+        'Unlimited conversations',
+        '24/7 customer support automation',
+        'Custom knowledge base',
+        'Multi-language support'
+      ]
+    },
+    'sales-outreach-agent': {
+      name: 'Sales Outreach Agent',
+      price: '£499/month',
+      setupSteps: [
+        'Click the button above to set your password',
+        'Log in to your dashboard',
+        'Navigate to the Sales section',
+        'Import your leads or create a new campaign',
+        'Configure your email sequences',
+        'Launch your first campaign'
+      ],
+      features: [
+        'Automated email campaigns',
+        'Lead enrichment and scoring',
+        'Multi-step sequences',
+        'Performance analytics',
+        'CRM integration'
+      ]
+    },
+    'data-enrichment': {
+      name: 'Data Enrichment Tool',
+      price: '£399/month',
+      setupSteps: [
+        'Click the button above to set your password',
+        'Log in to your dashboard',
+        'Configure your data sources',
+        'Set up enrichment rules',
+        'Connect your API endpoints'
+      ],
+      features: [
+        'Real-time data enrichment',
+        'Multiple data sources',
+        'API integration',
+        'Bulk processing'
+      ]
+    }
+  };
+
+  return productDetails[product] || productDetails['chatbot'];
+}
+
 interface WelcomeEmailData {
   email: string;
   name?: string;
@@ -9,16 +69,20 @@ interface WelcomeEmailData {
   tier: string;
   temporaryPassword?: string;
   resetToken?: string;
+  productKey?: string;
 }
 
 // Simple email sender (you can replace with your preferred email service)
 export async function sendWelcomeEmail(data: WelcomeEmailData) {
-  const { email, name, licenseKey, tier, temporaryPassword, resetToken } = data;
-  
+  const { email, name, licenseKey, tier, temporaryPassword, resetToken, productKey } = data;
+
   // Generate password reset link
-  const resetLink = resetToken 
+  const resetLink = resetToken
     ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`
     : `${process.env.NEXT_PUBLIC_APP_URL}/auth/forgot-password`;
+
+  // Determine product name and setup instructions
+  const productInfo = getProductInfo(tier);
 
   const emailContent = `
     <!DOCTYPE html>
@@ -43,28 +107,31 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
         <div class="content">
           <h2>Hi ${name || 'there'},</h2>
           
-          <p>Thank you for subscribing to the <strong>${tier.charAt(0).toUpperCase() + tier.slice(1)} Plan</strong>! Your account has been created and your subscription is now active.</p>
-          
+          <p>Thank you for subscribing to <strong>${productInfo.name}</strong> (${productInfo.price})! Your account has been created and your subscription is now active.</p>
+
           <div class="license-box">
             <h3>Your Account Details</h3>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>License Key:</strong> <code>${licenseKey}</code></p>
-            <p><strong>Plan:</strong> ${tier.charAt(0).toUpperCase() + tier.slice(1)}</p>
+            ${productKey ? `<p><strong>Product Key:</strong> <code>${productKey}</code></p>` : ''}
+            <p><strong>Product:</strong> ${productInfo.name}</p>
             ${temporaryPassword ? `<p><strong>Temporary Password:</strong> <code>${temporaryPassword}</code></p>` : ''}
           </div>
-          
+
           <p><strong>Important:</strong> Please set up your password to secure your account:</p>
-          
+
           <div style="text-align: center;">
             <a href="${resetLink}" class="button">Set Your Password</a>
           </div>
-          
-          <h3>What's Next?</h3>
+
+          <h3>What's Included?</h3>
+          <ul>
+            ${productInfo.features.map((feature: string) => `<li>${feature}</li>`).join('')}
+          </ul>
+
+          <h3>Getting Started</h3>
           <ol>
-            <li>Click the button above to set your password</li>
-            <li>Log in to your dashboard at <a href="${process.env.NEXT_PUBLIC_APP_URL}">${process.env.NEXT_PUBLIC_APP_URL}</a></li>
-            <li>Configure your first AI chatbot</li>
-            <li>Explore the platform features</li>
+            ${productInfo.setupSteps.map((step: string) => `<li>${step}</li>`).join('')}
           </ol>
           
           <h3>Need Help?</h3>

@@ -11,20 +11,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user's license
-    const license = await prisma.licenses.findFirst({
+    // Get user and their product
+    const user = await prisma.users.findUnique({
+      where: { email: session.email }
+    });
+
+    if (!user || !user.license_key) {
+      return NextResponse.json({ error: 'No license found' }, { status: 403 });
+    }
+
+    // Check for sales product
+    const salesProduct = await prisma.product_keys.findFirst({
       where: {
-        email: session.email!,
-        products: { has: 'Sales Outreach Agent' },
+        license_key: user.license_key,
+        OR: [
+          { product: 'sales-outreach' },
+          { product_type: 'sales-agent' }
+        ],
         status: 'active'
       }
     });
 
-    if (!license) {
-      return NextResponse.json({ error: 'No active sales license' }, { status: 403 });
+    if (!salesProduct) {
+      return NextResponse.json({ error: 'No active sales product' }, { status: 403 });
     }
 
-    const licenseKey = license.license_key;
+    const licenseKey = user.license_key;
 
     // Get aggregated stats
     const [campaigns, leads, totalStats] = await Promise.all([

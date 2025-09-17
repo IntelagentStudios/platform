@@ -11,6 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Slider } from '@/components/ui/slider';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   ChevronRight,
   Mail,
@@ -21,7 +31,14 @@ import {
   Settings,
   AlertCircle,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  Sparkles,
+  Eye,
+  Filter,
+  MessageSquare,
+  Loader2,
+  Brain,
+  Wand2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -32,30 +49,59 @@ export default function NewCampaign() {
     name: '',
     description: '',
     type: 'email',
+    purpose: '', // New: Campaign purpose/CTA
+    targetingMode: 'filters', // 'filters' or 'ai-description'
+    targetDescription: '', // New: AI text description of target
     targetCriteria: {
       industry: '',
       companySize: '',
       location: '',
-      jobTitle: ''
+      jobTitle: '',
+      department: '',
+      seniority: '',
+      technologies: [],
+      revenue: '',
+      fundingStage: ''
     },
     emailSettings: {
       fromName: '',
       fromEmail: '',
       replyTo: '',
-      integrationId: ''
+      integrationId: '',
+      enablePreview: true, // New: Preview before sending
+      personalizationLevel: 'high', // low, medium, high
+      tone: 'professional', // professional, casual, friendly, formal
+      includeCompanyResearch: true,
+      includeRoleContext: true
+    },
+    contentSettings: {
+      mainCTA: '', // Primary call-to-action
+      valueProposition: '',
+      painPoints: [],
+      benefits: [],
+      socialProof: '',
+      customInstructions: '' // Additional AI instructions
     },
     sequence: {
       enabled: false,
-      steps: []
+      steps: [],
+      followUpStrategy: 'persistent', // persistent, gentle, aggressive
+      stopOnReply: true
     },
     schedule: {
       startDate: '',
       endDate: '',
       timezone: 'UTC',
       sendDays: ['mon', 'tue', 'wed', 'thu', 'fri'],
-      sendHours: { start: '09:00', end: '17:00' }
+      sendHours: { start: '09:00', end: '17:00' },
+      dailyLimit: 50,
+      throttleMinutes: 5 // Minutes between sends
     }
   });
+
+  const [previewEmail, setPreviewEmail] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const handleCreateCampaign = async () => {
     try {

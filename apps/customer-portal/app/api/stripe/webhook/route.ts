@@ -24,25 +24,41 @@ function generateLicenseKey(prefix: string = 'LIC'): string {
   return `${prefix}-${timestamp}-${randomStr}`.toUpperCase();
 }
 
-// Helper to generate product keys based on tier
-async function generateProductKeys(tier: string, licenseKey: string) {
+// Helper to generate product keys based on tier or product type
+async function generateProductKeys(tierOrProduct: string, licenseKey: string) {
   const productKeys: any[] = [];
-  
-  const baseProducts = {
-    starter: ['chatbot'],
-    professional: ['chatbot', 'chatbot', 'chatbot', 'sales-agent', 'enrichment'],
-    enterprise: ['chatbot', 'sales-agent', 'enrichment', 'setup-agent']
+
+  // Check if it's a specific product purchase
+  const specificProducts: Record<string, string> = {
+    'chatbot': 'chatbot',
+    'sales-outreach-agent': 'sales-agent',
+    'data-enrichment': 'enrichment',
+    'setup-agent': 'setup-agent'
   };
 
-  const products = baseProducts[tier as keyof typeof baseProducts] || ['chatbot'];
-  
+  // Check if it's a tier-based purchase or specific product
+  let products: string[];
+
+  if (specificProducts[tierOrProduct]) {
+    // Specific product purchase
+    products = [specificProducts[tierOrProduct]];
+  } else {
+    // Tier-based purchase (legacy support)
+    const baseProducts = {
+      starter: ['chatbot'],
+      professional: ['chatbot', 'chatbot', 'chatbot', 'sales-agent', 'enrichment'],
+      enterprise: ['chatbot', 'sales-agent', 'enrichment', 'setup-agent']
+    };
+    products = baseProducts[tierOrProduct as keyof typeof baseProducts] || ['chatbot'];
+  }
+
   for (const productType of products) {
-    const prefix = productType === 'chatbot' ? 'CHAT' : 
+    const prefix = productType === 'chatbot' ? 'CHAT' :
                    productType === 'sales-agent' ? 'SALES' :
                    productType === 'enrichment' ? 'ENRICH' : 'SETUP';
-    
+
     const productKey = generateLicenseKey(prefix);
-    
+
     productKeys.push({
       key: productKey,
       license_key: licenseKey,
@@ -85,11 +101,12 @@ export async function POST(request: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         
         // Get metadata (removed tier and metadata references that don't exist in schema)
-        const { userId, billing, isGuest } = session.metadata || {};
+        const { userId, billing, isGuest, product } = session.metadata || {};
         const customerEmail = session.customer_email || session.customer_details?.email;
-        
-        const tier = 'starter'; // Default tier since tier field is not in schema
-        console.log('Checkout completed:', { userId, tier, billing, customerEmail, isGuest });
+
+        // Determine product from metadata or default
+        const productType = product || 'chatbot'; // Can be 'chatbot', 'sales-outreach-agent', etc.
+        console.log('Checkout completed:', { userId, productType, billing, customerEmail, isGuest });
 
         // Handle guest checkout - create new user
         let actualUserId = userId;
@@ -159,8 +176,8 @@ export async function POST(request: NextRequest) {
             }
           });
 
-          // Generate product keys based on tier
-          const productKeys = await generateProductKeys('starter', license.license_key); // Default to starter tier
+          // Generate product keys based on purchased product
+          const productKeys = await generateProductKeys(productType, license.license_key);
           
           // Create product keys
           for (const productKey of productKeys) {
@@ -184,11 +201,20 @@ export async function POST(request: NextRequest) {
           console.log('Updated license:', license.license_key);
         }
 
+        // Get the created product key for the email
+        const createdProductKey = await prisma.product_keys.findFirst({
+          where: {
+            license_key: license.license_key,
+            product_type: productType === 'sales-outreach-agent' ? 'sales-agent' : productType
+          }
+        });
+
         // Send welcome email if new user was created
         if (newUserCreated && newUserDetails) {
           await sendWelcomeEmail({
             ...newUserDetails,
-            tier: tier || 'starter'
+            tier: productType || 'chatbot',
+            productKey: createdProductKey?.key
           });
           console.log('Welcome email sent to:', newUserDetails.email);
         }

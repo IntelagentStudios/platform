@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,11 +21,13 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SalesDashboard() {
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalLeads: 0,
@@ -39,8 +42,22 @@ export default function SalesDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    checkOnboarding();
     fetchDashboardData();
   }, []);
+
+  const checkOnboarding = async () => {
+    try {
+      const response = await fetch('/api/sales/configuration');
+      const data = await response.json();
+
+      if (!data.onboardingComplete) {
+        router.push('/dashboard/sales/onboarding');
+      }
+    } catch (error) {
+      console.error('Error checking onboarding:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -78,7 +95,13 @@ export default function SalesDashboard() {
               Import Leads
             </Button>
           </Link>
-          <Link href="/dashboard/sales/campaigns/new">
+          <Link href="/dashboard/sales/conversations">
+            <Button variant="outline">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Conversations
+            </Button>
+          </Link>
+          <Link href="/dashboard/sales/campaigns/create">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               New Campaign
@@ -173,7 +196,7 @@ export default function SalesDashboard() {
                       Create your first campaign to start reaching out to leads
                     </p>
                   </div>
-                  <Link href="/dashboard/sales/campaigns/new">
+                  <Link href="/dashboard/sales/campaigns/create">
                     <Button size="sm">
                       <Plus className="mr-2 h-4 w-4" />
                       Create Campaign

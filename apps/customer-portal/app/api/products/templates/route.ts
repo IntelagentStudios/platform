@@ -30,22 +30,25 @@ const productTemplates = [
   {
     id: 'sales-outreach',
     name: 'Sales Outreach Agent',
-    description: 'Automated sales prospecting and outreach campaigns',
+    description: 'AI-powered sales prospecting with personalized email campaigns',
     icon: 'Users',
     category: 'sales',
     basePrice: 499,
-    minTier: 'pro',
+    minTier: 'starter',  // Changed to allow all users to see it
     coreSkills: [
       'email_automation',
       'lead_generation',
       'campaign_management',
-      'response_tracking'
+      'response_tracking',
+      'ai_personalization'
     ],
     availableSkills: [
       'lead_scoring',
+      'lead_enrichment',
       'crm_integration',
       'linkedin_automation',
-      'sales_analytics'
+      'sales_analytics',
+      'sequence_automation'
     ]
   },
   {
@@ -306,10 +309,24 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Determine dashboard URL based on template
+    let dashboardUrl = '/dashboard/products';
+    if (templateId === 'chatbot') {
+      dashboardUrl = '/dashboard/chatbot';
+    } else if (templateId === 'sales-outreach') {
+      dashboardUrl = '/dashboard/sales/onboarding';
+    } else if (templateId === 'onboarding-automation') {
+      dashboardUrl = '/dashboard/onboarding';
+    } else if (templateId === 'customer-success') {
+      dashboardUrl = '/dashboard/customer-success';
+    } else if (templateId === 'analytics-platform') {
+      dashboardUrl = '/dashboard/analytics';
+    }
+
     return NextResponse.json({
       product,
       message: 'Product activated successfully',
-      dashboardUrl: `/dashboard/${templateId.replace('-', '_')}`
+      dashboardUrl
     });
 
   } catch (error: any) {
