@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,6 @@ import {
   Globe,
   Phone,
   Briefcase,
-  Copy,
-  Check,
   Sparkles,
   Loader2
 } from 'lucide-react';
@@ -46,9 +44,6 @@ interface OnboardingStep {
 export default function SalesOnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [productKey, setProductKey] = useState('');
-  const [licenseKey, setLicenseKey] = useState('');
-  const [copied, setCopied] = useState(false);
   const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
   const [onboardingData, setOnboardingData] = useState({
     companyName: '',
@@ -92,34 +87,6 @@ export default function SalesOnboardingPage() {
     }
   ];
 
-  useEffect(() => {
-    // Fetch user's product keys
-    fetchProductKeys();
-  }, []);
-
-  const fetchProductKeys = async () => {
-    try {
-      const response = await fetch('/api/dashboard/products');
-      const data = await response.json();
-
-      // Find the sales agent product - check for 'product' field (not 'product_type')
-      const salesProduct = data.products?.find((p: any) =>
-        p.product === 'sales-outreach'
-      );
-
-      if (salesProduct) {
-        setProductKey(salesProduct.product_key || salesProduct.key || '');
-        setLicenseKey(data.licenseKey || '');
-      } else {
-        // If no product key exists, we might need to create one
-        console.log('No sales-outreach product found, may need to create one');
-        setProductKey('Please complete checkout to get your product key');
-      }
-    } catch (error) {
-      console.error('Failed to fetch product keys:', error);
-      setProductKey('Error loading product key');
-    }
-  };
 
   const handleInputChange = (field: string, value: any) => {
     setOnboardingData(prev => ({
@@ -173,7 +140,6 @@ export default function SalesOnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productKey,
           configuration: onboardingData
         })
       });
@@ -186,11 +152,6 @@ export default function SalesOnboardingPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
@@ -222,29 +183,14 @@ export default function SalesOnboardingPage() {
           {/* Welcome Step */}
           {currentStep === 0 && (
             <div className="space-y-6">
-              <Alert>
+              <Alert className="mb-6">
+                <Rocket className="h-4 w-4" />
                 <AlertDescription>
-                  Your Sales Outreach Agent is ready to be configured. This setup wizard will help you get started in just a few minutes.
+                  Welcome to Sales Outreach Agent! This quick setup will get you ready to start generating leads and closing deals.
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <Label>Your Product Key</Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <code className="flex-1 p-2 bg-background rounded">
-                      {productKey || 'Loading...'}
-                    </code>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyToClipboard(productKey)}
-                    >
-                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-
                 <div>
                   <h3 className="font-semibold mb-3">Quick 3-Step Setup:</h3>
                   <div className="grid gap-3">
