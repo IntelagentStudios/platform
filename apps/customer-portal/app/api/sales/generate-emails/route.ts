@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     // Generate personalized emails for each prospect
     const previews = await Promise.all(
       sampleProspects.map(async (prospect) => {
-        const email = await generatePersonalizedEmail(campaign, prospect);
+        const email = await generatePersonalizedEmail(campaign, prospect, openai);
         return {
           ...email,
           recipientName: prospect.name,
@@ -98,7 +98,7 @@ function generateCompanyContext(company: string) {
   };
 }
 
-async function generatePersonalizedEmail(campaign: any, prospect: any) {
+async function generatePersonalizedEmail(campaign: any, prospect: any, openai: any) {
   const prompt = `
 You are an expert sales copywriter creating a personalized cold outreach email.
 
