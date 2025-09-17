@@ -24,10 +24,7 @@ export async function GET(request: NextRequest) {
     const productKey = await prisma.product_keys.findFirst({
       where: {
         license_key: user.license_key,
-        OR: [
-          { product: 'sales-outreach' },
-          { product_type: 'sales-agent' }
-        ],
+        product: 'sales-outreach',
         status: 'active'
       }
     });
@@ -36,11 +33,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product key not found' }, { status: 404 });
     }
 
-    // Get configuration
-    const config = productKey.configuration || {};
+    // Get configuration from metadata
+    const config = (productKey.metadata as any) || {};
 
     return NextResponse.json({
-      productKey: productKey.key,
+      productKey: productKey.product_key,
       configuration: config,
       onboardingComplete: config.onboardingComplete || false
     });
@@ -65,29 +62,35 @@ export async function POST(request: NextRequest) {
 
     // Verify product key ownership
     const productKeyRecord = await prisma.product_keys.findUnique({
-      where: { key: productKey },
-      include: {
-        licenses: true
-      }
+      where: { product_key: productKey }
     });
 
-    if (!productKeyRecord || productKeyRecord.licenses?.email !== session.email) {
+    if (!productKeyRecord) {
       return NextResponse.json({ error: 'Invalid product key' }, { status: 403 });
     }
 
-    // Update configuration
+    // Verify ownership via user's license
+    const user = await prisma.users.findUnique({
+      where: { email: session.email }
+    });
+
+    if (!user || user.license_key !== productKeyRecord.license_key) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Update configuration in metadata
     const updatedConfig = {
-      ...productKeyRecord.configuration,
+      ...(productKeyRecord.metadata as any || {}),
       ...configuration,
       onboardingComplete: true,
       lastUpdated: new Date().toISOString()
     };
 
     await prisma.product_keys.update({
-      where: { key: productKey },
+      where: { product_key: productKey },
       data: {
-        configuration: updatedConfig,
-        updated_at: new Date()
+        metadata: updatedConfig,
+        last_used_at: new Date()
       }
     });
 

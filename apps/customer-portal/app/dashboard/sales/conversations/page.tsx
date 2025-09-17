@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -167,7 +168,7 @@ Sarah`,
             {
               id: 'msg-3',
               type: 'outbound',
-              subject: 'Quick question about DataSync's data pipeline',
+              subject: "Quick question about DataSync's data pipeline",
               body: `Hi Michael,
 
 I saw that DataSync launched a new real-time sync platform - impressive work!
@@ -201,10 +202,10 @@ John`,
             {
               id: 'msg-4',
               type: 'outbound',
-              subject: 'Congrats on CloudFirst's European expansion',
+              subject: "Congrats on CloudFirst's European expansion",
               body: `Hi Emma,
 
-Congratulations on CloudFirst's expansion to Europe! Managing products across multiple regions brings unique challenges.
+Congratulations on CloudFirst\'s expansion to Europe! Managing products across multiple regions brings unique challenges.
 
 We help product teams streamline their multi-region deployments and feature rollouts. Would love to share how we've helped similar companies.
 

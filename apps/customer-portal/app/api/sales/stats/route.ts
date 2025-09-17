@@ -24,10 +24,7 @@ export async function GET(request: NextRequest) {
     const salesProduct = await prisma.product_keys.findFirst({
       where: {
         license_key: user.license_key,
-        OR: [
-          { product: 'sales-outreach' },
-          { product_type: 'sales-agent' }
-        ],
+        product: 'sales-outreach',
         status: 'active'
       }
     });
