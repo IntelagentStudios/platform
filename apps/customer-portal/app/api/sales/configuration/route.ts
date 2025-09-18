@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user || !user.license_key) {
+      console.log('[Sales Config] No license found for user:', session.email);
       return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
+
+    console.log('[Sales Config] User found:', user.email, 'License:', user.license_key);
 
     // Get or create product key for sales agent
     let productKey = await prisma.product_keys.findFirst({
