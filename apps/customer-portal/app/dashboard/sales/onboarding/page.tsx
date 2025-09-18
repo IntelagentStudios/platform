@@ -225,7 +225,7 @@ export default function SalesOnboardingPage() {
           <Home className="h-4 w-4" />
         </a>
         <ChevronRight className="h-4 w-4" />
-        <a href="/dashboard/products" className="hover:text-foreground transition-colors">
+        <a href="/products" className="hover:text-foreground transition-colors">
           Products
         </a>
         <ChevronRight className="h-4 w-4" />
