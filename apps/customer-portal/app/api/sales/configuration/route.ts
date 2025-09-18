@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    // Get product key for sales agent
-    const productKey = await prisma.product_keys.findFirst({
+    // Get or create product key for sales agent
+    let productKey = await prisma.product_keys.findFirst({
       where: {
         license_key: user.license_key,
         product: 'sales-outreach',
@@ -30,7 +30,25 @@ export async function GET(request: NextRequest) {
     });
 
     if (!productKey) {
-      return NextResponse.json({ error: 'Product key not found' }, { status: 404 });
+      // Create a new product key if it doesn't exist
+      const generateProductKey = () => {
+        const prefix = 'SO'; // Sales Outreach
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+        return `${prefix}-${timestamp}-${random}`;
+      };
+
+      productKey = await prisma.product_keys.create({
+        data: {
+          product_key: generateProductKey(),
+          license_key: user.license_key,
+          product: 'sales-outreach',
+          status: 'active',
+          metadata: {},
+          created_at: new Date(),
+          last_used_at: new Date()
+        }
+      });
     }
 
     // Get configuration from metadata

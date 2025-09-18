@@ -204,8 +204,17 @@ export default function SalesOnboardingPage() {
   const handleNext = async () => {
     if (currentStep === steps.length - 1) {
       // Save configuration and complete onboarding
-      await saveConfiguration();
-      router.push('/dashboard/sales');
+      console.log('Completing onboarding, current step:', currentStep);
+      const saved = await saveConfiguration();
+      if (saved) {
+        console.log('Navigating to dashboard...');
+        // Add a small delay to ensure localStorage is set
+        setTimeout(() => {
+          router.push('/dashboard/sales');
+        }, 100);
+      } else {
+        console.error('Failed to save configuration, not redirecting');
+      }
     } else {
       // Save progress if on email step
       if (steps[currentStep].id === 'email') {
@@ -217,33 +226,44 @@ export default function SalesOnboardingPage() {
 
   const saveConfiguration = async () => {
     try {
+      console.log('Saving configuration...', onboardingData);
+
       // First get the product key
       const getResponse = await fetch('/api/sales/configuration');
-      if (getResponse.ok) {
-        const { productKey } = await getResponse.json();
-
-        // Now save with the product key
-        const response = await fetch('/api/sales/configuration', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            productKey,
-            configuration: {
-              ...onboardingData,
-              onboardingComplete: true
-            }
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to save configuration');
-        }
-
-        // Set a flag in localStorage to prevent redirect loop
-        localStorage.setItem('salesOnboardingComplete', 'true');
+      if (!getResponse.ok) {
+        console.error('Failed to get product key:', getResponse.status);
+        return false;
       }
+
+      const { productKey } = await getResponse.json();
+      console.log('Got product key:', productKey);
+
+      // Now save with the product key
+      const response = await fetch('/api/sales/configuration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productKey,
+          configuration: {
+            ...onboardingData,
+            onboardingComplete: true
+          }
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save configuration:', response.status);
+        throw new Error('Failed to save configuration');
+      }
+
+      console.log('Configuration saved successfully');
+
+      // Set a flag in localStorage to prevent redirect loop
+      localStorage.setItem('salesOnboardingComplete', 'true');
+      return true;
     } catch (error) {
       console.error('Error saving configuration:', error);
+      return false;
     }
   };
 
