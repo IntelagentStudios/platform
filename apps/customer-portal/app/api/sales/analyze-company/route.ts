@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           // Phase 2: Company Information Research
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Learning about what you do and who you serve...'
+            message: 'Learning about what you do and your customers...'
           })}\n\n`));
 
           const companyResearchPrompt = `

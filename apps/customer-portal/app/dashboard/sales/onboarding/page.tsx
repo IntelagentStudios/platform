@@ -498,7 +498,7 @@ export default function SalesOnboardingPage() {
                   type="password"
                   value={onboardingData.emailPassword}
                   onChange={(e) => handleInputChange('emailPassword', e.target.value)}
-                  placeholder="••••••••"
+                  placeholder=""
                   className="mt-2"
                 />
                 {onboardingData.emailProvider === 'gmail' && (
