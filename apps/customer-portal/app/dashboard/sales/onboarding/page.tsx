@@ -355,7 +355,20 @@ export default function SalesOnboardingPage() {
                 <Label htmlFor="emailProvider">Email Provider</Label>
                 <Select
                   value={onboardingData.emailProvider}
-                  onValueChange={(value) => handleInputChange('emailProvider', value)}
+                  onValueChange={(value) => {
+                    handleInputChange('emailProvider', value);
+                    // Auto-fill SMTP settings for known providers
+                    if (value === 'zoho') {
+                      handleInputChange('smtpHost', 'smtp.zoho.com');
+                      handleInputChange('smtpPort', '465');
+                    } else if (value === 'gmail') {
+                      handleInputChange('smtpHost', 'smtp.gmail.com');
+                      handleInputChange('smtpPort', '587');
+                    } else if (value === 'outlook') {
+                      handleInputChange('smtpHost', 'smtp-mail.outlook.com');
+                      handleInputChange('smtpPort', '587');
+                    }
+                  }}
                 >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select email provider" />
@@ -363,6 +376,7 @@ export default function SalesOnboardingPage() {
                   <SelectContent>
                     <SelectItem value="gmail">Gmail</SelectItem>
                     <SelectItem value="outlook">Microsoft 365 / Outlook</SelectItem>
+                    <SelectItem value="zoho">Zoho Mail</SelectItem>
                     <SelectItem value="smtp">Custom SMTP</SelectItem>
                     <SelectItem value="sendgrid">SendGrid</SelectItem>
                     <SelectItem value="mailgun">Mailgun</SelectItem>
@@ -382,7 +396,10 @@ export default function SalesOnboardingPage() {
                 />
               </div>
 
-              {onboardingData.emailProvider === 'smtp' && (
+              {(onboardingData.emailProvider === 'smtp' ||
+                onboardingData.emailProvider === 'zoho' ||
+                onboardingData.emailProvider === 'gmail' ||
+                onboardingData.emailProvider === 'outlook') && (
                 <>
                   <div>
                     <Label htmlFor="smtpHost">SMTP Host</Label>
@@ -392,6 +409,7 @@ export default function SalesOnboardingPage() {
                       onChange={(e) => handleInputChange('smtpHost', e.target.value)}
                       placeholder="smtp.example.com"
                       className="mt-2"
+                      disabled={onboardingData.emailProvider !== 'smtp'}
                     />
                   </div>
                   <div>
@@ -402,6 +420,7 @@ export default function SalesOnboardingPage() {
                       onChange={(e) => handleInputChange('smtpPort', e.target.value)}
                       placeholder="587"
                       className="mt-2"
+                      disabled={onboardingData.emailProvider !== 'smtp'}
                     />
                   </div>
                 </>
@@ -409,7 +428,8 @@ export default function SalesOnboardingPage() {
 
               <div>
                 <Label htmlFor="emailPassword">
-                  {onboardingData.emailProvider === 'gmail' ? 'App Password' : 'Password'}
+                  {onboardingData.emailProvider === 'gmail' ? 'App Password' :
+                   onboardingData.emailProvider === 'zoho' ? 'App Password' : 'Password'}
                 </Label>
                 <Input
                   id="emailPassword"
@@ -421,7 +441,20 @@ export default function SalesOnboardingPage() {
                 />
                 {onboardingData.emailProvider === 'gmail' && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Use an app-specific password, not your regular Gmail password
+                    Use an app-specific password, not your regular Gmail password.
+                    <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-primary hover:underline ml-1">
+                      Generate one here
+                    </a>
+                  </p>
+                )}
+                {onboardingData.emailProvider === 'zoho' && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use an app-specific password from Zoho.
+                    <a href="https://accounts.zoho.com/home#security/security_pwd/apppassword" target="_blank" className="text-primary hover:underline ml-1">
+                      Generate one here
+                    </a>
+                    <br />
+                    Make sure 2FA is enabled and SMTP access is allowed in your Zoho settings.
                   </p>
                 )}
               </div>
