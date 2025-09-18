@@ -49,13 +49,20 @@ export default function SalesDashboard() {
   const checkOnboarding = async () => {
     try {
       const response = await fetch('/api/sales/configuration');
-      const data = await response.json();
 
-      if (!data.onboardingComplete) {
+      // Only redirect if we have a valid response indicating onboarding is not complete
+      if (response.ok) {
+        const data = await response.json();
+        if (data.onboardingComplete === false) {
+          router.push('/dashboard/sales/onboarding');
+        }
+      } else if (response.status === 404) {
+        // No configuration found, redirect to onboarding
         router.push('/dashboard/sales/onboarding');
       }
     } catch (error) {
       console.error('Error checking onboarding:', error);
+      // Don't redirect on error - let user stay on dashboard
     }
   };
 

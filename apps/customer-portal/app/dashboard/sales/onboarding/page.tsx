@@ -43,6 +43,34 @@ export default function SalesOnboardingPage() {
   const [analyzingWebsite, setAnalyzingWebsite] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState('');
   const [companyResearchComplete, setCompanyResearchComplete] = useState(false);
+
+  // Check if onboarding was already completed
+  useEffect(() => {
+    // Quick check localStorage first to prevent flashing
+    const localComplete = localStorage.getItem('salesOnboardingComplete');
+    if (localComplete === 'true') {
+      router.push('/dashboard/sales');
+      return;
+    }
+
+    const checkOnboarding = async () => {
+      try {
+        const response = await fetch('/api/sales/configuration');
+        if (response.ok) {
+          const { onboardingComplete } = await response.json();
+          if (onboardingComplete) {
+            // Set localStorage to match server state
+            localStorage.setItem('salesOnboardingComplete', 'true');
+            router.push('/dashboard/sales');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+      }
+    };
+    checkOnboarding();
+  }, [router]);
+
   const [onboardingData, setOnboardingData] = useState({
     companyName: '',
     website: '',
@@ -189,16 +217,30 @@ export default function SalesOnboardingPage() {
 
   const saveConfiguration = async () => {
     try {
-      const response = await fetch('/api/sales/configuration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          configuration: onboardingData
-        })
-      });
+      // First get the product key
+      const getResponse = await fetch('/api/sales/configuration');
+      if (getResponse.ok) {
+        const { productKey } = await getResponse.json();
 
-      if (!response.ok) {
-        throw new Error('Failed to save configuration');
+        // Now save with the product key
+        const response = await fetch('/api/sales/configuration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productKey,
+            configuration: {
+              ...onboardingData,
+              onboardingComplete: true
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save configuration');
+        }
+
+        // Set a flag in localStorage to prevent redirect loop
+        localStorage.setItem('salesOnboardingComplete', 'true');
       }
     } catch (error) {
       console.error('Error saving configuration:', error);
