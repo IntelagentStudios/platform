@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           // Phase 1: Website Analysis
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Analyzing website content and structure...'
+            message: 'Reading your website to understand your business...'
           })}\n\n`));
 
           // Fetch website content
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           // Phase 2: Company Information Research
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Researching company information and market position...'
+            message: 'Learning about what you do and who you serve...'
           })}\n\n`));
 
           const companyResearchPrompt = `
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
           // Phase 3: Industry Analysis
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Analyzing industry trends and market dynamics...'
+            message: 'Understanding your industry and customer needs...'
           })}\n\n`));
 
           const industryPrompt = `
@@ -150,16 +150,10 @@ export async function POST(request: Request) {
 
           const industryData = JSON.parse(industryAnalysis.choices[0].message.content || '{}');
 
-          // Phase 4: Social Media & Online Presence
+          // Phase 4: Competitor Analysis
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Checking social media presence and online reputation...'
-          })}\n\n`));
-
-          // Phase 5: Competitor Analysis
-          await writer.write(encoder.encode(`data: ${JSON.stringify({
-            type: 'progress',
-            message: 'Identifying competitors and market positioning...'
+            message: 'Identifying who you compete with...'
           })}\n\n`));
 
           const competitorPrompt = `
@@ -227,7 +221,7 @@ export async function POST(request: Request) {
           // Simple analysis without deep research
           await writer.write(encoder.encode(`data: ${JSON.stringify({
             type: 'progress',
-            message: 'Performing quick analysis...'
+            message: 'Getting basic company information...'
           })}\n\n`));
 
           const url = new URL(website);

@@ -448,14 +448,16 @@ export default function SalesOnboardingPage() {
                   </p>
                 )}
                 {onboardingData.emailProvider === 'zoho' && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Use an app-specific password from Zoho.
-                    <a href="https://accounts.zoho.com/home#security/security_pwd/apppassword" target="_blank" className="text-primary hover:underline ml-1">
-                      Generate one here
-                    </a>
-                    <br />
-                    Make sure 2FA is enabled and SMTP access is allowed in your Zoho settings.
-                  </p>
+                  <div className="text-xs text-muted-foreground mt-1 space-y-1">
+                    <p>To get your Zoho app password:</p>
+                    <ol className="list-decimal list-inside space-y-1 ml-2">
+                      <li>Enable 2FA first at <a href="https://accounts.zoho.com/home#security" target="_blank" className="text-primary hover:underline">Zoho Security</a></li>
+                      <li>Go to <a href="https://accounts.zoho.com/home#security/security_pwd/apppassword" target="_blank" className="text-primary hover:underline">App Passwords</a></li>
+                      <li>Enter "Sales Outreach" as the app name</li>
+                      <li>Copy the generated password and paste it here</li>
+                    </ol>
+                    <p className="text-amber-600 dark:text-amber-500">Note: Use this app password, NOT your regular Zoho password</p>
+                  </div>
                 )}
               </div>
             </div>
