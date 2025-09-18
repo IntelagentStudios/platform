@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { SalesLayout } from '../layout-client';
 import { Download, FileText, Table, Database, Calendar, Filter, Clock, Check, FileSpreadsheet, FileJson } from 'lucide-react';
 
 export default function ExportPage() {
@@ -69,8 +68,7 @@ export default function ExportPage() {
   };
 
   return (
-    <SalesLayout>
-      <div className="p-8">
+    <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Export Data</h1>
           <p className="text-gray-400">Download your sales data in various formats</p>
@@ -290,7 +288,6 @@ export default function ExportPage() {
             </Card>
           </div>
         </div>
-      </div>
-    </SalesLayout>
+    </div>
   );
 }

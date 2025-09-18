@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { SalesLayout } from '../layout-client';
 import { Mail, Database, Calendar, Phone, Linkedin, Chrome, ChevronRight, Check, X } from 'lucide-react';
 
 export default function IntegrationsPage() {
@@ -95,8 +94,7 @@ export default function IntegrationsPage() {
   }, {} as Record<string, typeof integrations>);
 
   return (
-    <SalesLayout>
-      <div className="p-8">
+    <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Integrations</h1>
           <p className="text-gray-400">Connect your favorite tools to enhance your sales workflow</p>
@@ -275,7 +273,6 @@ export default function IntegrationsPage() {
             </Card>
           </div>
         )}
-      </div>
-    </SalesLayout>
+    </div>
   );
 }

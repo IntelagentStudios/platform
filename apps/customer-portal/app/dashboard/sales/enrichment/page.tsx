@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { SalesLayout } from '../layout-client';
 import { Search, Upload, Download, Sparkles, Building2, User, Mail, Phone, Globe, Linkedin, Twitter, MapPin, Briefcase, TrendingUp, Users } from 'lucide-react';
 
 export default function EnrichmentPage() {
@@ -85,8 +84,7 @@ export default function EnrichmentPage() {
   };
 
   return (
-    <SalesLayout>
-      <div className="p-8">
+    <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Data Enrichment</h1>
           <p className="text-gray-400">Enhance your prospect data with AI-powered insights</p>
@@ -290,7 +288,6 @@ export default function EnrichmentPage() {
             </p>
           </div>
         </Card>
-      </div>
-    </SalesLayout>
+    </div>
   );
 }
