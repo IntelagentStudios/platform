@@ -183,15 +183,15 @@ export default function CampaignsPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    const colors = {
+  const getStatusColor = (status: string): "default" | "destructive" | "outline" | "secondary" => {
+    const colors: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
       draft: 'secondary',
       active: 'default',
       paused: 'outline',
       completed: 'secondary',
       archived: 'secondary'
     }
-    return colors[status as keyof typeof colors] || 'secondary'
+    return colors[status] || 'secondary'
   }
 
   const getCampaignTypeIcon = (type: string) => {
