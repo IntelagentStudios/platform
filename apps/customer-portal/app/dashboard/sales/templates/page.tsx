@@ -230,15 +230,15 @@ export default function TemplatesPage() {
     return matchesSearch && matchesFilter
   })
 
-  const getTypeColor = (type: string) => {
-    const colors = {
+  const getTypeColor = (type: string): "default" | "secondary" | "destructive" | "outline" => {
+    const colors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       outreach: 'default',
       follow_up: 'secondary',
       nurture: 'outline',
       meeting: 'default',
       introduction: 'secondary'
     }
-    return colors[type as keyof typeof colors] || 'secondary'
+    return colors[type] || 'secondary'
   }
 
   if (loading) {
