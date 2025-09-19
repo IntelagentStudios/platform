@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
-import { EmailSenderSkill } from '@/packages/skills-orchestrator/src/skills/impl/EmailSenderSkill';
 import { PrismaClient } from '@prisma/client';
 
-const emailSkill = new EmailSenderSkill();
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {

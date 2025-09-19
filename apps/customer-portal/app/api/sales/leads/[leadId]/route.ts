@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
-import { LeadManagementSkill } from '@/packages/skills-orchestrator/src/skills/impl/LeadManagementSkill';
+import { PrismaClient } from '@prisma/client';
 
-const leadSkill = new LeadManagementSkill();
+const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
@@ -14,17 +14,26 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await leadSkill.execute({
-      action: 'get_lead',
-      licenseKey: session.licenseKey,
-      data: { leadId: params.leadId }
+    const user = await prisma.users.findUnique({
+      where: { email: session.email }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    if (!user?.license_key) {
+      return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    return NextResponse.json(result.data);
+    const lead = await prisma.sales_leads.findFirst({
+      where: {
+        id: params.leadId,
+        license_key: user.license_key
+      }
+    });
+
+    if (!lead) {
+      return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ lead });
   } catch (error) {
     console.error('Error fetching lead:', error);
     return NextResponse.json(
@@ -46,20 +55,25 @@ export async function PUT(
 
     const body = await request.json();
 
-    const result = await leadSkill.execute({
-      action: 'update_lead',
-      licenseKey: session.licenseKey,
+    const user = await prisma.users.findUnique({
+      where: { email: session.email }
+    });
+
+    if (!user?.license_key) {
+      return NextResponse.json({ error: 'No license found' }, { status: 403 });
+    }
+
+    const lead = await prisma.sales_leads.update({
+      where: {
+        id: params.leadId
+      },
       data: {
-        leadId: params.leadId,
-        updates: body
+        ...body,
+        updated_at: new Date()
       }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data);
+    return NextResponse.json({ lead });
   } catch (error) {
     console.error('Error updating lead:', error);
     return NextResponse.json(
@@ -79,17 +93,21 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await leadSkill.execute({
-      action: 'delete_lead',
-      licenseKey: session.licenseKey,
-      data: { leadId: params.leadId }
+    const user = await prisma.users.findUnique({
+      where: { email: session.email }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    if (!user?.license_key) {
+      return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    return NextResponse.json(result.data);
+    await prisma.sales_leads.delete({
+      where: {
+        id: params.leadId
+      }
+    });
+
+    return NextResponse.json({ message: 'Lead deleted successfully' });
   } catch (error) {
     console.error('Error deleting lead:', error);
     return NextResponse.json(

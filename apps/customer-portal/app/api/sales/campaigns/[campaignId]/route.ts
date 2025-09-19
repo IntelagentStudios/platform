@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
-import { SalesOutreachSkill } from '@/packages/skills-orchestrator/src/skills/impl/SalesOutreachSkill';
-
 const prisma = new PrismaClient();
-const salesSkill = new SalesOutreachSkill();
 
 export async function GET(
   request: NextRequest,

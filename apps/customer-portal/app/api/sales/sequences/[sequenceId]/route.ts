@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
-import { EmailSequenceSkill } from '@/packages/skills-orchestrator/src/skills/impl/EmailSequenceSkill';
 import { PrismaClient } from '@prisma/client';
 
-const sequenceSkill = new EmailSequenceSkill();
 const prisma = new PrismaClient();
 
 export async function GET(

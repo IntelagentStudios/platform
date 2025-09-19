@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import {
   Plus, Edit, Trash2, Copy, Eye, Code, Wand2, FileText,
   Mail, Calendar, User, Building, Tag, Sparkles, Save,
@@ -107,6 +107,7 @@ export default function TemplatesPage() {
     tags: [] as string[],
     variables: [] as string[]
   })
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchTemplates()

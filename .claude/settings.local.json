@@ -12,7 +12,8 @@
       "Bash(dir:*)",
       "Bash(findstr:*)",
       "Bash(npx:*)",
-      "Bash(tasklist)"
+      "Bash(tasklist)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

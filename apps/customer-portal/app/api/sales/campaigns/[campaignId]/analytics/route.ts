@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthFromCookies } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
-import { CampaignAnalyticsSkill } from '@/packages/skills-orchestrator/src/skills/impl/CampaignAnalyticsSkill';
-
 const prisma = new PrismaClient();
-const analyticsSkill = new CampaignAnalyticsSkill();
 
 export async function GET(
   request: NextRequest,
@@ -31,20 +28,21 @@ export async function GET(
       end: searchParams.get('endDate')
     };
 
-    const result = await analyticsSkill.execute({
-      action: reportType,
-      licenseKey: user.license_key,
-      data: {
-        campaignId: params.campaignId,
-        dateRange
-      }
-    });
+    // For now, return mock data
+    // TODO: Implement actual analytics logic
+    const analyticsData = {
+      campaignPerformance: {
+        sent: 1000,
+        opened: 420,
+        clicked: 87,
+        replied: 32,
+        converted: 5
+      },
+      timeSeriesData: [],
+      topPerformingEmails: []
+    };
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data);
+    return NextResponse.json(analyticsData);
   } catch (error) {
     console.error('Error fetching analytics:', error);
     return NextResponse.json(

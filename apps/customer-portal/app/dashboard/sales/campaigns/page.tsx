@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { toast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import {
   Plus, Play, Pause, Archive, Trash2, Edit, Users, Mail, Clock,
   Target, BarChart3, Settings, ChevronRight, Copy, Eye, Send,
@@ -71,6 +71,7 @@ export default function CampaignsPage() {
     target_audience: '',
     goal: ''
   })
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchCampaigns()
