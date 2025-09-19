@@ -50,17 +50,13 @@ export async function POST(
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    const result = await sequenceSkill.execute({
+    // Mock implementation - TODO: Replace with actual logic
+    return NextResponse.json({
+      success: true,
       action: skillAction,
-      licenseKey: user.license_key,
+      sequenceId: params.sequenceId,
       data
     });
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data);
   } catch (error) {
     console.error('Error performing sequence action:', error);
     return NextResponse.json(

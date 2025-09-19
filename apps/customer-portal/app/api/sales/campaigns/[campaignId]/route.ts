@@ -21,17 +21,25 @@ export async function GET(
       return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    const result = await salesSkill.execute({
-      action: 'get_campaign',
-      licenseKey: user.license_key,
-      data: { campaignId: params.campaignId }
+    const campaign = await prisma.sales_campaigns.findFirst({
+      where: {
+        id: params.campaignId,
+        license_key: user.license_key
+      },
+      include: {
+        leads: true,
+        activities: {
+          take: 10,
+          orderBy: { performed_at: 'desc' }
+        }
+      }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    if (!campaign) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
-    return NextResponse.json(result.data);
+    return NextResponse.json({ campaign });
   } catch (error) {
     console.error('Error fetching campaign:', error);
     return NextResponse.json(
@@ -60,20 +68,17 @@ export async function PUT(
       return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    const result = await salesSkill.execute({
-      action: 'update_campaign',
-      licenseKey: user.license_key,
+    const campaign = await prisma.sales_campaigns.update({
+      where: {
+        id: params.campaignId
+      },
       data: {
-        campaignId: params.campaignId,
-        updates: body
+        ...body,
+        updated_at: new Date()
       }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data);
+    return NextResponse.json({ campaign });
   } catch (error) {
     console.error('Error updating campaign:', error);
     return NextResponse.json(
@@ -101,17 +106,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'No license found' }, { status: 403 });
     }
 
-    const result = await salesSkill.execute({
-      action: 'delete_campaign',
-      licenseKey: user.license_key,
-      data: { campaignId: params.campaignId }
+    await prisma.sales_campaigns.delete({
+      where: {
+        id: params.campaignId
+      }
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result.data);
+    return NextResponse.json({ message: 'Campaign deleted successfully' });
   } catch (error) {
     console.error('Error deleting campaign:', error);
     return NextResponse.json(
