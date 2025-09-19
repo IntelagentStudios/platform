@@ -99,9 +99,9 @@ export default function DashboardPage() {
 
   // Get user's products from their profile
   // If products contains 'all', replace with actual product list
-  let userProducts = (user?.products && Array.isArray(user.products)) ? user.products : ['chatbot'];
+  let userProducts = (user?.products && Array.isArray(user.products)) ? user.products : ['chatbot', 'sales-outreach'];
   if (userProducts.includes('all')) {
-    userProducts = ['chatbot']; // Only chatbot is fully implemented
+    userProducts = ['chatbot', 'sales-outreach']; // Chatbot and Sales Outreach are implemented
   }
   
   // Show real data where available, otherwise show no data
@@ -114,7 +114,8 @@ export default function DashboardPage() {
 
   // Define only existing products
   const allProductsMap = {
-    'chatbot': { name: 'Chatbot', status: 'Active', icon: Zap }
+    'chatbot': { name: 'Chatbot', status: 'Active', icon: Zap },
+    'sales-outreach': { name: 'Sales Outreach', status: 'Active', icon: Users }
   };
   
   // Filter to only show user's products that actually exist
@@ -319,8 +320,8 @@ export default function DashboardPage() {
                             // Route to manage pages for configured products
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/dashboard';
-                            } else if (product.name === 'Sales Outreach Agent') {
-                              window.location.href = '/dashboard/sales-outreach';
+                            } else if (product.name === 'Sales Outreach') {
+                              window.location.href = '/dashboard/sales';
                             } else if (product.name === 'Onboarding Agent') {
                               window.location.href = '/products/onboarding-agent/manage';
                             }
@@ -328,8 +329,8 @@ export default function DashboardPage() {
                             // Route to setup pages
                             if (product.name === 'Chatbot') {
                               window.location.href = '/products/chatbot/configure';
-                            } else if (product.name === 'Sales Outreach Agent') {
-                              window.location.href = '/dashboard/products/customize?type=sales_outreach';
+                            } else if (product.name === 'Sales Outreach') {
+                              window.location.href = '/dashboard/sales/onboarding';
                             } else if (product.name === 'Onboarding Agent') {
                               window.location.href = '/products/onboarding-agent/setup';
                             }
