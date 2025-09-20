@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,7 +38,13 @@ import Link from 'next/link';
 
 export default function SalesDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    // Restore tab from localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('salesDashboardTab') || 'overview';
+    }
+    return 'overview';
+  });
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [stats, setStats] = useState({
@@ -60,6 +67,13 @@ export default function SalesDashboard() {
     const interval = setInterval(fetchDashboardData, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Save tab selection to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('salesDashboardTab', activeTab);
+    }
+  }, [activeTab]);
 
   const checkOnboarding = async () => {
     try {
@@ -160,88 +174,31 @@ export default function SalesDashboard() {
   );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Sales Outreach Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your campaigns, leads, and track performance
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/dashboard/sales/leads/import">
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import Leads
-            </Button>
-          </Link>
-          <Link href="/dashboard/sales/campaigns">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Campaign
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalLeads.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              +{stats.weeklyGrowth}% this week
+    <DashboardLayout>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Sales Outreach Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your campaigns, leads, and track performance
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Emails Sent</CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.emailsSent.toLocaleString()}</div>
-            <div className="flex gap-2 mt-1">
-              <Badge variant="secondary" className="text-xs">
-                {stats.openRate}% Open
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                {stats.clickRate}% Click
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeCampaigns}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.replyRate}% reply rate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.conversionRate}%</div>
-            <Progress value={stats.conversionRate} className="mt-2" />
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/dashboard/sales/leads/import">
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Import Leads
+              </Button>
+            </Link>
+            <Link href="/dashboard/sales/campaigns">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                New Campaign
+              </Button>
+            </Link>
+          </div>
+        </div>
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -518,6 +475,7 @@ export default function SalesDashboard() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
