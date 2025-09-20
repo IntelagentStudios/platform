@@ -36,6 +36,7 @@ export default function DashboardPage() {
       .then(data => {
         if (data.authenticated && data.user) {
           console.log(`[dashboard] Authenticated: ${data.user.email}, License: ${data.user.license_key}`);
+          console.log(`[dashboard] User products from API:`, data.user.products);
           setIsAuthenticated(true);
           setUser(data.user);
           
@@ -103,6 +104,7 @@ export default function DashboardPage() {
   if (userProducts.includes('all')) {
     userProducts = ['chatbot', 'sales-outreach']; // Chatbot and Sales Outreach are implemented
   }
+  console.log('[dashboard] Final userProducts:', userProducts);
   
   // Show real data where available, otherwise show no data
   const stats = [

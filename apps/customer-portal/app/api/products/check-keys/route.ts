@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { licenseKey } = authResult.user;
-  const userProducts = authResult.license?.products || [];
+  const userProducts = authResult.license?.products || ['chatbot', 'sales-outreach'];
   
   try {
     console.log(`[check-keys] Checking product keys for license: ${licenseKey}`);

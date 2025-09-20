@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         license_type: license?.is_pro ? 'pro_platform' : 'platform',
         site_key: license?.site_key || null,
         role: user!.role || 'customer',
-        products: license?.products || ['chatbot'],
+        products: license?.products || ['chatbot', 'sales-outreach'],
         plan: license?.is_pro ? 'pro' : 'starter',
         subscription_status: license?.status || 'active',
         next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       },
       license: {
         key: license?.key,
-        products: license?.products || [],
+        products: license?.products || ['chatbot', 'sales-outreach'],
         is_pro: license?.is_pro || false,
         site_key: license?.site_key,
         status: license?.status || 'active'
