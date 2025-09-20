@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-  Users, 
-  Package, 
-  TrendingUp, 
-  PoundSterling, 
-  Activity, 
-  Shield, 
+import {
+  Users,
+  Package,
+  TrendingUp,
+  PoundSterling,
+  Activity,
+  Shield,
   Server,
   AlertCircle,
   CheckCircle,
@@ -24,21 +24,32 @@ import {
   RefreshCw,
   Key,
   UserCheck,
-  Send
+  Send,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  UserCog,
+  TrendingDown,
+  Calendar,
+  Clock,
+  DollarSign
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-interface OverviewData {
+interface PlatformStats {
   licenses: {
     total: number;
     active: number;
     trial: number;
     expired: number;
+    growth: number;
   };
   users: {
     total: number;
     verified: number;
     unverified: number;
+    growth: number;
   };
   productKeys: {
     total: number;
@@ -47,7 +58,9 @@ interface OverviewData {
   };
   revenue: {
     monthly: number;
+    total: number;
     currency: string;
+    growth: number;
   };
   systemHealth: {
     activeInLast24h: number;
@@ -61,16 +74,25 @@ interface OverviewData {
     conversationId: string;
     type: string;
   }>;
-  recentUsers: Array<{
-    email: string;
-    created_at: Date;
-    email_verified: boolean;
-    license_key: string | null;
-  }>;
+}
+
+interface Customer {
+  license_key: string;
+  email: string;
+  customer_name: string | null;
+  status: string;
+  plan: string | null;
+  created_at: Date;
+  last_payment_date: Date | null;
+  total_pence: number;
+  products: string[];
+  user_count: number;
+  api_calls_24h: number;
 }
 
 export default function AdminDashboardPage() {
-  const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -78,6 +100,9 @@ export default function AdminDashboardPage() {
   const [aiMessage, setAiMessage] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [customerFilter, setCustomerFilter] = useState('');
+  const [currentView, setCurrentView] = useState<'overview' | 'customers'>('overview');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -86,7 +111,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (isAuthorized) {
-      fetchOverviewData();
+      fetchPlatformData();
     }
   }, [isAuthorized]);
 
@@ -103,15 +128,27 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const fetchOverviewData = async () => {
+  const fetchPlatformData = async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch('/api/admin/overview');
-      const data = await response.json();
-      setOverviewData(data.overview);
+      const [statsResponse, customersResponse] = await Promise.all([
+        fetch('/api/admin/platform-stats'),
+        fetch('/api/admin/customers')
+      ]);
+
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        setPlatformStats(statsData.stats);
+      }
+
+      if (customersResponse.ok) {
+        const customersData = await customersResponse.json();
+        setCustomers(customersData.customers);
+      }
+
       setLastRefresh(new Date());
     } catch (error) {
-      console.error('Failed to fetch overview data:', error);
+      console.error('Failed to fetch platform data:', error);
     } finally {
       setIsRefreshing(false);
     }
@@ -134,19 +171,22 @@ export default function AdminDashboardPage() {
         },
         body: JSON.stringify({
           query: message,
-          customKnowledge: `You are an AI assistant for the Intelagent Platform master admin dashboard. 
+          customKnowledge: `You are an AI assistant for the Intelagent Platform master admin dashboard.
             Current platform statistics:
-            - Total licenses: ${overviewData?.licenses.total || 0}
-            - Active licenses: ${overviewData?.licenses.active || 0}
-            - Total users: ${overviewData?.users.total || 0}
-            - System uptime: ${overviewData?.systemHealth.uptime || 0}%
-            
+            - Total licenses: ${platformStats?.licenses.total || 0}
+            - Active licenses: ${platformStats?.licenses.active || 0}
+            - Total users: ${platformStats?.users.total || 0}
+            - Total customers: ${customers.length || 0}
+            - Monthly revenue: £${platformStats?.revenue.monthly || 0}
+            - System uptime: ${platformStats?.systemHealth.uptime || 0}%
+
             You are helping the platform administrator manage and monitor the entire system.
             Provide insights, analytics, and helpful suggestions for platform management.`,
           stats: {
-            totalLicenses: overviewData?.licenses.total || 0,
-            activeLicenses: overviewData?.licenses.active || 0,
-            totalUsers: overviewData?.users.total || 0
+            totalLicenses: platformStats?.licenses.total || 0,
+            activeLicenses: platformStats?.licenses.active || 0,
+            totalUsers: platformStats?.users.total || 0,
+            totalCustomers: customers.length || 0
           }
         })
       });
@@ -188,7 +228,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (!overviewData) {
+  if (!platformStats) {
     return (
       <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'rgb(229, 227, 220)' }}>
         <div style={{ color: 'rgb(48, 54, 54)' }}>Loading dashboard...</div>
@@ -196,16 +236,22 @@ export default function AdminDashboardPage() {
     );
   }
 
+  const filteredCustomers = customers.filter(customer =>
+    customer.email.toLowerCase().includes(customerFilter.toLowerCase()) ||
+    customer.customer_name?.toLowerCase().includes(customerFilter.toLowerCase()) ||
+    customer.license_key.toLowerCase().includes(customerFilter.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
-            Platform Overview
+            Master Admin Dashboard
           </h2>
           <p className="mt-1" style={{ color: 'rgba(48, 54, 54, 0.8)' }}>
-            Monitor and manage your entire platform
+            Comprehensive platform management and customer oversight
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -213,10 +259,10 @@ export default function AdminDashboardPage() {
             Last updated: {lastRefresh.toLocaleTimeString()}
           </div>
           <button
-            onClick={fetchOverviewData}
+            onClick={fetchPlatformData}
             disabled={isRefreshing}
             className="px-4 py-2 rounded-lg border transition-colors hover:bg-white"
-            style={{ 
+            style={{
               backgroundColor: 'transparent',
               borderColor: 'rgb(48, 54, 54)',
               color: 'rgb(48, 54, 54)'
@@ -228,10 +274,10 @@ export default function AdminDashboardPage() {
               <><RefreshCw className="inline h-4 w-4 mr-2" /> Refresh</>
             )}
           </button>
-          <button 
+          <button
             onClick={() => setShowAI(!showAI)}
             className="px-4 py-2 rounded-lg transition-colors hover:opacity-90"
-            style={{ 
+            style={{
               backgroundColor: 'rgb(48, 54, 54)',
               color: 'rgb(229, 227, 220)'
             }}
@@ -240,6 +286,32 @@ export default function AdminDashboardPage() {
             AI Assistant
           </button>
         </div>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        <button
+          onClick={() => setCurrentView('overview')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            currentView === 'overview'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <BarChart3 className="inline h-4 w-4 mr-2" />
+          Platform Overview
+        </button>
+        <button
+          onClick={() => setCurrentView('customers')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            currentView === 'customers'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <Users className="inline h-4 w-4 mr-2" />
+          Customer Management
+        </button>
       </div>
 
       {/* AI Assistant Interface */}
@@ -347,239 +419,448 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Monthly Revenue</span>
-            <PoundSterling className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
-          </div>
-          <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
-            {overviewData.revenue.monthly === 0 ? (
-              <span style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No revenue yet</span>
-            ) : (
-              `£${overviewData.revenue.monthly.toLocaleString()}`
-            )}
-          </div>
-          <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            {overviewData.licenses.active > 0 
-              ? `${overviewData.licenses.active} active licenses`
-              : 'Start with your first license'}
-          </p>
-        </div>
-
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Licenses</span>
-            <Key className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
-          </div>
-          <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
-            {overviewData.licenses.total}
-          </div>
-          <div className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            <span style={{ color: '#4CAF50' }}>{overviewData.licenses.active} active</span>,{' '}
-            <span style={{ color: '#2196F3' }}>{overviewData.licenses.trial} trial</span>,{' '}
-            <span style={{ color: 'rgba(48, 54, 54, 0.4)' }}>{overviewData.licenses.expired} expired</span>
-          </div>
-        </div>
-
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Users</span>
-            <UserCheck className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
-          </div>
-          <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
-            {overviewData.users.total}
-          </div>
-          <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            {overviewData.users.verified} verified, {overviewData.users.unverified} pending
-          </p>
-        </div>
-
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>System Health</span>
-            <Server className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
-          </div>
-          <div className="text-2xl font-bold flex items-center gap-2" style={{ color: 'rgb(48, 54, 54)' }}>
-            <CheckCircle className="h-5 w-5" style={{ color: '#4CAF50' }} />
-            Operational
-          </div>
-          <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            {overviewData.systemHealth.uptime}% uptime • {overviewData.systemHealth.responseTime}ms avg
-          </p>
-        </div>
-      </div>
-
-      {/* Activity and Product Usage */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Activity */}
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
-            Recent Activity
-          </h3>
-          <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            Last {overviewData.recentActivity?.length || 0} platform events
-          </p>
-          <div className="space-y-3">
-            {overviewData.recentActivity?.slice(0, 5).map((activity, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
-                  <MessageSquare className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
-                    Chatbot Interaction
-                  </p>
-                  <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-                    Conversation: {activity.conversationId?.slice(0, 8) || 'N/A'}...
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.4)' }}>
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </p>
-                </div>
+      {/* Main Content */}
+      {currentView === 'overview' && (
+        <>
+          {/* Key Metrics */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Monthly Revenue</span>
+                <PoundSterling className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
               </div>
-            ))}
-            {(!overviewData.recentActivity || overviewData.recentActivity.length === 0) && (
-              <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent activity</p>
-            )}
-          </div>
-        </div>
+              <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                {platformStats.revenue.monthly === 0 ? (
+                  <span style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No revenue yet</span>
+                ) : (
+                  `£${platformStats.revenue.monthly.toLocaleString()}`
+                )}
+              </div>
+              <div className="flex items-center mt-1">
+                {platformStats.revenue.growth >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                )}
+                <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  {platformStats.revenue.growth >= 0 ? '+' : ''}{platformStats.revenue.growth}% vs last month
+                </p>
+              </div>
+            </div>
 
-        {/* Product Distribution */}
-        <div className="rounded-lg p-6 border" style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          borderColor: 'rgba(48, 54, 54, 0.15)'
-        }}>
-          <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
-            Product Distribution
-          </h3>
-          <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-            Active products across {overviewData.productKeys.total} keys
-          </p>
-          <div className="space-y-3">
-            {overviewData.productKeys?.distribution?.map((product, index) => {
-              const percentage = overviewData.productKeys.total > 0 
-                ? (product._count / overviewData.productKeys.total) * 100 
-                : 0;
-              return (
-                <div key={index} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="capitalize" style={{ color: 'rgb(48, 54, 54)' }}>
-                      {product.product}
-                    </span>
-                    <span style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-                      {product._count} keys
-                    </span>
-                  </div>
-                  <div className="w-full rounded-full h-2" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
-                    <div 
-                      className="h-2 rounded-full transition-all" 
-                      style={{ 
-                        width: `${percentage}%`,
-                        backgroundColor: 'rgb(48, 54, 54)'
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-            {(!overviewData.productKeys?.distribution || overviewData.productKeys.distribution.length === 0) && (
-              <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
-                No product keys issued yet
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Customers</span>
+                <Users className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                {customers.length}
+              </div>
+              <div className="flex items-center mt-1">
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  {customers.filter(c => c.status === 'active').length} active accounts
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Licenses</span>
+                <Key className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                {platformStats.licenses.total}
+              </div>
+              <div className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                <span style={{ color: '#4CAF50' }}>{platformStats.licenses.active} active</span>,{' '}
+                <span style={{ color: '#2196F3' }}>{platformStats.licenses.trial} trial</span>,{' '}
+                <span style={{ color: 'rgba(48, 54, 54, 0.4)' }}>{platformStats.licenses.expired} expired</span>
+              </div>
+            </div>
+
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>Total Users</span>
+                <UserCheck className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                {platformStats.users.total}
+              </div>
+              <div className="flex items-center mt-1">
+                {platformStats.users.growth >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                )}
+                <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                  {platformStats.users.verified} verified, {platformStats.users.unverified} pending
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>System Health</span>
+                <Server className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+              </div>
+              <div className="text-2xl font-bold flex items-center gap-2" style={{ color: 'rgb(48, 54, 54)' }}>
+                <CheckCircle className="h-5 w-5" style={{ color: '#4CAF50' }} />
+                Operational
+              </div>
+              <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                {platformStats.systemHealth.uptime}% uptime • {platformStats.systemHealth.responseTime}ms avg
               </p>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Recent Users */}
-      <div className="rounded-lg p-6 border" style={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderColor: 'rgba(48, 54, 54, 0.15)'
-      }}>
-        <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
-          Recent Platform Users
-        </h3>
-        <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
-          Active business users (excluding admin/test)
-        </p>
-        <div className="space-y-2">
-          {overviewData.recentUsers?.map((user, index) => {
-            const createdDate = new Date(user.created_at);
-            
-            // Determine user status based on license
-            const hasLicense = !!user.license_key;
-            const isBusinessUser = user.email?.includes('intelagentstudios.com') || 
-                                   user.email?.includes('steppedin.uk');
-            
-            // Status logic based on license validation: 
-            // - If has license: "Licensed" (green) - validated user
-            // - If business user without individual license: "Business" (blue)
-            // - Otherwise: "Trial" (orange) - evaluating the platform
-            const status = hasLicense ? 'Licensed' : 
-                          isBusinessUser ? 'Business' : 
-                          'Trial';
-            const statusColor = hasLicense ? '#4CAF50' : 
-                               isBusinessUser ? '#2196F3' : 
-                               '#FF9800';
-            
-            return (
-              <div key={index} className="flex items-center justify-between py-3 border-b last:border-0" 
-                   style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}>
-                <div className="flex-1">
-                  <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
-                    {user.email}
+          {/* Activity and Product Usage */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Recent Activity */}
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                Recent Activity
+              </h3>
+              <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                Last {platformStats.recentActivity?.length || 0} platform events
+              </p>
+              <div className="space-y-3">
+                {platformStats.recentActivity?.slice(0, 5).map((activity, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
+                      <MessageSquare className="h-4 w-4" style={{ color: 'rgb(48, 54, 54)' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                        Chatbot Interaction
+                      </p>
+                      <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                        Conversation: {activity.conversationId?.slice(0, 8) || 'N/A'}...
+                      </p>
+                      <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.4)' }}>
+                        {new Date(activity.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {(!platformStats.recentActivity || platformStats.recentActivity.length === 0) && (
+                  <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent activity</p>
+                )}
+              </div>
+            </div>
+
+            {/* Product Distribution */}
+            <div className="rounded-lg p-6 border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              borderColor: 'rgba(48, 54, 54, 0.15)'
+            }}>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: 'rgb(48, 54, 54)' }}>
+                Product Distribution
+              </h3>
+              <p className="text-sm mb-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                Active products across {platformStats.productKeys.total} keys
+              </p>
+              <div className="space-y-3">
+                {platformStats.productKeys?.distribution?.map((product, index) => {
+                  const percentage = platformStats.productKeys.total > 0
+                    ? (product._count / platformStats.productKeys.total) * 100
+                    : 0;
+                  return (
+                    <div key={index} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="capitalize" style={{ color: 'rgb(48, 54, 54)' }}>
+                          {product.product}
+                        </span>
+                        <span style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                          {product._count} keys
+                        </span>
+                      </div>
+                      <div className="w-full rounded-full h-2" style={{ backgroundColor: 'rgba(48, 54, 54, 0.1)' }}>
+                        <div
+                          className="h-2 rounded-full transition-all"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: 'rgb(48, 54, 54)'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {(!platformStats.productKeys?.distribution || platformStats.productKeys.distribution.length === 0) && (
+                  <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
+                    No product keys issued yet
                   </p>
-                  <p className="text-xs mt-1" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
-                    Joined {createdDate.toLocaleDateString('en-GB', { 
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                    {user.license_key && (
-                      <span className="ml-2 px-2 py-0.5 rounded text-xs" 
-                            style={{ 
-                              backgroundColor: 'rgba(48, 54, 54, 0.1)',
-                              color: 'rgba(48, 54, 54, 0.7)'
-                            }}>
-                        Licensed
-                      </span>
-                    )}
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Customer Management View */}
+      {currentView === 'customers' && (
+        <>
+          {/* Customer Search and Filters */}
+          <div className="rounded-lg p-6 border" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            borderColor: 'rgba(48, 54, 54, 0.15)'
+          }}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: 'rgb(48, 54, 54)' }}>
+                Customer Management
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'rgba(48, 54, 54, 0.5)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search customers..."
+                    value={customerFilter}
+                    onChange={(e) => setCustomerFilter(e.target.value)}
+                    className="pl-10 pr-4 py-2 border rounded-lg text-sm"
+                    style={{
+                      borderColor: 'rgba(48, 54, 54, 0.3)',
+                      backgroundColor: 'white'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Customer Stats Summary */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                  {customers.filter(c => c.status === 'active').length}
+                </div>
+                <div className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>Active</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                  {customers.filter(c => c.status === 'trial').length}
+                </div>
+                <div className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>Trial</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                  £{customers.reduce((sum, c) => sum + (c.total_pence || 0), 0) / 100}
+                </div>
+                <div className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>Total Revenue</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold" style={{ color: 'rgb(48, 54, 54)' }}>
+                  {customers.reduce((sum, c) => sum + (c.api_calls_24h || 0), 0)}
+                </div>
+                <div className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>API Calls (24h)</div>
+              </div>
+            </div>
+
+            {/* Customer List */}
+            <div className="space-y-3">
+              {filteredCustomers.slice(0, 10).map((customer, index) => (
+                <div
+                  key={customer.license_key}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  style={{ borderColor: 'rgba(48, 54, 54, 0.1)' }}
+                  onClick={() => setSelectedCustomer(customer)}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                          {customer.customer_name || customer.email}
+                        </p>
+                        <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                          {customer.email} • {customer.license_key}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                        £{(customer.total_pence || 0) / 100}
+                      </p>
+                      <p className="text-xs" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                        {customer.plan || 'No Plan'}
+                      </p>
+                    </div>
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: customer.status === 'active' ? '#4CAF5020' :
+                                       customer.status === 'trial' ? '#2196F320' :
+                                       '#FF980020',
+                        color: customer.status === 'active' ? '#4CAF50' :
+                              customer.status === 'trial' ? '#2196F3' :
+                              '#FF9800'
+                      }}
+                    >
+                      {customer.status}
+                    </span>
+                    <button
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCustomer(customer);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" style={{ color: 'rgba(48, 54, 54, 0.6)' }} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {filteredCustomers.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>
+                    No customers found matching your search.
                   </p>
                 </div>
-                <span 
-                  className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                  style={{ 
-                    backgroundColor: `${statusColor}20`,
-                    color: statusColor
-                  }}
-                >
-                  {status}
-                </span>
+              )}
+
+              {filteredCustomers.length > 10 && (
+                <div className="text-center py-4">
+                  <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.6)' }}>
+                    Showing 10 of {filteredCustomers.length} customers. Use search to find specific customers.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Customer Detail Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold" style={{ color: 'rgb(48, 54, 54)' }}>
+                Customer Details
+              </h3>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Customer Name
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>
+                    {selectedCustomer.customer_name || 'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Email
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    License Key
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.license_key}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Status
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.status}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Plan
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.plan || 'No Plan'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Total Revenue
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>£{(selectedCustomer.total_pence || 0) / 100}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    User Count
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.user_count || 0}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    API Calls (24h)
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>{selectedCustomer.api_calls_24h || 0}</p>
+                </div>
               </div>
-            );
-          })}
-          {(!overviewData.recentUsers || overviewData.recentUsers.length === 0) && (
-            <p className="text-sm" style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No recent signups</p>
-          )}
+
+              <div>
+                <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                  Products
+                </label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedCustomer.products?.map((product, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-gray-100 rounded text-xs"
+                      style={{ color: 'rgb(48, 54, 54)' }}
+                    >
+                      {product}
+                    </span>
+                  )) || <span style={{ color: 'rgba(48, 54, 54, 0.5)' }}>No products</span>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Created At
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>
+                    {new Date(selectedCustomer.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium" style={{ color: 'rgba(48, 54, 54, 0.7)' }}>
+                    Last Payment
+                  </label>
+                  <p style={{ color: 'rgb(48, 54, 54)' }}>
+                    {selectedCustomer.last_payment_date
+                      ? new Date(selectedCustomer.last_payment_date).toLocaleDateString()
+                      : 'No payments'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     window.location.href = '/login';
   };
 
-  const navItems = [
+  const baseNavItems = [
     { id: 'dashboard', label: 'Overview', icon: Home, path: '/dashboard' },
     { id: 'platform', label: 'Platform', icon: Cpu, path: '/platform' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
@@ -63,6 +63,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' }
   ];
+
+  // Add admin portal for master admins
+  const navItems = user?.role === 'master_admin'
+    ? [...baseNavItems, { id: 'admin', label: 'Admin', icon: Shield, path: '/admin', badge: 'Master' }]
+    : baseNavItems;
 
   const navigate = (path: string) => {
     router.push(path);
@@ -139,7 +144,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   }}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {(!sidebarCollapsed || isHovering) && <span>{item.label}</span>}
+                  {(!sidebarCollapsed || isHovering) && (
+                    <div className="flex items-center justify-between flex-1">
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span
+                          className="px-2 py-0.5 text-xs rounded-full"
+                          style={{
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            color: '#4CAF50'
+                          }}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </button>
               </li>
             ))}
