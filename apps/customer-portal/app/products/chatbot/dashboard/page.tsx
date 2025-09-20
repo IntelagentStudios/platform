@@ -641,6 +641,19 @@ function ChatbotDashboardContent() {
               </div>
             </button>
             <button
+              onClick={() => setActiveTab('analytics')}
+              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
+              style={{
+                borderColor: activeTab === 'analytics' ? 'rgb(169, 189, 203)' : 'transparent',
+                color: activeTab === 'analytics' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </div>
+            </button>
+            <button
               onClick={() => setActiveTab('integration')}
               className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
               style={{
@@ -674,7 +687,11 @@ function ChatbotDashboardContent() {
           <div className="space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div
+                onClick={() => setActiveTab('analytics')}
+                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
+                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Conversations</p>
@@ -685,8 +702,12 @@ function ChatbotDashboardContent() {
                   <MessageSquare className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
-              
-              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+
+              <div
+                onClick={() => setActiveTab('analytics')}
+                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
+                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today</p>
@@ -697,8 +718,12 @@ function ChatbotDashboardContent() {
                   <Clock className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
-              
-              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+
+              <div
+                onClick={() => setActiveTab('analytics')}
+                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
+                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>This Week</p>
@@ -709,8 +734,12 @@ function ChatbotDashboardContent() {
                   <TrendingUp className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
-              
-              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+
+              <div
+                onClick={() => setActiveTab('analytics')}
+                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
+                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages</p>
@@ -1423,6 +1452,241 @@ function ChatbotDashboardContent() {
           </div>
         )}
 
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* Analytics Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Messages</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.totalMessages || 0}
+                    </p>
+                  </div>
+                  <MessageSquare className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Unique Sessions</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.uniqueSessions || 0}
+                    </p>
+                  </div>
+                  <Users className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>This Month</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.monthConversations || 0}
+                    </p>
+                  </div>
+                  <Calendar className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Active Domains</p>
+                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.domains?.length || 0}
+                    </p>
+                  </div>
+                  <Globe className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Conversation Trends Chart */}
+            <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                Conversation Trends (Last 7 Days)
+              </h3>
+              <div className="grid grid-cols-7 gap-2 h-48">
+                {Array.from({ length: 7 }, (_, i) => {
+                  const date = new Date();
+                  date.setDate(date.getDate() - (6 - i));
+                  const dayConversations = conversations.filter(conv => {
+                    const convDate = new Date(conv.first_message_at);
+                    return convDate.toDateString() === date.toDateString();
+                  }).length;
+                  const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
+                    const checkDate = new Date();
+                    checkDate.setDate(checkDate.getDate() - (6 - j));
+                    return conversations.filter(conv => {
+                      const convDate = new Date(conv.first_message_at);
+                      return convDate.toDateString() === checkDate.toDateString();
+                    }).length;
+                  })) || 1;
+                  const height = Math.max((dayConversations / maxHeight) * 100, 5);
+
+                  return (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className="flex-1 flex items-end w-full">
+                        <div
+                          className="w-full rounded-t transition-all hover:opacity-80"
+                          style={{
+                            height: `${height}%`,
+                            backgroundColor: 'rgb(169, 189, 203)',
+                            minHeight: '8px'
+                          }}
+                          title={`${date.toLocaleDateString()}: ${dayConversations} conversations`}
+                        />
+                      </div>
+                      <div className="text-xs mt-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        {dayConversations}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Message Volume and Response Time Analysis */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Message Volume by Time */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Message Volume by Hour
+                </h3>
+                <div className="space-y-2">
+                  {Array.from({ length: 24 }, (_, hour) => {
+                    const hourMessages = conversations.reduce((count, conv) => {
+                      return count + conv.messages.filter(msg => {
+                        const msgDate = new Date(msg.timestamp);
+                        return msgDate.getHours() === hour;
+                      }).length;
+                    }, 0);
+                    const maxMessages = Math.max(...Array.from({ length: 24 }, (_, h) => {
+                      return conversations.reduce((count, conv) => {
+                        return count + conv.messages.filter(msg => {
+                          const msgDate = new Date(msg.timestamp);
+                          return msgDate.getHours() === h;
+                        }).length;
+                      }, 0);
+                    })) || 1;
+                    const width = (hourMessages / maxMessages) * 100;
+
+                    return (
+                      <div key={hour} className="flex items-center">
+                        <div className="w-12 text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
+                          {hour.toString().padStart(2, '0')}:00
+                        </div>
+                        <div className="flex-1 mx-2 bg-gray-700 rounded h-3">
+                          <div
+                            className="h-full rounded transition-all"
+                            style={{
+                              width: `${Math.max(width, 1)}%`,
+                              backgroundColor: 'rgb(169, 189, 203)'
+                            }}
+                          />
+                        </div>
+                        <div className="w-8 text-xs text-right" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                          {hourMessages}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Top Domains */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Top Domains by Conversations
+                </h3>
+                <div className="space-y-3">
+                  {stats?.domains?.slice(0, 10).map((domain, index) => {
+                    const domainConversations = conversations.filter(conv => conv.domain === domain).length;
+                    const percentage = stats.totalConversations > 0 ?
+                      Math.round((domainConversations / stats.totalConversations) * 100) : 0;
+
+                    return (
+                      <div key={domain} className="flex items-center">
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm truncate" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {domain || 'Unknown'}
+                            </span>
+                            <span className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              {domainConversations} ({percentage}%)
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-2">
+                            <div
+                              className="h-2 rounded-full transition-all"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }) || []}
+                  {(!stats?.domains || stats.domains.length === 0) && (
+                    <div className="text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      No domain data available
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Conversation Details Table */}
+            <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Recent Analytics Data
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.avgMessagesPerConversation || 0}
+                    </div>
+                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      Avg Messages per Conversation
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {conversations.length > 0 ?
+                        Math.round((stats?.todayConversations || 0) / Math.max(stats?.totalConversations || 1, 1) * 100) : 0}%
+                    </div>
+                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      Today's Activity
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {conversations.length > 0 ?
+                        Math.round((stats?.weekConversations || 0) / Math.max(stats?.totalConversations || 1, 1) * 100) : 0}%
+                    </div>
+                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                      This Week's Activity
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Integration Tab */}
         {activeTab === 'integration' && (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -1501,39 +1765,6 @@ function ChatbotDashboardContent() {
                     </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Alternative: Legacy Widget (without theming)
-                    </label>
-                    <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar" 
-                           style={{ 
-                             backgroundColor: 'rgba(48, 54, 54, 0.7)', 
-                             color: 'rgb(229, 227, 220)',
-                             border: '1px solid rgba(169, 189, 203, 0.2)',
-                             whiteSpace: 'nowrap',
-                             overflowX: 'auto'
-                           }}>
-{`<!-- Alternative: Direct API endpoint (uses dashboard server) -->
-<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`}
-                      </pre>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`<script src="https://dashboard.intelagentstudios.com/api/widget/dynamic?key=${productKey}"></script>`);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        }}
-                        className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
-                        style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                        title="Copy to clipboard"
-                      >
-                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
                   
                   {/* Integration Help Section */}
                   <div>
