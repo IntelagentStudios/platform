@@ -1,28 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { validateAuth } from '@/lib/auth-validator';
 
 export const dynamic = 'force-dynamic';
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin access
-    const cookieStore = cookies();
-    const adminToken = cookieStore.get('admin_token');
+    // Verify admin access using standard auth
+    const authResult = await validateAuth(request);
 
-    if (!adminToken) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    try {
-      const decoded = jwt.verify(adminToken.value, JWT_SECRET) as any;
-      if (!decoded.isAdmin) {
-        return NextResponse.json({ error: 'Not an admin' }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // Check for master admin role or specific master license key
+    const isMasterAdmin = authResult.user.role === 'master_admin' ||
+                          authResult.user.licenseKey === 'INTL-AGNT-BOSS-MODE';
+
+    if (!isMasterAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     // Get query parameters for filtering and pagination
@@ -159,21 +155,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify admin access
-    const cookieStore = cookies();
-    const adminToken = cookieStore.get('admin_token');
+    // Verify admin access using standard auth
+    const authResult = await validateAuth(request);
 
-    if (!adminToken) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    try {
-      const decoded = jwt.verify(adminToken.value, JWT_SECRET) as any;
-      if (!decoded.isAdmin) {
-        return NextResponse.json({ error: 'Not an admin' }, { status: 403 });
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // Check for master admin role or specific master license key
+    const isMasterAdmin = authResult.user.role === 'master_admin' ||
+                          authResult.user.licenseKey === 'INTL-AGNT-BOSS-MODE';
+
+    if (!isMasterAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const body = await request.json();
