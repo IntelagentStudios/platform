@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [productConfigs, setProductConfigs] = useState<any>({});
   const [userTier, setUserTier] = useState<string>('starter');
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
 
   useEffect(() => {
     console.log('[dashboard] Checking authentication...');
@@ -72,6 +73,18 @@ export default function DashboardPage() {
               console.error('[dashboard] Failed to fetch product configurations:', err);
               setProductConfigs({});
             });
+
+          // Fetch dashboard stats
+          console.log('[dashboard] Fetching dashboard stats...');
+          fetch('/api/dashboard/stats', { credentials: 'include' })
+            .then(res => res.json())
+            .then(statsData => {
+              console.log('[dashboard] Dashboard stats:', statsData);
+              setDashboardStats(statsData);
+            })
+            .catch(err => {
+              console.error('[dashboard] Failed to fetch dashboard stats:', err);
+            });
         } else {
           console.log('[dashboard] Not authenticated, redirecting to login');
           setIsAuthenticated(false);
@@ -106,12 +119,32 @@ export default function DashboardPage() {
   }
   console.log('[dashboard] Final userProducts:', userProducts);
   
-  // Show real data where available, otherwise show no data
+  // Show real data from API where available
   const stats = [
-    { label: 'Total Revenue', value: '-', change: 'No data', icon: DollarSign },
-    { label: 'Active Users', value: '-', change: 'No data', icon: Users },
-    { label: 'API Calls', value: '-', change: 'No data', icon: Activity },
-    { label: 'Products', value: userProducts.length.toString(), change: 'Active', icon: Package }
+    {
+      label: 'Total Revenue',
+      value: dashboardStats?.revenue ? `${dashboardStats.currency === 'GBP' ? '£' : '$'}${dashboardStats.revenue}` : '-',
+      change: dashboardStats?.revenue > 0 ? 'Active' : 'No data',
+      icon: DollarSign
+    },
+    {
+      label: 'Active Users',
+      value: dashboardStats?.uniqueUsers?.toString() || '-',
+      change: dashboardStats?.growthRate ? `+${dashboardStats.growthRate}%` : 'No data',
+      icon: Users
+    },
+    {
+      label: 'API Calls',
+      value: dashboardStats?.apiCalls ? dashboardStats.apiCalls.toLocaleString() : '-',
+      change: dashboardStats?.dataProcessed ? `${dashboardStats.dataProcessed} MB` : 'No data',
+      icon: Activity
+    },
+    {
+      label: 'Products',
+      value: userProducts.length.toString(),
+      change: 'Active',
+      icon: Package
+    }
   ];
 
   // Define only existing products
