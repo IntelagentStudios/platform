@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAuth } from '@/lib/auth-validator';
 import { licenseCache } from '@/lib/license-cache';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,29 @@ export async function GET(request: NextRequest) {
     }
     
     const { user, license } = authResult;
-    
+
+    // Get all actual product keys for this license
+    let actualProducts = license?.products || ['chatbot'];
+    if (user?.licenseKey) {
+      try {
+        const productKeys = await prisma.product_keys.findMany({
+          where: {
+            license_key: user.licenseKey,
+            status: 'active'
+          }
+        });
+
+        // Merge license products with actual product keys
+        const productSet = new Set([...actualProducts]);
+        productKeys.forEach(pk => productSet.add(pk.product));
+        actualProducts = Array.from(productSet);
+
+        console.log(`[auth/me] License products: ${license?.products}, Actual products: ${actualProducts}`);
+      } catch (error) {
+        console.error('Error fetching product keys:', error);
+      }
+    }
+
     // Get additional cached data if available
     let cachedStats = null;
     if (user?.licenseKey) {
@@ -57,7 +80,7 @@ export async function GET(request: NextRequest) {
         'user_stats'
       );
     }
-    
+
     // Build the response with all required fields
     const userData = {
       authenticated: true,
@@ -69,7 +92,7 @@ export async function GET(request: NextRequest) {
         license_type: license?.is_pro ? 'pro_platform' : 'platform',
         site_key: license?.site_key || null,
         role: user!.role || 'customer',
-        products: license?.products || ['chatbot'],
+        products: actualProducts,
         plan: license?.is_pro ? 'pro' : 'starter',
         subscription_status: license?.status || 'active',
         next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
@@ -78,7 +101,7 @@ export async function GET(request: NextRequest) {
       },
       license: {
         key: license?.key,
-        products: license?.products || ['chatbot'],
+        products: actualProducts,
         is_pro: license?.is_pro || false,
         site_key: license?.site_key,
         status: license?.status || 'active'

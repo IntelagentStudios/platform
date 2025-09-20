@@ -46,23 +46,36 @@ export async function GET(request: NextRequest) {
 
   const { licenseKey } = authResult.user;
   const userProducts = authResult.license?.products || [];
-  
+
   try {
     console.log(`[check-keys] Checking product keys for license: ${licenseKey}`);
-    console.log(`[check-keys] User products: ${JSON.stringify(userProducts)}`);
-    
+    console.log(`[check-keys] User products from license: ${JSON.stringify(userProducts)}`);
+
+    // Get ALL product keys for this license to find what's actually configured
+    const allProductKeys = await prisma.product_keys.findMany({
+      where: {
+        license_key: licenseKey,
+        status: 'active'
+      }
+    });
+
+    console.log(`[check-keys] Found ${allProductKeys.length} active product keys`);
+
+    // Build list of all products (from license AND from actual product keys)
+    const allProductIds = new Set([...userProducts]);
+    allProductKeys.forEach(pk => allProductIds.add(pk.product));
+
     // Check each product for active product keys AND configuration
     const productStatus: Record<string, any> = {};
-    
-    for (const product of userProducts) {
+
+    for (const product of allProductIds) {
       const productKey = await getProductKey(licenseKey, product as ProductType);
-      
+
       // Product key existence means it's configured
-      // (Setup Agent creates the key when configuration is complete)
       const hasKey = !!productKey;
-      
+
       console.log(`[check-keys] Product: ${product}, Has key: ${hasKey}, Key: ${productKey ? productKey.substring(0, 8) + '...' : 'none'}`);
-      
+
       productStatus[product] = {
         configured: hasKey,  // Has key = configured
         hasProductKey: hasKey,
@@ -75,11 +88,14 @@ export async function GET(request: NextRequest) {
     // Legacy site_key support removed - all accounts should use product_keys table
     
     console.log(`[check-keys] Returning configurations:`, productStatus);
-    
+
+    // Return all products found (from license + actual product keys)
+    const allProducts = Array.from(allProductIds);
+
     return NextResponse.json({
       success: true,
       configurations: productStatus,
-      userProducts
+      userProducts: allProducts  // Return all products found
     });
   } catch (error) {
     console.error('Error checking product keys:', error);
