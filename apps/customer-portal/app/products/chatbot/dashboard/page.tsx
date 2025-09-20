@@ -654,19 +654,6 @@ function ChatbotDashboardContent() {
               </div>
             </button>
             <button
-              onClick={() => setActiveTab('integration')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'integration' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'integration' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <Code className="w-4 h-4" />
-                Integration
-              </div>
-            </button>
-            <button
               onClick={() => setActiveTab('settings')}
               className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
               style={{
@@ -676,7 +663,7 @@ function ChatbotDashboardContent() {
             >
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
-                Settings
+                Customize
               </div>
             </button>
           </nav>
@@ -804,6 +791,103 @@ function ChatbotDashboardContent() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Embed Your Chatbot Section */}
+            <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Embed Your Chatbot
+                  </h2>
+                  <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                    Copy and paste this code into your website to add the chatbot widget
+                  </p>
+                </div>
+
+                {productKey ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Your Product Key
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={productKey}
+                          readOnly
+                          className="flex-1 px-4 py-2 rounded-lg font-mono text-sm"
+                          style={{
+                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                            border: '1px solid rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        />
+                        <button
+                          onClick={copyToClipboard}
+                          className="px-4 py-2 rounded-lg hover:opacity-80 transition flex items-center"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        >
+                          {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Integration Code (Recommended)
+                      </label>
+                      <div className="relative">
+                        <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar"
+                             style={{
+                               backgroundColor: 'rgba(48, 54, 54, 0.7)',
+                               color: 'rgb(229, 227, 220)',
+                               border: '1px solid rgba(169, 189, 203, 0.2)',
+                               whiteSpace: 'nowrap',
+                               overflowX: 'auto'
+                             }}>
+{`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`}
+                        </pre>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                          title="Copy to clipboard"
+                        >
+                          {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      No product key configured yet
+                    </p>
+                    <button
+                      onClick={() => router.push('/products/chatbot/setup')}
+                      className="px-4 py-2 rounded-lg hover:opacity-80"
+                      style={{
+                        backgroundColor: 'rgb(169, 189, 203)',
+                        color: 'rgb(48, 54, 54)'
+                      }}
+                    >
+                      Configure Chatbot
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1687,384 +1771,13 @@ function ChatbotDashboardContent() {
           </div>
         )}
 
-        {/* Integration Tab */}
-        {activeTab === 'integration' && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="rounded-lg shadow-sm border p-6" 
-                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Widget Integration
-                </h2>
-                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                  Copy and paste this code into your website to add the chatbot widget
-                </p>
-              </div>
-              
-              {productKey ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Your Product Key
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={productKey}
-                        readOnly
-                        className="flex-1 px-4 py-2 rounded-lg font-mono text-sm"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          border: '1px solid rgba(169, 189, 203, 0.2)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      />
-                      <button
-                        onClick={copyToClipboard}
-                        className="px-4 py-2 rounded-lg hover:opacity-80 transition flex items-center"
-                        style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      >
-                        {copied ? <CheckCircle className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Integration Code (Recommended)
-                    </label>
-                    <div className="relative">
-                      <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar" 
-                           style={{ 
-                             backgroundColor: 'rgba(48, 54, 54, 0.7)', 
-                             color: 'rgb(229, 227, 220)',
-                             border: '1px solid rgba(169, 189, 203, 0.2)',
-                             whiteSpace: 'nowrap',
-                             overflowX: 'auto'
-                           }}>
-{`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`}
-                      </pre>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`<script src="https://embed.intelagentstudios.com/v1/chatbot.js" data-product-key="${productKey}"></script>`);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        }}
-                        className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
-                        style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                        title="Copy to clipboard"
-                      >
-                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  
-                  {/* Integration Help Section */}
-                  <div>
-                    <button
-                      onClick={() => setShowIntegrationHelp(!showIntegrationHelp)}
-                      className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
-                      style={{ color: 'rgb(169, 189, 203)' }}
-                    >
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform ${showIntegrationHelp ? 'rotate-180' : ''}`} 
-                      />
-                      Integration Help & Platform-Specific Tips
-                    </button>
-                    
-                    {showIntegrationHelp && (
-                      <div className="mt-4 space-y-4">
-                        {/* Website Type Selector */}
-                        <div>
-                          <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                            Select Your Website Type
-                          </label>
-                          <select
-                            value={selectedWebsiteType}
-                            onChange={(e) => setSelectedWebsiteType(e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg"
-                            style={{
-                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                              border: '1px solid rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          >
-                            <option value="general">General Website</option>
-                            <option value="wordpress">WordPress</option>
-                            <option value="shopify">Shopify</option>
-                            <option value="wix">Wix</option>
-                            <option value="squarespace">Squarespace</option>
-                            <option value="react">React App</option>
-                            <option value="nextjs">Next.js</option>
-                            <option value="vue">Vue.js</option>
-                            <option value="angular">Angular</option>
-                          </select>
-                        </div>
-                        
-                        {/* Platform-specific instructions */}
-                        <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
-                          <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
-                            <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                              <p className="font-medium mb-2">Instructions for {selectedWebsiteType === 'general' ? 'General Websites' : selectedWebsiteType.charAt(0).toUpperCase() + selectedWebsiteType.slice(1)}:</p>
-                              {selectedWebsiteType === 'wordpress' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Go to Appearance → Theme Editor</li>
-                                  <li>Select footer.php from the file list</li>
-                                  <li>Paste the code just before &lt;/body&gt;</li>
-                                  <li>Click "Update File" to save</li>
-                                  <li>Alternative: Use a plugin like "Insert Headers and Footers"</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'shopify' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Go to Online Store → Themes</li>
-                                  <li>Click "Actions" → "Edit code"</li>
-                                  <li>Find theme.liquid in Layout folder</li>
-                                  <li>Paste code before &lt;/body&gt; tag</li>
-                                  <li>Save the file</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'wix' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Go to Settings → Custom Code</li>
-                                  <li>Click "+ Add Custom Code"</li>
-                                  <li>Paste the integration code</li>
-                                  <li>Set "Add Code to Pages" to "All pages"</li>
-                                  <li>Set "Place Code in" to "Body - end"</li>
-                                  <li>Click "Apply"</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'squarespace' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Go to Settings → Advanced → Code Injection</li>
-                                  <li>Paste code in the "Footer" section</li>
-                                  <li>Click "Save"</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'react' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Open your public/index.html file</li>
-                                  <li>Paste code before &lt;/body&gt; tag</li>
-                                  <li>Or add to App.js using useEffect hook</li>
-                                  <li>Rebuild and deploy your app</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'nextjs' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Open pages/_document.js (or app/layout.js for App Router)</li>
-                                  <li>Import Script from 'next/script'</li>
-                                  <li>Add Script component with strategy="lazyOnload"</li>
-                                  <li>Deploy your application</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'vue' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Open public/index.html</li>
-                                  <li>Paste code before &lt;/body&gt; tag</li>
-                                  <li>Or add to App.vue mounted() hook</li>
-                                  <li>Build and deploy</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'angular' && (
-                                <ol className="list-decimal list-inside space-y-1">
-                                  <li>Open src/index.html</li>
-                                  <li>Paste code before &lt;/body&gt; tag</li>
-                                  <li>Or add to app.component.ts ngOnInit()</li>
-                                  <li>Build with ng build</li>
-                                </ol>
-                              )}
-                              {selectedWebsiteType === 'general' && (
-                                <ul className="list-disc list-inside space-y-1">
-                                  <li>Add the code just before the closing &lt;/body&gt; tag</li>
-                                  <li>The widget will automatically appear on all pages</li>
-                                  <li>Customize appearance in the Settings tab</li>
-                                  <li>Test the integration in a staging environment first</li>
-                                </ul>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    No product key configured yet
-                  </p>
-                  <button
-                    onClick={() => router.push('/products/chatbot/setup')}
-                    className="px-4 py-2 rounded-lg hover:opacity-80"
-                    style={{
-                      backgroundColor: 'rgb(169, 189, 203)',
-                      color: 'rgb(48, 54, 54)'
-                    }}
-                  >
-                    Configure Chatbot
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* API Access */}
-            <div className="rounded-lg shadow-sm border p-6" 
-                 style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                API Access
-              </h3>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Get Conversations
-                  </label>
-                  <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    Retrieve all chat history and conversations
-                  </p>
-                  <div className="relative">
-                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
-                         style={{ 
-                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
-                           color: 'rgb(229, 227, 220)',
-                           border: '1px solid rgba(169, 189, 203, 0.2)'
-                         }}>
-{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`}
-                    </pre>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      }}
-                      className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
-                      style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(229, 227, 220)'
-                      }}
-                      title="Copy to clipboard"
-                    >
-                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Update Knowledge Base
-                  </label>
-                  <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    Add or update custom knowledge programmatically
-                  </p>
-                  <div className="relative">
-                    <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono" 
-                         style={{ 
-                           backgroundColor: 'rgba(48, 54, 54, 0.7)', 
-                           color: 'rgb(229, 227, 220)',
-                           border: '1px solid rgba(169, 189, 203, 0.2)'
-                         }}>
-{`POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge
-Content-Type: application/json
 
-{
-  "content": "Your custom knowledge here",
-  "knowledge_type": "general"
-}`}
-                    </pre>
-                    <button
-                      onClick={() => {
-                        const apiCall = `POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge\nContent-Type: application/json\n\n{\n  "content": "Your custom knowledge here",\n  "knowledge_type": "general"\n}`;
-                        navigator.clipboard.writeText(apiCall);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      }}
-                      className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
-                      style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(229, 227, 220)'
-                      }}
-                      title="Copy to clipboard"
-                    >
-                      {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* API Help Section */}
-              <div className="mt-4">
-                <button
-                  onClick={() => setShowApiHelp(!showApiHelp)}
-                  className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
-                  style={{ color: 'rgb(169, 189, 203)' }}
-                >
-                  <ChevronDown 
-                    className={`w-4 h-4 transition-transform ${showApiHelp ? 'rotate-180' : ''}`} 
-                  />
-                  API Documentation & Examples
-                </button>
-                
-                {showApiHelp && (
-                  <div className="mt-4 rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
-                    <div className="space-y-4 text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      <div>
-                        <p className="font-medium mb-2">Authentication:</p>
-                        <p className="mb-2">Include your product key in the Authorization header:</p>
-                        <code className="block p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
-                          Authorization: Bearer {productKey || 'YOUR_PRODUCT_KEY'}
-                        </code>
-                      </div>
-                      
-                      <div>
-                        <p className="font-medium mb-2">Example GET Request (cURL):</p>
-                        <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
-{`curl -X GET \\
-  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/conversations \\
-  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}"`}
-                        </pre>
-                      </div>
-                      
-                      <div>
-                        <p className="font-medium mb-2">Example POST Request (cURL):</p>
-                        <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
-{`curl -X POST \\
-  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/knowledge \\
-  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"content": "Your custom knowledge here"}'`}
-                        </pre>
-                      </div>
-                      
-                      <div>
-                        <p className="font-medium mb-2">Rate Limits:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                          <li>100 requests per minute for GET endpoints</li>
-                          <li>10 requests per minute for POST endpoints</li>
-                          <li>Responses include X-RateLimit headers</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Settings Tab */}
+        {/* Customize Tab */}
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto">
             <div className="rounded-lg p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.15)' }}>
               <h2 className="text-xl font-semibold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
-                Chatbot Settings
+                Customize Your Chatbot
               </h2>
               
               <div className="space-y-6">
@@ -2253,6 +1966,278 @@ Content-Type: application/json
                   <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                     Changes will be applied to your chatbot widget immediately via the n8n workflow
                   </p>
+                </div>
+
+                {/* API Integration Section */}
+                <div className="mt-8 pt-6 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                  <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                    API Integration
+                  </h3>
+
+                  {/* Integration Help Section */}
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setShowIntegrationHelp(!showIntegrationHelp)}
+                      className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
+                      style={{ color: 'rgb(169, 189, 203)' }}
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${showIntegrationHelp ? 'rotate-180' : ''}`}
+                      />
+                      Platform-Specific Integration Instructions
+                    </button>
+
+                    {showIntegrationHelp && (
+                      <div className="mt-4 space-y-4">
+                        {/* Website Type Selector */}
+                        <div>
+                          <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                            Select Your Website Type
+                          </label>
+                          <select
+                            value={selectedWebsiteType}
+                            onChange={(e) => setSelectedWebsiteType(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg"
+                            style={{
+                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                              border: '1px solid rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(229, 227, 220)'
+                            }}
+                          >
+                            <option value="general">General Website</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="shopify">Shopify</option>
+                            <option value="wix">Wix</option>
+                            <option value="squarespace">Squarespace</option>
+                            <option value="react">React App</option>
+                            <option value="nextjs">Next.js</option>
+                            <option value="vue">Vue.js</option>
+                            <option value="angular">Angular</option>
+                          </select>
+                        </div>
+
+                        {/* Platform-specific instructions */}
+                        <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                              <p className="font-medium mb-2">Instructions for {selectedWebsiteType === 'general' ? 'General Websites' : selectedWebsiteType.charAt(0).toUpperCase() + selectedWebsiteType.slice(1)}:</p>
+                              {selectedWebsiteType === 'wordpress' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Appearance → Theme Editor</li>
+                                  <li>Select footer.php from the file list</li>
+                                  <li>Paste the code just before &lt;/body&gt;</li>
+                                  <li>Click "Update File" to save</li>
+                                  <li>Alternative: Use a plugin like "Insert Headers and Footers"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'shopify' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Online Store → Themes</li>
+                                  <li>Click "Actions" → "Edit code"</li>
+                                  <li>Find theme.liquid in Layout folder</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Save the file</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'wix' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Settings → Custom Code</li>
+                                  <li>Click "+ Add Custom Code"</li>
+                                  <li>Paste the integration code</li>
+                                  <li>Set "Add Code to Pages" to "All pages"</li>
+                                  <li>Set "Place Code in" to "Body - end"</li>
+                                  <li>Click "Apply"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'squarespace' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Go to Settings → Advanced → Code Injection</li>
+                                  <li>Paste code in the "Footer" section</li>
+                                  <li>Click "Save"</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'react' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open your public/index.html file</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to App.js using useEffect hook</li>
+                                  <li>Rebuild and deploy your app</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'nextjs' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open pages/_document.js (or app/layout.js for App Router)</li>
+                                  <li>Import Script from 'next/script'</li>
+                                  <li>Add Script component with strategy="lazyOnload"</li>
+                                  <li>Deploy your application</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'vue' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open public/index.html</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to App.vue mounted() hook</li>
+                                  <li>Build and deploy</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'angular' && (
+                                <ol className="list-decimal list-inside space-y-1">
+                                  <li>Open src/index.html</li>
+                                  <li>Paste code before &lt;/body&gt; tag</li>
+                                  <li>Or add to app.component.ts ngOnInit()</li>
+                                  <li>Build with ng build</li>
+                                </ol>
+                              )}
+                              {selectedWebsiteType === 'general' && (
+                                <ul className="list-disc list-inside space-y-1">
+                                  <li>Add the code just before the closing &lt;/body&gt; tag</li>
+                                  <li>The widget will automatically appear on all pages</li>
+                                  <li>Customize appearance in the Settings tab</li>
+                                  <li>Test the integration in a staging environment first</li>
+                                </ul>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* API Access */}
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Get Conversations
+                      </label>
+                      <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        Retrieve all chat history and conversations
+                      </p>
+                      <div className="relative">
+                        <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono"
+                             style={{
+                               backgroundColor: 'rgba(48, 54, 54, 0.7)',
+                               color: 'rgb(229, 227, 220)',
+                               border: '1px solid rgba(169, 189, 203, 0.2)'
+                             }}>
+{`GET https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`}
+                        </pre>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/conversations`);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                          title="Copy to clipboard"
+                        >
+                          {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        Update Knowledge Base
+                      </label>
+                      <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        Add or update custom knowledge programmatically
+                      </p>
+                      <div className="relative">
+                        <pre className="p-4 pr-12 rounded-lg overflow-x-auto text-xs font-mono"
+                             style={{
+                               backgroundColor: 'rgba(48, 54, 54, 0.7)',
+                               color: 'rgb(229, 227, 220)',
+                               border: '1px solid rgba(169, 189, 203, 0.2)'
+                             }}>
+{`POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge
+Content-Type: application/json
+
+{
+  "content": "Your custom knowledge here",
+  "knowledge_type": "general"
+}`}
+                        </pre>
+                        <button
+                          onClick={() => {
+                            const apiCall = `POST https://dashboard.intelagentstudios.com/api/chatbot/${productKey}/knowledge\nContent-Type: application/json\n\n{\n  "content": "Your custom knowledge here",\n  "knowledge_type": "general"\n}`;
+                            navigator.clipboard.writeText(apiCall);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="absolute top-2 right-2 p-2 rounded hover:opacity-80 transition"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                          title="Copy to clipboard"
+                        >
+                          {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* API Help Section */}
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowApiHelp(!showApiHelp)}
+                      className="flex items-center gap-2 text-sm font-medium hover:opacity-80 transition"
+                      style={{ color: 'rgb(169, 189, 203)' }}
+                    >
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${showApiHelp ? 'rotate-180' : ''}`}
+                      />
+                      API Documentation & Examples
+                    </button>
+
+                    {showApiHelp && (
+                      <div className="mt-4 rounded-lg p-4" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                        <div className="space-y-4 text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                          <div>
+                            <p className="font-medium mb-2">Authentication:</p>
+                            <p className="mb-2">Include your product key in the Authorization header:</p>
+                            <code className="block p-2 rounded" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+                              Authorization: Bearer {productKey || 'YOUR_PRODUCT_KEY'}
+                            </code>
+                          </div>
+
+                          <div>
+                            <p className="font-medium mb-2">Example GET Request (cURL):</p>
+                            <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+{`curl -X GET \\
+  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/conversations \\
+  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}"`}
+                            </pre>
+                          </div>
+
+                          <div>
+                            <p className="font-medium mb-2">Example POST Request (cURL):</p>
+                            <pre className="p-2 rounded overflow-x-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+{`curl -X POST \\
+  https://api.intelagent.ai/chatbot/${productKey || 'YOUR_PRODUCT_KEY'}/knowledge \\
+  -H "Authorization: Bearer ${productKey || 'YOUR_PRODUCT_KEY'}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"content": "Your custom knowledge here"}'`}
+                            </pre>
+                          </div>
+
+                          <div>
+                            <p className="font-medium mb-2">Rate Limits:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                              <li>100 requests per minute for GET endpoints</li>
+                              <li>10 requests per minute for POST endpoints</li>
+                              <li>Responses include X-RateLimit headers</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

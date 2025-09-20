@@ -47,6 +47,7 @@ export default function ProductsPage() {
           fetch('/api/products/check-keys', { credentials: 'include' })
             .then(res => res.json())
             .then(data => {
+              console.log('[Products Page] Configurations received:', data);
               if (data.success) {
                 setConfigurations(data.configurations);
                 // Update user products from check-keys response as well
@@ -191,15 +192,23 @@ export default function ProductsPage() {
 
   // Separate products by status
   // Products ready to configure should be shown prominently at the top
-  const readyToConfigureProducts = allProducts.filter(p => 
+  const readyToConfigureProducts = allProducts.filter(p =>
     userProducts.includes(p.id) && !configurations[p.id]?.configured
   );
-  const configuredProducts = allProducts.filter(p => 
+  const configuredProducts = allProducts.filter(p =>
     userProducts.includes(p.id) && configurations[p.id]?.configured
   );
-  const availableProducts = allProducts.filter(p => 
+  const availableProducts = allProducts.filter(p =>
     !userProducts.includes(p.id) && p.status === 'available'
   );
+
+  console.log('[Products Page] Product filtering:', {
+    userProducts,
+    configurations,
+    readyToConfigureProducts: readyToConfigureProducts.map(p => p.id),
+    configuredProducts: configuredProducts.map(p => p.id),
+    availableProducts: availableProducts.map(p => p.id)
+  });
 
   const handleConfigure = (productId: string) => {
     if (productId === 'chatbot') {
