@@ -306,9 +306,8 @@ function ChatbotDashboardContent() {
         }
       }
       
-      if (data.stats) {
-        setStats(data.stats);
-      }
+      // Don't use data.stats from API as it has different property names
+      // The calculateStats function already set the correct stats from conversations
       
       if (data.product_key) {
         setProductKey(data.product_key);
@@ -325,13 +324,14 @@ function ChatbotDashboardContent() {
 
   const calculateStats = (convs: Conversation[]) => {
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const uniqueSessions = new Set(convs.map(c => c.session_id));
     const domains = [...new Set(convs.map(c => c.domain).filter(Boolean))];
-    
+
     let totalMessages = 0;
     let todayCount = 0;
     let weekCount = 0;
@@ -339,14 +339,17 @@ function ChatbotDashboardContent() {
 
     convs.forEach(conv => {
       totalMessages += conv.messages.length;
-      const convDate = new Date(conv.first_message_at);
-      
-      if (convDate >= today) todayCount++;
+      const convDate = new Date(conv.first_message_at || conv.created_at);
+
+      // Check if conversation is from today (between todayStart and todayEnd)
+      if (convDate >= todayStart && convDate < todayEnd) todayCount++;
+      // Check if conversation is from the last 7 days
       if (convDate >= weekAgo) weekCount++;
+      // Check if conversation is from the last 30 days
       if (convDate >= monthAgo) monthCount++;
     });
 
-    setStats({
+    const statsData = {
       totalConversations: convs.length,
       uniqueSessions: uniqueSessions.size,
       totalMessages,
@@ -355,7 +358,12 @@ function ChatbotDashboardContent() {
       todayConversations: todayCount,
       weekConversations: weekCount,
       monthConversations: monthCount
-    });
+    };
+
+    console.log('[Chatbot Dashboard] Calculated stats:', statsData);
+    console.log('[Chatbot Dashboard] Sample conversation date:', convs[0]?.first_message_at || convs[0]?.created_at);
+
+    setStats(statsData);
   };
 
   const filterConversations = () => {
@@ -839,7 +847,7 @@ function ChatbotDashboardContent() {
 
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                        Integration Code (Recommended)
+                        Integration Code
                       </label>
                       <div className="relative">
                         <pre className="p-4 pr-12 rounded-lg text-xs font-mono custom-scrollbar"
