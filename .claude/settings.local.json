@@ -15,7 +15,9 @@
       "Bash(tasklist)",
       "Bash(powershell:*)",
       "Bash(curl:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(del \"apps\\customer-portal\\app\\admin\\route.ts\")",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
