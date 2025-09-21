@@ -14,7 +14,8 @@
       "Bash(npx:*)",
       "Bash(tasklist)",
       "Bash(powershell:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []
