@@ -104,7 +104,9 @@ function ChatbotDashboardContent() {
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
-  const [expandedChart, setExpandedChart] = useState<'messageVolume' | 'topDomains' | 'insights' | null>(null);
+  const [expandedChart, setExpandedChart] = useState<'trends' | 'topics' | 'topDomains' | null>(null);
+  const [trendsDateRange, setTrendsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
+  const [topicsDateRange, setTopicsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
   const [chartViewMode, setChartViewMode] = useState<'hourly' | 'daily' | 'weekly'>('hourly');
   const [compareBy, setCompareBy] = useState<'count' | 'percentage' | 'trend'>('count');
   const [selectedDomains, setSelectedDomains] = useState<string[]>(['all']);
@@ -752,7 +754,7 @@ function ChatbotDashboardContent() {
                       setDraggedTab(null);
                     }}
                     onClick={() => setActiveTab(tabId)}
-                    className="py-2 px-3 border-b-2 font-medium text-sm transition hover:opacity-80 cursor-move select-none"
+                    className="py-2 px-3 border-b-2 font-medium text-sm transition hover:opacity-80 cursor-pointer select-none"
                     style={{
                       borderColor: activeTab === tabId ? 'rgb(169, 189, 203)' : 'transparent',
                       color: activeTab === tabId ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)',
@@ -1960,13 +1962,24 @@ function ChatbotDashboardContent() {
             </div>
             )}
 
-            {/* Conversation Trends Chart - Hide when chart is expanded */}
+            {/* Charts Grid - Hide when chart is expanded */}
             {!expandedChart && (
-            <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                Conversation Trends (Last 7 Days)
-              </h3>
-              <div className="grid grid-cols-7 gap-2 h-48">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Conversation Trends Chart */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Conversation Trends
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('trends')}
+                    className="p-1 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-7 gap-2 h-48">
                 {Array.from({ length: 7 }, (_, i) => {
                   const date = new Date();
                   date.setDate(date.getDate() - (6 - i));
@@ -2006,6 +2019,64 @@ function ChatbotDashboardContent() {
                     </div>
                   );
                 })}
+                </div>
+              </div>
+
+              {/* Conversation Topics Chart */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Conversation Topics
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('topics')}
+                    className="p-1 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {(() => {
+                    const topics: Record<string, number> = {};
+                    conversations.forEach(conv => {
+                      const topic = extractTopic(conv);
+                      if (topic && topic !== 'undefined') {
+                        topics[topic] = (topics[topic] || 0) + 1;
+                      }
+                    });
+                    const sortedTopics = Object.entries(topics)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5);
+                    const maxCount = sortedTopics[0]?.[1] || 1;
+
+                    return sortedTopics.map(([topic, count], index) => (
+                      <div key={topic} className="flex items-center gap-2">
+                        <span className="text-sm w-24 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                          {topic}
+                        </span>
+                        <div className="flex-1 bg-gray-700 rounded-full h-6 relative">
+                          <div
+                            className="h-6 rounded-full transition-all flex items-center justify-end pr-2"
+                            style={{
+                              width: `${(count / maxCount) * 100}%`,
+                              backgroundColor: `hsl(${200 - (index * 30)}, 60%, 50%)`
+                            }}
+                          >
+                            <span className="text-xs font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {count}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                  {conversations.length === 0 && (
+                    <p className="text-sm text-center py-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      No conversation topics yet
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
             )}
@@ -2015,20 +2086,28 @@ function ChatbotDashboardContent() {
               <div className="rounded-lg border p-6 transition-all duration-300" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    {expandedChart === 'insights' ? 'Conversation Analytics & Insights' : expandedChart === 'topDomains' ? 'Domain Performance Analysis' : 'Performance Insights'}
+                    {expandedChart === 'trends' ? 'Conversation Trends' : expandedChart === 'topics' ? 'Conversation Topics Analysis' : expandedChart === 'topDomains' ? 'Domain Performance Analysis' : 'Analytics'}
                   </h2>
                   <div className="flex items-center gap-4">
-                    {/* View mode selector for insights */}
-                    {expandedChart === 'insights' && (
+                    {/* Date range selector for trends and topics */}
+                    {(expandedChart === 'trends' || expandedChart === 'topics') && (
                       <select
-                        value={chartViewMode}
-                        onChange={(e) => setChartViewMode(e.target.value as 'hourly' | 'daily' | 'weekly')}
+                        value={expandedChart === 'trends' ? trendsDateRange : topicsDateRange}
+                        onChange={(e) => {
+                          const value = e.target.value as '7d' | '14d' | '30d' | '90d';
+                          if (expandedChart === 'trends') {
+                            setTrendsDateRange(value);
+                          } else {
+                            setTopicsDateRange(value);
+                          }
+                        }}
                         className="px-3 py-1.5 text-sm border rounded-lg"
                         style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
                       >
-                        <option value="hourly">Performance</option>
-                        <option value="daily">Topics</option>
-                        <option value="weekly">Recommendations</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="14d">Last 14 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
                       </select>
                     )}
 
@@ -2054,8 +2133,115 @@ function ChatbotDashboardContent() {
                   </div>
                 </div>
 
-                {/* Expanded Insights View */}
-                {expandedChart === 'insights' && (
+                {/* Expanded Trends View */}
+                {expandedChart === 'trends' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-7 md:grid-cols-14 lg:grid-cols-30 gap-1 h-64">
+                      {(() => {
+                        const days = trendsDateRange === '7d' ? 7 : trendsDateRange === '14d' ? 14 : trendsDateRange === '30d' ? 30 : 90;
+                        return Array.from({ length: Math.min(days, 30) }, (_, i) => {
+                          const date = new Date();
+                          date.setDate(date.getDate() - (days - 1 - i));
+                          const dayConversations = conversations.filter(conv => {
+                            const convDate = new Date(conv.first_message_at);
+                            return convDate.toDateString() === date.toDateString();
+                          }).length;
+                          const maxHeight = Math.max(...Array.from({ length: days }, (_, j) => {
+                            const checkDate = new Date();
+                            checkDate.setDate(checkDate.getDate() - (days - 1 - j));
+                            return conversations.filter(conv => {
+                              const convDate = new Date(conv.first_message_at);
+                              return convDate.toDateString() === checkDate.toDateString();
+                            }).length;
+                          })) || 1;
+                          const height = Math.max((dayConversations / maxHeight) * 100, 5);
+
+                          return (
+                            <div key={i} className="flex flex-col items-center">
+                              <div className="flex-1 flex items-end w-full">
+                                <div
+                                  className="w-full rounded-t transition-all hover:opacity-80 cursor-pointer"
+                                  style={{
+                                    height: `${height}%`,
+                                    backgroundColor: 'rgb(169, 189, 203)',
+                                    minHeight: '8px'
+                                  }}
+                                  title={`${date.toLocaleDateString()}: ${dayConversations} conversations`}
+                                />
+                              </div>
+                              {(days <= 14 || i % Math.floor(days / 14) === 0) && (
+                                <>
+                                  <div className="text-xs mt-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                                    {days <= 14 ? date.toLocaleDateString('en-US', { weekday: 'short' }) : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </div>
+                                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                                    {dayConversations}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Expanded Topics View */}
+                {expandedChart === 'topics' && (
+                  <div className="space-y-4">
+                    {(() => {
+                      const topics: Record<string, number> = {};
+                      const days = topicsDateRange === '7d' ? 7 : topicsDateRange === '14d' ? 14 : topicsDateRange === '30d' ? 30 : 90;
+                      const cutoffDate = new Date();
+                      cutoffDate.setDate(cutoffDate.getDate() - days);
+
+                      conversations.filter(conv => {
+                        const convDate = new Date(conv.first_message_at);
+                        return convDate >= cutoffDate;
+                      }).forEach(conv => {
+                        const topic = extractTopic(conv);
+                        if (topic && topic !== 'undefined') {
+                          topics[topic] = (topics[topic] || 0) + 1;
+                        }
+                      });
+
+                      const sortedTopics = Object.entries(topics)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 15);
+                      const maxCount = sortedTopics[0]?.[1] || 1;
+
+                      return sortedTopics.map(([topic, count], index) => (
+                        <div key={topic} className="flex items-center gap-4">
+                          <span className="text-sm w-32 text-right" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                            {topic}
+                          </span>
+                          <div className="flex-1 bg-gray-700 rounded-full h-8 relative">
+                            <div
+                              className="h-8 rounded-full transition-all flex items-center justify-end pr-3"
+                              style={{
+                                width: `${(count / maxCount) * 100}%`,
+                                backgroundColor: `hsl(${200 - (index * 15)}, 60%, 50%)`
+                              }}
+                            >
+                              <span className="text-sm font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                                {count} ({Math.round((count / conversations.filter(c => new Date(c.first_message_at) >= cutoffDate).length) * 100)}%)
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                    {conversations.length === 0 && (
+                      <p className="text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        No conversation topics in the selected date range
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Keep existing insights view but update the condition */}
+                {false && expandedChart === 'insights' && (
                   <div className="space-y-6">
                     {chartViewMode === 'hourly' && ( // Performance View
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2302,152 +2488,59 @@ function ChatbotDashboardContent() {
               </div>
             )}
 
-            {/* Additional Analytics - Hide when chart is expanded */}
-            {!expandedChart && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Response Patterns */}
-              <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+            {/* Top Domains - Only show for multi-domain accounts */}
+            {!expandedChart && stats?.domains && stats.domains.length > 1 && (
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Response Patterns
+                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Top Domains by Conversations
                   </h3>
                   <button
-                    onClick={() => setExpandedChart('insights')}
+                    onClick={() => setExpandedChart('topDomains')}
                     className="p-1 rounded hover:bg-gray-700 transition"
-                    title="View detailed insights"
+                    title="Expand view"
                   >
                     <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
                   </button>
                 </div>
-                <div className="space-y-3">
-                  {/* Peak Hours */}
-                  <div>
-                    <p className="text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Peak Activity Times</p>
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>2-5 PM Weekdays</span>
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(76, 175, 80, 0.2)', color: 'rgb(76, 175, 80)' }}>High</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>9-11 AM Weekdays</span>
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(255, 193, 7, 0.2)', color: 'rgb(255, 193, 7)' }}>Med</span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  {/* Show only top 3 domains */}
+                  {stats.domains.slice(0, 3).map((domain, index) => {
+                    const domainConversations = conversations.filter(conv => conv.domain === domain).length;
+                    const percentage = stats.totalConversations > 0 ?
+                      Math.round((domainConversations / stats.totalConversations) * 100) : 0;
 
-                  {/* Common Drop-offs */}
-                  <div className="pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                    <p className="text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Common Drop-off Points</p>
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>After pricing</span>
-                        <span className="text-xs" style={{ color: 'rgb(244, 67, 54)' }}>28%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Technical questions</span>
-                        <span className="text-xs" style={{ color: 'rgb(255, 193, 7)' }}>18%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Domains - Only show for multi-domain accounts */}
-              {stats?.domains && stats.domains.length > 1 && (
-                <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Top Domains by Conversations
-                    </h3>
-                    <button
-                      onClick={() => setExpandedChart('topDomains')}
-                      className="p-1 rounded hover:bg-gray-700 transition"
-                      title="Expand view"
-                    >
-                      <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {/* Show only top 3 domains */}
-                    {stats.domains.slice(0, 3).map((domain, index) => {
-                      const domainConversations = conversations.filter(conv => conv.domain === domain).length;
-                      const percentage = stats.totalConversations > 0 ?
-                        Math.round((domainConversations / stats.totalConversations) * 100) : 0;
-
-                      return (
-                        <div key={domain} className="flex items-center">
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-xs truncate" style={{ color: 'rgb(229, 227, 220)', maxWidth: '150px' }}>
-                                {domain || 'Unknown'}
-                              </span>
-                              <span className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                                {percentage}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-700 rounded-full h-1.5">
-                              <div
-                                className="h-1.5 rounded-full transition-all"
-                                style={{
-                                  width: `${percentage}%`,
-                                  backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
-                                }}
-                              />
-                            </div>
+                    return (
+                      <div key={domain} className="flex items-center">
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {domain || 'Unknown'}
+                            </span>
+                            <span className="text-sm ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              {percentage}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-2">
+                            <div
+                              className="h-2 rounded-full transition-all"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
+                              }}
+                            />
                           </div>
                         </div>
-                      );
-                    })}
-                    {stats.domains.length > 3 && (
-                      <div className="pt-1 text-xs text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                        +{stats.domains.length - 3} more domains
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-            )}
-
-            {/* Conversation Details Table - Hide when chart is expanded */}
-            {!expandedChart && (
-            <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Recent Analytics Data
-                </h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.avgMessagesPerConversation || 0}
+                    );
+                  })}
+                  {stats.domains.length > 3 && (
+                    <div className="pt-1 text-sm text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      +{stats.domains.length - 3} more domains
                     </div>
-                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      Avg Messages per Conversation
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {conversations.length > 0 ?
-                        Math.round((stats?.todayConversations || 0) / Math.max(stats?.totalConversations || 1, 1) * 100) : 0}%
-                    </div>
-                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      Today's Activity
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {conversations.length > 0 ?
-                        Math.round((stats?.weekConversations || 0) / Math.max(stats?.totalConversations || 1, 1) * 100) : 0}%
-                    </div>
-                    <div className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
-                      This Week's Activity
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
-            </div>
             )}
           </div>
         )}
