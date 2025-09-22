@@ -38,6 +38,7 @@ export { CalendarSchedulerSkill } from './CalendarSchedulerSkill';
 export { CalendarSyncSkill } from './CalendarSyncSkill';
 export { CartOptimizerSkill } from './CartOptimizerSkill';
 export { CertificateGeneratorSkill } from './CertificateGeneratorSkill';
+export { ChatbotInsightsSkill } from './ChatbotInsightsSkill';
 export { ChatbotSkill } from './ChatbotSkill';
 export { ChatbotTrainerSkill } from './ChatbotTrainerSkill';
 export { CheckoutProcessorSkill } from './CheckoutProcessorSkill';
@@ -356,6 +357,7 @@ import { CalendarSchedulerSkill } from './CalendarSchedulerSkill';
 import { CalendarSyncSkill } from './CalendarSyncSkill';
 import { CartOptimizerSkill } from './CartOptimizerSkill';
 import { CertificateGeneratorSkill } from './CertificateGeneratorSkill';
+import { ChatbotInsightsSkill } from './ChatbotInsightsSkill';
 import { ChatbotSkill } from './ChatbotSkill';
 import { ChatbotTrainerSkill } from './ChatbotTrainerSkill';
 import { CheckoutProcessorSkill } from './CheckoutProcessorSkill';
@@ -670,6 +672,7 @@ export const ALL_SKILLS = [
   CalendarSyncSkill,
   CartOptimizerSkill,
   CertificateGeneratorSkill,
+  ChatbotInsightsSkill,
   ChatbotSkill,
   ChatbotTrainerSkill,
   CheckoutProcessorSkill,
@@ -945,8 +948,7 @@ export const ALL_SKILLS = [
   WoocommerceConnectorSkill,
   WorkflowEngineSkill,
   XmlProcessorSkill,
-  ZoomConnectorSkill,
-  generateRemainingSkills
+  ZoomConnectorSkill
 ];
 
 // Export skill map for dynamic loading
@@ -986,6 +988,7 @@ export const SKILL_MAP = {
   'calendar_sync': CalendarSyncSkill,
   'cart_optimizer': CartOptimizerSkill,
   'certificate_generator': CertificateGeneratorSkill,
+  'chatbot_insights': ChatbotInsightsSkill,
   'chatbot': ChatbotSkill,
   'chatbot_trainer': ChatbotTrainerSkill,
   'checkout_processor': CheckoutProcessorSkill,
@@ -1261,6 +1264,5 @@ export const SKILL_MAP = {
   'woocommerce_connector': WoocommerceConnectorSkill,
   'workflow_engine': WorkflowEngineSkill,
   'xml_processor': XmlProcessorSkill,
-  'zoom_connector': ZoomConnectorSkill,
-  'generate_remaining_skills': generateRemainingSkills
+  'zoom_connector': ZoomConnectorSkill
 };

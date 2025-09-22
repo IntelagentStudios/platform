@@ -1984,6 +1984,17 @@ export class SkillFactory {
       optionalParams: ['algorithm', 'clusters', 'features']
     });
 
+    this.addSkill({
+      id: 'chatbot_insights',
+      name: 'Chatbot AI Insights',
+      description: 'Analyzes chatbot conversations using AI to provide actionable insights and recommendations',
+      category: 'ai_analytics',
+      tags: ['chatbot', 'analytics', 'insights', 'ai', 'openai'],
+      requiredParams: ['conversations'],
+      optionalParams: ['productKey', 'storeInDb'],
+      isPremium: true
+    });
+
     // ============ CHATBOT & COMMUNICATION SKILLS ============
     this.addSkill({
       id: 'chatbot_analytics',
