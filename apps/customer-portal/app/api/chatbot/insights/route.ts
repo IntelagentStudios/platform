@@ -8,8 +8,13 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: NextRequest) {
+  let conversations: any[] = [];
+  let productKey = '';
+
   try {
-    const { conversations, productKey } = await req.json();
+    const body = await req.json();
+    conversations = body.conversations || [];
+    productKey = body.productKey || '';
 
     if (!conversations || conversations.length === 0) {
       return NextResponse.json({
