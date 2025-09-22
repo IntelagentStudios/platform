@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   {(!sidebarCollapsed || isHovering) && (
                     <div className="flex items-center justify-between flex-1">
                       <span>{item.label}</span>
-                      {item.badge && (
+                      {'badge' in item && item.badge && (
                         <span
                           className="px-2 py-0.5 text-xs rounded-full"
                           style={{
