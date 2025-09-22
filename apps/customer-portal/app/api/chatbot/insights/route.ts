@@ -3,9 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 
 export async function POST(req: NextRequest) {
   let conversations: any[] = [];
@@ -46,6 +43,16 @@ export async function POST(req: NextRequest) {
       lastMessage: conv.messages[conv.messages.length - 1]?.content || '',
       userMessages: conv.messages.filter((m: any) => m.sender === 'user').map((m: any) => m.content).join(' | ')
     }));
+
+    // Initialize OpenAI only when needed and API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
 
     const prompt = `
 Analyze these chatbot conversations and provide actionable insights. Focus on practical improvements rather than generic metrics.
