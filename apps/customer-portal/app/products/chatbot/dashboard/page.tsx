@@ -41,7 +41,8 @@ import {
   AlertCircle,
   BarChart3,
   File,
-  FileText
+  FileText,
+  Maximize2
 } from 'lucide-react';
 
 interface Conversation {
@@ -101,6 +102,7 @@ function ChatbotDashboardContent() {
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
+  const [expandedChart, setExpandedChart] = useState<'messageVolume' | 'topDomains' | null>(null);
   
   // Settings state - simplified
   const [settings, setSettings] = useState({
@@ -573,6 +575,106 @@ function ChatbotDashboardContent() {
 
   return (
     <>
+      {/* Modal Overlay for Expanded Charts */}
+      {expandedChart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}>
+          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-auto rounded-lg p-6" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
+            <button
+              onClick={() => setExpandedChart(null)}
+              className="absolute top-4 right-4 p-2 rounded hover:bg-gray-700 transition"
+            >
+              <X className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+            </button>
+
+            {expandedChart === 'messageVolume' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Message Volume by Hour
+                </h2>
+                <div className="space-y-3">
+                  {Array.from({ length: 24 }, (_, hour) => {
+                    const hourMessages = conversations.reduce((count, conv) => {
+                      return count + conv.messages.filter(msg => {
+                        const msgDate = new Date(msg.timestamp);
+                        return msgDate.getHours() === hour;
+                      }).length;
+                    }, 0);
+                    const maxMessages = Math.max(...Array.from({ length: 24 }, (_, h) => {
+                      return conversations.reduce((count, conv) => {
+                        return count + conv.messages.filter(msg => {
+                          const msgDate = new Date(msg.timestamp);
+                          return msgDate.getHours() === h;
+                        }).length;
+                      }, 0);
+                    })) || 1;
+                    const width = (hourMessages / maxMessages) * 100;
+
+                    return (
+                      <div key={hour} className="flex items-center">
+                        <div className="w-16 text-sm" style={{ color: 'rgb(169, 189, 203)' }}>
+                          {hour.toString().padStart(2, '0')}:00
+                        </div>
+                        <div className="flex-1 mx-3 bg-gray-700 rounded h-6 relative">
+                          <div
+                            className="h-full rounded transition-all"
+                            style={{
+                              width: `${Math.max(width, 1)}%`,
+                              backgroundColor: 'rgb(169, 189, 203)'
+                            }}
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'rgb(229, 227, 220)' }}>
+                            {hourMessages} messages
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {expandedChart === 'topDomains' && (
+              <div>
+                <h2 className="text-2xl font-bold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Top Domains by Conversations
+                </h2>
+                <div className="space-y-4">
+                  {stats?.domains?.map((domain, index) => {
+                    const domainConversations = conversations.filter(conv => conv.domain === domain).length;
+                    const percentage = stats.totalConversations > 0 ?
+                      Math.round((domainConversations / stats.totalConversations) * 100) : 0;
+
+                    return (
+                      <div key={domain} className="flex items-center">
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-base font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {domain || 'Unknown'}
+                            </span>
+                            <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              {domainConversations} conversations ({percentage}%)
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-700 rounded-full h-3">
+                            <div
+                              className="h-3 rounded-full transition-all"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           height: 6px;
@@ -1648,20 +1750,30 @@ function ChatbotDashboardContent() {
 
             {/* Message Volume and Response Time Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Message Volume by Time */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Message Volume by Hour
-                </h3>
-                <div className="space-y-2">
-                  {Array.from({ length: 24 }, (_, hour) => {
+              {/* Message Volume by Time - Compact View */}
+              <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Message Volume by Hour
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('messageVolume')}
+                    className="p-1 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  {/* Show only peak hours (9am, 12pm, 3pm, 6pm, 9pm) */}
+                  {[9, 12, 15, 18, 21].map(hour => {
                     const hourMessages = conversations.reduce((count, conv) => {
                       return count + conv.messages.filter(msg => {
                         const msgDate = new Date(msg.timestamp);
                         return msgDate.getHours() === hour;
                       }).length;
                     }, 0);
-                    const maxMessages = Math.max(...Array.from({ length: 24 }, (_, h) => {
+                    const maxMessages = Math.max(...[9, 12, 15, 18, 21].map(h => {
                       return conversations.reduce((count, conv) => {
                         return count + conv.messages.filter(msg => {
                           const msgDate = new Date(msg.timestamp);
@@ -1673,10 +1785,10 @@ function ChatbotDashboardContent() {
 
                     return (
                       <div key={hour} className="flex items-center">
-                        <div className="w-12 text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
+                        <div className="w-10 text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
                           {hour.toString().padStart(2, '0')}:00
                         </div>
-                        <div className="flex-1 mx-2 bg-gray-700 rounded h-3">
+                        <div className="flex-1 mx-2 bg-gray-700 rounded h-2">
                           <div
                             className="h-full rounded transition-all"
                             style={{
@@ -1685,22 +1797,35 @@ function ChatbotDashboardContent() {
                             }}
                           />
                         </div>
-                        <div className="w-8 text-xs text-right" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        <div className="w-6 text-xs text-right" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                           {hourMessages}
                         </div>
                       </div>
                     );
                   })}
+                  <div className="pt-1 text-xs text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    Click expand to see all 24 hours
+                  </div>
                 </div>
               </div>
 
-              {/* Top Domains */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Top Domains by Conversations
-                </h3>
-                <div className="space-y-3">
-                  {stats?.domains?.slice(0, 10).map((domain, index) => {
+              {/* Top Domains - Compact View */}
+              <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    Top Domains by Conversations
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('topDomains')}
+                    className="p-1 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {/* Show only top 3 domains */}
+                  {stats?.domains?.slice(0, 3).map((domain, index) => {
                     const domainConversations = conversations.filter(conv => conv.domain === domain).length;
                     const percentage = stats.totalConversations > 0 ?
                       Math.round((domainConversations / stats.totalConversations) * 100) : 0;
@@ -1709,16 +1834,16 @@ function ChatbotDashboardContent() {
                       <div key={domain} className="flex items-center">
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm truncate" style={{ color: 'rgb(229, 227, 220)' }}>
+                            <span className="text-xs truncate" style={{ color: 'rgb(229, 227, 220)', maxWidth: '150px' }}>
                               {domain || 'Unknown'}
                             </span>
                             <span className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                              {domainConversations} ({percentage}%)
+                              {percentage}%
                             </span>
                           </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div className="w-full bg-gray-700 rounded-full h-1.5">
                             <div
-                              className="h-2 rounded-full transition-all"
+                              className="h-1.5 rounded-full transition-all"
                               style={{
                                 width: `${percentage}%`,
                                 backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
@@ -1730,8 +1855,13 @@ function ChatbotDashboardContent() {
                     );
                   }) || []}
                   {(!stats?.domains || stats.domains.length === 0) && (
-                    <div className="text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    <div className="text-center py-4 text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                       No domain data available
+                    </div>
+                  )}
+                  {stats?.domains && stats.domains.length > 3 && (
+                    <div className="pt-1 text-xs text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      +{stats.domains.length - 3} more domains
                     </div>
                   )}
                 </div>
