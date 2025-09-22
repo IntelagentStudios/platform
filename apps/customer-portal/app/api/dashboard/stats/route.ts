@@ -43,16 +43,17 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    // Get API usage stats
-    const apiUsage = await prisma.api_usage.findMany({
+    // Get API usage stats from skill audit logs
+    const skillLogs = await prisma.skill_audit_log.findMany({
       where: {
         license_key: licenseKey,
-        created_at: { gte: startOfMonth }
+        created_at: { gte: startOfMonth },
+        event_type: 'execution'
       }
     });
 
-    const totalApiCalls = apiUsage.reduce((sum, usage) => sum + (usage.request_count || 0), 0);
-    const totalDataProcessed = apiUsage.reduce((sum, usage) => sum + (usage.bytes_processed || 0), 0) / (1024 * 1024); // Convert to MB
+    const totalApiCalls = skillLogs.length;
+    const totalDataProcessed = 0; // This data isn't tracked in the current schema
 
     // Get product keys to determine active products
     const productKeys = await prisma.product_keys.findMany({
