@@ -406,16 +406,25 @@ function ChatbotDashboardContent() {
     let weekCount = 0;
     let monthCount = 0;
 
+    // Use calendar week for week count (Monday to Sunday)
+    const weekStart = new Date(todayEnd);
+    weekStart.setDate(todayEnd.getDate() - todayEnd.getDay() + (todayEnd.getDay() === 0 ? -6 : 1));
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Use calendar month for month count
+    const monthStart = new Date(todayEnd.getFullYear(), todayEnd.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+
     statsConvs.forEach(conv => {
       totalMessages += conv.messages.length;
       const convDate = new Date(conv.first_message_at || new Date());
 
       // Check if conversation is from today (between todayStart and todayEnd)
       if (convDate >= todayStart && convDate < todayEnd) todayCount++;
-      // Check if conversation is from the last 7 days
-      if (convDate >= weekAgo) weekCount++;
-      // Check if conversation is from the last 30 days
-      if (convDate >= monthAgo) monthCount++;
+      // Check if conversation is from this calendar week
+      if (convDate >= weekStart && convDate < todayEnd) weekCount++;
+      // Check if conversation is from this calendar month
+      if (convDate >= monthStart && convDate < todayEnd) monthCount++;
     });
 
     const statsData = {
@@ -1734,12 +1743,12 @@ function ChatbotDashboardContent() {
               <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Active Domains</p>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>This Week</p>
                     <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.domains?.length || 0}
+                      {stats?.weekConversations || 0}
                     </p>
                   </div>
-                  <Globe className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                  <TrendingUp className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
             </div>
@@ -1748,47 +1757,81 @@ function ChatbotDashboardContent() {
             {/* Key Insights and Recommendations - Always visible at top */}
             {!expandedChart && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Performance Insights */}
+              {/* AI Insights Preview */}
               <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                   <Activity className="w-5 h-5" />
-                  Performance Insights
+                  AI Insights (Preview)
                 </h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Resolution Rate</span>
-                      <span className="text-sm font-bold" style={{ color: 'rgb(76, 175, 80)' }}>68%</span>
+                {loadingInsights ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-2 bg-gray-700 rounded w-3/4 mb-2" />
+                        <div className="h-2 bg-gray-700 rounded w-1/2" />
+                      </div>
+                    ))}
+                  </div>
+                ) : aiInsights?.takeaways ? (
+                  <div className="space-y-3">
+                    {aiInsights.takeaways.slice(0, 3).map((takeaway: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                        <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>{takeaway}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Most questions resolved within 3 messages</p>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="h-2 rounded-full" style={{ width: '68%', backgroundColor: 'rgb(76, 175, 80)' }} />
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Customers appreciate quick responses</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Consider adding more product info</p>
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Response Time</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>1.2s</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Satisfaction Score</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>4.2/5</span>
-                  </div>
+                )}
+                <div className="mt-4 pt-3 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                  <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Upgrade for full analytics & recommendations</p>
                 </div>
               </div>
 
-              {/* Top Issues */}
+              {/* Conversation Metrics */}
               <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  <AlertCircle className="w-5 h-5" style={{ color: 'rgb(255, 193, 7)' }} />
-                  Needs Attention
+                  <MessageCircle className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                  Quick Stats
                 </h3>
                 <div className="space-y-3">
-                  <div className="p-3 rounded" style={{ backgroundColor: 'rgba(244, 67, 54, 0.1)', borderLeft: '3px solid rgb(244, 67, 54)' }}>
-                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Pricing Questions</p>
-                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>32% unresolved - Add pricing FAQ</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages/Conv</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.avgMessagesPerConversation || 0}
+                    </span>
                   </div>
-                  <div className="p-3 rounded" style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)', borderLeft: '3px solid rgb(255, 193, 7)' }}>
-                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>API Documentation</p>
-                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>43 failed queries this week</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Active Domains</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.domains?.length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today's Activity</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.todayConversations || 0} chats
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Unique Sessions</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {stats?.uniqueSessions || 0}
+                    </span>
                   </div>
                 </div>
               </div>

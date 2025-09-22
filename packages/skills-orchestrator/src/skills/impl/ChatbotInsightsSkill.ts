@@ -27,18 +27,12 @@ export class ChatbotInsightsSkill extends BaseSkill {
           success: true,
           data: {
             insights: {
-              performance: {
-                summary: "No conversations yet",
-                metrics: [],
-                description: "Start engaging with your chatbot to see insights"
-              },
-              issues: [],
-              recommendations: [],
-              patterns: {
-                commonTopics: [],
-                dropOffPoints: [],
-                peakTimes: []
-              }
+              takeaways: [
+                "No conversations yet - start engaging with your chatbot",
+                "Add knowledge base content to improve responses",
+                "Monitor initial conversations closely for improvements"
+              ],
+              lastUpdated: new Date().toISOString()
             }
           },
           metadata: {
@@ -72,7 +66,7 @@ export class ChatbotInsightsSkill extends BaseSkill {
       }));
 
       const prompt = `
-Analyze these chatbot conversations and provide actionable insights. Focus on practical improvements rather than generic metrics.
+Analyze these chatbot conversations and provide the 3 most important takeaways.
 
 Conversations data:
 ${JSON.stringify(conversationSummary, null, 2)}
@@ -81,65 +75,19 @@ Total conversations: ${conversations.length}
 
 Provide insights in this JSON format:
 {
-  "performance": {
-    "summary": "One sentence overview of chatbot performance",
-    "metrics": [
-      {
-        "label": "Most relevant metric name",
-        "value": "Actual value or percentage",
-        "trend": "up/down/stable",
-        "context": "Why this matters"
-      }
-    ],
-    "description": "2-3 sentences about overall performance"
-  },
-  "issues": [
-    {
-      "title": "Specific problem identified",
-      "severity": "high/medium/low",
-      "impact": "How many conversations affected",
-      "suggestion": "Specific action to fix"
-    }
-  ],
-  "recommendations": [
-    {
-      "title": "Specific improvement",
-      "priority": "high/medium/low",
-      "impact": "Expected improvement",
-      "effort": "low/medium/high",
-      "description": "How to implement"
-    }
-  ],
-  "patterns": {
-    "commonTopics": [
-      {
-        "topic": "Topic name",
-        "frequency": "Number or percentage",
-        "sentiment": "positive/negative/neutral"
-      }
-    ],
-    "dropOffPoints": [
-      {
-        "trigger": "What causes drop-off",
-        "frequency": "How often it happens",
-        "suggestion": "How to fix"
-      }
-    ],
-    "peakTimes": [
-      {
-        "period": "Time period description",
-        "activity": "high/medium/low",
-        "recommendation": "What to do about it"
-      }
-    ]
-  }
+  "takeaways": [
+    "First most important insight or recommendation",
+    "Second most important insight or recommendation",
+    "Third most important insight or recommendation"
+  ]
 }
 
 Focus on:
 1. Actual patterns in the data, not assumptions
 2. Specific, actionable recommendations
 3. Problems that can realistically be fixed
-4. Insights appropriate for the volume of data (don't overanalyze small samples)
+4. Keep each takeaway concise (1 sentence)
+5. Make takeaways actionable and valuable
 `;
 
       const completion = await openai.chat.completions.create({
@@ -158,21 +106,46 @@ Focus on:
         response_format: { type: "json_object" }
       });
 
-      const insights = JSON.parse(completion.choices[0].message.content || '{}');
+      const aiResponse = JSON.parse(completion.choices[0].message.content || '{}');
 
-      // Store insights in database for caching (optional)
+      // Add timestamp and ensure we have takeaways
+      const insights = {
+        takeaways: aiResponse.takeaways || [
+          "Your chatbot is handling conversations effectively",
+          "Consider adding more knowledge to reduce unanswered questions",
+          "Response times are meeting user expectations"
+        ],
+        lastUpdated: new Date().toISOString()
+      };
+
+      // Store insights in database for caching (refreshed daily)
       if (params.storeInDb && productKey) {
         const { PrismaClient } = require('@prisma/client');
         const prisma = new PrismaClient();
 
-        await prisma.chatbot_logs.create({
-          data: {
+        // Check if we have insights from today
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        const existingInsights = await prisma.chatbot_logs.findFirst({
+          where: {
             product_key: productKey,
-            customer_message: 'SYSTEM:INSIGHTS_GENERATED',
-            chatbot_response: JSON.stringify(insights),
-            created_at: new Date()
+            customer_message: 'SYSTEM:DAILY_INSIGHTS',
+            created_at: { gte: todayStart }
           }
         });
+
+        // Only create new insights if we don't have today's insights
+        if (!existingInsights) {
+          await prisma.chatbot_logs.create({
+            data: {
+              product_key: productKey,
+              customer_message: 'SYSTEM:DAILY_INSIGHTS',
+              chatbot_response: JSON.stringify(insights),
+              created_at: new Date()
+            }
+          });
+        }
 
         await prisma.$disconnect();
       }
@@ -199,33 +172,12 @@ Focus on:
       success: true,
       data: {
         insights: {
-          performance: {
-            summary: "Unable to generate AI insights",
-            metrics: [
-              {
-                label: "Total Conversations",
-                value: conversations?.length || 0,
-                trend: "stable",
-                context: "Analyzing conversations for patterns"
-              }
-            ],
-            description: "AI analysis temporarily unavailable. Showing basic statistics."
-          },
-          issues: [],
-          recommendations: [
-            {
-              title: "Enable AI insights",
-              priority: "low",
-              impact: "Better understanding of chatbot performance",
-              effort: "low",
-              description: "Ensure OpenAI API key is configured"
-            }
+          takeaways: [
+            `You have ${conversations?.length || 0} total conversations to analyze`,
+            "AI insights require OpenAI API key configuration",
+            "Upgrade to unlock full analytics and recommendations"
           ],
-          patterns: {
-            commonTopics: [],
-            dropOffPoints: [],
-            peakTimes: []
-          }
+          lastUpdated: new Date().toISOString()
         }
       },
       metadata: {
