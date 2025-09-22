@@ -103,7 +103,7 @@ function ChatbotDashboardContent() {
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
-  const [expandedChart, setExpandedChart] = useState<'messageVolume' | 'topDomains' | null>(null);
+  const [expandedChart, setExpandedChart] = useState<'messageVolume' | 'topDomains' | 'insights' | null>(null);
   const [chartViewMode, setChartViewMode] = useState<'hourly' | 'daily' | 'weekly'>('hourly');
   const [compareBy, setCompareBy] = useState<'count' | 'percentage' | 'trend'>('count');
   const [selectedDomains, setSelectedDomains] = useState<string[]>(['all']);
