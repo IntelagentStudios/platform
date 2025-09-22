@@ -12,11 +12,11 @@ import {
   getUniqueTopics,
   parseMessageContent
 } from './utils';
-import { 
-  MessageSquare, 
-  Users, 
-  TrendingUp, 
-  Clock, 
+import {
+  MessageSquare,
+  Users,
+  TrendingUp,
+  Clock,
   Globe,
   Key,
   Copy,
@@ -43,7 +43,6 @@ import {
   File,
   FileText,
   Maximize2,
-  TrendingUp,
   TrendingDown
 } from 'lucide-react';
 
