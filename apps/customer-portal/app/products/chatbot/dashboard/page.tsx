@@ -1923,10 +1923,10 @@ function ChatbotDashboardContent() {
                     <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
                       <div className="flex items-start gap-2 mb-2">
                         <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(255, 193, 7)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Response Time Impact</p>
+                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Common Drop-off Point</p>
                       </div>
                       <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                        Users expect instant responses - delays over 2 seconds may reduce engagement
+                        Users often leave after asking about pricing - consider adding a pricing FAQ section
                       </p>
                     </div>
                     <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
