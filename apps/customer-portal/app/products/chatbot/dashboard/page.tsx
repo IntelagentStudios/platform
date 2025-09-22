@@ -43,7 +43,8 @@ import {
   File,
   FileText,
   Maximize2,
-  TrendingDown
+  TrendingDown,
+  MessageCircle
 } from 'lucide-react';
 
 interface Conversation {
