@@ -361,7 +361,7 @@ function ChatbotDashboardContent() {
     };
 
     console.log('[Chatbot Dashboard] Calculated stats:', statsData);
-    console.log('[Chatbot Dashboard] Sample conversation date:', convs[0]?.first_message_at || convs[0]?.created_at);
+    console.log('[Chatbot Dashboard] Sample conversation date:', convs[0]?.first_message_at);
 
     setStats(statsData);
   };
