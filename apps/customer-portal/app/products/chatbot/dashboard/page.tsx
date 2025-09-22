@@ -129,6 +129,13 @@ function ChatbotDashboardContent() {
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [statusBulletin, setStatusBulletin] = useState<{
+    priority: 'info' | 'warning' | 'critical';
+    headline: string;
+    details: string[];
+    timestamp: string;
+  } | null>(null);
+  const [bulletinLoading, setBulletinLoading] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -174,6 +181,13 @@ function ChatbotDashboardContent() {
       calculateStats(conversations);
     }
   }, [selectedDomains, conversations]);
+
+  useEffect(() => {
+    // Fetch status bulletin when conversations are loaded
+    if (conversations.length > 0 && !bulletinLoading && !statusBulletin) {
+      fetchStatusBulletin();
+    }
+  }, [conversations]);
 
   useEffect(() => {
     // Extract unique topics when conversations change
@@ -399,6 +413,32 @@ function ChatbotDashboardContent() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const fetchStatusBulletin = async () => {
+    setBulletinLoading(true);
+    try {
+      const response = await fetch('/api/chatbot/status-bulletin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productKey: selectedProductKey || productKey,
+          conversations: filteredConversations.length > 0 ? filteredConversations : conversations,
+          stats,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStatusBulletin(data.bulletin);
+      }
+    } catch (error) {
+      console.error('Failed to fetch status bulletin:', error);
+    } finally {
+      setBulletinLoading(false);
     }
   };
 
@@ -784,70 +824,77 @@ function ChatbotDashboardContent() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
-                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Conversations</p>
-                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.totalConversations || 0}
-                    </p>
+            {/* Status Bulletin and Today's Count */}
+            <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today</span>
+                      <span className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                        {stats?.todayConversations || 0}
+                      </span>
+                      <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>conversations</span>
+                    </div>
                   </div>
-                  <MessageSquare className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                  <button
+                    onClick={fetchStatusBulletin}
+                    disabled={bulletinLoading}
+                    className="p-2 rounded-lg hover:opacity-80 transition"
+                    style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)', color: 'rgb(169, 189, 203)' }}
+                  >
+                    {bulletinLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  </button>
                 </div>
-              </div>
 
-              <div
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
-                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today</p>
-                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.todayConversations || 0}
+                {/* Status Bulletin */}
+                {bulletinLoading && !statusBulletin ? (
+                  <div className="flex items-center gap-2 py-4">
+                    <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'rgb(169, 189, 203)' }} />
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Analyzing chatbot status...</span>
+                  </div>
+                ) : statusBulletin ? (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1">
+                        {statusBulletin.priority === 'critical' ? (
+                          <AlertCircle className="w-5 h-5" style={{ color: 'rgb(244, 67, 54)' }} />
+                        ) : statusBulletin.priority === 'warning' ? (
+                          <AlertCircle className="w-5 h-5" style={{ color: 'rgb(255, 193, 7)' }} />
+                        ) : (
+                          <TrendingUp className="w-5 h-5" style={{ color: 'rgb(76, 175, 80)' }} />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-2"
+                            style={{
+                              color: statusBulletin.priority === 'critical' ? 'rgb(244, 67, 54)' :
+                                     statusBulletin.priority === 'warning' ? 'rgb(255, 193, 7)' :
+                                     'rgb(229, 227, 220)'
+                            }}>
+                          {statusBulletin.headline}
+                        </h3>
+                        <div className="space-y-1">
+                          {statusBulletin.details.map((detail, idx) => (
+                            <p key={idx} className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
+                              • {detail}
+                            </p>
+                          ))}
+                        </div>
+                        <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                          Last updated: {new Date(statusBulletin.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      No status updates available. Click refresh to check for updates.
                     </p>
                   </div>
-                  <Clock className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
-                </div>
-              </div>
-
-              <div
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
-                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>This Week</p>
-                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.weekConversations || 0}
-                    </p>
-                  </div>
-                  <TrendingUp className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
-                </div>
-              </div>
-
-              <div
-                onClick={() => setActiveTab('analytics')}
-                className="p-6 rounded-lg border cursor-pointer hover:opacity-80 transition"
-                style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages</p>
-                    <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.avgMessagesPerConversation || 0}
-                    </p>
-                  </div>
-                  <Activity className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
-                </div>
+                )}
               </div>
             </div>
 
