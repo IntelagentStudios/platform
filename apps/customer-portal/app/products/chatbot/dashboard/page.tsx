@@ -2238,8 +2238,8 @@ function ChatbotDashboardContent() {
                   </div>
                 )}
 
-                {/* Expanded Top Domains Chart */}
-                {expandedChart === 'topDomains' && (
+                {/* Expanded Top Domains Chart - Only for multi-domain accounts */}
+                {expandedChart === 'topDomains' && stats?.domains && stats.domains.length > 1 && (
                   <div className="space-y-4">
                     {stats?.domains?.map((domain, index) => {
                       const domainConversations = conversations.filter(conv => conv.domain === domain).length;
@@ -2336,63 +2336,60 @@ function ChatbotDashboardContent() {
                 </div>
               </div>
 
-              {/* Top Domains - Compact View */}
-              <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Top Domains by Conversations
-                  </h3>
-                  <button
-                    onClick={() => setExpandedChart('topDomains')}
-                    className="p-1 rounded hover:bg-gray-700 transition"
-                    title="Expand view"
-                  >
-                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {/* Show only top 3 domains */}
-                  {stats?.domains?.slice(0, 3).map((domain, index) => {
-                    const domainConversations = conversations.filter(conv => conv.domain === domain).length;
-                    const percentage = stats.totalConversations > 0 ?
-                      Math.round((domainConversations / stats.totalConversations) * 100) : 0;
+              {/* Top Domains - Only show for multi-domain accounts */}
+              {stats?.domains && stats.domains.length > 1 && (
+                <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Top Domains by Conversations
+                    </h3>
+                    <button
+                      onClick={() => setExpandedChart('topDomains')}
+                      className="p-1 rounded hover:bg-gray-700 transition"
+                      title="Expand view"
+                    >
+                      <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {/* Show only top 3 domains */}
+                    {stats.domains.slice(0, 3).map((domain, index) => {
+                      const domainConversations = conversations.filter(conv => conv.domain === domain).length;
+                      const percentage = stats.totalConversations > 0 ?
+                        Math.round((domainConversations / stats.totalConversations) * 100) : 0;
 
-                    return (
-                      <div key={domain} className="flex items-center">
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs truncate" style={{ color: 'rgb(229, 227, 220)', maxWidth: '150px' }}>
-                              {domain || 'Unknown'}
-                            </span>
-                            <span className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                              {percentage}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-700 rounded-full h-1.5">
-                            <div
-                              className="h-1.5 rounded-full transition-all"
-                              style={{
-                                width: `${percentage}%`,
-                                backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
-                              }}
-                            />
+                      return (
+                        <div key={domain} className="flex items-center">
+                          <div className="flex-1">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs truncate" style={{ color: 'rgb(229, 227, 220)', maxWidth: '150px' }}>
+                                {domain || 'Unknown'}
+                              </span>
+                              <span className="text-xs ml-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                                {percentage}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-700 rounded-full h-1.5">
+                              <div
+                                className="h-1.5 rounded-full transition-all"
+                                style={{
+                                  width: `${percentage}%`,
+                                  backgroundColor: `hsl(${(index * 40) % 360}, 60%, 60%)`
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
+                      );
+                    })}
+                    {stats.domains.length > 3 && (
+                      <div className="pt-1 text-xs text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        +{stats.domains.length - 3} more domains
                       </div>
-                    );
-                  }) || []}
-                  {(!stats?.domains || stats.domains.length === 0) && (
-                    <div className="text-center py-4 text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                      No domain data available
-                    </div>
-                  )}
-                  {stats?.domains && stats.domains.length > 3 && (
-                    <div className="pt-1 text-xs text-center" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                      +{stats.domains.length - 3} more domains
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
             )}
 
