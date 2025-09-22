@@ -137,8 +137,6 @@ Focus on:
         product_key: productKey,
         customer_message: 'SYSTEM:INSIGHTS_GENERATED',
         chatbot_response: JSON.stringify(insights),
-        sentiment_score: 0,
-        resolved: true,
         created_at: new Date()
       }
     });
