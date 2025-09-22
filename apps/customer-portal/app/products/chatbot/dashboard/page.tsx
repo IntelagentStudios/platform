@@ -103,6 +103,8 @@ function ChatbotDashboardContent() {
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
   const [expandedChart, setExpandedChart] = useState<'messageVolume' | 'topDomains' | null>(null);
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(['all']);
+  const [showDomainSelector, setShowDomainSelector] = useState(false);
   
   // Settings state - simplified
   const [settings, setSettings] = useState({
@@ -142,7 +144,14 @@ function ChatbotDashboardContent() {
 
   useEffect(() => {
     filterConversations();
-  }, [conversations, searchQuery, dateFilter, selectedDate, topicFilter, selectedProductKey]);
+  }, [conversations, searchQuery, dateFilter, selectedDate, topicFilter, selectedProductKey, selectedDomains]);
+
+  useEffect(() => {
+    // Recalculate stats when domain filter changes
+    if (conversations.length > 0) {
+      calculateStats(conversations);
+    }
+  }, [selectedDomains, conversations]);
 
   useEffect(() => {
     // Extract unique topics when conversations change
@@ -151,6 +160,21 @@ function ChatbotDashboardContent() {
       setUniqueTopics(topics);
     }
   }, [conversations]);
+
+  useEffect(() => {
+    // Close domain selector when clicking outside
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.domain-selector-container')) {
+        setShowDomainSelector(false);
+      }
+    };
+
+    if (showDomainSelector) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showDomainSelector]);
 
   const checkAuth = async () => {
     try {
@@ -331,15 +355,21 @@ function ChatbotDashboardContent() {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const uniqueSessions = new Set(convs.map(c => c.session_id));
-    const domains = [...new Set(convs.map(c => c.domain).filter(Boolean))];
+    // Apply domain filter to conversations for stats calculation
+    let statsConvs = convs;
+    if (!selectedDomains.includes('all') && selectedDomains.length > 0) {
+      statsConvs = convs.filter(conv => selectedDomains.includes(conv.domain));
+    }
+
+    const uniqueSessions = new Set(statsConvs.map(c => c.session_id));
+    const domains = [...new Set(convs.map(c => c.domain).filter(Boolean))]; // Keep all domains for the selector
 
     let totalMessages = 0;
     let todayCount = 0;
     let weekCount = 0;
     let monthCount = 0;
 
-    convs.forEach(conv => {
+    statsConvs.forEach(conv => {
       totalMessages += conv.messages.length;
       const convDate = new Date(conv.first_message_at || new Date());
 
@@ -352,10 +382,10 @@ function ChatbotDashboardContent() {
     });
 
     const statsData = {
-      totalConversations: convs.length,
+      totalConversations: statsConvs.length,
       uniqueSessions: uniqueSessions.size,
       totalMessages,
-      avgMessagesPerConversation: convs.length > 0 ? Math.round(totalMessages / convs.length) : 0,
+      avgMessagesPerConversation: statsConvs.length > 0 ? Math.round(totalMessages / statsConvs.length) : 0,
       domains,
       todayConversations: todayCount,
       weekConversations: weekCount,
@@ -426,6 +456,13 @@ function ChatbotDashboardContent() {
     // Product key filter (for accounts with multiple keys)
     if (selectedProductKey !== 'all' && availableProductKeys.length > 1) {
       filtered = filtered.filter(conv => conv.product_key === selectedProductKey);
+    }
+
+    // Domain filter
+    if (!selectedDomains.includes('all') && selectedDomains.length > 0) {
+      filtered = filtered.filter(conv =>
+        selectedDomains.includes(conv.domain)
+      );
     }
 
     setFilteredConversations(filtered);
@@ -593,14 +630,17 @@ function ChatbotDashboardContent() {
                 </h2>
                 <div className="space-y-3">
                   {Array.from({ length: 24 }, (_, hour) => {
-                    const hourMessages = conversations.reduce((count, conv) => {
+                    const filteredConvs = !selectedDomains.includes('all') && selectedDomains.length > 0
+                      ? conversations.filter(conv => selectedDomains.includes(conv.domain))
+                      : conversations;
+                    const hourMessages = filteredConvs.reduce((count, conv) => {
                       return count + conv.messages.filter(msg => {
                         const msgDate = new Date(msg.timestamp);
                         return msgDate.getHours() === hour;
                       }).length;
                     }, 0);
                     const maxMessages = Math.max(...Array.from({ length: 24 }, (_, h) => {
-                      return conversations.reduce((count, conv) => {
+                      return filteredConvs.reduce((count, conv) => {
                         return count + conv.messages.filter(msg => {
                           const msgDate = new Date(msg.timestamp);
                           return msgDate.getHours() === h;
@@ -1037,7 +1077,7 @@ function ChatbotDashboardContent() {
                       >
                         <Filter className="w-4 h-4" />
                         Filters
-                        {(dateFilter !== 'all' || topicFilter !== 'all' || selectedProductKey !== 'all') && (
+                        {(dateFilter !== 'all' || topicFilter !== 'all' || selectedProductKey !== 'all' || !selectedDomains.includes('all')) && (
                           <span className="ml-1 rounded-full w-2 h-2" style={{ backgroundColor: 'rgb(169, 189, 203)' }} />
                         )}
                       </button>
@@ -1111,6 +1151,75 @@ function ChatbotDashboardContent() {
                               </option>
                             ))}
                           </select>
+                        )}
+
+                        {/* Domain Multi-Selector */}
+                        {stats?.domains && stats.domains.length > 0 && (
+                          <div className="relative domain-selector-container">
+                            <button
+                              onClick={() => setShowDomainSelector(!showDomainSelector)}
+                              className="w-full px-3 py-1.5 text-sm border rounded-lg text-left flex items-center justify-between"
+                              style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                            >
+                              <span className="truncate">
+                                {selectedDomains.includes('all')
+                                  ? 'All domains'
+                                  : selectedDomains.length === 0
+                                  ? 'Select domains'
+                                  : selectedDomains.length === 1
+                                  ? selectedDomains[0]
+                                  : `${selectedDomains.length} domains selected`}
+                              </span>
+                              <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                            </button>
+
+                            {showDomainSelector && (
+                              <div
+                                className="absolute z-10 w-full mt-1 rounded-lg border shadow-lg max-h-60 overflow-y-auto"
+                                style={{ backgroundColor: 'rgb(48, 54, 54)', borderColor: 'rgba(169, 189, 203, 0.3)' }}
+                              >
+                                <div className="p-2 space-y-1">
+                                  <label className="flex items-center p-2 hover:bg-gray-700 rounded cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedDomains.includes('all')}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedDomains(['all']);
+                                        } else {
+                                          setSelectedDomains([]);
+                                        }
+                                      }}
+                                      className="mr-2"
+                                    />
+                                    <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>All domains</span>
+                                  </label>
+
+                                  <div className="border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }} />
+
+                                  {stats.domains.map(domain => (
+                                    <label key={domain} className="flex items-center p-2 hover:bg-gray-700 rounded cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedDomains.includes('all') || selectedDomains.includes(domain)}
+                                        onChange={(e) => {
+                                          if (selectedDomains.includes('all')) {
+                                            setSelectedDomains([domain]);
+                                          } else if (e.target.checked) {
+                                            setSelectedDomains([...selectedDomains, domain]);
+                                          } else {
+                                            setSelectedDomains(selectedDomains.filter(d => d !== domain));
+                                          }
+                                        }}
+                                        className="mr-2"
+                                      />
+                                      <span className="text-sm truncate" style={{ color: 'rgb(229, 227, 220)' }}>{domain}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     )}
@@ -1767,14 +1876,17 @@ function ChatbotDashboardContent() {
                 <div className="space-y-1">
                   {/* Show only peak hours (9am, 12pm, 3pm, 6pm, 9pm) */}
                   {[9, 12, 15, 18, 21].map(hour => {
-                    const hourMessages = conversations.reduce((count, conv) => {
+                    const filteredConvs = !selectedDomains.includes('all') && selectedDomains.length > 0
+                      ? conversations.filter(conv => selectedDomains.includes(conv.domain))
+                      : conversations;
+                    const hourMessages = filteredConvs.reduce((count, conv) => {
                       return count + conv.messages.filter(msg => {
                         const msgDate = new Date(msg.timestamp);
                         return msgDate.getHours() === hour;
                       }).length;
                     }, 0);
                     const maxMessages = Math.max(...[9, 12, 15, 18, 21].map(h => {
-                      return conversations.reduce((count, conv) => {
+                      return filteredConvs.reduce((count, conv) => {
                         return count + conv.messages.filter(msg => {
                           const msgDate = new Date(msg.timestamp);
                           return msgDate.getHours() === h;
