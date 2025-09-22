@@ -111,6 +111,8 @@ function ChatbotDashboardContent() {
   const [showDomainSelector, setShowDomainSelector] = useState(false);
   const [aiInsights, setAiInsights] = useState<any>(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
+  const [draggedTab, setDraggedTab] = useState<number | null>(null);
+  const [tabOrder, setTabOrder] = useState<string[]>(['overview', 'conversations', 'analytics', 'knowledge', 'settings']);
   
   // Settings state - simplified
   const [settings, setSettings] = useState({
@@ -128,6 +130,18 @@ function ChatbotDashboardContent() {
 
   useEffect(() => {
     checkAuth();
+    // Load saved tab order from localStorage
+    const savedOrder = localStorage.getItem('chatbot-tab-order');
+    if (savedOrder) {
+      try {
+        const order = JSON.parse(savedOrder);
+        if (Array.isArray(order) && order.length === 5) {
+          setTabOrder(order);
+        }
+      } catch (e) {
+        console.error('Failed to parse saved tab order');
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -689,77 +703,79 @@ function ChatbotDashboardContent() {
 
         {/* Tabs */}
         <div className="border-b mb-6" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'overview' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'overview' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Overview
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('conversations')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'conversations' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'conversations' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Conversations
-                {conversations.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)', color: 'rgb(169, 189, 203)' }}>
-                    {conversations.length}
-                  </span>
-                )}
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('knowledge')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'knowledge' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'knowledge' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                Knowledge Base
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'analytics' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'analytics' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('settings')}
-              className="py-2 px-1 border-b-2 font-medium text-sm transition hover:opacity-80"
-              style={{
-                borderColor: activeTab === 'settings' ? 'rgb(169, 189, 203)' : 'transparent',
-                color: activeTab === 'settings' ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)'
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Customize
-              </div>
-            </button>
+          <nav className="-mb-px flex items-center">
+            <div className="flex space-x-4">
+              {tabOrder.map((tabId, index) => {
+                const tabConfig: Record<string, { icon: any; label: string; badge?: number }> = {
+                  overview: { icon: BarChart3, label: 'Overview' },
+                  conversations: { icon: MessageSquare, label: 'Conversations', badge: conversations.length },
+                  analytics: { icon: BarChart3, label: 'Analytics' },
+                  knowledge: { icon: BookOpen, label: 'Knowledge Base' },
+                  settings: { icon: Settings, label: 'Customize' }
+                };
+
+                const tab = tabConfig[tabId];
+                if (!tab) return null;
+
+                const Icon = tab.icon;
+
+                return (
+                  <button
+                    key={tabId}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedTab(index);
+                      e.dataTransfer.effectAllowed = 'move';
+                      // Add visual feedback
+                      (e.target as HTMLElement).style.opacity = '0.5';
+                    }}
+                    onDragEnd={(e) => {
+                      (e.target as HTMLElement).style.opacity = '1';
+                      setDraggedTab(null);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedTab === null) return;
+
+                      const newOrder = [...tabOrder];
+                      const draggedItem = newOrder[draggedTab];
+                      newOrder.splice(draggedTab, 1);
+                      newOrder.splice(index, 0, draggedItem);
+                      setTabOrder(newOrder);
+
+                      // Save to localStorage
+                      localStorage.setItem('chatbot-tab-order', JSON.stringify(newOrder));
+                      setDraggedTab(null);
+                    }}
+                    onClick={() => setActiveTab(tabId)}
+                    className="py-2 px-3 border-b-2 font-medium text-sm transition hover:opacity-80 cursor-move select-none"
+                    style={{
+                      borderColor: activeTab === tabId ? 'rgb(169, 189, 203)' : 'transparent',
+                      color: activeTab === tabId ? 'rgb(229, 227, 220)' : 'rgba(169, 189, 203, 0.8)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    title="Drag to reorder tabs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
+                      {tab.badge && tab.badge > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)', color: 'rgb(169, 189, 203)' }}>
+                          {tab.badge}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="ml-auto mr-4 flex items-center text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+              <span>Drag tabs to reorder</span>
+            </div>
           </nav>
         </div>
 
