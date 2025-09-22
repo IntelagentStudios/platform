@@ -1712,6 +1712,81 @@ function ChatbotDashboardContent() {
             </div>
             )}
 
+            {/* Key Insights and Recommendations - Always visible at top */}
+            {!expandedChart && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Performance Insights */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  <Activity className="w-5 h-5" />
+                  Performance Insights
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Resolution Rate</span>
+                      <span className="text-sm font-bold" style={{ color: 'rgb(76, 175, 80)' }}>68%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div className="h-2 rounded-full" style={{ width: '68%', backgroundColor: 'rgb(76, 175, 80)' }} />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Response Time</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>1.2s</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Satisfaction Score</span>
+                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>4.2/5</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top Issues */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  <AlertCircle className="w-5 h-5" style={{ color: 'rgb(255, 193, 7)' }} />
+                  Needs Attention
+                </h3>
+                <div className="space-y-3">
+                  <div className="p-3 rounded" style={{ backgroundColor: 'rgba(244, 67, 54, 0.1)', borderLeft: '3px solid rgb(244, 67, 54)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Pricing Questions</p>
+                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>32% unresolved - Add pricing FAQ</p>
+                  </div>
+                  <div className="p-3 rounded" style={{ backgroundColor: 'rgba(255, 193, 7, 0.1)', borderLeft: '3px solid rgb(255, 193, 7)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>API Documentation</p>
+                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>43 failed queries this week</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  <CheckCircle className="w-5 h-5" style={{ color: 'rgb(76, 175, 80)' }} />
+                  Recommended Actions
+                </h3>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setExpandedChart('insights');
+                      setChartViewMode('weekly');
+                    }}
+                    className="w-full p-3 rounded text-left hover:bg-gray-700 transition"
+                    style={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.3)' }}
+                  >
+                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>View All Recommendations</p>
+                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>3 high-impact improvements</p>
+                  </button>
+                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                    <p>✓ Welcome flow performing well</p>
+                    <p>✓ Product questions resolved 82%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+
             {/* Conversation Trends Chart - Hide when chart is expanded */}
             {!expandedChart && (
             <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
@@ -2054,70 +2129,52 @@ function ChatbotDashboardContent() {
               </div>
             )}
 
-            {/* Insights and Quality Analysis - Hide when chart is expanded */}
+            {/* Additional Analytics - Hide when chart is expanded */}
             {!expandedChart && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Conversation Quality & Insights */}
+              {/* Response Patterns */}
               <div className="rounded-lg border p-4" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-base font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Conversation Insights
+                    Response Patterns
                   </h3>
                   <button
                     onClick={() => setExpandedChart('insights')}
                     className="p-1 rounded hover:bg-gray-700 transition"
-                    title="Expand view"
+                    title="View detailed insights"
                   >
                     <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {/* Resolution Rate */}
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs" style={{ color: 'rgb(169, 189, 203)' }}>Resolution Rate</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-gray-700 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full"
-                          style={{
-                            width: '68%',
-                            backgroundColor: 'rgb(76, 175, 80)'
-                          }}
-                        />
+                  {/* Peak Hours */}
+                  <div>
+                    <p className="text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Peak Activity Times</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>2-5 PM Weekdays</span>
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(76, 175, 80, 0.2)', color: 'rgb(76, 175, 80)' }}>High</span>
                       </div>
-                      <span className="text-xs font-medium" style={{ color: 'rgb(229, 227, 220)' }}>68%</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>9-11 AM Weekdays</span>
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(255, 193, 7, 0.2)', color: 'rgb(255, 193, 7)' }}>Med</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Avg Response Time */}
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs" style={{ color: 'rgb(169, 189, 203)' }}>Avg Response Time</span>
-                    <span className="text-xs font-medium" style={{ color: 'rgb(229, 227, 220)' }}>1.2s</span>
-                  </div>
-
-                  {/* Customer Satisfaction */}
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs" style={{ color: 'rgb(169, 189, 203)' }}>Satisfaction Score</span>
-                    <div className="flex items-center gap-1">
-                      {[1,2,3,4,5].map(i => (
-                        <div
-                          key={i}
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: i <= 4 ? 'rgb(255, 193, 7)' : 'rgba(169, 189, 203, 0.3)'
-                          }}
-                        />
-                      ))}
-                      <span className="text-xs ml-1" style={{ color: 'rgb(229, 227, 220)' }}>4/5</span>
-                    </div>
-                  </div>
-
-                  {/* Top Issue */}
+                  {/* Common Drop-offs */}
                   <div className="pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'rgb(255, 193, 7)' }}>⚠️ Needs Attention</p>
-                    <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                      32% of conversations about "pricing" are unresolved
-                    </p>
+                    <p className="text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Common Drop-off Points</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>After pricing</span>
+                        <span className="text-xs" style={{ color: 'rgb(244, 67, 54)' }}>28%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Technical questions</span>
+                        <span className="text-xs" style={{ color: 'rgb(255, 193, 7)' }}>18%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
