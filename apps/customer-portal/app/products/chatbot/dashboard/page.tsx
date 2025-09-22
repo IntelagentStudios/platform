@@ -109,6 +109,8 @@ function ChatbotDashboardContent() {
   const [compareBy, setCompareBy] = useState<'count' | 'percentage' | 'trend'>('count');
   const [selectedDomains, setSelectedDomains] = useState<string[]>(['all']);
   const [showDomainSelector, setShowDomainSelector] = useState(false);
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
   
   // Settings state - simplified
   const [settings, setSettings] = useState({
@@ -295,6 +297,38 @@ function ChatbotDashboardContent() {
       setIsSavingSettings(false);
     }
   };
+
+  const fetchAIInsights = async () => {
+    if (loadingInsights || !conversations.length) return;
+
+    setLoadingInsights(true);
+    try {
+      const res = await fetch('/api/chatbot/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversations: conversations.slice(0, 100),
+          productKey: productKey || siteKey
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAiInsights(data.insights);
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI insights:', error);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
+  // Fetch AI insights when conversations change and analytics tab is active
+  useEffect(() => {
+    if (conversations.length > 0 && activeTab === 'analytics' && !aiInsights) {
+      fetchAIInsights();
+    }
+  }, [conversations, activeTab]);
 
   const fetchConversations = async () => {
     setRefreshing(true);
