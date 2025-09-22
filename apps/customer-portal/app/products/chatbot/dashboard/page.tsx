@@ -339,7 +339,7 @@ function ChatbotDashboardContent() {
 
     convs.forEach(conv => {
       totalMessages += conv.messages.length;
-      const convDate = new Date(conv.first_message_at || conv.created_at);
+      const convDate = new Date(conv.first_message_at || new Date());
 
       // Check if conversation is from today (between todayStart and todayEnd)
       if (convDate >= todayStart && convDate < todayEnd) todayCount++;
