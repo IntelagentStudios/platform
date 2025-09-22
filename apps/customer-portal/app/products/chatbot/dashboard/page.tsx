@@ -2040,7 +2040,7 @@ function ChatbotDashboardContent() {
                   {(() => {
                     const topics: Record<string, number> = {};
                     conversations.forEach(conv => {
-                      const topic = extractTopic(conv);
+                      const topic = extractTopic(conv.messages);
                       if (topic && topic !== 'undefined') {
                         topics[topic] = (topics[topic] || 0) + 1;
                       }
@@ -2200,7 +2200,7 @@ function ChatbotDashboardContent() {
                         const convDate = new Date(conv.first_message_at);
                         return convDate >= cutoffDate;
                       }).forEach(conv => {
-                        const topic = extractTopic(conv);
+                        const topic = extractTopic(conv.messages);
                         if (topic && topic !== 'undefined') {
                           topics[topic] = (topics[topic] || 0) + 1;
                         }
@@ -2240,8 +2240,8 @@ function ChatbotDashboardContent() {
                   </div>
                 )}
 
-                {/* Keep existing insights view but update the condition */}
-                {false && expandedChart === 'insights' && (
+                {/* Removed dead insights code block */}
+                {false && (
                   <div className="space-y-6">
                     {chartViewMode === 'hourly' && ( // Performance View
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
