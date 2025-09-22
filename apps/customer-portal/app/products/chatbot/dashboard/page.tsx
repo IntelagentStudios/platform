@@ -997,6 +997,65 @@ function ChatbotDashboardContent() {
                 <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                   {/* Search and Filters */}
                   <div className="space-y-3">
+                    {/* Domain Filter - Only show if multiple domains */}
+                    {stats?.domains && stats.domains.length > 1 && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowDomainSelector(!showDomainSelector)}
+                          className="w-full px-3 py-2 text-sm border rounded-lg flex items-center justify-between"
+                          style={{
+                            borderColor: 'rgba(169, 189, 203, 0.3)',
+                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        >
+                          <span className="flex items-center gap-2">
+                            <Globe className="w-4 h-4" />
+                            {selectedDomains.includes('all') ? 'All Domains' : `${selectedDomains.length} Domain${selectedDomains.length !== 1 ? 's' : ''}`}
+                          </span>
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                        {showDomainSelector && (
+                          <div className="absolute z-10 mt-1 w-full rounded-lg border shadow-lg"
+                               style={{ backgroundColor: 'rgb(48, 54, 54)', borderColor: 'rgba(169, 189, 203, 0.3)' }}>
+                            <div className="p-2">
+                              <label className="flex items-center gap-2 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedDomains.includes('all')}
+                                  onChange={(e) => {
+                                    setSelectedDomains(e.target.checked ? ['all'] : []);
+                                    calculateStats(conversations);
+                                  }}
+                                />
+                                <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>All Domains</span>
+                              </label>
+                              {stats.domains.map((domain: string) => (
+                                <label key={domain} className="flex items-center gap-2 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedDomains.includes(domain)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedDomains(prev =>
+                                          prev.includes('all') ? [domain] : [...prev.filter(d => d !== 'all'), domain]
+                                        );
+                                      } else {
+                                        setSelectedDomains(prev => prev.filter(d => d !== domain));
+                                      }
+                                      calculateStats(conversations);
+                                    }}
+                                    disabled={selectedDomains.includes('all')}
+                                  />
+                                  <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>{domain}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                       <input
@@ -1342,6 +1401,62 @@ function ChatbotDashboardContent() {
         {/* Knowledge Base Tab */}
         {activeTab === 'knowledge' && (
           <div className="max-w-6xl mx-auto">
+            {/* Domain Filter - Only show if multiple domains */}
+            {stats?.domains && stats.domains.length > 1 && (
+              <div className="mb-6">
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setShowDomainSelector(!showDomainSelector)}
+                    className="px-4 py-2 text-sm border rounded-lg flex items-center gap-2"
+                    style={{
+                      borderColor: 'rgba(169, 189, 203, 0.3)',
+                      backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                      color: 'rgb(229, 227, 220)'
+                    }}
+                  >
+                    <Globe className="w-4 h-4" />
+                    {selectedDomains.includes('all') ? 'All Domains' : `${selectedDomains.length} Domain${selectedDomains.length !== 1 ? 's' : ''}`}
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  {showDomainSelector && (
+                    <div className="absolute z-10 mt-1 min-w-[200px] rounded-lg border shadow-lg"
+                         style={{ backgroundColor: 'rgb(48, 54, 54)', borderColor: 'rgba(169, 189, 203, 0.3)' }}>
+                      <div className="p-2">
+                        <label className="flex items-center gap-2 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedDomains.includes('all')}
+                            onChange={(e) => {
+                              setSelectedDomains(e.target.checked ? ['all'] : []);
+                            }}
+                          />
+                          <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>All Domains</span>
+                        </label>
+                        {stats.domains.map((domain: string) => (
+                          <label key={domain} className="flex items-center gap-2 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedDomains.includes(domain)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedDomains(prev =>
+                                    prev.includes('all') ? [domain] : [...prev.filter(d => d !== 'all'), domain]
+                                  );
+                                } else {
+                                  setSelectedDomains(prev => prev.filter(d => d !== domain));
+                                }
+                              }}
+                              disabled={selectedDomains.includes('all')}
+                            />
+                            <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>{domain}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Upload Section */}
               <div className="rounded-lg shadow-sm border p-6" 
@@ -1757,12 +1872,12 @@ function ChatbotDashboardContent() {
 
             {/* Key Insights and Recommendations - Always visible at top */}
             {!expandedChart && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* AI Insights Preview */}
+            <div>
+              {/* AI Insights - Full Width */}
               <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                   <Activity className="w-5 h-5" />
-                  AI Insights (Preview)
+                  AI Behavior Insights
                 </h3>
                 {loadingInsights ? (
                   <div className="space-y-3">
@@ -1774,92 +1889,57 @@ function ChatbotDashboardContent() {
                     ))}
                   </div>
                 ) : aiInsights?.takeaways ? (
-                  <div className="space-y-3">
-                    {aiInsights.takeaways.slice(0, 3).map((takeaway: string, idx: number) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                        <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>{takeaway}</p>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {aiInsights.takeaways.slice(0, 3).map((takeaway: any, idx: number) => {
+                      const insight = typeof takeaway === 'string' ? { title: takeaway, explanation: '' } : takeaway;
+                      return (
+                        <div key={idx} className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                          <div className="flex items-start gap-2 mb-2">
+                            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                            <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {insight.title || insight}
+                            </p>
+                          </div>
+                          {insight.explanation && (
+                            <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              {insight.explanation}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Most questions resolved within 3 messages</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                      <div className="flex items-start gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Quick Resolution Pattern</p>
+                      </div>
+                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        Most conversations end within 3 messages, indicating users find answers quickly
+                      </p>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Customers appreciate quick responses</p>
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                      <div className="flex items-start gap-2 mb-2">
+                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(255, 193, 7)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Response Time Impact</p>
+                      </div>
+                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        Users expect instant responses - delays over 2 seconds may reduce engagement
+                      </p>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                      <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Consider adding more product info</p>
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                      <div className="flex items-start gap-2 mb-2">
+                        <Activity className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Knowledge Gap: Product Details</p>
+                      </div>
+                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                        23% of questions about product features go unanswered - add detailed product documentation
+                      </p>
                     </div>
                   </div>
                 )}
-                <div className="mt-4 pt-3 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                  <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Upgrade for full analytics & recommendations</p>
-                </div>
-              </div>
-
-              {/* Conversation Metrics */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  <MessageCircle className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                  Quick Stats
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages/Conv</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.avgMessagesPerConversation || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Active Domains</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.domains?.length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Today's Activity</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.todayConversations || 0} chats
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Unique Sessions</span>
-                    <span className="text-sm font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.uniqueSessions || 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  <CheckCircle className="w-5 h-5" style={{ color: 'rgb(76, 175, 80)' }} />
-                  Recommended Actions
-                </h3>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      setExpandedChart('insights');
-                      setChartViewMode('weekly');
-                    }}
-                    className="w-full p-3 rounded text-left hover:bg-gray-700 transition"
-                    style={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.3)' }}
-                  >
-                    <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>View All Recommendations</p>
-                    <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>3 high-impact improvements</p>
-                  </button>
-                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                    <p>✓ Welcome flow performing well</p>
-                    <p>✓ Product questions resolved 82%</p>
-                  </div>
-                </div>
               </div>
             </div>
             )}

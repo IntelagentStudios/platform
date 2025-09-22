@@ -28,9 +28,18 @@ export class ChatbotInsightsSkill extends BaseSkill {
           data: {
             insights: {
               takeaways: [
-                "No conversations yet - start engaging with your chatbot",
-                "Add knowledge base content to improve responses",
-                "Monitor initial conversations closely for improvements"
+                {
+                  title: "No Conversations Yet",
+                  explanation: "Start engaging with your chatbot to see behavior patterns"
+                },
+                {
+                  title: "Knowledge Base Empty",
+                  explanation: "Add product documentation to answer common questions"
+                },
+                {
+                  title: "Ready to Learn",
+                  explanation: "Monitor initial conversations to identify improvement areas"
+                }
               ],
               lastUpdated: new Date().toISOString()
             }
@@ -66,7 +75,7 @@ export class ChatbotInsightsSkill extends BaseSkill {
       }));
 
       const prompt = `
-Analyze these chatbot conversations and provide the 3 most important takeaways.
+Analyze these chatbot conversations and provide the 3 most important takeaways about user behavior and UI interaction patterns.
 
 Conversations data:
 ${JSON.stringify(conversationSummary, null, 2)}
@@ -76,18 +85,27 @@ Total conversations: ${conversations.length}
 Provide insights in this JSON format:
 {
   "takeaways": [
-    "First most important insight or recommendation",
-    "Second most important insight or recommendation",
-    "Third most important insight or recommendation"
+    {
+      "title": "Brief insight title (3-5 words)",
+      "explanation": "One sentence explanation of why this matters based on the data"
+    },
+    {
+      "title": "Brief insight title (3-5 words)",
+      "explanation": "One sentence explanation of why this matters based on the data"
+    },
+    {
+      "title": "Brief insight title (3-5 words)",
+      "explanation": "One sentence explanation of why this matters based on the data"
+    }
   ]
 }
 
 Focus on:
-1. Actual patterns in the data, not assumptions
-2. Specific, actionable recommendations
-3. Problems that can realistically be fixed
-4. Keep each takeaway concise (1 sentence)
-5. Make takeaways actionable and valuable
+1. User behavior patterns and how they interact with the chatbot
+2. UI/UX issues or successes based on conversation flow
+3. Knowledge gaps indicated by repeated questions or drop-offs
+4. Response time impacts on engagement
+5. Specific percentages or numbers when relevant
 `;
 
       const completion = await openai.chat.completions.create({
@@ -173,9 +191,18 @@ Focus on:
       data: {
         insights: {
           takeaways: [
-            `You have ${conversations?.length || 0} total conversations to analyze`,
-            "AI insights require OpenAI API key configuration",
-            "Upgrade to unlock full analytics and recommendations"
+            {
+              title: "Limited Analysis Available",
+              explanation: `${conversations?.length || 0} conversations ready for analysis when AI is configured`
+            },
+            {
+              title: "Configuration Required",
+              explanation: "OpenAI API key needed for behavior insights"
+            },
+            {
+              title: "Basic Metrics Only",
+              explanation: "Advanced pattern recognition unavailable without AI"
+            }
           ],
           lastUpdated: new Date().toISOString()
         }
