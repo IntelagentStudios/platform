@@ -46,20 +46,30 @@ export async function POST(req: NextRequest) {
 
     // Use the skills orchestrator to generate insights
     const orchestrator = new OrchestratorAgent();
-    await orchestrator.initialize();
 
     // Execute the ChatbotInsightsSkill through the orchestrator
-    const result = await orchestrator.executeSkill('chatbot_insights', {
-      conversations,
-      productKey,
-      storeInDb: true
+    const result = await orchestrator.execute({
+      skillId: 'chatbot_insights',
+      params: {
+        conversations,
+        productKey,
+        storeInDb: true
+      },
+      context: {
+        userId: 'system',
+        licenseKey: productKey || 'system',
+        sessionId: `insights-${Date.now()}`,
+        metadata: {
+          source: 'chatbot-dashboard'
+        }
+      }
     });
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to generate insights');
     }
 
-    const insights = result.data?.insights || {};
+    const insights = result.results[0]?.data?.insights || {};
 
     // Log skill execution for audit
     await prisma.skill_audit_log.create({
