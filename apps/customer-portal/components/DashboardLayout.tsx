@@ -7,7 +7,7 @@ import {
   Package,
   LogOut,
   Users,
-  BarChart3,
+  ShoppingBag,
   Home,
   CreditCard,
   Settings,
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { id: 'dashboard', label: 'Overview', icon: Home, path: '/dashboard' },
     { id: 'platform', label: 'Platform', icon: Cpu, path: '/platform' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
+    { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, path: '/pricing' },
     { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' }
   ];

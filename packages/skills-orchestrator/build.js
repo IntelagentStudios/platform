@@ -184,6 +184,91 @@ module.exports = {
       return { success: true, results: [] };
     }
   },
+  OperationsAgent: class OperationsAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new OperationsAgent();
+      }
+      return this.instance;
+    }
+    async execute(action, params) {
+      console.log(\`Operations Agent executing: \${action}\`);
+      return { success: true, data: {} };
+    }
+  },
+  FinanceAgent: class FinanceAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new FinanceAgent();
+      }
+      return this.instance;
+    }
+  },
+  InfrastructureAgent: class InfrastructureAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new InfrastructureAgent();
+      }
+      return this.instance;
+    }
+  },
+  SecurityAgent: class SecurityAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new SecurityAgent();
+      }
+      return this.instance;
+    }
+  },
+  ComplianceAgent: class ComplianceAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new ComplianceAgent();
+      }
+      return this.instance;
+    }
+  },
+  IntegrationAgent: class IntegrationAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new IntegrationAgent();
+      }
+      return this.instance;
+    }
+  },
+  AnalyticsAgent: class AnalyticsAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new AnalyticsAgent();
+      }
+      return this.instance;
+    }
+  },
+  CommunicationsAgent: class CommunicationsAgent {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new CommunicationsAgent();
+      }
+      return this.instance;
+    }
+  },
+  ManagementTeam: class ManagementTeam {
+    static instance = null;
+    static getInstance() {
+      if (!this.instance) {
+        this.instance = new ManagementTeam();
+      }
+      return this.instance;
+    }
+  },
   SkillCategory: {
     UTILITY: 'utility',
     COMMUNICATION: 'communication',

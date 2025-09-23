@@ -9,7 +9,7 @@ export default function PricingPage() {
   const products = [
     {
       name: 'Additional Chatbot',
-      price: '£199',
+      price: '£349',
       period: '/month',
       description: 'Add another AI chatbot to your account',
       features: [

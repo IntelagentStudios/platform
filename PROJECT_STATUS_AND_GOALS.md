@@ -15,7 +15,7 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 **Core Philosophy**: Modular, customizable products that adapt to specific business needs, with intelligent platform integration that multiplies value.
 
 #### Base Products Structure
-1. **Chatbot** (£299/month base)
+1. **Chatbot** (£349/month base)
    - Customizable into: Support Bot, Knowledge Tool, Training Assistant, Sales Qualifier, Booking Assistant
    - Uses 30-50 skills depending on configuration
 
@@ -116,7 +116,7 @@ The chatbot is now a fully polished, market-ready product with enterprise-grade 
    - **Professional Polish**: Enterprise-grade UI/UX throughout
 
 5. **Pricing & Availability** ✅
-   - **Listed on Pricing Page**: £199/month for additional chatbot
+   - **Listed on Pricing Page**: £349/month for additional chatbot
    - **Purchase Ready**: Contact sales for immediate purchase
    - **Product Keys**: Automatic generation and management
    - **Multi-Domain Support**: Each chatbot can serve multiple websites
@@ -256,7 +256,7 @@ After an epic debugging session fixing hundreds of TypeScript errors:
 - ✅ Product fully operational with CDN at embed.intelagentstudios.com
 - ✅ AI-enhanced dashboard with GPT-4 powered insights
 - ✅ Complete customization (themes, knowledge base, settings)
-- ✅ Listed on pricing page at £199/month
+- ✅ Listed on pricing page at £349/month
 - ✅ Professional documentation and embed codes
 - ✅ Multi-domain support with product keys
 - ✅ Advanced analytics and conversation management
@@ -783,7 +783,7 @@ The platform is currently undergoing migration from separate products to a unifi
 
 **Last Updated**: January 23, 2025
 **Version**: 9.0
-**Status**: CHATBOT PRODUCT COMPLETE! Platform running on Railway. Chatbot is now a fully polished, market-ready product with AI-enhanced dashboard, semantic search, smart color suggestions, and professional UX. Listed at £199/month and ready for immediate sale. Next priority: Sales Outreach Agent to sell the chatbot!
+**Status**: CHATBOT PRODUCT COMPLETE! Platform running on Railway. Chatbot is now a fully polished, market-ready product with AI-enhanced dashboard, semantic search, smart color suggestions, and professional UX. Listed at £349/month and ready for immediate sale. Navigation updated with dedicated Marketplace tab, analytics removed for cleaner interface. Next priority: Sales Outreach Agent to sell the chatbot!
 **Owner**: Intelagent Studios
 
 This document represents the complete current state of the Intelagent Platform, including all goals, requirements, completed work, and remaining tasks. Use this as the single source of truth for project planning and development priorities.
