@@ -107,6 +107,8 @@ function ChatbotDashboardContent() {
   const [expandedChart, setExpandedChart] = useState<'trends' | 'topics' | 'topDomains' | null>(null);
   const [trendsDateRange, setTrendsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
   const [topicsDateRange, setTopicsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
+  const [trendsViewMode, setTrendsViewMode] = useState<'date' | 'topic' | 'both'>('date');
+  const [selectedTrendTopic, setSelectedTrendTopic] = useState<string>('all');
   const [chartViewMode, setChartViewMode] = useState<'hourly' | 'daily' | 'weekly'>('hourly');
   const [compareBy, setCompareBy] = useState<'count' | 'percentage' | 'trend'>('count');
   const [selectedDomains, setSelectedDomains] = useState<string[]>(['all']);
@@ -1977,15 +1979,54 @@ function ChatbotDashboardContent() {
             </div>
             )}
 
-            {/* Charts Grid - Hide when chart is expanded */}
+            {/* Unified Conversation Trends */}
             {!expandedChart && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Conversation Trends Chart */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Conversation Trends
-                  </h3>
+            <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Conversation Trends
+                </h3>
+                <div className="flex items-center gap-2">
+                  {/* View Mode Selector */}
+                  <select
+                    value={trendsViewMode}
+                    onChange={(e) => setTrendsViewMode(e.target.value as 'date' | 'topic' | 'both')}
+                    className="px-2 py-1 text-sm border rounded"
+                    style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                  >
+                    <option value="date">By Date</option>
+                    <option value="topic">By Topic</option>
+                    <option value="both">Combined View</option>
+                  </select>
+
+                  {/* Date Range Selector */}
+                  <select
+                    value={trendsDateRange}
+                    onChange={(e) => setTrendsDateRange(e.target.value as '7d' | '14d' | '30d' | '90d')}
+                    className="px-2 py-1 text-sm border rounded"
+                    style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                  >
+                    <option value="7d">7 Days</option>
+                    <option value="14d">14 Days</option>
+                    <option value="30d">30 Days</option>
+                    <option value="90d">90 Days</option>
+                  </select>
+
+                  {/* Topic Filter - shown when view includes topics */}
+                  {(trendsViewMode === 'topic' || trendsViewMode === 'both') && (
+                    <select
+                      value={selectedTrendTopic}
+                      onChange={(e) => setSelectedTrendTopic(e.target.value)}
+                      className="px-2 py-1 text-sm border rounded"
+                      style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                    >
+                      <option value="all">All Topics</option>
+                      {uniqueTopics.map(topic => (
+                        <option key={topic} value={topic}>{topic}</option>
+                      ))}
+                    </select>
+                  )}
+
                   <button
                     onClick={() => setExpandedChart('trends')}
                     className="p-1 rounded hover:bg-gray-700 transition"
@@ -1994,6 +2035,10 @@ function ChatbotDashboardContent() {
                     <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
                   </button>
                 </div>
+              </div>
+
+              {/* Date View */}
+              {trendsViewMode === 'date' && (
                 <div className="grid grid-cols-7 gap-2 h-48">
                 {Array.from({ length: 7 }, (_, i) => {
                   const date = new Date();
@@ -2035,26 +2080,22 @@ function ChatbotDashboardContent() {
                   );
                 })}
                 </div>
-              </div>
+              )}
 
-              {/* Conversation Topics Chart */}
-              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Conversation Topics
-                  </h3>
-                  <button
-                    onClick={() => setExpandedChart('topics')}
-                    className="p-1 rounded hover:bg-gray-700 transition"
-                    title="Expand view"
-                  >
-                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                  </button>
-                </div>
+              {/* Topic View */}
+              {trendsViewMode === 'topic' && (
                 <div className="space-y-2">
                   {(() => {
                     const topics: Record<string, number> = {};
-                    conversations.forEach(conv => {
+                    const filteredByDate = conversations.filter(conv => {
+                      const convDate = new Date(conv.first_message_at);
+                      const now = new Date();
+                      const daysAgo = parseInt(trendsDateRange);
+                      const cutoff = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+                      return convDate >= cutoff;
+                    });
+
+                    filteredByDate.forEach(conv => {
                       const topic = extractTopic(conv.messages);
                       if (topic && topic !== 'undefined') {
                         topics[topic] = (topics[topic] || 0) + 1;
@@ -2062,12 +2103,12 @@ function ChatbotDashboardContent() {
                     });
                     const sortedTopics = Object.entries(topics)
                       .sort((a, b) => b[1] - a[1])
-                      .slice(0, 5);
+                      .slice(0, 10);
                     const maxCount = sortedTopics[0]?.[1] || 1;
 
-                    return sortedTopics.map(([topic, count], index) => (
+                    return sortedTopics.map(([topic, count]) => (
                       <div key={topic} className="flex items-center gap-2">
-                        <span className="text-sm w-24 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                        <span className="text-sm w-32 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
                           {topic}
                         </span>
                         <div className="flex-1 bg-gray-700 rounded-full h-6 relative">
@@ -2092,7 +2133,109 @@ function ChatbotDashboardContent() {
                     </p>
                   )}
                 </div>
-              </div>
+              )}
+
+              {/* Combined View */}
+              {trendsViewMode === 'both' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Timeline</p>
+                    <div className="grid grid-cols-7 gap-1 h-40">
+                      {Array.from({ length: 7 }, (_, i) => {
+                        const date = new Date();
+                        date.setDate(date.getDate() - (6 - i));
+                        const dayConversations = conversations.filter(conv => {
+                          const convDate = new Date(conv.first_message_at);
+                          if (selectedTrendTopic !== 'all') {
+                            const topic = extractTopic(conv.messages);
+                            if (topic !== selectedTrendTopic) return false;
+                          }
+                          return convDate.toDateString() === date.toDateString();
+                        }).length;
+                        const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
+                          const checkDate = new Date();
+                          checkDate.setDate(checkDate.getDate() - (6 - j));
+                          return conversations.filter(conv => {
+                            const convDate = new Date(conv.first_message_at);
+                            if (selectedTrendTopic !== 'all') {
+                              const topic = extractTopic(conv.messages);
+                              if (topic !== selectedTrendTopic) return false;
+                            }
+                            return convDate.toDateString() === checkDate.toDateString();
+                          }).length;
+                        })) || 1;
+                        const height = Math.max((dayConversations / maxHeight) * 100, 5);
+
+                        return (
+                          <div key={i} className="flex flex-col items-center">
+                            <div className="flex-1 flex items-end w-full">
+                              <div
+                                className="w-full rounded-t transition-all hover:opacity-80"
+                                style={{
+                                  height: `${height}%`,
+                                  backgroundColor: 'rgb(169, 189, 203)',
+                                  minHeight: '4px'
+                                }}
+                                title={`${date.toLocaleDateString()}: ${dayConversations}`}
+                              />
+                            </div>
+                            <div className="text-xs mt-1" style={{ color: 'rgb(169, 189, 203)', fontSize: '10px' }}>
+                              {date.toLocaleDateString('en-US', { weekday: 'short' })[0]}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Top Topics</p>
+                    <div className="space-y-1">
+                      {(() => {
+                        const topics: Record<string, number> = {};
+                        const filteredByDate = conversations.filter(conv => {
+                          const convDate = new Date(conv.first_message_at);
+                          const now = new Date();
+                          const daysAgo = parseInt(trendsDateRange);
+                          const cutoff = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+                          return convDate >= cutoff;
+                        });
+
+                        filteredByDate.forEach(conv => {
+                          const topic = extractTopic(conv.messages);
+                          if (topic && topic !== 'undefined') {
+                            topics[topic] = (topics[topic] || 0) + 1;
+                          }
+                        });
+                        const sortedTopics = Object.entries(topics)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 5);
+                        const maxCount = sortedTopics[0]?.[1] || 1;
+
+                        return sortedTopics.map(([topic, count]) => (
+                          <div key={topic} className="flex items-center gap-2">
+                            <span className="text-xs w-20 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                              {topic}
+                            </span>
+                            <div className="flex-1 bg-gray-700 rounded-full h-4 relative">
+                              <div
+                                className="h-4 rounded-full transition-all flex items-center justify-end pr-1"
+                                style={{
+                                  width: `${(count / maxCount) * 100}%`,
+                                  backgroundColor: 'rgb(169, 189, 203)'
+                                }}
+                              >
+                                <span className="text-xs" style={{ color: 'rgb(229, 227, 220)', fontSize: '10px' }}>
+                                  {count}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             )}
 

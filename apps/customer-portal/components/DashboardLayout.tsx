@@ -111,20 +111,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        {/* Logo */}
-        <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-          <div className="flex items-center">
-            {(!sidebarCollapsed || isHovering) && (
-              <div>
-                <h2 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Intelagent
-                </h2>
-                <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                  {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
-                </p>
-              </div>
-            )}
-          </div>
+        {/* Logo - Height matches breadcrumb bar */}
+        <div className="h-[57px] px-6 flex items-center border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+          {(!sidebarCollapsed || isHovering) && (
+            <div>
+              <h2 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                Intelagent
+              </h2>
+              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Navigation Menu */}
