@@ -1426,11 +1426,6 @@ function ChatbotDashboardContent() {
                               )
                             )}
                           </div>
-                          {message.intent && (
-                            <p className="text-xs mt-2 opacity-75">
-                              Intent: {message.intent}
-                            </p>
-                          )}
                         </div>
                       </div>
                     ))}

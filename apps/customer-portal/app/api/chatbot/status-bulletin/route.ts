@@ -42,19 +42,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Otherwise, generate AI-based insights about conversation trends
+    // Default to simple status message
     if (!process.env.OPENAI_API_KEY) {
-      const convCount = stats?.todayConversations || 0;
-      const message = convCount === 0 ?
-        "Your chatbot is ready and waiting for visitors. Everything's running smoothly." :
-        convCount === 1 ?
-        "You've had your first conversation today! The chatbot is responding well." :
-        `Things are going well - you've had ${convCount} conversations today and the chatbot is handling them smoothly.`;
-
       return NextResponse.json({
         bulletin: {
           priority: 'info',
-          message,
+          message: "Everything is running smoothly.",
           timestamp: new Date().toISOString()
         }
       });
@@ -100,7 +93,7 @@ export async function POST(request: NextRequest) {
     const topTopic = Object.entries(topics).sort((a, b) => b[1] - a[1])[0];
     const topLocation = Object.entries(locations).sort((a, b) => b[1] - a[1])[0];
 
-    const prompt = `Based on this chatbot activity data, write ONE conversational sentence about what's happening:
+    const prompt = `Based on this chatbot activity data, determine if there's anything notable happening:
 
 Today's conversations: ${stats?.todayConversations || 0}
 This week: ${stats?.weekConversations || 0}
@@ -108,15 +101,14 @@ Top topic: ${topTopic ? `${topTopic[0]} (${topTopic[1]} conversations)` : 'Gener
 Notable location: ${topLocation ? `Increased interest from ${topLocation[0]}` : 'Normal geographic distribution'}
 
 Generate a JSON response with:
-- message: A single, natural sentence that tells the business owner what's interesting or important right now
+- message: Either "Everything is running smoothly." OR if there's something genuinely notable (like unusual activity, a spike in a specific topic, or new geographic interest), mention it briefly.
 
-Examples of good messages:
-- "You're seeing a lot of interest in pricing today, especially from new visitors in Canada."
-- "Things are quiet right now, but your chatbot handled yesterday's product questions really well."
-- "Your chatbot is getting busy - lots of feature questions coming in this afternoon."
-- "Everything's running smoothly with steady interest across all your products."
+Examples:
+- Normal activity: "Everything is running smoothly."
+- Notable activity: "Seeing increased interest from Canada today."
+- Notable activity: "Lots of pricing questions coming in this afternoon."
 
-Be conversational and specific when possible. Focus on what matters to the business owner.`;
+Default to "Everything is running smoothly." unless there's genuinely something worth mentioning.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
@@ -139,7 +131,7 @@ Be conversational and specific when possible. Focus on what matters to the busin
     return NextResponse.json({
       bulletin: {
         priority: 'info',
-        message: aiResponse.message || `You've had ${stats?.todayConversations || 0} conversations today and everything's running smoothly.`,
+        message: aiResponse.message || "Everything is running smoothly.",
         timestamp: new Date().toISOString()
       }
     });
@@ -149,7 +141,7 @@ Be conversational and specific when possible. Focus on what matters to the busin
     return NextResponse.json({
       bulletin: {
         priority: 'info',
-        message: 'Your chatbot is active and responding to visitors.',
+        message: 'Everything is running smoothly.',
         timestamp: new Date().toISOString()
       }
     });
