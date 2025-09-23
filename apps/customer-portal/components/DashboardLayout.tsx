@@ -193,38 +193,39 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content Area - Add margin for fixed sidebar */}
-      <main className={`flex-1 overflow-y-auto ${(sidebarCollapsed && !isHovering) ? 'ml-20' : 'ml-64'} transition-all duration-300`}>
-        {/* Breadcrumbs - Sticky position */}
-        {breadcrumbs.length > 0 && (
-          <div className="sticky top-0 z-30 h-[57px] px-8 flex items-center border-b backdrop-blur-sm" style={{
-            borderColor: 'rgba(169, 189, 203, 0.1)',
-            backgroundColor: 'rgba(58, 64, 64, 0.95)'
-          }}>
-            <div className="flex items-center space-x-2 text-sm">
-              {breadcrumbs.map((crumb, index) => (
-                <div key={crumb.path} className="flex items-center">
-                  {index > 0 && (
-                    <ChevronRight className="h-4 w-4 mx-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
-                  )}
-                  <button
-                    onClick={() => navigate(crumb.path)}
-                    className={`hover:underline transition ${
-                      index === breadcrumbs.length - 1 ? 'font-semibold' : ''
-                    }`}
-                    style={{ 
-                      color: index === breadcrumbs.length - 1 
-                        ? 'rgb(229, 227, 220)' 
-                        : 'rgba(169, 189, 203, 0.8)'
-                    }}
-                  >
-                    {crumb.label}
-                  </button>
-                </div>
-              ))}
-            </div>
+      {/* Breadcrumbs - Fixed position like sidebar */}
+      {breadcrumbs.length > 0 && (
+        <div className={`fixed top-0 right-0 z-30 h-[57px] px-8 flex items-center border-b ${(sidebarCollapsed && !isHovering) ? 'left-20' : 'left-64'} transition-all duration-300`} style={{
+          borderColor: 'rgba(169, 189, 203, 0.1)',
+          backgroundColor: 'rgb(58, 64, 64)'
+        }}>
+          <div className="flex items-center space-x-2 text-sm">
+            {breadcrumbs.map((crumb, index) => (
+              <div key={crumb.path} className="flex items-center">
+                {index > 0 && (
+                  <ChevronRight className="h-4 w-4 mx-2" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                )}
+                <button
+                  onClick={() => navigate(crumb.path)}
+                  className={`hover:underline transition ${
+                    index === breadcrumbs.length - 1 ? 'font-semibold' : ''
+                  }`}
+                  style={{
+                    color: index === breadcrumbs.length - 1
+                      ? 'rgb(229, 227, 220)'
+                      : 'rgba(169, 189, 203, 0.8)'
+                  }}
+                >
+                  {crumb.label}
+                </button>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Main Content Area - Add margin for fixed sidebar and top for fixed breadcrumbs */}
+      <main className={`flex-1 overflow-y-auto ${(sidebarCollapsed && !isHovering) ? 'ml-20' : 'ml-64'} ${breadcrumbs.length > 0 ? 'mt-[57px]' : ''} transition-all duration-300`}>
         {children}
       </main>
     </div>

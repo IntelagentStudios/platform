@@ -90,6 +90,8 @@ function ChatbotDashboardContent() {
   const [topicFilter, setTopicFilter] = useState('all');
   const [conversationDateRange, setConversationDateRange] = useState<'7d' | '14d' | '30d' | 'all'>('all');
   const [exactSearchMode, setExactSearchMode] = useState(false);
+  const [aiSearchMode, setAiSearchMode] = useState(false);
+  const [searchingWithAI, setSearchingWithAI] = useState(false);
   const [availableProductKeys, setAvailableProductKeys] = useState<{key: string, domain?: string}[]>([]);
   const [selectedProductKey, setSelectedProductKey] = useState<string>('all');
   const [groupBy, setGroupBy] = useState('time');
@@ -203,8 +205,45 @@ function ChatbotDashboardContent() {
   }, [searchParams, conversations]);
 
   useEffect(() => {
-    filterConversations();
-  }, [conversations, searchQuery, conversationDateRange, exactSearchMode, topicFilter, selectedProductKey, selectedDomains]);
+    if (aiSearchMode && searchQuery) {
+      // Perform AI search
+      const performAISearch = async () => {
+        setSearchingWithAI(true);
+        try {
+          const response = await fetch('/api/chatbot/ai-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: searchQuery,
+              conversations: conversations.map(c => ({
+                id: c.id,
+                messages: c.messages,
+                domain: c.domain,
+                session_id: c.session_id,
+                first_message_at: c.first_message_at
+              }))
+            })
+          });
+
+          const data = await response.json();
+          if (data.matchedIds) {
+            const filtered = conversations.filter(c => data.matchedIds.includes(c.id));
+            setFilteredConversations(filtered);
+          } else {
+            filterConversations();
+          }
+        } catch (error) {
+          console.error('AI search failed:', error);
+          filterConversations();
+        } finally {
+          setSearchingWithAI(false);
+        }
+      };
+      performAISearch();
+    } else {
+      filterConversations();
+    }
+  }, [conversations, searchQuery, conversationDateRange, exactSearchMode, aiSearchMode, topicFilter, selectedProductKey, selectedDomains]);
 
   useEffect(() => {
     // Recalculate stats when domain filter changes
@@ -567,9 +606,12 @@ function ChatbotDashboardContent() {
       });
     }
 
-    // Search filter with exact match option
+    // Search filter with AI, exact match, or normal search
     if (searchQuery) {
-      if (exactSearchMode) {
+      if (aiSearchMode) {
+        // AI-powered semantic search will be handled separately
+        // For now, keep filtered as-is and we'll apply AI search results later
+      } else if (exactSearchMode) {
         // Exact word match using word boundaries
         const regex = new RegExp(`\\b${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i');
         filtered = filtered.filter(conv =>
@@ -1217,7 +1259,7 @@ function ChatbotDashboardContent() {
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
                         <input
                           type="text"
-                          placeholder={exactSearchMode ? "Search for exact word..." : "Search conversations..."}
+                          placeholder={aiSearchMode ? "AI smart search..." : exactSearchMode ? "Search for exact word..." : "Search conversations..."}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
@@ -1228,16 +1270,43 @@ function ChatbotDashboardContent() {
                           }}
                         />
                       </div>
-                      <label className="flex items-center gap-2 text-sm cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={exactSearchMode}
-                          onChange={(e) => setExactSearchMode(e.target.checked)}
-                          className="rounded"
-                          style={{ accentColor: 'rgb(169, 189, 203)' }}
-                        />
-                        <span style={{ color: 'rgba(169, 189, 203, 0.9)' }}>Exact word match</span>
-                      </label>
+
+                      {/* Search mode toggles */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setAiSearchMode(!aiSearchMode);
+                            if (!aiSearchMode) setExactSearchMode(false);
+                          }}
+                          className={`px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1 ${
+                            aiSearchMode ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                          }`}
+                          style={{
+                            backgroundColor: aiSearchMode ? 'rgba(76, 175, 80, 0.2)' : 'rgba(169, 189, 203, 0.1)',
+                            color: aiSearchMode ? '#4CAF50' : 'rgb(169, 189, 203)',
+                            border: '1px solid ' + (aiSearchMode ? 'rgba(76, 175, 80, 0.3)' : 'rgba(169, 189, 203, 0.2)')
+                          }}
+                          title="AI-powered smart search"
+                        >
+                          {searchingWithAI ? <><Loader2 className="w-3 h-3 animate-spin" /> Searching...</> : 'AI Search'}
+                        </button>
+                        {!aiSearchMode && (
+                          <button
+                            onClick={() => setExactSearchMode(!exactSearchMode)}
+                            className={`px-3 py-1.5 text-xs rounded-lg transition ${
+                              exactSearchMode ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                            }`}
+                            style={{
+                              backgroundColor: exactSearchMode ? 'rgba(76, 175, 80, 0.2)' : 'rgba(169, 189, 203, 0.1)',
+                              color: exactSearchMode ? '#4CAF50' : 'rgb(169, 189, 203)',
+                              border: '1px solid ' + (exactSearchMode ? 'rgba(76, 175, 80, 0.3)' : 'rgba(169, 189, 203, 0.2)')
+                            }}
+                            title="Toggle exact word matching"
+                          >
+                            {exactSearchMode ? 'Exact Match' : 'Exact Off'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex gap-2">
@@ -2915,14 +2984,41 @@ function ChatbotDashboardContent() {
                               onClick={async () => {
                                 setLoadingSuggestedColors(true);
                                 try {
-                                  // Generate 3 premium, sophisticated colors that match the dark theme
-                                  // These colors are muted and elegant for a professional feel
-                                  const websiteColors = [
-                                    '#8B92A7', // Sophisticated slate blue - elegant and refined
-                                    '#7C8FA3', // Muted steel blue - professional and trustworthy
-                                    '#6F7A8D'  // Deep gray blue - premium and understated
-                                  ];
-                                  setSuggestedColors(websiteColors);
+                                  // Analyze website to generate AI-suggested colors
+                                  // Get the user's email domain to analyze their website
+                                  const userEmail = user?.email || '';
+                                  const domain = userEmail.split('@')[1] || '';
+
+                                  try {
+                                    const response = await fetch('/api/chatbot/analyze-colors', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        domain,
+                                        productKey,
+                                        email: userEmail
+                                      })
+                                    });
+
+                                    const data = await response.json();
+                                    if (data.colors && data.colors.length === 3) {
+                                      setSuggestedColors(data.colors);
+                                    } else {
+                                      // Fallback colors: light, dark, and accent
+                                      setSuggestedColors([
+                                        '#F0F4F8', // Light option - clean and modern
+                                        '#2D3748', // Dark option - sophisticated and professional
+                                        '#4A90E2'  // Accent option - trustworthy blue
+                                      ]);
+                                    }
+                                  } catch (error) {
+                                    // Fallback colors on error
+                                    setSuggestedColors([
+                                      '#F0F4F8', // Light
+                                      '#2D3748', // Dark
+                                      '#4A90E2'  // Accent
+                                    ]);
+                                  }
                                 } catch (error) {
                                   console.error('Error getting colors:', error);
                                 } finally {
@@ -2940,7 +3036,7 @@ function ChatbotDashboardContent() {
                               {loadingSuggestedColors ? (
                                 <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing website...</>
                               ) : (
-                                <>✨ Suggest {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
+                                <><span style={{ color: 'rgb(169, 189, 203)' }}>✨</span> Suggest {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
                               )}
                             </button>
 
@@ -2966,9 +3062,6 @@ function ChatbotDashboardContent() {
                                         }}
                                         title={color}
                                       />
-                                      <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                        {idx === 0 ? 'Elegant' : idx === 1 ? 'Premium' : 'Refined'}
-                                      </span>
                                     </div>
                                   ))}
                                 </div>
