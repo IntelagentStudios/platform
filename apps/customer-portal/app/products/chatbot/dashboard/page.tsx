@@ -140,9 +140,36 @@ function ChatbotDashboardContent() {
     timestamp: string;
   } | null>(null);
   const [bulletinLoading, setBulletinLoading] = useState(false);
+  const [recentColors, setRecentColors] = useState<string[]>([]);
+  const [customDateRange, setCustomDateRange] = useState<{start: string, end: string}>({start: '', end: ''});
+  const [dateBreakdownRange, setDateBreakdownRange] = useState<'7d' | '14d' | '30d' | 'custom'>('7d');
+  const [suggestedColors, setSuggestedColors] = useState<string[]>([]);
+  const [loadingSuggestedColors, setLoadingSuggestedColors] = useState(false);
+  const [userLocale, setUserLocale] = useState<'en-US' | 'en-GB'>('en-US');
 
   useEffect(() => {
     checkAuth();
+
+    // Detect user locale
+    const locale = navigator.language || 'en-US';
+    setUserLocale(locale.includes('GB') ? 'en-GB' : 'en-US');
+
+    // Load saved preferences from localStorage
+    const savedDateRange = localStorage.getItem('chatbot_date_range');
+    if (savedDateRange) {
+      setDateBreakdownRange(savedDateRange as '7d' | '14d' | '30d' | 'custom');
+    }
+
+    const savedCustomRange = localStorage.getItem('chatbot_custom_range');
+    if (savedCustomRange) {
+      setCustomDateRange(JSON.parse(savedCustomRange));
+    }
+
+    const savedRecentColors = localStorage.getItem('chatbot_recent_colors');
+    if (savedRecentColors) {
+      setRecentColors(JSON.parse(savedRecentColors));
+    }
+
     // Load saved tab order from localStorage
     const savedOrder = localStorage.getItem('chatbot-tab-order');
     if (savedOrder) {
@@ -797,7 +824,7 @@ function ChatbotDashboardContent() {
                   conversations: { icon: MessageSquare, label: 'Conversations', badge: conversations.length },
                   analytics: { icon: BarChart3, label: 'Analytics' },
                   knowledge: { icon: BookOpen, label: 'Knowledge Base' },
-                  settings: { icon: Settings, label: 'Customize' }
+                  settings: { icon: Settings, label: userLocale === 'en-GB' ? 'Customise' : 'Customize' }
                 };
 
                 const tab = tabConfig[tabId];
@@ -1882,31 +1909,102 @@ function ChatbotDashboardContent() {
                     <Calendar className="w-5 h-5" />
                     Date Breakdown
                   </h3>
-                  <button
-                    onClick={() => setExpandedChart('dateBreakdown')}
-                    className="p-1.5 rounded hover:bg-gray-700 transition"
-                    title="Expand view"
-                  >
-                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={dateBreakdownRange}
+                      onChange={(e) => {
+                        const value = e.target.value as '7d' | '14d' | '30d' | 'custom';
+                        setDateBreakdownRange(value);
+                        localStorage.setItem('chatbot_date_range', value);
+                      }}
+                      className="px-2 py-1 text-xs border rounded"
+                      style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                    >
+                      <option value="7d">7 days</option>
+                      <option value="14d">14 days</option>
+                      <option value="30d">30 days</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <button
+                      onClick={() => setExpandedChart('dateBreakdown')}
+                      className="p-1.5 rounded hover:bg-gray-700 transition"
+                      title="Expand view"
+                    >
+                      <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-4">
+                  {dateBreakdownRange === 'custom' && (
+                    <div className="flex gap-2">
+                      <input
+                        type="date"
+                        value={customDateRange.start}
+                        onChange={(e) => {
+                          const newRange = { ...customDateRange, start: e.target.value };
+                          setCustomDateRange(newRange);
+                          localStorage.setItem('chatbot_custom_range', JSON.stringify(newRange));
+                        }}
+                        className="px-2 py-1 text-xs border rounded"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                      />
+                      <span style={{ color: 'rgba(169, 189, 203, 0.6)' }}>to</span>
+                      <input
+                        type="date"
+                        value={customDateRange.end}
+                        onChange={(e) => {
+                          const newRange = { ...customDateRange, end: e.target.value };
+                          setCustomDateRange(newRange);
+                          localStorage.setItem('chatbot_custom_range', JSON.stringify(newRange));
+                        }}
+                        className="px-2 py-1 text-xs border rounded"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                      />
+                    </div>
+                  )}
                   <div className="h-32 flex items-end gap-1">
-                    {Array.from({ length: 7 }, (_, i) => {
-                      const date = new Date();
-                      date.setDate(date.getDate() - (6 - i));
-                      const dayConvs = conversations.filter(conv => {
-                        const convDate = new Date(conv.first_message_at);
-                        return convDate.toDateString() === date.toDateString();
-                      });
-                      const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
-                        const checkDate = new Date();
-                        checkDate.setDate(checkDate.getDate() - (6 - j));
-                        return conversations.filter(c =>
-                          new Date(c.first_message_at).toDateString() === checkDate.toDateString()
-                        ).length;
-                      })) || 1;
-                      const height = Math.max((dayConvs.length / maxHeight) * 100, 5);
+                    {(() => {
+                      let days = 7;
+                      let startDate = new Date();
+
+                      if (dateBreakdownRange === '14d') days = 14;
+                      else if (dateBreakdownRange === '30d') days = 30;
+                      else if (dateBreakdownRange === 'custom' && customDateRange.start && customDateRange.end) {
+                        const start = new Date(customDateRange.start);
+                        const end = new Date(customDateRange.end);
+                        days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                        startDate = new Date(end);
+                      } else {
+                        startDate.setDate(startDate.getDate() - (days - 1));
+                      }
+
+                      const displayDays = Math.min(days, 30);
+                      return Array.from({ length: displayDays }, (_, i) => {
+                        const date = new Date(startDate);
+                        if (dateBreakdownRange === 'custom' && customDateRange.start) {
+                          date.setTime(new Date(customDateRange.start).getTime() + (i * 24 * 60 * 60 * 1000));
+                        } else {
+                          date.setDate(date.getDate() - (displayDays - 1 - i));
+                        }
+
+                        const dayConvs = conversations.filter(conv => {
+                          const convDate = new Date(conv.first_message_at);
+                          return convDate.toDateString() === date.toDateString();
+                        });
+
+                        const maxHeight = Math.max(...Array.from({ length: displayDays }, (_, j) => {
+                          const checkDate = new Date(startDate);
+                          if (dateBreakdownRange === 'custom' && customDateRange.start) {
+                            checkDate.setTime(new Date(customDateRange.start).getTime() + (j * 24 * 60 * 60 * 1000));
+                          } else {
+                            checkDate.setDate(checkDate.getDate() - (displayDays - 1 - j));
+                          }
+                          return conversations.filter(c =>
+                            new Date(c.first_message_at).toDateString() === checkDate.toDateString()
+                          ).length;
+                        })) || 1;
+
+                        const height = Math.max((dayConvs.length / maxHeight) * 100, 5);
 
                       return (
                         <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -1921,12 +2019,15 @@ function ChatbotDashboardContent() {
                               title={`${date.toLocaleDateString()}: ${dayConvs.length} conversations`}
                             />
                           </div>
-                          <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                            {date.toLocaleDateString('en-US', { weekday: 'short' })[0]}
-                          </span>
+                          {(displayDays <= 7 || i % Math.floor(displayDays / 7) === 0) && (
+                            <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              {displayDays <= 7 ? date.toLocaleDateString('en-US', { weekday: 'short' })[0] : date.getDate()}
+                            </span>
+                          )}
                         </div>
                       );
-                    })}
+                      });
+                    })()}
                   </div>
                 </div>
               </div>
@@ -2050,265 +2151,7 @@ function ChatbotDashboardContent() {
             </div>
             )}
 
-            {/* Unified Conversation Trends */}
-            {!expandedChart && (
-            <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  Conversation Trends
-                </h3>
-                <div className="flex items-center gap-2">
-                  {/* View Mode Selector */}
-                  <select
-                    value={trendsViewMode}
-                    onChange={(e) => setTrendsViewMode(e.target.value as 'date' | 'topic' | 'both')}
-                    className="px-2 py-1 text-sm border rounded"
-                    style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                  >
-                    <option value="date">By Date</option>
-                    <option value="topic">By Topic</option>
-                    <option value="both">Combined View</option>
-                  </select>
-
-                  {/* Date Range Selector */}
-                  <select
-                    value={trendsDateRange}
-                    onChange={(e) => setTrendsDateRange(e.target.value as '7d' | '14d' | '30d' | '90d')}
-                    className="px-2 py-1 text-sm border rounded"
-                    style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                  >
-                    <option value="7d">7 Days</option>
-                    <option value="14d">14 Days</option>
-                    <option value="30d">30 Days</option>
-                    <option value="90d">90 Days</option>
-                  </select>
-
-                  {/* Topic Filter - shown when view includes topics */}
-                  {(trendsViewMode === 'topic' || trendsViewMode === 'both') && (
-                    <select
-                      value={selectedTrendTopic}
-                      onChange={(e) => setSelectedTrendTopic(e.target.value)}
-                      className="px-2 py-1 text-sm border rounded"
-                      style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                    >
-                      <option value="all">All Topics</option>
-                      {uniqueTopics.map(topic => (
-                        <option key={topic} value={topic}>{topic}</option>
-                      ))}
-                    </select>
-                  )}
-
-                  <button
-                    onClick={() => setExpandedChart('trends')}
-                    className="p-1 rounded hover:bg-gray-700 transition"
-                    title="Expand view"
-                  >
-                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Date View */}
-              {trendsViewMode === 'date' && (
-                <div className="grid grid-cols-7 gap-2 h-48">
-                {Array.from({ length: 7 }, (_, i) => {
-                  const date = new Date();
-                  date.setDate(date.getDate() - (6 - i));
-                  const dayConversations = conversations.filter(conv => {
-                    const convDate = new Date(conv.first_message_at);
-                    return convDate.toDateString() === date.toDateString();
-                  }).length;
-                  const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
-                    const checkDate = new Date();
-                    checkDate.setDate(checkDate.getDate() - (6 - j));
-                    return conversations.filter(conv => {
-                      const convDate = new Date(conv.first_message_at);
-                      return convDate.toDateString() === checkDate.toDateString();
-                    }).length;
-                  })) || 1;
-                  const height = Math.max((dayConversations / maxHeight) * 100, 5);
-
-                  return (
-                    <div key={i} className="flex flex-col items-center">
-                      <div className="flex-1 flex items-end w-full">
-                        <div
-                          className="w-full rounded-t transition-all hover:opacity-80"
-                          style={{
-                            height: `${height}%`,
-                            backgroundColor: 'rgb(169, 189, 203)',
-                            minHeight: '8px'
-                          }}
-                          title={`${date.toLocaleDateString()}: ${dayConversations} conversations`}
-                        />
-                      </div>
-                      <div className="text-xs mt-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                      </div>
-                      <div className="text-xs" style={{ color: 'rgba(58, 64, 64, 0.5)' }}>
-                        {dayConversations}
-                      </div>
-                    </div>
-                  );
-                })}
-                </div>
-              )}
-
-              {/* Topic View */}
-              {trendsViewMode === 'topic' && (
-                <div className="space-y-2">
-                  {(() => {
-                    const topics: Record<string, number> = {};
-                    const filteredByDate = conversations.filter(conv => {
-                      const convDate = new Date(conv.first_message_at);
-                      const now = new Date();
-                      const daysAgo = parseInt(trendsDateRange);
-                      const cutoff = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-                      return convDate >= cutoff;
-                    });
-
-                    filteredByDate.forEach(conv => {
-                      const topic = extractTopic(conv.messages);
-                      if (topic && topic !== 'undefined') {
-                        topics[topic] = (topics[topic] || 0) + 1;
-                      }
-                    });
-                    const sortedTopics = Object.entries(topics)
-                      .sort((a, b) => b[1] - a[1])
-                      .slice(0, 10);
-                    const maxCount = sortedTopics[0]?.[1] || 1;
-
-                    return sortedTopics.map(([topic, count]) => (
-                      <div key={topic} className="flex items-center gap-2">
-                        <span className="text-sm w-32 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
-                          {topic}
-                        </span>
-                        <div className="flex-1 bg-gray-700 rounded-full h-6 relative">
-                          <div
-                            className="h-6 rounded-full transition-all flex items-center justify-end pr-2"
-                            style={{
-                              width: `${(count / maxCount) * 100}%`,
-                              backgroundColor: 'rgb(169, 189, 203)'
-                            }}
-                          >
-                            <span className="text-xs font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {count}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                  {conversations.length === 0 && (
-                    <p className="text-sm text-center py-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                      No conversation topics yet
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Combined View */}
-              {trendsViewMode === 'both' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Timeline</p>
-                    <div className="grid grid-cols-7 gap-1 h-40">
-                      {Array.from({ length: 7 }, (_, i) => {
-                        const date = new Date();
-                        date.setDate(date.getDate() - (6 - i));
-                        const dayConversations = conversations.filter(conv => {
-                          const convDate = new Date(conv.first_message_at);
-                          if (selectedTrendTopic !== 'all') {
-                            const topic = extractTopic(conv.messages);
-                            if (topic !== selectedTrendTopic) return false;
-                          }
-                          return convDate.toDateString() === date.toDateString();
-                        }).length;
-                        const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
-                          const checkDate = new Date();
-                          checkDate.setDate(checkDate.getDate() - (6 - j));
-                          return conversations.filter(conv => {
-                            const convDate = new Date(conv.first_message_at);
-                            if (selectedTrendTopic !== 'all') {
-                              const topic = extractTopic(conv.messages);
-                              if (topic !== selectedTrendTopic) return false;
-                            }
-                            return convDate.toDateString() === checkDate.toDateString();
-                          }).length;
-                        })) || 1;
-                        const height = Math.max((dayConversations / maxHeight) * 100, 5);
-
-                        return (
-                          <div key={i} className="flex flex-col items-center">
-                            <div className="flex-1 flex items-end w-full">
-                              <div
-                                className="w-full rounded-t transition-all hover:opacity-80"
-                                style={{
-                                  height: `${height}%`,
-                                  backgroundColor: 'rgb(169, 189, 203)',
-                                  minHeight: '4px'
-                                }}
-                                title={`${date.toLocaleDateString()}: ${dayConversations}`}
-                              />
-                            </div>
-                            <div className="text-xs mt-1" style={{ color: 'rgb(169, 189, 203)', fontSize: '10px' }}>
-                              {date.toLocaleDateString('en-US', { weekday: 'short' })[0]}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Top Topics</p>
-                    <div className="space-y-1">
-                      {(() => {
-                        const topics: Record<string, number> = {};
-                        const filteredByDate = conversations.filter(conv => {
-                          const convDate = new Date(conv.first_message_at);
-                          const now = new Date();
-                          const daysAgo = parseInt(trendsDateRange);
-                          const cutoff = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-                          return convDate >= cutoff;
-                        });
-
-                        filteredByDate.forEach(conv => {
-                          const topic = extractTopic(conv.messages);
-                          if (topic && topic !== 'undefined') {
-                            topics[topic] = (topics[topic] || 0) + 1;
-                          }
-                        });
-                        const sortedTopics = Object.entries(topics)
-                          .sort((a, b) => b[1] - a[1])
-                          .slice(0, 5);
-                        const maxCount = sortedTopics[0]?.[1] || 1;
-
-                        return sortedTopics.map(([topic, count]) => (
-                          <div key={topic} className="flex items-center gap-2">
-                            <span className="text-xs w-20 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
-                              {topic}
-                            </span>
-                            <div className="flex-1 bg-gray-700 rounded-full h-4 relative">
-                              <div
-                                className="h-4 rounded-full transition-all flex items-center justify-end pr-1"
-                                style={{
-                                  width: `${(count / maxCount) * 100}%`,
-                                  backgroundColor: 'rgb(169, 189, 203)'
-                                }}
-                              >
-                                <span className="text-xs" style={{ color: 'rgb(229, 227, 220)', fontSize: '10px' }}>
-                                  {count}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            )}
+            {/* Removed Unified Conversation Trends table - keeping only Date and Topic breakdowns above */}
 
             {/* Expanded Chart View - Shows when a chart is expanded */}
             {expandedChart && (
@@ -2930,7 +2773,7 @@ function ChatbotDashboardContent() {
           <div className="max-w-4xl mx-auto">
             <div className="rounded-lg p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', border: '1px solid rgba(169, 189, 203, 0.15)' }}>
               <h2 className="text-xl font-semibold mb-6" style={{ color: 'rgb(229, 227, 220)' }}>
-                Customize Your Chatbot
+                {userLocale === 'en-GB' ? 'Customise' : 'Customize'} Your Chatbot
               </h2>
               
               <div className="space-y-6">
@@ -2961,25 +2804,121 @@ function ChatbotDashboardContent() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Theme Color
+                          Theme {userLocale === 'en-GB' ? 'Colour' : 'Color'}
                         </label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="color"
-                            value={settings.themeColor}
-                            onChange={(e) => setSettings(prev => ({ ...prev, themeColor: e.target.value }))}
-                            className="h-12 w-24 rounded cursor-pointer"
-                            style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
-                          />
-                          <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
-                            Header & buttons
-                          </span>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={settings.themeColor}
+                              onChange={(e) => {
+                                const newColor = e.target.value;
+                                setSettings(prev => ({ ...prev, themeColor: newColor }));
+
+                                // Add to recent colors
+                                const recent = recentColors.filter(c => c !== newColor);
+                                const updatedRecent = [newColor, ...recent].slice(0, 5);
+                                setRecentColors(updatedRecent);
+                                localStorage.setItem('chatbot_recent_colors', JSON.stringify(updatedRecent));
+                              }}
+                              className="h-12 w-24 rounded cursor-pointer"
+                              style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
+                            />
+                            <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
+                              Header & buttons
+                            </span>
+                          </div>
+
+                          {/* Recent Colors */}
+                          {recentColors.length > 0 && (
+                            <div>
+                              <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Recent {userLocale === 'en-GB' ? 'colours' : 'colors'}:</p>
+                              <div className="flex gap-2">
+                                {recentColors.map(color => (
+                                  <button
+                                    key={color}
+                                    onClick={() => setSettings(prev => ({ ...prev, themeColor: color }))}
+                                    className="w-8 h-8 rounded border-2 hover:opacity-80 transition"
+                                    style={{
+                                      backgroundColor: color,
+                                      borderColor: settings.themeColor === color ? 'rgba(169, 189, 203, 0.8)' : 'rgba(169, 189, 203, 0.3)'
+                                    }}
+                                    title={color}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AI Color Suggestions */}
+                          <div>
+                            <button
+                              onClick={async () => {
+                                setLoadingSuggestedColors(true);
+                                try {
+                                  // Use fallback colors based on common brand themes
+                                  const brandColors = [
+                                    '#0070f3', // Professional blue
+                                    '#00a86b', // Growth green
+                                    '#8b5cf6', // Creative purple
+                                    '#ec4899', // Friendly pink
+                                    '#f97316'  // Energy orange
+                                  ];
+                                  setSuggestedColors(brandColors);
+                                } catch (error) {
+                                  console.error('Error getting colors:', error);
+                                } finally {
+                                  setLoadingSuggestedColors(false);
+                                }
+                              }}
+                              disabled={loadingSuggestedColors}
+                              className="text-xs px-3 py-1.5 rounded-lg hover:opacity-80 transition flex items-center gap-2"
+                              style={{
+                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                color: 'rgb(169, 189, 203)',
+                                border: '1px solid rgba(169, 189, 203, 0.2)'
+                              }}
+                            >
+                              {loadingSuggestedColors ? (
+                                <><Loader2 className="w-3 h-3 animate-spin" /> Getting {userLocale === 'en-GB' ? 'colours' : 'colors'}...</>
+                              ) : (
+                                <>✨ Suggest brand {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
+                              )}
+                            </button>
+
+                            {suggestedColors.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Suggested {userLocale === 'en-GB' ? 'colours' : 'colors'}:</p>
+                                <div className="flex gap-2">
+                                  {suggestedColors.map(color => (
+                                    <button
+                                      key={color}
+                                      onClick={() => {
+                                        setSettings(prev => ({ ...prev, themeColor: color }));
+                                        // Add to recent colors
+                                        const recent = recentColors.filter(c => c !== color);
+                                        const updatedRecent = [color, ...recent].slice(0, 5);
+                                        setRecentColors(updatedRecent);
+                                        localStorage.setItem('chatbot_recent_colors', JSON.stringify(updatedRecent));
+                                      }}
+                                      className="w-8 h-8 rounded border-2 hover:opacity-80 transition"
+                                      style={{
+                                        backgroundColor: color,
+                                        borderColor: settings.themeColor === color ? 'rgba(169, 189, 203, 0.8)' : 'rgba(169, 189, 203, 0.3)'
+                                      }}
+                                      title={color}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
                       <div>
                         <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Title Color
+                          Title {userLocale === 'en-GB' ? 'Colour' : 'Color'}
                         </label>
                         <div className="flex items-center gap-3">
                           <input
@@ -3001,7 +2940,7 @@ function ChatbotDashboardContent() {
                 {/* Behavior Settings */}
                 <div>
                   <h3 className="text-lg font-medium mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                    Behavior
+                    {userLocale === 'en-GB' ? 'Behaviour' : 'Behavior'}
                   </h3>
                   <div className="space-y-3">
                     <label className="flex items-center gap-3">
