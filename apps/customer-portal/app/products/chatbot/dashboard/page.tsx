@@ -1944,14 +1944,11 @@ function ChatbotDashboardContent() {
                       const insight = typeof takeaway === 'string' ? { title: takeaway, explanation: '' } : takeaway;
                       return (
                         <div key={idx} className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                          <div className="flex items-start gap-2 mb-2">
-                            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                            <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {insight.title || insight}
-                            </p>
-                          </div>
+                          <p className="text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                            {insight.title || insight}
+                          </p>
                           {insight.explanation && (
-                            <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                            <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                               {insight.explanation}
                             </p>
                           )}
@@ -1962,29 +1959,20 @@ function ChatbotDashboardContent() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                      <div className="flex items-start gap-2 mb-2">
-                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(76, 175, 80)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Quick Resolution Pattern</p>
-                      </div>
-                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      <p className="text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>Quick Resolution Pattern</p>
+                      <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                         Most conversations end within 3 messages, indicating users find answers quickly
                       </p>
                     </div>
                     <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                      <div className="flex items-start gap-2 mb-2">
-                        <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(255, 193, 7)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Common Drop-off Point</p>
-                      </div>
-                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      <p className="text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>Common Drop-off Point</p>
+                      <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                         Users often leave after asking about pricing - consider adding a pricing FAQ section
                       </p>
                     </div>
                     <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                      <div className="flex items-start gap-2 mb-2">
-                        <Activity className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
-                        <p className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Knowledge Gap: Product Details</p>
-                      </div>
-                      <p className="text-xs ml-6" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      <p className="text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>Knowledge Gap: Product Details</p>
+                      <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
                         23% of questions about product features go unanswered - add detailed product documentation
                       </p>
                     </div>
@@ -2092,7 +2080,7 @@ function ChatbotDashboardContent() {
                             className="h-6 rounded-full transition-all flex items-center justify-end pr-2"
                             style={{
                               width: `${(count / maxCount) * 100}%`,
-                              backgroundColor: `hsl(${200 - (index * 30)}, 60%, 50%)`
+                              backgroundColor: 'rgb(169, 189, 203)'
                             }}
                           >
                             <span className="text-xs font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
