@@ -2874,7 +2874,7 @@ function ChatbotDashboardContent() {
                               value={settings.themeColor}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value) || value === 'transparent') {
+                                if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)) {
                                   setSettings(prev => ({ ...prev, themeColor: value }));
                                 }
                               }}
@@ -2886,19 +2886,6 @@ function ChatbotDashboardContent() {
                                 color: 'rgb(229, 227, 220)'
                               }}
                             />
-                            <button
-                              onClick={() => setSettings(prev => ({ ...prev, themeColor: 'transparent' }))}
-                              className={`px-3 py-1.5 text-xs rounded transition ${
-                                settings.themeColor === 'transparent' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
-                              }`}
-                              style={{
-                                background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc) 0 0 / 8px 8px',
-                                border: '1px solid rgba(169, 189, 203, 0.3)'
-                              }}
-                              title="Transparent background"
-                            >
-                              <span style={{ color: 'rgb(48, 54, 54)', fontWeight: 'bold' }}>Clear</span>
-                            </button>
                           </div>
 
                           {/* Recent Colors */}
@@ -2928,12 +2915,12 @@ function ChatbotDashboardContent() {
                               onClick={async () => {
                                 setLoadingSuggestedColors(true);
                                 try {
-                                  // Generate 3 complementary colors based on the website's dark theme
-                                  // These colors work well with dark backgrounds
+                                  // Generate 3 premium, sophisticated colors that match the dark theme
+                                  // These colors are muted and elegant for a professional feel
                                   const websiteColors = [
-                                    '#6B7280', // Neutral gray - works with any dark theme
-                                    '#3B82F6', // Professional blue - trust and reliability
-                                    '#10B981'  // Success green - positive actions
+                                    '#8B92A7', // Sophisticated slate blue - elegant and refined
+                                    '#7C8FA3', // Muted steel blue - professional and trustworthy
+                                    '#6F7A8D'  // Deep gray blue - premium and understated
                                   ];
                                   setSuggestedColors(websiteColors);
                                 } catch (error) {
@@ -2945,7 +2932,7 @@ function ChatbotDashboardContent() {
                               disabled={loadingSuggestedColors}
                               className="text-xs px-3 py-1.5 rounded-lg hover:opacity-80 transition flex items-center gap-2"
                               style={{
-                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                backgroundColor: 'rgba(58, 64, 64, 0.5)',
                                 color: 'rgb(169, 189, 203)',
                                 border: '1px solid rgba(169, 189, 203, 0.2)'
                               }}
@@ -2980,7 +2967,7 @@ function ChatbotDashboardContent() {
                                         title={color}
                                       />
                                       <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                        {idx === 0 ? 'Neutral' : idx === 1 ? 'Primary' : 'Action'}
+                                        {idx === 0 ? 'Elegant' : idx === 1 ? 'Premium' : 'Refined'}
                                       </span>
                                     </div>
                                   ))}
@@ -3008,7 +2995,7 @@ function ChatbotDashboardContent() {
                             value={settings.titleColor}
                             onChange={(e) => {
                               const value = e.target.value;
-                              if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value) || value === 'transparent') {
+                              if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)) {
                                 setSettings(prev => ({ ...prev, titleColor: value }));
                               }
                             }}
@@ -3020,19 +3007,6 @@ function ChatbotDashboardContent() {
                               color: 'rgb(229, 227, 220)'
                             }}
                           />
-                          <button
-                            onClick={() => setSettings(prev => ({ ...prev, titleColor: 'transparent' }))}
-                            className={`px-3 py-1.5 text-xs rounded transition ${
-                              settings.titleColor === 'transparent' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
-                            }`}
-                            style={{
-                              background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc) 0 0 / 8px 8px',
-                              border: '1px solid rgba(169, 189, 203, 0.3)'
-                            }}
-                            title="Transparent text"
-                          >
-                            <span style={{ color: 'rgb(48, 54, 54)', fontWeight: 'bold' }}>Clear</span>
-                          </button>
                         </div>
                       </div>
                     </div>
