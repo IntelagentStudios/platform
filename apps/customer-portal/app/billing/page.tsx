@@ -17,6 +17,7 @@ export default function BillingPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
 
   useEffect(() => {
     // Check authentication
@@ -66,10 +67,58 @@ export default function BillingPage() {
     return null;
   }
 
-  // TODO: Connect to real billing data from Stripe or payment provider
-  const invoices: any[] = [];
+  // Mock subscriptions data - in production this would come from Stripe
+  useEffect(() => {
+    // Simulate fetching subscription data
+    const mockSubscriptions = [
+      {
+        id: 'sub_chatbot_1',
+        product: 'AI Chatbot',
+        price: '£349/month',
+        status: 'active',
+        startDate: '2025-01-01',
+        nextBilling: '2025-02-01',
+        features: ['24/7 Support', 'Custom Training', 'Analytics Dashboard']
+      },
+      {
+        id: 'sub_platform_1',
+        product: 'Platform License',
+        price: '£599/year',
+        status: 'active',
+        startDate: '2024-12-15',
+        nextBilling: '2025-12-15',
+        features: ['All Core Features', 'Priority Support', 'API Access']
+      },
+      {
+        id: 'sub_analytics_1',
+        product: 'Advanced Analytics',
+        price: '£199/month',
+        status: 'active',
+        startDate: '2025-01-15',
+        nextBilling: '2025-02-15',
+        features: ['Custom Reports', 'Predictive Analytics', 'Data Export']
+      }
+    ];
+    setSubscriptions(mockSubscriptions);
+  }, []);
 
+  const invoices: any[] = [];
   const paymentMethods: any[] = [];
+
+  // Calculate total monthly cost
+  const calculateTotalMonthly = () => {
+    let total = 0;
+    subscriptions.forEach(sub => {
+      if (sub.price.includes('/month')) {
+        const amount = parseInt(sub.price.replace('£', '').replace('/month', ''));
+        total += amount;
+      } else if (sub.price.includes('/year')) {
+        const amount = parseInt(sub.price.replace('£', '').replace('/year', ''));
+        total += Math.round(amount / 12);
+      }
+    });
+    return total;
+  };
 
   return (
     <DashboardLayout>
@@ -87,62 +136,115 @@ export default function BillingPage() {
 
       {/* Content */}
       <div className="p-8">
-        {/* Current Plan */}
-        <div 
+        {/* Subscription Overview */}
+        <div
           className="rounded-lg p-6 border mb-8"
-          style={{ 
+          style={{
             backgroundColor: 'rgba(58, 64, 64, 0.5)',
             borderColor: 'rgba(169, 189, 203, 0.15)'
           }}
         >
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                Current Plan
+                Subscription Overview
               </h2>
-              <div className="flex items-center space-x-3 mb-4">
-                <span className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
-                  {user?.license_type === 'pro_platform' ? 'Pro Platform' : 'Platform'}
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs"
-                     style={{ 
-                       backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                       color: '#4CAF50'
-                     }}>
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Active
-                </span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Package className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                    1 product included (Chatbot)
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                    License expires: {user?.license_expires ? new Date(user.license_expires).toLocaleDateString() : 'Never'}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                  <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                    $599/year
-                  </span>
-                </div>
-              </div>
+              <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                You have {subscriptions.length} active subscriptions
+              </p>
             </div>
+            <div className="text-right">
+              <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Total Monthly</p>
+              <p className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                £{calculateTotalMonthly()}
+              </p>
+            </div>
+          </div>
+
+          {/* Active Subscriptions Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {subscriptions.map((sub) => (
+              <div
+                key={sub.id}
+                className="rounded-lg border p-4"
+                style={{
+                  backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.2)'
+                }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                    {sub.product}
+                  </h3>
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
+                    style={{
+                      backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                      color: '#4CAF50'
+                    }}
+                  >
+                    Active
+                  </span>
+                </div>
+
+                <div className="space-y-2 mb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Price</span>
+                    <span className="font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                      {sub.price}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Next billing</span>
+                    <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                      {new Date(sub.nextBilling).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="border-t pt-3" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                  <p className="text-xs mb-2" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Includes:</p>
+                  {sub.features.slice(0, 2).map((feature, idx) => (
+                    <div key={idx} className="flex items-center space-x-1">
+                      <CheckCircle className="h-3 w-3" style={{ color: 'rgba(76, 175, 80, 0.6)' }} />
+                      <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  className="w-full mt-3 px-3 py-1.5 rounded text-xs transition hover:opacity-80"
+                  style={{
+                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)',
+                    color: 'rgb(169, 189, 203)'
+                  }}
+                >
+                  Manage
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Unified Billing Notice */}
+          <div
+            className="mt-4 p-4 rounded-lg"
+            style={{
+              backgroundColor: 'rgba(255, 193, 7, 0.05)',
+              borderLeft: '3px solid #FFC107'
+            }}
+          >
+            <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+              <strong>Pro Tip:</strong> Consider upgrading to our unified billing plan to save 20% on multiple products.
+              All your subscriptions would be consolidated into a single monthly payment.
+            </p>
             <button
-              className="px-4 py-2 rounded-lg transition hover:opacity-80"
-              style={{ 
-                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                border: '1px solid rgba(169, 189, 203, 0.2)',
-                color: 'rgb(229, 227, 220)'
-              }}
+              className="mt-2 text-sm font-medium hover:underline"
+              style={{ color: '#FFC107' }}
             >
-              Manage Subscription
+              Learn about unified billing →
             </button>
           </div>
         </div>

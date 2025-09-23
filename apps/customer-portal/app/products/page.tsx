@@ -28,6 +28,8 @@ export default function ProductsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [configurations, setConfigurations] = useState<any>({});
   const [userProducts, setUserProducts] = useState<string[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendationReasons, setRecommendationReasons] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -57,6 +59,17 @@ export default function ProductsPage() {
               }
             })
             .catch(err => console.error('Failed to fetch product configurations:', err));
+
+          // Fetch intelligent recommendations
+          fetch('/api/products/recommendations', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+              if (data.recommendations) {
+                setRecommendations(data.recommendations);
+                setRecommendationReasons(data.reasoning || []);
+              }
+            })
+            .catch(err => console.error('Failed to fetch recommendations:', err));
         } else {
           setIsAuthenticated(false);
           window.location.href = '/login';
@@ -105,6 +118,9 @@ export default function ProductsPage() {
       category: 'core'
     }
   ];
+
+  // Get recommended product IDs from API recommendations
+  const recommendedIds = recommendations.map(r => r.id);
 
   // Real marketplace products and modular upgrades
   const marketplaceProducts = [
@@ -473,26 +489,51 @@ export default function ProductsPage() {
           </section>
         )}
 
-        {/* Marketplace Section */}
+        {/* Recommended for You Section - Intelligent Suggestions */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
-              <ShoppingCart className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+              <Sparkles className="h-5 w-5" style={{ color: 'rgb(255, 193, 7)' }} />
               <h2 className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                Marketplace - Real Products & Modular Upgrades
+                Recommended for You
               </h2>
-              <span className="text-xs px-2 py-1 rounded-full" 
-                    style={{ 
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(169, 189, 203)'
+              <span className="text-xs px-2 py-1 rounded-full"
+                    style={{
+                      backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                      color: '#FFC107'
                     }}>
-                Premium Add-ons
+                Based on Your Usage
               </span>
             </div>
           </div>
+
+          {/* Intelligent recommendations message */}
+          <div className="mb-4 p-4 rounded-lg" style={{
+            backgroundColor: 'rgba(255, 193, 7, 0.05)',
+            borderLeft: '3px solid #FFC107'
+          }}>
+            <p className="text-sm mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+              {recommendations.length > 0
+                ? `We've analyzed your usage and identified ${recommendations.length} upgrades that would benefit your business:`
+                : 'Based on your usage patterns, we recommend these upgrades to enhance your platform:'}
+            </p>
+            {recommendations.length > 0 && recommendations[0].reason && (
+              <ul className="text-xs space-y-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                {recommendations.slice(0, 2).map((rec, idx) => (
+                  <li key={idx} className="flex items-start space-x-1">
+                    <span style={{ color: '#FFC107' }}>•</span>
+                    <span>{rec.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-            {marketplaceProducts.map((product) => (
+            {marketplaceProducts
+              .filter(p => recommendedIds.includes(p.id))
+              .slice(0, 4)
+              .map((product) => (
               <div 
                 key={product.id}
                 className="rounded-lg border overflow-hidden transition-all hover:shadow-lg relative"
