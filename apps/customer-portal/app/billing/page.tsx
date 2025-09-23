@@ -54,19 +54,6 @@ export default function BillingPage() {
       });
   }, []);
 
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2" 
-             style={{ borderColor: 'rgb(169, 189, 203)' }}></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Mock subscriptions data - in production this would come from Stripe
   useEffect(() => {
     // Simulate fetching subscription data
@@ -119,6 +106,19 @@ export default function BillingPage() {
     });
     return total;
   };
+
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2"
+             style={{ borderColor: 'rgb(169, 189, 203)' }}></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <DashboardLayout>
