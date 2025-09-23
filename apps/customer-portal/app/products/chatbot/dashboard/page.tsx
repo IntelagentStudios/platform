@@ -2028,7 +2028,7 @@ function ChatbotDashboardContent() {
                       <div className="text-xs mt-2" style={{ color: 'rgb(169, 189, 203)' }}>
                         {date.toLocaleDateString('en-US', { weekday: 'short' })}
                       </div>
-                      <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      <div className="text-xs" style={{ color: 'rgba(58, 64, 64, 0.5)' }}>
                         {dayConversations}
                       </div>
                     </div>

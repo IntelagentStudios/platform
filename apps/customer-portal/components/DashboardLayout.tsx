@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { 
-  Shield, 
-  Package, 
-  LogOut, 
+import {
+  Shield,
+  Package,
+  LogOut,
   Users,
   BarChart3,
   Home,
@@ -113,10 +113,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         {/* Logo */}
         <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(169, 189, 203, 0.15)' }}>
-              <Shield className="h-6 w-6" style={{ color: 'rgb(169, 189, 203)' }} />
-            </div>
+          <div className="flex items-center">
             {(!sidebarCollapsed || isHovering) && (
               <div>
                 <h2 className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
