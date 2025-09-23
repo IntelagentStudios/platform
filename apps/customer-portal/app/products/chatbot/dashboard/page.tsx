@@ -2852,10 +2852,10 @@ function ChatbotDashboardContent() {
                           Theme {userLocale === 'en-GB' ? 'Colour' : 'Color'}
                         </label>
                         <div className="space-y-3">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             <input
                               type="color"
-                              value={settings.themeColor}
+                              value={settings.themeColor === 'transparent' ? '#000000' : settings.themeColor}
                               onChange={(e) => {
                                 const newColor = e.target.value;
                                 setSettings(prev => ({ ...prev, themeColor: newColor }));
@@ -2866,12 +2866,39 @@ function ChatbotDashboardContent() {
                                 setRecentColors(updatedRecent);
                                 localStorage.setItem('chatbot_recent_colors', JSON.stringify(updatedRecent));
                               }}
-                              className="h-12 w-24 rounded cursor-pointer"
+                              className="h-10 w-10 rounded cursor-pointer"
                               style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
                             />
-                            <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
-                              Header & buttons
-                            </span>
+                            <input
+                              type="text"
+                              value={settings.themeColor}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value) || value === 'transparent') {
+                                  setSettings(prev => ({ ...prev, themeColor: value }));
+                                }
+                              }}
+                              placeholder="#000000"
+                              className="flex-1 px-2 py-1.5 text-sm rounded font-mono"
+                              style={{
+                                backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                                border: '1px solid rgba(169, 189, 203, 0.2)',
+                                color: 'rgb(229, 227, 220)'
+                              }}
+                            />
+                            <button
+                              onClick={() => setSettings(prev => ({ ...prev, themeColor: 'transparent' }))}
+                              className={`px-3 py-1.5 text-xs rounded transition ${
+                                settings.themeColor === 'transparent' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                              }`}
+                              style={{
+                                background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc) 0 0 / 8px 8px',
+                                border: '1px solid rgba(169, 189, 203, 0.3)'
+                              }}
+                              title="Transparent background"
+                            >
+                              <span style={{ color: 'rgb(48, 54, 54)', fontWeight: 'bold' }}>Clear</span>
+                            </button>
                           </div>
 
                           {/* Recent Colors */}
@@ -2901,18 +2928,14 @@ function ChatbotDashboardContent() {
                               onClick={async () => {
                                 setLoadingSuggestedColors(true);
                                 try {
-                                  // Use muted, professional colors that match dark themes
-                                  const brandColors = [
-                                    '#4A5568', // Muted gray-blue
-                                    '#2D3748', // Dark slate
-                                    '#718096', // Soft gray
-                                    '#5A67D8', // Muted indigo
-                                    '#48BB78', // Soft green
-                                    '#ED8936', // Warm orange
-                                    '#9F7AEA', // Soft purple
-                                    '#38B2AC'  // Teal
+                                  // Generate 3 complementary colors based on the website's dark theme
+                                  // These colors work well with dark backgrounds
+                                  const websiteColors = [
+                                    '#6B7280', // Neutral gray - works with any dark theme
+                                    '#3B82F6', // Professional blue - trust and reliability
+                                    '#10B981'  // Success green - positive actions
                                   ];
-                                  setSuggestedColors(brandColors);
+                                  setSuggestedColors(websiteColors);
                                 } catch (error) {
                                   console.error('Error getting colors:', error);
                                 } finally {
@@ -2928,34 +2951,38 @@ function ChatbotDashboardContent() {
                               }}
                             >
                               {loadingSuggestedColors ? (
-                                <><Loader2 className="w-3 h-3 animate-spin" /> Getting {userLocale === 'en-GB' ? 'colours' : 'colors'}...</>
+                                <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing website...</>
                               ) : (
-                                <>✨ Suggest brand {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
+                                <>✨ Suggest {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
                               )}
                             </button>
 
                             {suggestedColors.length > 0 && (
                               <div className="mt-2">
-                                <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Suggested {userLocale === 'en-GB' ? 'colours' : 'colors'}:</p>
-                                <div className="flex gap-2">
-                                  {suggestedColors.map(color => (
-                                    <button
-                                      key={color}
-                                      onClick={() => {
-                                        setSettings(prev => ({ ...prev, themeColor: color }));
-                                        // Add to recent colors
-                                        const recent = recentColors.filter(c => c !== color);
-                                        const updatedRecent = [color, ...recent].slice(0, 5);
-                                        setRecentColors(updatedRecent);
-                                        localStorage.setItem('chatbot_recent_colors', JSON.stringify(updatedRecent));
-                                      }}
-                                      className="w-8 h-8 rounded border-2 hover:opacity-80 transition"
-                                      style={{
-                                        backgroundColor: color,
-                                        borderColor: settings.themeColor === color ? 'rgba(169, 189, 203, 0.8)' : 'rgba(169, 189, 203, 0.3)'
-                                      }}
-                                      title={color}
-                                    />
+                                <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Website-matched {userLocale === 'en-GB' ? 'colours' : 'colors'}:</p>
+                                <div className="flex items-center gap-3">
+                                  {suggestedColors.map((color, idx) => (
+                                    <div key={color} className="flex flex-col items-center gap-1">
+                                      <button
+                                        onClick={() => {
+                                          setSettings(prev => ({ ...prev, themeColor: color }));
+                                          // Add to recent colors
+                                          const recent = recentColors.filter(c => c !== color);
+                                          const updatedRecent = [color, ...recent].slice(0, 5);
+                                          setRecentColors(updatedRecent);
+                                          localStorage.setItem('chatbot_recent_colors', JSON.stringify(updatedRecent));
+                                        }}
+                                        className="w-12 h-12 rounded border-2 hover:opacity-80 transition"
+                                        style={{
+                                          backgroundColor: color,
+                                          borderColor: settings.themeColor === color ? 'rgba(169, 189, 203, 0.8)' : 'rgba(169, 189, 203, 0.3)'
+                                        }}
+                                        title={color}
+                                      />
+                                      <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                        {idx === 0 ? 'Neutral' : idx === 1 ? 'Primary' : 'Action'}
+                                      </span>
+                                    </div>
                                   ))}
                                 </div>
                               </div>
@@ -2968,17 +2995,44 @@ function ChatbotDashboardContent() {
                         <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                           Title {userLocale === 'en-GB' ? 'Colour' : 'Color'}
                         </label>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <input
                             type="color"
-                            value={settings.titleColor}
+                            value={settings.titleColor === 'transparent' ? '#ffffff' : settings.titleColor}
                             onChange={(e) => setSettings(prev => ({ ...prev, titleColor: e.target.value }))}
-                            className="h-12 w-24 rounded cursor-pointer"
+                            className="h-10 w-10 rounded cursor-pointer"
                             style={{ border: '2px solid rgba(169, 189, 203, 0.3)' }}
                           />
-                          <span style={{ color: 'rgba(229, 227, 220, 0.6)', fontSize: '12px' }}>
-                            Title text
-                          </span>
+                          <input
+                            type="text"
+                            value={settings.titleColor}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value) || value === 'transparent') {
+                                setSettings(prev => ({ ...prev, titleColor: value }));
+                              }
+                            }}
+                            placeholder="#ffffff"
+                            className="flex-1 px-2 py-1.5 text-sm rounded font-mono"
+                            style={{
+                              backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                              border: '1px solid rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(229, 227, 220)'
+                            }}
+                          />
+                          <button
+                            onClick={() => setSettings(prev => ({ ...prev, titleColor: 'transparent' }))}
+                            className={`px-3 py-1.5 text-xs rounded transition ${
+                              settings.titleColor === 'transparent' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+                            }`}
+                            style={{
+                              background: 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc) 0 0 / 8px 8px',
+                              border: '1px solid rgba(169, 189, 203, 0.3)'
+                            }}
+                            title="Transparent text"
+                          >
+                            <span style={{ color: 'rgb(48, 54, 54)', fontWeight: 'bold' }}>Clear</span>
+                          </button>
                         </div>
                       </div>
                     </div>
