@@ -18,14 +18,12 @@ export async function POST(request: NextRequest) {
 
     // If there are critical issues, return them immediately
     if (accountFlags.critical || systemIssues.critical) {
+      const criticalMessage = accountFlags.details?.[0] || systemIssues.details?.[0] ||
+        'Critical issue detected - please check your account settings.';
       return NextResponse.json({
         bulletin: {
           priority: 'critical',
-          headline: accountFlags.critical ? 'Account Action Required' : 'System Alert',
-          details: [
-            ...(accountFlags.details || []),
-            ...(systemIssues.details || [])
-          ],
+          message: criticalMessage,
           timestamp: new Date().toISOString()
         }
       });
@@ -33,14 +31,12 @@ export async function POST(request: NextRequest) {
 
     // If there are warnings, include them
     if (accountFlags.warning || systemIssues.warning) {
+      const warningMessage = accountFlags.details?.[0] || systemIssues.details?.[0] ||
+        'There\'s something that needs your attention in the settings.';
       return NextResponse.json({
         bulletin: {
           priority: 'warning',
-          headline: 'Important Updates',
-          details: [
-            ...(accountFlags.details || []),
-            ...(systemIssues.details || [])
-          ],
+          message: warningMessage,
           timestamp: new Date().toISOString()
         }
       });
@@ -48,15 +44,17 @@ export async function POST(request: NextRequest) {
 
     // Otherwise, generate AI-based insights about conversation trends
     if (!process.env.OPENAI_API_KEY) {
+      const convCount = stats?.todayConversations || 0;
+      const message = convCount === 0 ?
+        "Your chatbot is ready and waiting for visitors. Everything's running smoothly." :
+        convCount === 1 ?
+        "You've had your first conversation today! The chatbot is responding well." :
+        `Things are going well - you've had ${convCount} conversations today and the chatbot is handling them smoothly.`;
+
       return NextResponse.json({
         bulletin: {
           priority: 'info',
-          headline: 'Chatbot Operating Normally',
-          details: [
-            `${stats?.todayConversations || 0} conversations today`,
-            'All systems functioning within normal parameters',
-            'No alerts or issues detected'
-          ],
+          message,
           timestamp: new Date().toISOString()
         }
       });
@@ -102,7 +100,7 @@ export async function POST(request: NextRequest) {
     const topTopic = Object.entries(topics).sort((a, b) => b[1] - a[1])[0];
     const topLocation = Object.entries(locations).sort((a, b) => b[1] - a[1])[0];
 
-    const prompt = `Based on this chatbot activity data, generate a brief status bulletin (like a news anchor would read):
+    const prompt = `Based on this chatbot activity data, write ONE conversational sentence about what's happening:
 
 Today's conversations: ${stats?.todayConversations || 0}
 This week: ${stats?.weekConversations || 0}
@@ -110,17 +108,22 @@ Top topic: ${topTopic ? `${topTopic[0]} (${topTopic[1]} conversations)` : 'Gener
 Notable location: ${topLocation ? `Increased interest from ${topLocation[0]}` : 'Normal geographic distribution'}
 
 Generate a JSON response with:
-- headline: A brief, natural headline about what's happening (e.g., "Strong Interest in Pricing Features Today" or "Canadian Market Showing Increased Engagement")
-- details: An array of 2-3 specific observations written as brief bullet points
+- message: A single, natural sentence that tells the business owner what's interesting or important right now
 
-Focus on what would be useful for the business owner to know. Make it sound like a news bulletin, not technical stats.`;
+Examples of good messages:
+- "You're seeing a lot of interest in pricing today, especially from new visitors in Canada."
+- "Things are quiet right now, but your chatbot handled yesterday's product questions really well."
+- "Your chatbot is getting busy - lots of feature questions coming in this afternoon."
+- "Everything's running smoothly with steady interest across all your products."
+
+Be conversational and specific when possible. Focus on what matters to the business owner.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
       messages: [
         {
           role: 'system',
-          content: 'You are a business intelligence assistant providing daily briefings about chatbot activity. Write in a professional but conversational tone, like a news anchor delivering business updates. Focus on actionable insights.'
+          content: 'You are a helpful assistant that provides brief, conversational updates about chatbot activity. Write like you\'re having a friendly conversation with the business owner. Be specific and natural.'
         },
         {
           role: 'user',
@@ -136,12 +139,7 @@ Focus on what would be useful for the business owner to know. Make it sound like
     return NextResponse.json({
       bulletin: {
         priority: 'info',
-        headline: aiResponse.headline || 'Chatbot Activity Update',
-        details: aiResponse.details || [
-          `${stats?.todayConversations || 0} conversations today`,
-          'Normal activity patterns detected',
-          'All systems operating smoothly'
-        ],
+        message: aiResponse.message || `You've had ${stats?.todayConversations || 0} conversations today and everything's running smoothly.`,
         timestamp: new Date().toISOString()
       }
     });
@@ -151,12 +149,7 @@ Focus on what would be useful for the business owner to know. Make it sound like
     return NextResponse.json({
       bulletin: {
         priority: 'info',
-        headline: 'Status Update',
-        details: [
-          'Chatbot is active and responding',
-          'Unable to generate detailed insights at this time',
-          'All core systems operational'
-        ],
+        message: 'Your chatbot is active and responding to visitors.',
         timestamp: new Date().toISOString()
       }
     });

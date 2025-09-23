@@ -131,8 +131,7 @@ function ChatbotDashboardContent() {
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [statusBulletin, setStatusBulletin] = useState<{
     priority: 'info' | 'warning' | 'critical';
-    headline: string;
-    details: string[];
+    message: string;
     timestamp: string;
   } | null>(null);
   const [bulletinLoading, setBulletinLoading] = useState(false);
@@ -848,50 +847,36 @@ function ChatbotDashboardContent() {
                   </button>
                 </div>
 
-                {/* Status Bulletin */}
+                {/* Conversational Update */}
                 {bulletinLoading && !statusBulletin ? (
-                  <div className="flex items-center gap-2 py-4">
+                  <div className="flex items-center gap-2 py-2">
                     <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'rgb(169, 189, 203)' }} />
-                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Analyzing chatbot status...</span>
+                    <span className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Checking what's happening...</span>
                   </div>
                 ) : statusBulletin ? (
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1">
-                        {statusBulletin.priority === 'critical' ? (
-                          <AlertCircle className="w-5 h-5" style={{ color: 'rgb(244, 67, 54)' }} />
-                        ) : statusBulletin.priority === 'warning' ? (
-                          <AlertCircle className="w-5 h-5" style={{ color: 'rgb(255, 193, 7)' }} />
-                        ) : (
-                          <TrendingUp className="w-5 h-5" style={{ color: 'rgb(76, 175, 80)' }} />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold mb-2"
-                            style={{
-                              color: statusBulletin.priority === 'critical' ? 'rgb(244, 67, 54)' :
-                                     statusBulletin.priority === 'warning' ? 'rgb(255, 193, 7)' :
-                                     'rgb(229, 227, 220)'
-                            }}>
-                          {statusBulletin.headline}
-                        </h3>
-                        <div className="space-y-1">
-                          {statusBulletin.details.map((detail, idx) => (
-                            <p key={idx} className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
-                              • {detail}
-                            </p>
-                          ))}
-                        </div>
-                        <p className="text-xs mt-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                          Last updated: {new Date(statusBulletin.timestamp).toLocaleString()}
-                        </p>
-                      </div>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      {statusBulletin.priority === 'critical' ? (
+                        <AlertCircle className="w-4 h-4" style={{ color: 'rgb(244, 67, 54)' }} />
+                      ) : statusBulletin.priority === 'warning' ? (
+                        <AlertCircle className="w-4 h-4" style={{ color: 'rgb(255, 193, 7)' }} />
+                      ) : (
+                        <MessageCircle className="w-4 h-4" style={{ color: 'rgb(76, 175, 80)' }} />
+                      )}
                     </div>
+                    <p className="text-sm leading-relaxed flex-1"
+                       style={{
+                         color: statusBulletin.priority === 'critical' ? 'rgb(244, 67, 54)' :
+                                statusBulletin.priority === 'warning' ? 'rgb(255, 193, 7)' :
+                                'rgb(229, 227, 220)'
+                       }}>
+                      {statusBulletin.message}
+                    </p>
                   </div>
                 ) : (
-                  <div className="py-4">
+                  <div className="py-2">
                     <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                      No status updates available. Click refresh to check for updates.
+                      Click refresh to see what's happening with your chatbot.
                     </p>
                   </div>
                 )}
