@@ -44,7 +44,8 @@ import {
   FileText,
   Maximize2,
   TrendingDown,
-  MessageCircle
+  MessageCircle,
+  Download
 } from 'lucide-react';
 
 interface Conversation {
@@ -87,6 +88,8 @@ function ChatbotDashboardContent() {
   const [dateFilter, setDateFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [topicFilter, setTopicFilter] = useState('all');
+  const [conversationDateRange, setConversationDateRange] = useState<'7d' | '14d' | '30d' | 'all'>('all');
+  const [exactSearchMode, setExactSearchMode] = useState(false);
   const [availableProductKeys, setAvailableProductKeys] = useState<{key: string, domain?: string}[]>([]);
   const [selectedProductKey, setSelectedProductKey] = useState<string>('all');
   const [groupBy, setGroupBy] = useState('time');
@@ -104,7 +107,7 @@ function ChatbotDashboardContent() {
   const [selectedWebsiteType, setSelectedWebsiteType] = useState('general');
   const [showIntegrationHelp, setShowIntegrationHelp] = useState(false);
   const [showApiHelp, setShowApiHelp] = useState(false);
-  const [expandedChart, setExpandedChart] = useState<'trends' | 'topics' | 'topDomains' | null>(null);
+  const [expandedChart, setExpandedChart] = useState<'trends' | 'topics' | 'topDomains' | 'dateBreakdown' | 'topicBreakdown' | null>(null);
   const [trendsDateRange, setTrendsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
   const [topicsDateRange, setTopicsDateRange] = useState<'7d' | '14d' | '30d' | '90d'>('7d');
   const [trendsViewMode, setTrendsViewMode] = useState<'date' | 'topic' | 'both'>('date');
@@ -174,7 +177,7 @@ function ChatbotDashboardContent() {
 
   useEffect(() => {
     filterConversations();
-  }, [conversations, searchQuery, dateFilter, selectedDate, topicFilter, selectedProductKey, selectedDomains]);
+  }, [conversations, searchQuery, conversationDateRange, exactSearchMode, topicFilter, selectedProductKey, selectedDomains]);
 
   useEffect(() => {
     // Recalculate stats when domain filter changes
@@ -505,48 +508,28 @@ function ChatbotDashboardContent() {
   const filterConversations = () => {
     let filtered = [...conversations];
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(conv => 
-        conv.messages.some(msg => 
-          msg.content?.toLowerCase().includes(searchQuery.toLowerCase())
-        ) ||
-        conv.session_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        conv.domain?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Date filter
-    if (dateFilter !== 'all') {
+    // Date range filter (new enhanced filter)
+    if (conversationDateRange !== 'all') {
       const now = new Date();
       let cutoffDate: Date;
-      
-      switch (dateFilter) {
-        case 'today':
-          cutoffDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          break;
-        case 'week':
+
+      switch (conversationDateRange) {
+        case '7d':
           cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           break;
-        case 'month':
+        case '14d':
+          cutoffDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
           cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           break;
         default:
           cutoffDate = new Date(0);
       }
-      
-      filtered = filtered.filter(conv => 
+
+      filtered = filtered.filter(conv =>
         new Date(conv.first_message_at) >= cutoffDate
       );
-    }
-
-    // Custom date filter
-    if (dateFilter === 'custom' && selectedDate) {
-      const selectedDateObj = new Date(selectedDate);
-      filtered = filtered.filter(conv => {
-        const convDate = new Date(conv.first_message_at);
-        return convDate.toDateString() === selectedDateObj.toDateString();
-      });
     }
 
     // Topic filter
@@ -556,7 +539,31 @@ function ChatbotDashboardContent() {
         return topic === topicFilter;
       });
     }
-    
+
+    // Search filter with exact match option
+    if (searchQuery) {
+      if (exactSearchMode) {
+        // Exact word match using word boundaries
+        const regex = new RegExp(`\\b${searchQuery.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i');
+        filtered = filtered.filter(conv =>
+          conv.messages.some(msg =>
+            regex.test(msg.content || '')
+          ) ||
+          regex.test(conv.session_id || '') ||
+          regex.test(conv.domain || '')
+        );
+      } else {
+        // Normal substring search
+        filtered = filtered.filter(conv =>
+          conv.messages.some(msg =>
+            msg.content?.toLowerCase().includes(searchQuery.toLowerCase())
+          ) ||
+          conv.session_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          conv.domain?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+    }
+
     // Product key filter (for accounts with multiple keys)
     if (selectedProductKey !== 'all' && availableProductKeys.length > 1) {
       filtered = filtered.filter(conv => conv.product_key === selectedProductKey);
@@ -570,6 +577,42 @@ function ChatbotDashboardContent() {
     }
 
     setFilteredConversations(filtered);
+  };
+
+  const exportConversations = () => {
+    const dataToExport = filteredConversations.length > 0 ? filteredConversations : conversations;
+
+    if (dataToExport.length === 0) {
+      alert('No conversations to export');
+      return;
+    }
+
+    // Prepare data for export
+    const exportData = dataToExport.map(conv => ({
+      conversation_id: conv.id,
+      session_id: conv.session_id,
+      domain: conv.domain || 'Unknown',
+      date: new Date(conv.first_message_at).toISOString(),
+      topic: extractTopic(conv.messages || []),
+      message_count: conv.messages.length,
+      messages: conv.messages.map(msg => ({
+        sender: msg.sender,
+        content: msg.content,
+        timestamp: msg.timestamp
+      }))
+    }));
+
+    // Create downloadable JSON file
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chatbot-conversations-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const copyToClipboard = () => {
@@ -1047,8 +1090,42 @@ function ChatbotDashboardContent() {
             <div className="lg:col-span-1">
               <div className="rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                  {/* Search and Filters */}
+                  {/* Enhanced Filters Section */}
                   <div className="space-y-3">
+                    {/* Date Range Selector */}
+                    <select
+                      value={conversationDateRange}
+                      onChange={(e) => setConversationDateRange(e.target.value as '7d' | '14d' | '30d' | 'all')}
+                      className="w-full px-3 py-2 text-sm border rounded-lg"
+                      style={{
+                        borderColor: 'rgba(169, 189, 203, 0.3)',
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    >
+                      <option value="all">All Time</option>
+                      <option value="7d">Last 7 Days</option>
+                      <option value="14d">Last 14 Days</option>
+                      <option value="30d">Last 30 Days</option>
+                    </select>
+
+                    {/* Topic Filter */}
+                    <select
+                      value={topicFilter}
+                      onChange={(e) => setTopicFilter(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border rounded-lg"
+                      style={{
+                        borderColor: 'rgba(169, 189, 203, 0.3)',
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    >
+                      <option value="all">All Topics</option>
+                      {uniqueTopics.map(topic => (
+                        <option key={topic} value={topic}>{topic}</option>
+                      ))}
+                    </select>
+
                     {/* Domain Filter - Only show if multiple domains */}
                     {stats?.domains && stats.domains.length > 1 && (
                       <div className="relative">
@@ -1108,33 +1185,42 @@ function ChatbotDashboardContent() {
                       </div>
                     )}
 
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                      <input
-                        type="text"
-                        placeholder="Search conversations..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                        style={{ 
-                          borderColor: 'rgba(169, 189, 203, 0.3)', 
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)', 
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      />
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                        <input
+                          type="text"
+                          placeholder={exactSearchMode ? "Search for exact word..." : "Search conversations..."}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                          style={{
+                            borderColor: 'rgba(169, 189, 203, 0.3)',
+                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        />
+                      </div>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={exactSearchMode}
+                          onChange={(e) => setExactSearchMode(e.target.checked)}
+                          className="rounded"
+                          style={{ accentColor: 'rgb(169, 189, 203)' }}
+                        />
+                        <span style={{ color: 'rgba(169, 189, 203, 0.9)' }}>Exact word match</span>
+                      </label>
                     </div>
                     
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setShowFilters(!showFilters)}
+                        onClick={exportConversations}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm border rounded-lg transition hover:opacity-80"
                         style={{ borderColor: 'rgba(169, 189, 203, 0.3)', color: 'rgba(169, 189, 203, 0.8)' }}
                       >
-                        <Filter className="w-4 h-4" />
-                        Filters
-                        {(dateFilter !== 'all' || topicFilter !== 'all' || selectedProductKey !== 'all' || !selectedDomains.includes('all')) && (
-                          <span className="ml-1 rounded-full w-2 h-2" style={{ backgroundColor: 'rgb(169, 189, 203)' }} />
-                        )}
+                        <Download className="w-4 h-4" />
+                        Export
                       </button>
                       <button
                         onClick={() => fetchConversations()}
@@ -1147,137 +1233,6 @@ function ChatbotDashboardContent() {
                       </button>
                     </div>
                     
-                    {showFilters && (
-                      <div className="space-y-2 pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                        <div className="flex gap-2">
-                          <select
-                            value={dateFilter}
-                            onChange={(e) => {
-                              setDateFilter(e.target.value);
-                              if (e.target.value !== 'custom') {
-                                setSelectedDate('');
-                              }
-                            }}
-                            className="flex-1 px-3 py-1.5 text-sm border rounded-lg"
-                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                          >
-                            <option value="all">All time</option>
-                            <option value="today">Today</option>
-                            <option value="week">Last 7 days</option>
-                            <option value="month">Last 30 days</option>
-                            <option value="custom">Custom date</option>
-                          </select>
-                          {dateFilter === 'custom' && (
-                            <input
-                              type="date"
-                              value={selectedDate}
-                              onChange={(e) => setSelectedDate(e.target.value)}
-                              className="px-3 py-1.5 text-sm border rounded-lg"
-                              style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                            />
-                          )}
-                        </div>
-                        
-                        {uniqueTopics.length > 0 && (
-                          <select
-                            value={topicFilter}
-                            onChange={(e) => setTopicFilter(e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
-                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                          >
-                            <option value="all">All topics</option>
-                            {uniqueTopics.map((topic) => (
-                              <option key={topic} value={topic}>{topic}</option>
-                            ))}
-                          </select>
-                        )}
-                        
-                        {availableProductKeys.length > 1 && (
-                          <select
-                            value={selectedProductKey}
-                            onChange={(e) => setSelectedProductKey(e.target.value)}
-                            className="w-full px-3 py-1.5 text-sm border rounded-lg"
-                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                          >
-                            <option value="all">All chatbots</option>
-                            {availableProductKeys.map((pk) => (
-                              <option key={pk.key} value={pk.key}>
-                                {pk.domain || pk.key.substring(0, 20) + '...'}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-
-                        {/* Domain Multi-Selector */}
-                        {stats?.domains && stats.domains.length > 0 && (
-                          <div className="relative domain-selector-container">
-                            <button
-                              onClick={() => setShowDomainSelector(!showDomainSelector)}
-                              className="w-full px-3 py-1.5 text-sm border rounded-lg text-left flex items-center justify-between"
-                              style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                            >
-                              <span className="truncate">
-                                {selectedDomains.includes('all')
-                                  ? 'All domains'
-                                  : selectedDomains.length === 0
-                                  ? 'Select domains'
-                                  : selectedDomains.length === 1
-                                  ? selectedDomains[0]
-                                  : `${selectedDomains.length} domains selected`}
-                              </span>
-                              <ChevronDown className="w-4 h-4 flex-shrink-0" />
-                            </button>
-
-                            {showDomainSelector && (
-                              <div
-                                className="absolute z-10 w-full mt-1 rounded-lg border shadow-lg max-h-60 overflow-y-auto"
-                                style={{ backgroundColor: 'rgb(48, 54, 54)', borderColor: 'rgba(169, 189, 203, 0.3)' }}
-                              >
-                                <div className="p-2 space-y-1">
-                                  <label className="flex items-center p-2 hover:bg-gray-700 rounded cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedDomains.includes('all')}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setSelectedDomains(['all']);
-                                        } else {
-                                          setSelectedDomains([]);
-                                        }
-                                      }}
-                                      className="mr-2"
-                                    />
-                                    <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>All domains</span>
-                                  </label>
-
-                                  <div className="border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }} />
-
-                                  {stats.domains.map(domain => (
-                                    <label key={domain} className="flex items-center p-2 hover:bg-gray-700 rounded cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedDomains.includes('all') || selectedDomains.includes(domain)}
-                                        onChange={(e) => {
-                                          if (selectedDomains.includes('all')) {
-                                            setSelectedDomains([domain]);
-                                          } else if (e.target.checked) {
-                                            setSelectedDomains([...selectedDomains, domain]);
-                                          } else {
-                                            setSelectedDomains(selectedDomains.filter(d => d !== domain));
-                                          }
-                                        }}
-                                        className="mr-2"
-                                      />
-                                      <span className="text-sm truncate" style={{ color: 'rgb(229, 227, 220)' }}>{domain}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
                 
@@ -1864,15 +1819,15 @@ function ChatbotDashboardContent() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className={`mx-auto space-y-6 transition-all duration-300 ${expandedChart ? 'max-w-7xl' : 'max-w-6xl'}`}>
-            {/* Analytics Summary Cards - Hide when chart is expanded */}
+            {/* Analytics Summary Cards - Always visible */}
             {!expandedChart && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Messages</p>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Total Conversations</p>
                     <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.totalMessages || 0}
+                      {stats?.totalConversations || 0}
                     </p>
                   </div>
                   <MessageSquare className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1882,12 +1837,12 @@ function ChatbotDashboardContent() {
               <div className="p-6 rounded-lg border" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Unique Sessions</p>
+                    <p className="text-sm" style={{ color: 'rgb(169, 189, 203)' }}>Avg Messages/Conv</p>
                     <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {stats?.uniqueSessions || 0}
+                      {stats?.avgMessagesPerConversation || 0}
                     </p>
                   </div>
-                  <Users className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                  <BarChart3 className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
                 </div>
               </div>
 
@@ -1917,14 +1872,130 @@ function ChatbotDashboardContent() {
             </div>
             )}
 
-            {/* Key Insights and Recommendations - Always visible at top */}
+            {/* Analytics Breakdown - Date and Topic Analysis */}
+            {!expandedChart && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Date Breakdown */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    <Calendar className="w-5 h-5" />
+                    Date Breakdown
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('dateBreakdown')}
+                    className="p-1.5 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-32 flex items-end gap-1">
+                    {Array.from({ length: 7 }, (_, i) => {
+                      const date = new Date();
+                      date.setDate(date.getDate() - (6 - i));
+                      const dayConvs = conversations.filter(conv => {
+                        const convDate = new Date(conv.first_message_at);
+                        return convDate.toDateString() === date.toDateString();
+                      });
+                      const maxHeight = Math.max(...Array.from({ length: 7 }, (_, j) => {
+                        const checkDate = new Date();
+                        checkDate.setDate(checkDate.getDate() - (6 - j));
+                        return conversations.filter(c =>
+                          new Date(c.first_message_at).toDateString() === checkDate.toDateString()
+                        ).length;
+                      })) || 1;
+                      const height = Math.max((dayConvs.length / maxHeight) * 100, 5);
+
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                          <div className="w-full flex items-end" style={{ height: '100%' }}>
+                            <div
+                              className="w-full rounded-t transition-all hover:opacity-80"
+                              style={{
+                                height: `${height}%`,
+                                backgroundColor: 'rgb(169, 189, 203)',
+                                minHeight: '4px'
+                              }}
+                              title={`${date.toLocaleDateString()}: ${dayConvs.length} conversations`}
+                            />
+                          </div>
+                          <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                            {date.toLocaleDateString('en-US', { weekday: 'short' })[0]}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Topic Breakdown */}
+              <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    <MessageCircle className="w-5 h-5" />
+                    Topic Breakdown
+                  </h3>
+                  <button
+                    onClick={() => setExpandedChart('topicBreakdown')}
+                    className="p-1.5 rounded hover:bg-gray-700 transition"
+                    title="Expand view"
+                  >
+                    <Maximize2 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {(() => {
+                    const topicCounts: Record<string, number> = {};
+                    conversations.forEach(conv => {
+                      const topic = extractTopic(conv.messages);
+                      if (topic && topic !== 'undefined') {
+                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                      }
+                    });
+                    const sortedTopics = Object.entries(topicCounts)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5);
+                    const maxCount = sortedTopics[0]?.[1] || 1;
+
+                    return sortedTopics.map(([topic, count]) => (
+                      <div key={topic} className="flex items-center gap-2">
+                        <span className="text-sm w-24 truncate" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                          {topic}
+                        </span>
+                        <div className="flex-1 bg-gray-700 rounded-full h-5 relative">
+                          <div
+                            className="h-5 rounded-full transition-all flex items-center justify-end pr-2"
+                            style={{
+                              width: `${(count / maxCount) * 100}%`,
+                              backgroundColor: 'rgb(169, 189, 203)'
+                            }}
+                          >
+                            <span className="text-xs font-medium" style={{ color: 'rgb(48, 54, 54)' }}>
+                              {count}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+            </div>
+            )}
+
+            {/* AI Insights - Premium Preview */}
             {!expandedChart && (
             <div>
-              {/* AI Insights - Full Width */}
               <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                   <Activity className="w-5 h-5" />
                   AI Behavior Insights
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(76, 175, 80, 0.2)', color: '#4CAF50' }}>
+                    Preview
+                  </span>
                 </h3>
                 {loadingInsights ? (
                   <div className="space-y-3">
@@ -2244,7 +2315,7 @@ function ChatbotDashboardContent() {
               <div className="rounded-lg border p-6 transition-all duration-300" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    {expandedChart === 'trends' ? 'Conversation Trends' : expandedChart === 'topics' ? 'Conversation Topics Analysis' : expandedChart === 'topDomains' ? 'Domain Performance Analysis' : 'Analytics'}
+                    {expandedChart === 'dateBreakdown' ? 'Date Analysis' : expandedChart === 'topicBreakdown' ? 'Topic Analysis' : expandedChart === 'trends' ? 'Conversation Trends' : expandedChart === 'topics' ? 'Conversation Topics Analysis' : expandedChart === 'topDomains' ? 'Domain Performance Analysis' : 'Analytics'}
                   </h2>
                   <div className="flex items-center gap-4">
                     {/* View Mode Selector for expanded trends view */}
@@ -2298,6 +2369,148 @@ function ChatbotDashboardContent() {
                     </button>
                   </div>
                 </div>
+
+                {/* Expanded Date Breakdown View */}
+                {expandedChart === 'dateBreakdown' && (
+                  <div className="space-y-6">
+                    <div className="flex gap-4 mb-4">
+                      <select
+                        value={trendsDateRange}
+                        onChange={(e) => setTrendsDateRange(e.target.value as '7d' | '14d' | '30d' | '90d')}
+                        className="px-3 py-1.5 text-sm border rounded-lg"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                      >
+                        <option value="7d">Last 7 Days</option>
+                        <option value="14d">Last 14 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                      </select>
+                    </div>
+                    <div className="h-64 flex items-end gap-2">
+                      {(() => {
+                        const days = trendsDateRange === '7d' ? 7 : trendsDateRange === '14d' ? 14 : trendsDateRange === '30d' ? 30 : 90;
+                        const displayDays = Math.min(days, 30);
+                        return Array.from({ length: displayDays }, (_, i) => {
+                          const date = new Date();
+                          date.setDate(date.getDate() - (displayDays - 1 - i));
+                          const dayConvs = conversations.filter(conv => {
+                            const convDate = new Date(conv.first_message_at);
+                            return convDate.toDateString() === date.toDateString();
+                          });
+                          const maxHeight = Math.max(...Array.from({ length: displayDays }, (_, j) => {
+                            const checkDate = new Date();
+                            checkDate.setDate(checkDate.getDate() - (displayDays - 1 - j));
+                            return conversations.filter(c =>
+                              new Date(c.first_message_at).toDateString() === checkDate.toDateString()
+                            ).length;
+                          })) || 1;
+                          const height = Math.max((dayConvs.length / maxHeight) * 100, 5);
+
+                          return (
+                            <div key={i} className="flex-1 flex flex-col items-center">
+                              <div className="w-full flex items-end" style={{ height: '100%' }}>
+                                <div
+                                  className="w-full rounded-t transition-all hover:opacity-80 cursor-pointer"
+                                  style={{
+                                    height: `${height}%`,
+                                    backgroundColor: 'rgb(169, 189, 203)',
+                                    minHeight: '8px'
+                                  }}
+                                  title={`${date.toLocaleDateString()}: ${dayConvs.length} conversations`}
+                                />
+                              </div>
+                              {(displayDays <= 14 || i % Math.floor(displayDays / 7) === 0) && (
+                                <div className="text-center mt-2">
+                                  <div className="text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
+                                    {displayDays <= 14 ? date.toLocaleDateString('en-US', { weekday: 'short' }) : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </div>
+                                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                                    {dayConvs.length}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Expanded Topic Breakdown View */}
+                {expandedChart === 'topicBreakdown' && (
+                  <div className="space-y-6">
+                    <div className="flex gap-4 mb-4">
+                      <select
+                        value={topicsDateRange}
+                        onChange={(e) => setTopicsDateRange(e.target.value as '7d' | '14d' | '30d' | '90d')}
+                        className="px-3 py-1.5 text-sm border rounded-lg"
+                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                      >
+                        <option value="7d">Last 7 Days</option>
+                        <option value="14d">Last 14 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                      </select>
+                    </div>
+
+                    {(() => {
+                      const topicCounts: Record<string, { count: number, messages: number }> = {};
+                      const days = topicsDateRange === '7d' ? 7 : topicsDateRange === '14d' ? 14 : topicsDateRange === '30d' ? 30 : 90;
+                      const cutoffDate = new Date();
+                      cutoffDate.setDate(cutoffDate.getDate() - days);
+
+                      const filteredConvs = conversations.filter(conv => {
+                        const convDate = new Date(conv.first_message_at);
+                        return convDate >= cutoffDate;
+                      });
+
+                      filteredConvs.forEach(conv => {
+                        const topic = extractTopic(conv.messages);
+                        if (topic && topic !== 'undefined') {
+                          if (!topicCounts[topic]) {
+                            topicCounts[topic] = { count: 0, messages: 0 };
+                          }
+                          topicCounts[topic].count++;
+                          topicCounts[topic].messages += conv.messages.length;
+                        }
+                      });
+
+                      const sortedTopics = Object.entries(topicCounts)
+                        .sort((a, b) => b[1].count - a[1].count)
+                        .slice(0, 15);
+                      const maxCount = sortedTopics[0]?.[1].count || 1;
+
+                      return (
+                        <div className="space-y-3">
+                          {sortedTopics.map(([topic, data], index) => (
+                            <div key={topic} className="flex items-center gap-4">
+                              <span className="text-sm w-32 text-right" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
+                                {topic}
+                              </span>
+                              <div className="flex-1 bg-gray-700 rounded-full h-8 relative">
+                                <div
+                                  className="h-8 rounded-full transition-all flex items-center justify-between px-3"
+                                  style={{
+                                    width: `${(data.count / maxCount) * 100}%`,
+                                    backgroundColor: 'rgb(169, 189, 203)'
+                                  }}
+                                >
+                                  <span className="text-sm font-semibold" style={{ color: 'rgb(48, 54, 54)' }}>
+                                    {data.count}
+                                  </span>
+                                  <span className="text-xs" style={{ color: 'rgb(48, 54, 54)' }}>
+                                    {Math.round((data.count / filteredConvs.length) * 100)}%
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
 
                 {/* Expanded Trends View */}
                 {expandedChart === 'trends' && (
