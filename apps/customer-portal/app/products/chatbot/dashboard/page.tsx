@@ -2247,39 +2247,47 @@ function ChatbotDashboardContent() {
                     {expandedChart === 'trends' ? 'Conversation Trends' : expandedChart === 'topics' ? 'Conversation Topics Analysis' : expandedChart === 'topDomains' ? 'Domain Performance Analysis' : 'Analytics'}
                   </h2>
                   <div className="flex items-center gap-4">
-                    {/* Date range selector for trends and topics */}
-                    {(expandedChart === 'trends' || expandedChart === 'topics') && (
-                      <select
-                        value={expandedChart === 'trends' ? trendsDateRange : topicsDateRange}
-                        onChange={(e) => {
-                          const value = e.target.value as '7d' | '14d' | '30d' | '90d';
-                          if (expandedChart === 'trends') {
-                            setTrendsDateRange(value);
-                          } else {
-                            setTopicsDateRange(value);
-                          }
-                        }}
-                        className="px-3 py-1.5 text-sm border rounded-lg"
-                        style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                      >
-                        <option value="7d">Last 7 Days</option>
-                        <option value="14d">Last 14 Days</option>
-                        <option value="30d">Last 30 Days</option>
-                        <option value="90d">Last 90 Days</option>
-                      </select>
-                    )}
+                    {/* View Mode Selector for expanded trends view */}
+                    {expandedChart === 'trends' && (
+                      <>
+                        <select
+                          value={trendsViewMode}
+                          onChange={(e) => setTrendsViewMode(e.target.value as 'date' | 'topic' | 'both')}
+                          className="px-3 py-1.5 text-sm border rounded-lg"
+                          style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                        >
+                          <option value="date">By Date</option>
+                          <option value="topic">By Topic</option>
+                          <option value="both">Combined View</option>
+                        </select>
 
-                    {/* Time period selector */}
-                    <select
-                      value={compareBy}
-                      onChange={(e) => setCompareBy(e.target.value as 'count' | 'percentage' | 'trend')}
-                      className="px-3 py-1.5 text-sm border rounded-lg"
-                      style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
-                    >
-                      <option value="count">Last 7 Days</option>
-                      <option value="percentage">Last 30 Days</option>
-                      <option value="trend">All Time</option>
-                    </select>
+                        <select
+                          value={trendsDateRange}
+                          onChange={(e) => setTrendsDateRange(e.target.value as '7d' | '14d' | '30d' | '90d')}
+                          className="px-3 py-1.5 text-sm border rounded-lg"
+                          style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                        >
+                          <option value="7d">Last 7 Days</option>
+                          <option value="14d">Last 14 Days</option>
+                          <option value="30d">Last 30 Days</option>
+                          <option value="90d">Last 90 Days</option>
+                        </select>
+
+                        {(trendsViewMode === 'topic' || trendsViewMode === 'both') && (
+                          <select
+                            value={selectedTrendTopic}
+                            onChange={(e) => setSelectedTrendTopic(e.target.value)}
+                            className="px-3 py-1.5 text-sm border rounded-lg"
+                            style={{ borderColor: 'rgba(169, 189, 203, 0.3)', backgroundColor: 'rgba(48, 54, 54, 0.5)', color: 'rgb(229, 227, 220)' }}
+                          >
+                            <option value="all">All Topics</option>
+                            {uniqueTopics.map(topic => (
+                              <option key={topic} value={topic}>{topic}</option>
+                            ))}
+                          </select>
+                        )}
+                      </>
+                    )}
 
                     <button
                       onClick={() => setExpandedChart(null)}

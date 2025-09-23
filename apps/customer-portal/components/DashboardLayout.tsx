@@ -197,7 +197,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <main className={`flex-1 overflow-y-auto ${(sidebarCollapsed && !isHovering) ? 'ml-20' : 'ml-64'} transition-all duration-300`}>
         {/* Breadcrumbs - Sticky position */}
         {breadcrumbs.length > 0 && (
-          <div className="sticky top-0 z-30 px-8 py-3 border-b backdrop-blur-sm" style={{ 
+          <div className="sticky top-0 z-30 h-[57px] px-8 flex items-center border-b backdrop-blur-sm" style={{
             borderColor: 'rgba(169, 189, 203, 0.1)',
             backgroundColor: 'rgba(58, 64, 64, 0.95)'
           }}>
