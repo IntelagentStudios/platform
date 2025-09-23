@@ -45,7 +45,8 @@ import {
   Maximize2,
   TrendingDown,
   MessageCircle,
-  Download
+  Download,
+  Sparkles
 } from 'lucide-react';
 
 interface Conversation {
@@ -3036,7 +3037,7 @@ function ChatbotDashboardContent() {
                               {loadingSuggestedColors ? (
                                 <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing website...</>
                               ) : (
-                                <><span style={{ color: 'rgb(169, 189, 203)' }}>✨</span> Suggest {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
+                                <><Sparkles className="w-3 h-3" style={{ color: 'rgb(169, 189, 203)' }} /> Suggest {userLocale === 'en-GB' ? 'colours' : 'colors'}</>
                               )}
                             </button>
 
