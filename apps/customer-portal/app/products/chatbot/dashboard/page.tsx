@@ -1902,12 +1902,12 @@ function ChatbotDashboardContent() {
             {/* Analytics Breakdown - Date and Topic Analysis */}
             {!expandedChart && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Date Breakdown */}
+              {/* Activity Summary */}
               <div className="rounded-lg border p-6" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)', borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                     <Calendar className="w-5 h-5" />
-                    Date Breakdown
+                    Activity Summary
                   </h3>
                   <div className="flex items-center gap-2">
                     <select
@@ -1962,71 +1962,116 @@ function ChatbotDashboardContent() {
                       />
                     </div>
                   )}
-                  <div className="h-32 flex items-end gap-1">
+                  <div className="space-y-4">
                     {(() => {
                       let days = 7;
                       let startDate = new Date();
+                      let endDate = new Date();
 
                       if (dateBreakdownRange === '14d') days = 14;
                       else if (dateBreakdownRange === '30d') days = 30;
                       else if (dateBreakdownRange === 'custom' && customDateRange.start && customDateRange.end) {
-                        const start = new Date(customDateRange.start);
-                        const end = new Date(customDateRange.end);
-                        days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-                        startDate = new Date(end);
+                        startDate = new Date(customDateRange.start);
+                        endDate = new Date(customDateRange.end);
+                        days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
                       } else {
                         startDate.setDate(startDate.getDate() - (days - 1));
                       }
 
-                      const displayDays = Math.min(days, 30);
-                      return Array.from({ length: displayDays }, (_, i) => {
-                        const date = new Date(startDate);
-                        if (dateBreakdownRange === 'custom' && customDateRange.start) {
-                          date.setTime(new Date(customDateRange.start).getTime() + (i * 24 * 60 * 60 * 1000));
-                        } else {
-                          date.setDate(date.getDate() - (displayDays - 1 - i));
-                        }
+                      // Calculate statistics for the period
+                      const periodConversations = conversations.filter(conv => {
+                        const convDate = new Date(conv.first_message_at);
+                        return convDate >= startDate && convDate <= endDate;
+                      });
 
-                        const dayConvs = conversations.filter(conv => {
-                          const convDate = new Date(conv.first_message_at);
-                          return convDate.toDateString() === date.toDateString();
-                        });
+                      const totalConvs = periodConversations.length;
+                      const avgPerDay = (totalConvs / days).toFixed(1);
 
-                        const maxHeight = Math.max(...Array.from({ length: displayDays }, (_, j) => {
-                          const checkDate = new Date(startDate);
-                          if (dateBreakdownRange === 'custom' && customDateRange.start) {
-                            checkDate.setTime(new Date(customDateRange.start).getTime() + (j * 24 * 60 * 60 * 1000));
-                          } else {
-                            checkDate.setDate(checkDate.getDate() - (displayDays - 1 - j));
-                          }
-                          return conversations.filter(c =>
-                            new Date(c.first_message_at).toDateString() === checkDate.toDateString()
-                          ).length;
-                        })) || 1;
+                      // Find busiest day
+                      const dayStats: Record<string, number> = {};
+                      periodConversations.forEach(conv => {
+                        const date = new Date(conv.first_message_at).toLocaleDateString();
+                        dayStats[date] = (dayStats[date] || 0) + 1;
+                      });
 
-                        const height = Math.max((dayConvs.length / maxHeight) * 100, 5);
+                      const busiestDay = Object.entries(dayStats).sort((a, b) => b[1] - a[1])[0];
+                      const quietestDay = Object.entries(dayStats).sort((a, b) => a[1] - b[1])[0];
 
                       return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                          <div className="w-full flex items-end" style={{ height: '100%' }}>
-                            <div
-                              className="w-full rounded-t transition-all hover:opacity-80"
-                              style={{
-                                height: `${height}%`,
-                                backgroundColor: 'rgb(169, 189, 203)',
-                                minHeight: '4px'
-                              }}
-                              title={`${date.toLocaleDateString()}: ${dayConvs.length} conversations`}
-                            />
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Total</p>
+                              <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>{totalConvs}</p>
+                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>conversations</p>
+                            </div>
+                            <div>
+                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Average</p>
+                              <p className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>{avgPerDay}</p>
+                              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>per day</p>
+                            </div>
                           </div>
-                          {(displayDays <= 7 || i % Math.floor(displayDays / 7) === 0) && (
-                            <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                              {displayDays <= 7 ? date.toLocaleDateString('en-US', { weekday: 'short' })[0] : date.getDate()}
-                            </span>
+
+                          {busiestDay && (
+                            <div className="pt-3 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Most active</span>
+                                  <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                                    {new Date(busiestDay[0]).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                  </span>
+                                  <span className="text-sm font-semibold" style={{ color: 'rgb(169, 189, 203)' }}>
+                                    {busiestDay[1]} convs
+                                  </span>
+                                </div>
+                                {quietestDay && quietestDay[0] !== busiestDay[0] && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>Least active</span>
+                                    <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                                      {new Date(quietestDay[0]).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                    </span>
+                                    <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                                      {quietestDay[1]} convs
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           )}
-                        </div>
+
+                          {/* Activity trend indicator */}
+                          <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
+                            <div className="flex items-center gap-2">
+                              {(() => {
+                                const midPoint = Math.floor(days / 2);
+                                const firstHalf = periodConversations.filter(conv => {
+                                  const convDate = new Date(conv.first_message_at);
+                                  const midDate = new Date(startDate);
+                                  midDate.setDate(midDate.getDate() + midPoint);
+                                  return convDate < midDate;
+                                }).length;
+                                const secondHalf = totalConvs - firstHalf;
+                                const trend = secondHalf > firstHalf ? 'up' : secondHalf < firstHalf ? 'down' : 'stable';
+
+                                return (
+                                  <>
+                                    {trend === 'up' ? (
+                                      <TrendingUp className="w-4 h-4" style={{ color: 'rgb(76, 175, 80)' }} />
+                                    ) : trend === 'down' ? (
+                                      <TrendingDown className="w-4 h-4" style={{ color: 'rgb(255, 152, 0)' }} />
+                                    ) : (
+                                      <BarChart3 className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                                    )}
+                                    <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                                      {trend === 'up' ? 'Increasing activity' : trend === 'down' ? 'Decreasing activity' : 'Stable activity'}
+                                    </span>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        </>
                       );
-                      });
                     })()}
                   </div>
                 </div>
@@ -2856,13 +2901,16 @@ function ChatbotDashboardContent() {
                               onClick={async () => {
                                 setLoadingSuggestedColors(true);
                                 try {
-                                  // Use fallback colors based on common brand themes
+                                  // Use muted, professional colors that match dark themes
                                   const brandColors = [
-                                    '#0070f3', // Professional blue
-                                    '#00a86b', // Growth green
-                                    '#8b5cf6', // Creative purple
-                                    '#ec4899', // Friendly pink
-                                    '#f97316'  // Energy orange
+                                    '#4A5568', // Muted gray-blue
+                                    '#2D3748', // Dark slate
+                                    '#718096', // Soft gray
+                                    '#5A67D8', // Muted indigo
+                                    '#48BB78', // Soft green
+                                    '#ED8936', // Warm orange
+                                    '#9F7AEA', // Soft purple
+                                    '#38B2AC'  // Teal
                                   ];
                                   setSuggestedColors(brandColors);
                                 } catch (error) {
