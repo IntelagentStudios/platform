@@ -56,7 +56,7 @@ export default function BillingPage() {
 
   // Mock subscriptions data - in production this would come from Stripe
   useEffect(() => {
-    // Simulate fetching subscription data
+    // Simulate fetching subscription data with skill breakdown
     const mockSubscriptions = [
       {
         id: 'sub_chatbot_1',
@@ -65,16 +65,18 @@ export default function BillingPage() {
         status: 'active',
         startDate: '2025-01-01',
         nextBilling: '2025-02-01',
-        features: ['24/7 Support', 'Custom Training', 'Analytics Dashboard']
+        features: ['24/7 Support', 'Custom Training', 'Analytics Dashboard'],
+        skills: ['ai-processing', 'nlp-engine', 'analytics-core', 'data-storage']
       },
       {
         id: 'sub_platform_1',
-        product: 'Platform License',
-        price: '£599/year',
+        product: 'Sales Outreach',
+        price: '£499/month',
         status: 'active',
         startDate: '2024-12-15',
-        nextBilling: '2025-12-15',
-        features: ['All Core Features', 'Priority Support', 'API Access']
+        nextBilling: '2025-02-15',
+        features: ['Email Campaigns', 'Lead Management', 'AI Generation'],
+        skills: ['ai-processing', 'email-engine', 'analytics-core', 'crm-integration']
       },
       {
         id: 'sub_analytics_1',
@@ -83,7 +85,8 @@ export default function BillingPage() {
         status: 'active',
         startDate: '2025-01-15',
         nextBilling: '2025-02-15',
-        features: ['Custom Reports', 'Predictive Analytics', 'Data Export']
+        features: ['Custom Reports', 'Predictive Analytics', 'Data Export'],
+        skills: ['analytics-core', 'data-processing', 'reporting-engine', 'ai-processing']
       }
     ];
     setSubscriptions(mockSubscriptions);
@@ -228,7 +231,7 @@ export default function BillingPage() {
             ))}
           </div>
 
-          {/* Unified Billing Notice */}
+          {/* Unified Billing Notice - Skill Deduplication */}
           <div
             className="mt-4 p-4 rounded-lg"
             style={{
@@ -236,16 +239,192 @@ export default function BillingPage() {
               borderLeft: '3px solid #FFC107'
             }}
           >
-            <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-              <strong>Pro Tip:</strong> Consider upgrading to our unified billing plan to save 20% on multiple products.
-              All your subscriptions would be consolidated into a single monthly payment.
+            <p className="text-sm mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+              <strong>Smart Unified Billing:</strong> Pay once for shared skills across all your products!
             </p>
+
+            {/* Skill Deduplication Breakdown */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="text-xs">
+                <p style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Current (Separate):</p>
+                <p className="font-bold" style={{ color: 'rgba(255, 100, 100, 0.9)' }}>£1,047/month</p>
+                <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  3x AI Processing<br/>
+                  2x Analytics Core<br/>
+                  Duplicate charges
+                </p>
+              </div>
+              <div className="text-xs">
+                <p style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Unified (Shared):</p>
+                <p className="font-bold" style={{ color: 'rgba(76, 175, 80, 0.9)' }}>£799/month</p>
+                <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  1x AI Processing<br/>
+                  1x Analytics Core<br/>
+                  No duplicates
+                </p>
+              </div>
+              <div className="text-xs">
+                <p style={{ color: 'rgba(229, 227, 220, 0.6)' }}>You Save:</p>
+                <p className="font-bold" style={{ color: '#FFC107' }}>£248/month</p>
+                <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.5)' }}>
+                  24% reduction<br/>
+                  £2,976/year<br/>
+                  More with scale
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <button
+                className="px-3 py-1.5 rounded text-sm font-medium transition hover:opacity-80"
+                style={{
+                  backgroundColor: '#FFC107',
+                  color: 'rgb(48, 54, 54)'
+                }}
+              >
+                Switch to unified billing →
+              </button>
+              <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                The more products you add, the more you save
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Usage & Credits Section */}
+        <div
+          className="rounded-lg p-6 border mb-8"
+          style={{
+            backgroundColor: 'rgba(58, 64, 64, 0.5)',
+            borderColor: 'rgba(169, 189, 203, 0.15)'
+          }}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                Usage & Credits
+              </h2>
+              <p className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Track your API usage and manage token credits
+              </p>
+            </div>
             <button
-              className="mt-2 text-sm font-medium hover:underline"
-              style={{ color: '#FFC107' }}
+              className="px-4 py-2 rounded-lg transition hover:opacity-80"
+              style={{
+                backgroundColor: 'rgb(169, 189, 203)',
+                color: 'rgb(48, 54, 54)'
+              }}
             >
-              Learn about unified billing →
+              Buy Credits
             </button>
+          </div>
+
+          {/* Usage Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div
+              className="rounded-lg p-4"
+              style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                border: '1px solid rgba(169, 189, 203, 0.1)'
+              }}
+            >
+              <p className="text-xs mb-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Monthly Usage
+              </p>
+              <div className="flex items-baseline space-x-1">
+                <span className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                  42K
+                </span>
+                <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  / 100K tokens
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                <div
+                  className="h-1.5 rounded-full"
+                  style={{
+                    width: '42%',
+                    backgroundColor: '#4CAF50'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div
+              className="rounded-lg p-4"
+              style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                border: '1px solid rgba(169, 189, 203, 0.1)'
+              }}
+            >
+              <p className="text-xs mb-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Credit Balance
+              </p>
+              <div className="flex items-baseline space-x-1">
+                <span className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                  58K
+                </span>
+                <span className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  tokens
+                </span>
+              </div>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255, 193, 7, 0.8)' }}>
+                ≈ £29 value
+              </p>
+            </div>
+
+            <div
+              className="rounded-lg p-4"
+              style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                border: '1px solid rgba(169, 189, 203, 0.1)'
+              }}
+            >
+              <p className="text-xs mb-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Billing Mode
+              </p>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Pay as you go
+                </span>
+                <button
+                  className="text-xs hover:underline"
+                  style={{ color: 'rgb(169, 189, 203)' }}
+                >
+                  Change
+                </button>
+              </div>
+              <p className="text-xs mt-1" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                Auto-charge at £0.50/1K tokens
+              </p>
+            </div>
+          </div>
+
+          {/* Billing Options */}
+          <div
+            className="p-3 rounded-lg"
+            style={{
+              backgroundColor: 'rgba(33, 150, 243, 0.05)',
+              borderLeft: '3px solid #2196F3'
+            }}
+          >
+            <p className="text-xs mb-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+              <strong>Billing Options:</strong>
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div>
+                <p style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                  <strong>Pay as you go:</strong> Purchase token credits upfront.
+                  Best for variable usage. Credits never expire.
+                </p>
+              </div>
+              <div>
+                <p style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                  <strong>Monthly billing:</strong> Pay for actual usage at month end.
+                  5% discount on high volume. Requires credit card on file.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
