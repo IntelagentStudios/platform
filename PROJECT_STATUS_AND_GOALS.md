@@ -15,15 +15,25 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 **Core Philosophy**: Modular, customizable products that adapt to specific business needs, with intelligent platform integration that multiplies value.
 
 #### Base Products Structure
-1. **Chatbot** (£349/month base)
+1. **Chatbot** (£349/month base) ✅
    - Customizable into: Support Bot, Knowledge Tool, Training Assistant, Sales Qualifier, Booking Assistant
    - Uses 30-50 skills depending on configuration
 
-2. **Sales Outreach Agent** (£499/month base)
+2. **Ops Agent (Workflow Assistant)** (£399/month base) ✅
+   - Manages: Workflow orchestration, Process automation, SLA monitoring, Exception handling
+   - Real-time workflow tracking and management
+   - Uses 50-70 skills for operational excellence
+
+3. **Data/Insights Agent (AI Analyst)** (£449/month base) ✅
+   - Provides: AI-powered analysis, KPI tracking, Anomaly detection, Data exploration
+   - Generates actionable insights with confidence scoring
+   - Uses 40-60 skills for data intelligence
+
+4. **Sales Outreach Agent** (£499/month base)
    - Becomes: Lead Generator, Email Campaign Manager, Response Handler, CRM Automation, Pipeline Manager
    - Uses 60-80 skills for comprehensive sales automation
 
-3. **Onboarding Agent** (£399/month base)
+5. **Onboarding Agent** (£399/month base)
    - Handles: Employee/Customer/Vendor onboarding, Form Processing, Document Generation, Workflow Automation
    - Uses 40-60 skills for process automation
 
@@ -267,7 +277,28 @@ After an epic debugging session fixing hundreds of TypeScript errors:
 3. Gather feedback for version 2 features
 4. Use chatbot revenue to fund platform development
 
-### Phase 2: Sales Outreach Agent (NEXT PRIORITY)
+### Phase 2: Additional Agent Products ✅ COMPLETED
+**Status: Two new agent products successfully implemented**
+
+**Ops Agent (Workflow Assistant)** - £399/month
+- ✅ Comprehensive dashboard with workflow management
+- ✅ Runs table showing active and historical workflows
+- ✅ Workflow builder for creating custom processes
+- ✅ SLA tracking and compliance monitoring
+- ✅ Exception handling and alerts system
+- ✅ Integration with existing skills matrix
+- Dashboard: `/products/ops-agent/dashboard`
+
+**Data/Insights Agent (AI Analyst)** - £449/month
+- ✅ AI-powered data analysis dashboard
+- ✅ KPI monitoring (conversion rate, AOV, segments, data quality)
+- ✅ Dataset management and exploration
+- ✅ AI-generated findings with confidence scores
+- ✅ Anomaly detection with severity levels
+- ✅ Data explorer with visualization capabilities
+- Dashboard: `/products/data-insights/dashboard`
+
+### Phase 3: Sales Outreach Agent (NEXT PRIORITY)
 **Target: Complete by end of January**
 - Build using existing skills matrix system (60-80 skills)
 - Leverage existing sales skills:
@@ -285,9 +316,9 @@ After an epic debugging session fixing hundreds of TypeScript errors:
 3. Create campaign management dashboard
 4. Implement email sending capabilities
 5. Add lead tracking and analytics
-6. Use to sell the chatbot product!
+6. Use to sell all products!
 
-### Phase 3: Admin Tools Completion
+### Phase 4: Admin Tools Completion
 **Target: Concurrent with Sales Agent**
 - ✅ Support ticket management
 - ✅ Financial analytics (MRR, revenue)
@@ -297,7 +328,7 @@ After an epic debugging session fixing hundreds of TypeScript errors:
 - [ ] Bulk operations for customers
 - [ ] Automated billing management
 
-### Phase 4: Custom Agent Builder (THE ULTIMATE GOAL)
+### Phase 5: Custom Agent Builder (THE ULTIMATE GOAL)
 **Target: February 2025**
 
 #### User Journey for Custom Product Creation:
@@ -781,9 +812,9 @@ The platform is currently undergoing migration from separate products to a unifi
 
 ---
 
-**Last Updated**: January 23, 2025
-**Version**: 9.0
-**Status**: CHATBOT PRODUCT COMPLETE! Platform running on Railway. Chatbot is now a fully polished, market-ready product with AI-enhanced dashboard, semantic search, smart color suggestions, and professional UX. Listed at £349/month and ready for immediate sale. Navigation updated with dedicated Marketplace tab, analytics removed for cleaner interface. Next priority: Sales Outreach Agent to sell the chatbot!
+**Last Updated**: January 24, 2025
+**Version**: 9.1
+**Status**: THREE PRODUCTS COMPLETE! Platform running on Railway. Chatbot (£349/month) is fully polished and market-ready. NEW: Ops Agent (£399/month) and Data/Insights Agent (£449/month) successfully implemented with comprehensive dashboards. All products integrated with skills matrix and ready for deployment. Navigation updated with dedicated Marketplace tab. Billing system features skill deduplication saving customers £248/month. Next priority: Sales Outreach Agent to sell all products!
 **Owner**: Intelagent Studios
 
 This document represents the complete current state of the Intelagent Platform, including all goals, requirements, completed work, and remaining tasks. Use this as the single source of truth for project planning and development priorities.

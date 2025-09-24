@@ -21,29 +21,29 @@ export default function PricingPage() {
       ]
     },
     {
-      name: 'Sales Outreach Agent',
+      name: 'Ops Agent (Workflow Assistant)',
       price: '£399',
       period: '/month',
-      description: 'Automated sales outreach system',
+      description: 'Automated workflow orchestration and management',
       features: [
-        'Lead qualification',
-        'Email automation',
-        'CRM integration',
-        'Performance tracking',
-        'Custom workflows'
+        'Workflow automation',
+        'SLA monitoring',
+        'Exception handling',
+        'Process optimization',
+        'Real-time tracking'
       ]
     },
     {
-      name: 'Onboarding Agent',
-      price: 'Coming Soon',
-      period: '',
-      description: 'Automated customer onboarding',
+      name: 'Data/Insights Agent (AI Analyst)',
+      price: '£449',
+      period: '/month',
+      description: 'AI-powered data analysis and insights',
       features: [
-        'Auto configuration',
-        'Integration setup',
-        'Workflow builder',
-        'Custom scripts',
-        'Progress tracking'
+        'KPI monitoring',
+        'AI-generated insights',
+        'Anomaly detection',
+        'Data exploration',
+        'Predictive analytics'
       ]
     }
   ];
