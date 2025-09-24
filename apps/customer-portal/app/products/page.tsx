@@ -104,7 +104,7 @@ export default function ProductsPage() {
       icon: MessageSquare,
       features: ['24/7 Support', 'Multi-language', 'Custom Training', 'Analytics'],
       status: 'available',
-      price: 'Included',
+      price: '£349/month',
       category: 'core'
     },
     {
@@ -115,6 +115,26 @@ export default function ProductsPage() {
       features: ['Email Campaigns', 'Lead Management', 'AI Email Generation', 'Analytics'],
       status: 'available',
       price: '£499/month',
+      category: 'core'
+    },
+    {
+      id: 'ops-agent',
+      name: 'Ops Agent (Workflow Assistant)',
+      description: 'Turn plain-language processes into executable workflows that do the steps, not just track them',
+      icon: Zap,
+      features: ['Visual Workflow Builder', 'Automated Execution', 'SLA Tracking', 'Approval Chains'],
+      status: 'available',
+      price: '£399/month',
+      category: 'core'
+    },
+    {
+      id: 'data-insights',
+      name: 'Data/Insights Agent (AI Analyst)',
+      description: 'Ingest, clean, and explain business data with AI-powered anomaly detection and insights',
+      icon: BarChart3,
+      features: ['Auto Data Import', 'AI Analysis', 'Anomaly Detection', 'Custom Dashboards'],
+      status: 'available',
+      price: '£449/month',
       category: 'core'
     }
   ];

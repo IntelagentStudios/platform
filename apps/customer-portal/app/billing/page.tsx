@@ -18,6 +18,7 @@ export default function BillingPage() {
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [showSkillBreakdown, setShowSkillBreakdown] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -244,7 +245,10 @@ export default function BillingPage() {
             </p>
 
             {/* Skill Deduplication Breakdown */}
-            <div className="grid grid-cols-3 gap-2 mb-3">
+            <div
+              className="grid grid-cols-3 gap-2 mb-3 cursor-pointer hover:opacity-80 transition"
+              onClick={() => setShowSkillBreakdown(true)}
+            >
               <div className="text-xs">
                 <p style={{ color: 'rgba(229, 227, 220, 0.6)' }}>Current (Separate):</p>
                 <p className="font-bold" style={{ color: 'rgba(255, 100, 100, 0.9)' }}>£1,047/month</p>
@@ -645,6 +649,163 @@ export default function BillingPage() {
           </div>
         )}
       </div>
+
+      {/* Skill Breakdown Modal */}
+      {showSkillBreakdown && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+          onClick={() => setShowSkillBreakdown(false)}
+        >
+          <div
+            className="rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto"
+            style={{ backgroundColor: 'rgb(58, 64, 64)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+              Detailed Skill Breakdown - Unified Billing Savings
+            </h2>
+
+            {/* Skills Matrix */}
+            <div className="mb-6">
+              <h3 className="font-medium mb-3" style={{ color: 'rgb(169, 189, 203)' }}>
+                Skill Usage Across Products
+              </h3>
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                    <th className="text-left py-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Skill</th>
+                    <th className="text-center py-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>AI Chatbot</th>
+                    <th className="text-center py-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Sales Outreach</th>
+                    <th className="text-center py-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Analytics</th>
+                    <th className="text-right py-2" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>Monthly Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>AI Processing Engine</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£149/month</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Analytics Core</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£99/month</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>NLP Engine</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£79/month</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Email Engine</td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£89/month</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Data Storage</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£49/month</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>CRM Integration</td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-center py-2">✓</td>
+                    <td className="text-center py-2"></td>
+                    <td className="text-right py-2" style={{ color: 'rgb(169, 189, 203)' }}>£69/month</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Savings Calculation */}
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(255, 100, 100, 0.1)' }}>
+                <h4 className="font-medium mb-2" style={{ color: 'rgba(255, 100, 100, 0.9)' }}>
+                  Without Unified Billing
+                </h4>
+                <p className="text-xs mb-2" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Each product charges for all its skills:
+                </p>
+                <div className="space-y-1 text-sm">
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    AI Processing: £149 × 3 = £447
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Analytics Core: £99 × 3 = £297
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Data Storage: £49 × 3 = £147
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Other Skills: £156
+                  </div>
+                  <div className="pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.2)' }}>
+                    <strong>Total: £1,047/month</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(76, 175, 80, 0.1)' }}>
+                <h4 className="font-medium mb-2" style={{ color: 'rgba(76, 175, 80, 0.9)' }}>
+                  With Unified Billing
+                </h4>
+                <p className="text-xs mb-2" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Pay once for shared skills:
+                </p>
+                <div className="space-y-1 text-sm">
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    AI Processing: £149 × 1 = £149
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Analytics Core: £99 × 1 = £99
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Data Storage: £49 × 1 = £49
+                  </div>
+                  <div style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                    Product-specific: £502
+                  </div>
+                  <div className="pt-2 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.2)' }}>
+                    <strong>Total: £799/month</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm" style={{ color: '#FFC107' }}>
+                  <strong>You save £248/month (24%) with unified billing!</strong>
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(229, 227, 220, 0.6)' }}>
+                  Annual savings: £2,976 | The more products you add, the more you save
+                </p>
+              </div>
+              <button
+                onClick={() => setShowSkillBreakdown(false)}
+                className="px-4 py-2 rounded-lg transition hover:opacity-80"
+                style={{
+                  backgroundColor: 'rgb(169, 189, 203)',
+                  color: 'rgb(48, 54, 54)'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
