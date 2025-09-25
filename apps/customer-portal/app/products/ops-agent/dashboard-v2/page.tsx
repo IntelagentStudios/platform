@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
-import { WidgetRuntime, WidgetGateway } from '../../../../packages/ui-system/src/WidgetRuntime';
-import { LayoutSchema, LayoutBuilder } from '../../../../packages/ui-system/src/LayoutSchema';
-import { DesignerEngine } from '../../../../packages/ui-system/src/DesignerEngine';
+import { WidgetRuntime, WidgetGateway } from '../../../../../packages/ui-system/src/WidgetRuntime';
+import { LayoutSchema, LayoutBuilder } from '../../../../../packages/ui-system/src/LayoutSchema';
+import { DesignerEngine } from '../../../../../packages/ui-system/src/DesignerEngine';
 import {
   Cog6ToothIcon,
   PlusIcon,
