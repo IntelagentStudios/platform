@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DataCatalog } from '@/packages/ui-system/src/DataCatalog';
+import { DataCatalog } from '../../../../../packages/ui-system/src/DataCatalog';
 import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DesignerEngine } from '@/packages/ui-system/src/DesignerEngine';
+import { DesignerEngine } from '../../../../../packages/ui-system/src/DesignerEngine';
 
 export async function POST(request: NextRequest) {
   try {
