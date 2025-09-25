@@ -119,20 +119,20 @@ export default function ProductsPage() {
     },
     {
       id: 'ops-agent',
-      name: 'Ops Agent (Workflow Assistant)',
+      name: 'Operations Agent',
       description: 'Turn plain-language processes into executable workflows that do the steps, not just track them',
       icon: Zap,
-      features: ['Visual Workflow Builder', 'Automated Execution', 'SLA Tracking', 'Approval Chains'],
+      features: ['Customizable Dashboard', 'Drag & Drop Widgets', 'Automated Execution', 'SLA Tracking'],
       status: 'available',
       price: '£399/month',
       category: 'core'
     },
     {
       id: 'data-insights',
-      name: 'Data/Insights Agent (AI Analyst)',
+      name: 'Data/Insights Agent',
       description: 'Ingest, clean, and explain business data with AI-powered anomaly detection and insights',
       icon: BarChart3,
-      features: ['Auto Data Import', 'AI Analysis', 'Anomaly Detection', 'Custom Dashboards'],
+      features: ['Customizable Dashboard', 'Choose Your Metrics', 'AI Analysis', 'Anomaly Detection'],
       status: 'available',
       price: '£449/month',
       category: 'core'

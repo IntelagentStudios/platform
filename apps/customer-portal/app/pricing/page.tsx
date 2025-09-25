@@ -9,11 +9,11 @@ export default function PricingPage() {
   const products = [
     {
       name: 'Additional Chatbot',
-      price: '£349',
+      price: '£199',
       period: '/month',
       description: 'Add another AI chatbot to your account',
       features: [
-        'Separate configuration',
+        'Customizable dashboard',
         'Independent training',
         'Unique product key',
         'Full analytics',
@@ -21,28 +21,28 @@ export default function PricingPage() {
       ]
     },
     {
-      name: 'Ops Agent (Workflow Assistant)',
+      name: 'Operations Agent',
       price: '£399',
       period: '/month',
       description: 'Automated workflow orchestration and management',
       features: [
+        'Customizable dashboard',
         'Workflow automation',
         'SLA monitoring',
-        'Exception handling',
         'Process optimization',
         'Real-time tracking'
       ]
     },
     {
-      name: 'Data/Insights Agent (AI Analyst)',
+      name: 'Data/Insights Agent',
       price: '£449',
       period: '/month',
       description: 'AI-powered data analysis and insights',
       features: [
+        'Customizable dashboard',
         'KPI monitoring',
         'AI-generated insights',
         'Anomaly detection',
-        'Data exploration',
         'Predictive analytics'
       ]
     }
@@ -88,7 +88,11 @@ export default function PricingPage() {
                   padding: '32px',
                   border: '1px solid rgba(169, 189, 203, 0.15)',
                   transition: 'transform 0.2s, box-shadow 0.2s',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  minHeight: '500px'
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
@@ -99,59 +103,62 @@ export default function PricingPage() {
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <h3 style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: 'rgb(229, 227, 220)',
-                  marginBottom: '8px'
-                }}>
-                  {product.name}
-                </h3>
-                <div style={{ marginBottom: '16px' }}>
-                  <span style={{
-                    fontSize: product.price === 'Coming Soon' ? '24px' : '36px',
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <h3 style={{
+                    fontSize: '24px',
                     fontWeight: 'bold',
-                    color: 'rgb(169, 189, 203)'
+                    color: 'rgb(229, 227, 220)',
+                    marginBottom: '8px'
                   }}>
-                    {product.price}
-                  </span>
-                  {product.period && (
+                    {product.name}
+                  </h3>
+                  <div style={{ marginBottom: '16px' }}>
                     <span style={{
-                      fontSize: '16px',
-                      color: 'rgba(229, 227, 220, 0.6)'
+                      fontSize: product.price === 'Coming Soon' ? '24px' : '36px',
+                      fontWeight: 'bold',
+                      color: 'rgb(169, 189, 203)'
                     }}>
-                      {product.period}
+                      {product.price}
                     </span>
-                  )}
+                    {product.period && (
+                      <span style={{
+                        fontSize: '16px',
+                        color: 'rgba(229, 227, 220, 0.6)'
+                      }}>
+                        {product.period}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{
+                    fontSize: '14px',
+                    color: 'rgba(229, 227, 220, 0.7)',
+                    marginBottom: '24px'
+                  }}>
+                    {product.description}
+                  </p>
+                  <ul style={{
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: '0 0 24px 0',
+                    flex: 1
+                  }}>
+                    {product.features.map((feature, idx) => (
+                      <li
+                        key={idx}
+                        style={{
+                          padding: '8px 0',
+                          fontSize: '14px',
+                          color: 'rgba(229, 227, 220, 0.8)',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <span style={{ color: 'rgb(169, 189, 203)', marginRight: '8px' }}>✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p style={{
-                  fontSize: '14px',
-                  color: 'rgba(229, 227, 220, 0.7)',
-                  marginBottom: '24px'
-                }}>
-                  {product.description}
-                </p>
-                <ul style={{
-                  listStyle: 'none',
-                  padding: 0,
-                  margin: '0 0 24px 0'
-                }}>
-                  {product.features.map((feature, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        padding: '8px 0',
-                        fontSize: '14px',
-                        color: 'rgba(229, 227, 220, 0.8)',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <span style={{ color: 'rgb(169, 189, 203)', marginRight: '8px' }}>✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
                 <button
                   onClick={() => {
                     alert('Payment integration coming soon. Please contact sales@intelagentstudios.com to purchase.');
@@ -166,7 +173,8 @@ export default function PricingPage() {
                     border: 'none',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    transition: 'background-color 0.2s'
+                    transition: 'background-color 0.2s',
+                    marginTop: 'auto'
                   }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgb(149, 169, 183)'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgb(169, 189, 203)'}
