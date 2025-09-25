@@ -44,8 +44,7 @@ export async function GET(request: NextRequest) {
     // Fetch configuration from database
     const config = await prisma.product_configurations.findFirst({
       where: {
-        product_key: licenseKey,
-        config_key: 'private_deployment'
+        product_key: licenseKey
       }
     });
 
@@ -57,7 +56,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const savedConfig = JSON.parse(config.config_value as string);
+    // Extract private deployment config from configuration JSON
+    const configuration = config.configuration as any || {};
+    const savedConfig = configuration.private_deployment || {};
     
     // Don't send sensitive data back to client
     if (savedConfig.database) {
@@ -134,22 +135,30 @@ export async function POST(request: NextRequest) {
       }
     };
 
+    // Get existing configuration
+    const existing = await prisma.product_configurations.findUnique({
+      where: { product_key: licenseKey }
+    });
+
+    const currentConfig = (existing?.configuration as any) || {};
+
+    // Update with private deployment config
+    const updatedConfig = {
+      ...currentConfig,
+      private_deployment: configToSave
+    };
+
     // Save to database
     await prisma.product_configurations.upsert({
-      where: {
-        product_key_config_key: {
-          product_key: licenseKey,
-          config_key: 'private_deployment'
-        }
-      },
+      where: { product_key: licenseKey },
       update: {
-        config_value: JSON.stringify(configToSave),
+        configuration: updatedConfig,
         updated_at: new Date()
       },
       create: {
         product_key: licenseKey,
-        config_key: 'private_deployment',
-        config_value: JSON.stringify(configToSave),
+        license_key: licenseKey,
+        configuration: updatedConfig,
         created_at: new Date()
       }
     });
