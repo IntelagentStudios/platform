@@ -1,0 +1,93 @@
+// UI Design System Schema Updates
+// Add these models to the existing schema.prisma
+
+model ui_layouts {
+  id           String   @id @default(uuid())
+  product_id   String
+  tenant_id    String
+  version      String   @default("1.0")
+  status       String   @default("draft") // draft, published, archived
+  layout_json  Json     // The complete layout schema
+  created_by   String
+  published_by String?
+  created_at   DateTime @default(now())
+  published_at DateTime?
+  updated_at   DateTime @updatedAt
+
+  @@index([product_id, tenant_id, status])
+  @@index([created_at])
+}
+
+model ui_layout_history {
+  id           String   @id @default(uuid())
+  layout_id    String
+  version      String
+  layout_json  Json
+  change_type  String   // create, edit, publish, rollback
+  change_by    String
+  change_diff  Json?
+  created_at   DateTime @default(now())
+
+  @@index([layout_id])
+  @@index([created_at])
+}
+
+model data_catalog {
+  id           String   @id @default(uuid())
+  namespace    String   // product namespace (outreach, ops, insights, etc.)
+  tenant_id    String
+  catalog_type String   // reads, actions, integrations
+  catalog_key  String   // e.g., "tables.campaigns", "actions.send_followups"
+  catalog_def  Json     // Definition with source, query, skill mapping, etc.
+  permissions  Json?    // RBAC settings
+  cache_ttl    Int?     @default(60) // Cache TTL in seconds
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([namespace, tenant_id, catalog_type, catalog_key])
+  @@index([namespace, tenant_id])
+}
+
+model widget_telemetry {
+  id            String   @id @default(uuid())
+  tenant_id     String
+  product_id    String
+  widget_id     String
+  widget_type   String
+  event_type    String   // view, click, action_execute, error
+  event_data    Json?
+  user_id       String
+  session_id    String
+  created_at    DateTime @default(now())
+
+  @@index([tenant_id, product_id, created_at])
+  @@index([widget_id, event_type])
+  @@index([user_id])
+}
+
+model integration_adapters {
+  id                String   @id @default(uuid())
+  integration_name  String   @unique // salesforce, hubspot, shopify, etc.
+  adapter_version   String
+  capabilities      Json     // List of reads and actions this adapter provides
+  auth_config       Json     // OAuth URLs, required scopes, etc.
+  rate_limits       Json?    // Rate limiting configuration
+  status            String   @default("active") // active, deprecated, maintenance
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}
+
+model tenant_integrations {
+  id                String   @id @default(uuid())
+  tenant_id         String
+  integration_name  String
+  auth_tokens       Json     // Encrypted tokens/credentials
+  granted_scopes    String[] // Array of granted scopes
+  metadata          Json?    // Integration-specific metadata
+  status            String   @default("active")
+  connected_at      DateTime @default(now())
+  last_sync_at      DateTime?
+
+  @@unique([tenant_id, integration_name])
+  @@index([tenant_id])
+}
