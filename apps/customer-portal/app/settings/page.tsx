@@ -347,13 +347,14 @@ export default function SettingsPage() {
                 { id: 'knowledge', label: 'Knowledge Base', icon: Globe },
                 { id: 'notifications', label: 'Notifications', icon: Bell },
                 { id: 'security', label: 'Security', icon: Shield },
+                { id: 'private-deployment', label: 'Private Deployment', icon: Shield },
                 { id: 'api-keys', label: 'API Keys', icon: Key },
                 { id: 'team', label: 'Team Members', icon: Users }
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => {
-                    if (item.id === 'api-keys' || item.id === 'team') {
+                    if (item.id === 'api-keys' || item.id === 'team' || item.id === 'private-deployment') {
                       navigateToSubPage(item.id);
                     } else {
                       setActiveTab(item.id);
