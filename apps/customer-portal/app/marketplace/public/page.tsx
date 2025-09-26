@@ -20,7 +20,7 @@ import {
   CloudIcon,
   CurrencyPoundIcon
 } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import DashboardLayout from '../../../components/DashboardLayout';
 
 interface Product {
   id: string;
@@ -48,448 +48,376 @@ const PRODUCTS: Product[] = [
     reviews: 234,
     features: ['Email Automation', 'Lead Scoring', 'CRM Sync', 'Analytics'],
     popular: true,
-    badge: 'Popular',
-    icon: ChartBarIcon,
-    color: 'blue'
+    badge: 'Most Popular',
+    icon: UserGroupIcon,
+    color: '#4CAF50'
   },
   {
-    id: 'support-hero',
-    name: 'Support Hero',
-    description: '24/7 customer support automation with intelligent ticket routing',
+    id: 'support-ai',
+    name: 'Customer Support AI',
+    description: '24/7 automated customer support with intelligent ticket routing',
     category: 'support',
     price: 199,
     rating: 4.9,
     reviews: 189,
-    features: ['Auto Responses', 'Ticket Routing', 'Sentiment Analysis', 'Multi-channel'],
-    popular: true,
+    features: ['Multi-channel', 'Auto-routing', 'Knowledge Base', 'Sentiment Analysis'],
+    popular: false,
     icon: ChatBubbleLeftRightIcon,
-    color: 'green'
+    color: '#4CAF50'
   },
   {
     id: 'marketing-genius',
     name: 'Marketing Genius',
-    description: 'AI-powered content creation and campaign management',
+    description: 'AI-powered marketing automation for content and campaigns',
     category: 'marketing',
     price: 249,
     rating: 4.7,
     reviews: 156,
-    features: ['Content Generation', 'SEO Optimization', 'Social Media', 'Email Campaigns'],
+    features: ['Content Creation', 'SEO Tools', 'Social Media', 'Campaign Analytics'],
     popular: false,
-    icon: SparklesIcon,
-    color: 'purple'
+    icon: BoltIcon,
+    color: '#4CAF50'
   },
   {
     id: 'data-wizard',
     name: 'Data Analytics Wizard',
-    description: 'Advanced analytics and reporting with predictive insights',
+    description: 'Advanced data analysis and visualization with predictive insights',
     category: 'analytics',
     price: 399,
     rating: 4.6,
     reviews: 98,
-    features: ['Real-time Analytics', 'Custom Reports', 'Predictions', 'Data Visualization'],
+    features: ['Real-time Dashboards', 'Predictive Analytics', 'Custom Reports', 'Data Integration'],
     popular: false,
     badge: 'Pro',
     icon: ChartBarIcon,
-    color: 'orange'
+    color: '#4CAF50'
   },
   {
-    id: 'security-guardian',
-    name: 'Security Guardian',
-    description: 'Comprehensive security monitoring and threat detection',
-    category: 'security',
-    price: 449,
-    rating: 4.9,
-    reviews: 67,
-    features: ['Threat Detection', 'Compliance Monitoring', 'Audit Logs', 'Access Control'],
-    popular: false,
-    badge: 'Enterprise',
-    icon: ShieldCheckIcon,
-    color: 'red'
-  },
-  {
-    id: 'integration-hub',
-    name: 'Integration Hub',
-    description: 'Connect all your tools and automate workflows seamlessly',
-    category: 'integration',
+    id: 'hr-assistant',
+    name: 'HR Assistant Plus',
+    description: 'Streamline recruitment, onboarding, and employee management',
+    category: 'hr',
     price: 179,
     rating: 4.5,
-    reviews: 312,
-    features: ['API Connections', 'Webhook Management', 'Data Sync', 'Workflow Automation'],
-    popular: true,
-    icon: CloudIcon,
-    color: 'cyan'
+    reviews: 67,
+    features: ['Resume Screening', 'Interview Scheduling', 'Onboarding', 'Performance Tracking'],
+    popular: false,
+    icon: ShieldCheckIcon,
+    color: '#4CAF50'
+  },
+  {
+    id: 'finance-bot',
+    name: 'Finance Bot Pro',
+    description: 'Automated bookkeeping, invoicing, and financial reporting',
+    category: 'finance',
+    price: 329,
+    rating: 4.8,
+    reviews: 143,
+    features: ['Auto Bookkeeping', 'Invoice Processing', 'Expense Tracking', 'Financial Forecasting'],
+    popular: false,
+    badge: 'New',
+    icon: CurrencyPoundIcon,
+    color: '#4CAF50'
   }
 ];
 
 const CATEGORIES = [
-  { id: 'all', name: 'All Products', icon: CubeIcon },
-  { id: 'sales', name: 'Sales & CRM', icon: ChartBarIcon },
-  { id: 'support', name: 'Customer Support', icon: ChatBubbleLeftRightIcon },
-  { id: 'marketing', name: 'Marketing', icon: SparklesIcon },
-  { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
-  { id: 'security', name: 'Security', icon: ShieldCheckIcon },
-  { id: 'integration', name: 'Integrations', icon: CloudIcon }
+  { id: 'all', name: 'All Products', count: PRODUCTS.length },
+  { id: 'sales', name: 'Sales', count: 2 },
+  { id: 'support', name: 'Support', count: 1 },
+  { id: 'marketing', name: 'Marketing', count: 1 },
+  { id: 'analytics', name: 'Analytics', count: 1 },
+  { id: 'finance', name: 'Finance', count: 1 },
 ];
 
-export default function PublicMarketplacePage() {
+export default function MarketplacePage() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('popular');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userIndustry, setUserIndustry] = useState<string | null>(null);
-  const [agents, setAgents] = useState<any[]>([]);
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'popular' | 'price' | 'rating'>('popular');
+  const [priceRange, setPriceRange] = useState<'all' | 'under200' | '200-300' | 'over300'>('all');
 
-  useEffect(() => {
-    // Fetch marketplace data
-    Promise.all([
-      fetch('/api/marketplace/agents').then(res => res.json()),
-      fetch('/api/marketplace/templates').then(res => res.json()),
-      fetch('/api/auth/check-session').then(res => res.json())
-    ])
-      .then(([agentsData, templatesData, authData]) => {
-        if (agentsData.success) {
-          setAgents(agentsData.agents || PRODUCTS);
-        }
-        if (templatesData.success) {
-          setTemplates(templatesData.templates || []);
-        }
-        setIsLoggedIn(authData.authenticated || false);
-        setUserIndustry(agentsData.userContext?.industry || authData.industry || null);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching marketplace data:', error);
-        setAgents(PRODUCTS);
-        setLoading(false);
-      });
-  }, []);
-
-  const filteredProducts = PRODUCTS.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  }).sort((a, b) => {
-    if (sortBy === 'popular') return b.reviews - a.reviews;
-    if (sortBy === 'price-low') return a.price - b.price;
-    if (sortBy === 'price-high') return b.price - a.price;
-    if (sortBy === 'rating') return b.rating - a.rating;
-    return 0;
-  });
-
-  // Get personalized recommendations for logged-in users
-  const getRecommendations = () => {
-    if (!isLoggedIn) return [];
-
-    // Simple recommendation logic based on industry
-    if (userIndustry === 'ecommerce') {
-      return ['sales-pro', 'marketing-genius', 'data-wizard'];
-    } else if (userIndustry === 'technology') {
-      return ['security-guardian', 'integration-hub', 'data-wizard'];
-    } else if (userIndustry === 'services') {
-      return ['support-hero', 'sales-pro', 'integration-hub'];
-    }
-    return ['sales-pro', 'support-hero', 'marketing-genius'];
-  };
-
-  const recommendedIds = getRecommendations();
-  const recommendedProducts = PRODUCTS.filter(p => recommendedIds.includes(p.id));
+  const filteredProducts = PRODUCTS
+    .filter(product => {
+      if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
+      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !product.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (priceRange === 'under200' && product.price >= 200) return false;
+      if (priceRange === '200-300' && (product.price < 200 || product.price > 300)) return false;
+      if (priceRange === 'over300' && product.price <= 300) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'popular') return b.popular ? 1 : -1;
+      if (sortBy === 'price') return a.price - b.price;
+      if (sortBy === 'rating') return b.rating - a.rating;
+      return 0;
+    });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
-      {/* Header */}
-      <header className="shadow-sm border-b sticky top-0 z-10" style={{
-        backgroundColor: 'rgba(58, 64, 64, 0.95)',
-        borderColor: 'rgba(169, 189, 203, 0.15)'
-      }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2">
-                <ShoppingBagIcon className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
-                <span className="text-xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>AI Marketplace</span>
-              </Link>
-
-              {/* Navigation Tabs */}
-              <nav className="hidden md:flex items-center gap-6">
-                <Link
-                  href="/marketplace/public"
-                  className="font-medium pb-1 border-b-2"
-                  style={{
-                    color: 'rgb(229, 227, 220)',
-                    borderColor: 'rgba(169, 189, 203, 0.5)'
-                  }}
-                >
-                  Marketplace
-                </Link>
-                <Link
-                  href="/custom-products"
-                  className="font-medium hover:opacity-80"
-                  style={{ color: 'rgba(169, 189, 203, 0.8)' }}
-                >
-                  Custom Products
-                </Link>
-                {isLoggedIn && (
-                  <>
-                    <Link
-                      href="/dashboard"
-                      className="font-medium hover:opacity-80"
-                      style={{ color: 'rgba(169, 189, 203, 0.8)' }}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/agent-builder"
-                      className="font-medium hover:opacity-80"
-                      style={{ color: 'rgba(169, 189, 203, 0.8)' }}
-                    >
-                      Agent Builder
-                    </Link>
-                  </>
-                )}
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {isLoggedIn ? (
-                <Link href="/dashboard" className="px-4 py-2 rounded-lg hover:opacity-80 transition" style={{
-                  backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                  color: 'rgb(229, 227, 220)',
-                  border: '1px solid rgba(169, 189, 203, 0.2)'
-                }}>
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <Link href="/login" className="px-4 py-2 rounded-lg hover:opacity-80 transition" style={{
-                  backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                  color: 'rgb(229, 227, 220)',
-                  border: '1px solid rgba(169, 189, 203, 0.2)'
-                }}>
-                  Sign In
-                </Link>
-              )}
-            </div>
+    <DashboardLayout>
+      {/* Top Header */}
+      <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+              AI Marketplace
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+              Discover pre-built AI agents ready to transform your business
+            </p>
           </div>
+          <button
+            onClick={() => router.push('/agent-builder/demo')}
+            className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+            style={{
+              backgroundColor: '#4CAF50',
+              color: 'white'
+            }}
+          >
+            <SparklesIcon className="h-5 w-5" />
+            Build Custom Agent
+          </button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-16" style={{
-        background: 'linear-gradient(135deg, rgba(58, 64, 64, 0.8) 0%, rgba(48, 54, 54, 0.9) 100%)'
-      }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-            AI Agent Marketplace
-          </h1>
-          <p className="text-xl mb-8" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>
-            Pre-built AI agents ready to transform your business
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-2xl">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
-                style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
-              <input
-                type="text"
-                placeholder="Search for agents..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-1"
-                style={{
-                  backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                  borderColor: 'rgba(169, 189, 203, 0.3)',
-                  color: 'rgb(229, 227, 220)'
-                }}
-              />
+      {/* Content */}
+      <div className="p-8">
+        {/* Search and Filters */}
+        <div className="mb-8 p-4 rounded-lg" style={{
+          backgroundColor: 'rgba(58, 64, 64, 0.5)',
+          border: '1px solid rgba(169, 189, 203, 0.15)'
+        }}>
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5"
+                  style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                <input
+                  type="text"
+                  placeholder="Search agents..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2"
+                  style={{
+                    backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                    borderColor: 'rgba(169, 189, 203, 0.3)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters Bar */}
-        <div className="flex flex-wrap items-center gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <FunnelIcon className="w-5 h-5" style={{ color: 'rgba(169, 189, 203, 0.8)' }} />
-            <span style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Filter by:</span>
-          </div>
-
-          {/* Category Pills */}
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-sm transition ${
-                  selectedCategory === cat.id ? 'ring-1' : ''
-                }`}
-                style={{
-                  backgroundColor: selectedCategory === cat.id
-                    ? 'rgba(169, 189, 203, 0.2)'
-                    : 'rgba(58, 64, 64, 0.5)',
-                  color: selectedCategory === cat.id
-                    ? 'rgb(229, 227, 220)'
-                    : 'rgba(169, 189, 203, 0.8)',
-                  borderColor: 'rgba(169, 189, 203, 0.3)'
-                }}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="ml-auto">
+            {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border focus:outline-none"
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-4 py-2 rounded-lg border"
               style={{
-                backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                backgroundColor: 'rgba(48, 54, 54, 0.5)',
                 borderColor: 'rgba(169, 189, 203, 0.3)',
                 color: 'rgb(229, 227, 220)'
               }}
             >
               <option value="popular">Most Popular</option>
+              <option value="price">Price: Low to High</option>
               <option value="rating">Highest Rated</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
+            </select>
+
+            {/* Price Filter */}
+            <select
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value as any)}
+              className="px-4 py-2 rounded-lg border"
+              style={{
+                backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                borderColor: 'rgba(169, 189, 203, 0.3)',
+                color: 'rgb(229, 227, 220)'
+              }}
+            >
+              <option value="all">All Prices</option>
+              <option value="under200">Under $200</option>
+              <option value="200-300">$200 - $300</option>
+              <option value="over300">Over $300</option>
             </select>
           </div>
         </div>
 
-        {/* Personalized Recommendations */}
-        {isLoggedIn && recommendedProducts.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-              Recommended for You
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendedProducts.map(product => (
+        <div className="flex gap-8">
+          {/* Categories Sidebar */}
+          <div className="w-64 flex-shrink-0">
+            <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+              Categories
+            </h3>
+            <div className="space-y-2">
+              {CATEGORIES.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                    selectedCategory === category.id ? '' : ''
+                  }`}
+                  style={{
+                    backgroundColor: selectedCategory === category.id
+                      ? 'rgba(76, 175, 80, 0.1)'
+                      : 'transparent',
+                    borderLeft: selectedCategory === category.id
+                      ? '3px solid #4CAF50'
+                      : '3px solid transparent',
+                    color: selectedCategory === category.id
+                      ? 'rgb(229, 227, 220)'
+                      : 'rgba(169, 189, 203, 0.8)'
+                  }}
+                >
+                  <div className="flex justify-between items-center">
+                    <span>{category.name}</span>
+                    <span className="text-sm px-2 py-1 rounded-full"
+                      style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                        color: 'rgba(169, 189, 203, 0.8)'
+                      }}>
+                      {category.count}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                Showing {filteredProducts.length} agents
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProducts.map(product => (
                 <div
                   key={product.id}
-                  className="rounded-lg border p-6 hover:shadow-lg transition-all cursor-pointer"
+                  className="rounded-xl border hover:shadow-lg transition-all group cursor-pointer"
                   style={{
                     backgroundColor: 'rgba(58, 64, 64, 0.5)',
                     borderColor: 'rgba(169, 189, 203, 0.15)'
                   }}
                   onClick={() => router.push(`/marketplace/agent/${product.id}`)}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <product.icon className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
+                  <div className="p-6">
+                    {/* Badge */}
                     {product.badge && (
-                      <span className="px-2 py-1 text-xs rounded-full" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(229, 227, 220)'
-                      }}>
-                        {product.badge}
-                      </span>
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="px-3 py-1 text-xs rounded-full"
+                          style={{
+                            backgroundColor: product.badge === 'Most Popular'
+                              ? 'rgba(76, 175, 80, 0.2)'
+                              : 'rgba(169, 189, 203, 0.2)',
+                            color: product.badge === 'Most Popular'
+                              ? '#4CAF50'
+                              : 'rgba(169, 189, 203, 0.9)'
+                          }}>
+                          {product.badge}
+                        </span>
+                      </div>
                     )}
-                  </div>
 
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    {product.name}
-                  </h3>
-                  <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                    {product.description}
-                  </p>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      £{product.price}
-                      <span className="text-sm font-normal" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                        /month
-                      </span>
+                    {/* Icon and Title */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="p-3 rounded-lg" style={{
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)'
+                      }}>
+                        <product.icon className="h-8 w-8" style={{ color: product.color }} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg group-hover:text-green-400 transition"
+                          style={{ color: 'rgb(229, 227, 220)' }}>
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <StarIcon
+                                key={i}
+                                className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'fill-current' : ''}`}
+                                style={{
+                                  color: i < Math.floor(product.rating) ? '#FFB800' : 'rgba(169, 189, 203, 0.3)'
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                            {product.rating} ({product.reviews})
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <StarIcon className="w-4 h-4 fill-current" style={{ color: '#fbbf24' }} />
-                      <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                        {product.rating}
-                      </span>
+
+                    <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                      {product.description}
+                    </p>
+
+                    {/* Features */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {product.features.slice(0, 3).map((feature, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 text-xs rounded"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                            color: 'rgba(229, 227, 220, 0.8)'
+                          }}
+                        >
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Price and Action */}
+                    <div className="flex items-center justify-between pt-4 border-t"
+                      style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                      <div>
+                        <span className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+                          ${product.price}
+                        </span>
+                        <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                          /month
+                        </span>
+                      </div>
+                      <button
+                        className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                        style={{
+                          backgroundColor: '#4CAF50',
+                          color: 'white'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/billing?product=${product.id}`);
+                        }}
+                      >
+                        Get Started
+                        <ArrowRightIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
 
-        {/* All Products Grid */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-            {selectedCategory === 'all' ? 'All Agents' : CATEGORIES.find(c => c.id === selectedCategory)?.name}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
-              <div
-                key={product.id}
-                className="rounded-lg border p-6 hover:shadow-lg transition-all cursor-pointer"
-                style={{
-                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                  borderColor: 'rgba(169, 189, 203, 0.15)'
-                }}
-                onClick={() => router.push(`/marketplace/agent/${product.id}`)}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <product.icon className="w-8 h-8" style={{ color: 'rgb(169, 189, 203)' }} />
-                  {product.badge && (
-                    <span className="px-2 py-1 text-xs rounded-full" style={{
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(229, 227, 220)'
-                    }}>
-                      {product.badge}
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  {product.name}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <ShoppingBagIcon className="h-16 w-16 mx-auto mb-4" style={{ color: 'rgba(169, 189, 203, 0.3)' }} />
+                <h3 className="text-xl font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  No agents found
                 </h3>
-                <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                  {product.description}
+                <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                  Try adjusting your filters or search query
                 </p>
-
-                {/* Features */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {product.features.slice(0, 3).map((feature, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-1 text-xs rounded"
-                      style={{
-                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                        color: 'rgba(169, 189, 203, 0.8)',
-                        border: '1px solid rgba(169, 189, 203, 0.15)'
-                      }}
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    £{product.price}
-                    <span className="text-sm font-normal" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                      /month
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <StarIcon className="w-4 h-4 fill-current" style={{ color: '#fbbf24' }} />
-                    <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                      {product.rating} ({product.reviews})
-                    </span>
-                  </div>
-                </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
