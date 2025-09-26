@@ -3,9 +3,17 @@ import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
 
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil'
-});
+
+// Initialize Stripe lazily to avoid build-time errors
+let stripe: Stripe | null = null;
+const getStripe = () => {
+  if (!stripe && process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil'
+    });
+  }
+  return stripe;
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,9 +79,19 @@ export async function POST(request: NextRequest) {
 
     // If paid agent, create Stripe checkout session
     if (price > 0) {
+      const stripeClient = getStripe();
+      if (!stripeClient) {
+        console.error('Stripe not configured');
+        return NextResponse.json({
+          success: true,
+          agentId,
+          message: 'Agent created successfully. Please contact support for payment setup.'
+        });
+      }
+
       try {
         // Create Stripe product for the agent
-        const product = await stripe.products.create({
+        const product = await stripeClient.products.create({
           name: `${name} - Custom AI Agent`,
           description: description || 'Custom AI agent with selected skills',
           metadata: {
@@ -84,7 +102,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Create price
-        const stripePrice = await stripe.prices.create({
+        const stripePrice = await stripeClient.prices.create({
           product: product.id,
           unit_amount: price * 100, // Convert pounds to pence
           currency: 'gbp',
@@ -94,7 +112,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Create checkout session
-        const session = await stripe.checkout.sessions.create({
+        const session = await stripeClient.checkout.sessions.create({
           payment_method_types: ['card'],
           line_items: [
             {
