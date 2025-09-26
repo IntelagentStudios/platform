@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MessageCircle, Sparkles, Eye, CreditCard, Check, ArrowRight } from 'lucide-react';
 import AgentBuilderChat from '../../../components/AgentBuilderChat';
 import DashboardPreview from '../../../components/DashboardPreview';
+import DashboardLayout from '../../../components/DashboardLayout';
 
 export default function AgentBuilderDemo() {
   const [currentStep, setCurrentStep] = useState<'chat' | 'preview' | 'payment'>('chat');
@@ -36,59 +37,29 @@ export default function AgentBuilderDemo() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
-      {/* Header */}
-      <header className="border-b" style={{
-        backgroundColor: 'rgba(58, 64, 64, 0.95)',
-        borderColor: 'rgba(169, 189, 203, 0.15)'
-      }}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <MessageCircle className="h-8 w-8" style={{ color: '#4CAF50' }} />
-              <div>
-                <h1 className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                  AI Agent Builder
-                </h1>
-                <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                  Build your custom AI agent in minutes - no login required
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => router.push('/marketplace/public')}
-                className="px-4 py-2 rounded-lg border transition hover:opacity-80"
-                style={{
-                  borderColor: 'rgba(169, 189, 203, 0.3)',
-                  backgroundColor: 'transparent',
-                  color: 'rgba(229, 227, 220, 0.9)'
-                }}
-              >
-                Browse Marketplace
-              </button>
-              <button
-                onClick={() => router.push('/login')}
-                className="px-4 py-2 rounded-lg transition hover:opacity-80"
-                style={{
-                  backgroundColor: '#4CAF50',
-                  color: 'white'
-                }}
-              >
-                Sign In
-              </button>
-            </div>
+    <DashboardLayout>
+      {/* Top Header */}
+      <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+              AI Agent Builder
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+              Build your custom AI agent with our conversational interface - try it free
+            </p>
           </div>
         </div>
       </header>
 
-      {/* Progress Indicator */}
-      <div className="border-b" style={{
-        backgroundColor: 'rgba(58, 64, 64, 0.5)',
-        borderColor: 'rgba(169, 189, 203, 0.15)'
-      }}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-8">
+      {/* Content */}
+      <div className="p-8">
+        {/* Progress Indicator */}
+        <div className="mb-8 p-4 rounded-lg" style={{
+          backgroundColor: 'rgba(58, 64, 64, 0.5)',
+          border: '1px solid rgba(169, 189, 203, 0.15)'
+        }}>
+          <div className="flex items-center justify-center space-x-8">
             <div className={`flex items-center space-x-2 ${currentStep === 'chat' ? 'opacity-100' : 'opacity-50'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                 currentStep === 'chat' ? 'bg-green-500' : 'bg-gray-600'
@@ -123,10 +94,8 @@ export default function AgentBuilderDemo() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Main Content */}
         {currentStep === 'chat' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Chat Section */}
@@ -143,7 +112,9 @@ export default function AgentBuilderDemo() {
                     </h3>
                   </div>
                 </div>
-                <AgentBuilderChat onComplete={handleChatComplete} isDemo={true} />
+                <div style={{ height: '500px' }}>
+                  <AgentBuilderChat onComplete={handleChatComplete} isDemo={true} />
+                </div>
               </div>
             </div>
 
@@ -154,7 +125,7 @@ export default function AgentBuilderDemo() {
                 borderColor: 'rgba(169, 189, 203, 0.15)'
               }}>
                 <h3 className="text-lg font-semibold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
-                  What You\'re Building
+                  What You're Building
                 </h3>
                 <ul className="space-y-3">
                   {[
@@ -179,7 +150,7 @@ export default function AgentBuilderDemo() {
                   Free Demo Mode
                 </h3>
                 <p style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                  Try building your agent completely free. See the preview, test features, and only pay when you\'re ready to activate.
+                  Try building your agent completely free. See the preview, test features, and only pay when you're ready to activate.
                 </p>
               </div>
             </div>
@@ -322,6 +293,6 @@ export default function AgentBuilderDemo() {
           </div>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
