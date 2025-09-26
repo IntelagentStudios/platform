@@ -16,11 +16,10 @@ export async function GET(request: NextRequest) {
       const license = await prisma.licenses.findUnique({
         where: { license_key: licenseKey },
         select: {
-          type: true,
           metadata: true
         }
       });
-      
+
       if (license?.metadata && typeof license.metadata === 'object') {
         const metadata = license.metadata as any;
         userIndustry = metadata.industry || null;
