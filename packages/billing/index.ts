@@ -334,10 +334,10 @@ class StripeService {
    */
   async getUpcomingInvoice(subscriptionId: string): Promise<Stripe.UpcomingInvoice | null> {
     try {
-      const invoice = await this.stripe.invoices.retrieveUpcoming({
+      const invoice = await this.stripe.invoices.upcoming({
         subscription: subscriptionId
       });
-      
+
       return invoice;
     } catch (error) {
       console.error('Failed to get upcoming invoice:', error);
