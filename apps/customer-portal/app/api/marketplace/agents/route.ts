@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     let userRole = null;
     if (licenseKey) {
       const license = await prisma.licenses.findUnique({
-        where: { key: licenseKey },
+        where: { license_key: licenseKey },
         select: {
           license_type: true,
           metadata: true
