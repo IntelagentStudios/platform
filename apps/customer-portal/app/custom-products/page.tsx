@@ -165,18 +165,32 @@ export default function CustomProductsPage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [builders, setBuilders] = useState<any[]>([]);
+  const [userBuilds, setUserBuilds] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    fetch('/api/auth/check-session')
-      .then(res => res.json())
-      .then(data => {
-        setIsLoggedIn(data.authenticated || false);
-        if (data.authenticated) {
-          setUserProfile(data.user);
+    // Fetch custom builders data
+    Promise.all([
+      fetch('/api/custom-products/builders').then(res => res.json()),
+      fetch('/api/auth/check-session').then(res => res.json())
+    ])
+      .then(([buildersData, authData]) => {
+        if (buildersData.success) {
+          setBuilders(buildersData.builders || CUSTOM_OPTIONS);
+          setUserBuilds(buildersData.userBuilds || []);
         }
+        setIsLoggedIn(authData.authenticated || false);
+        if (authData.authenticated) {
+          setUserProfile(authData.user);
+        }
+        setLoading(false);
       })
-      .catch(() => setIsLoggedIn(false));
+      .catch(error => {
+        console.error('Error fetching builders data:', error);
+        setBuilders(CUSTOM_OPTIONS);
+        setLoading(false);
+      });
   }, []);
 
   return (

@@ -139,16 +139,33 @@ export default function PublicMarketplacePage() {
   const [sortBy, setSortBy] = useState('popular');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userIndustry, setUserIndustry] = useState<string | null>(null);
+  const [agents, setAgents] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    fetch('/api/auth/check-session')
-      .then(res => res.json())
-      .then(data => {
-        setIsLoggedIn(data.authenticated || false);
-        setUserIndustry(data.industry || null);
+    // Fetch marketplace data
+    Promise.all([
+      fetch('/api/marketplace/agents').then(res => res.json()),
+      fetch('/api/marketplace/templates').then(res => res.json()),
+      fetch('/api/auth/check-session').then(res => res.json())
+    ])
+      .then(([agentsData, templatesData, authData]) => {
+        if (agentsData.success) {
+          setAgents(agentsData.agents || PRODUCTS);
+        }
+        if (templatesData.success) {
+          setTemplates(templatesData.templates || []);
+        }
+        setIsLoggedIn(authData.authenticated || false);
+        setUserIndustry(agentsData.userContext?.industry || authData.industry || null);
+        setLoading(false);
       })
-      .catch(() => setIsLoggedIn(false));
+      .catch(error => {
+        console.error('Error fetching marketplace data:', error);
+        setAgents(PRODUCTS);
+        setLoading(false);
+      });
   }, []);
 
   const filteredProducts = PRODUCTS.filter(product => {
