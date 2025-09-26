@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Sparkles, Eye, CreditCard, Check, ArrowRight } from 'lucide-react';
-import AgentBuilderChat from '../../../components/AgentBuilderChat';
+import AgentBuilderChatV2 from '../../../components/AgentBuilderChatV2';
 import DashboardPreview from '../../../components/DashboardPreview';
 import DashboardLayout from '../../../components/DashboardLayout';
 
@@ -113,7 +113,7 @@ export default function AgentBuilderDemo() {
                   </div>
                 </div>
                 <div style={{ height: '500px' }}>
-                  <AgentBuilderChat onComplete={handleChatComplete} isDemo={true} />
+                  <AgentBuilderChatV2 onComplete={handleChatComplete} isDemo={true} />
                 </div>
               </div>
             </div>
