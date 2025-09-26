@@ -160,7 +160,8 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
   useEffect(() => {
     const flow = CONVERSATION_FLOW[currentStep];
     if (flow && messages.length === 0) {
-      addBotMessage(flow.message, flow.options || flow.examples);
+      const options = 'options' in flow ? flow.options : 'examples' in flow ? flow.examples : undefined;
+      addBotMessage(flow.message, options);
     }
   }, []);
 
@@ -258,7 +259,8 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
       setCurrentStep(flow.next as keyof typeof CONVERSATION_FLOW);
       const nextFlow = CONVERSATION_FLOW[flow.next as keyof typeof CONVERSATION_FLOW];
       setTimeout(() => {
-        addBotMessage(nextFlow.message, nextFlow.options || nextFlow.examples);
+        const nextOptions = 'options' in nextFlow ? nextFlow.options : 'examples' in nextFlow ? nextFlow.examples : undefined;
+        addBotMessage(nextFlow.message, nextOptions);
       }, 1000);
     }
   };
@@ -313,7 +315,7 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
   // Toggle option selection
   const toggleOption = (option: string) => {
     const flow = CONVERSATION_FLOW[currentStep];
-    if (flow.multiSelect) {
+    if ('multiSelect' in flow && flow.multiSelect) {
       setSelectedOptions(prev =>
         prev.includes(option)
           ? prev.filter(o => o !== option)
@@ -406,7 +408,7 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
                       </div>
                     </button>
                   ))}
-                  {CONVERSATION_FLOW[currentStep].multiSelect && selectedOptions.length > 0 && (
+                  {'multiSelect' in CONVERSATION_FLOW[currentStep] && CONVERSATION_FLOW[currentStep].multiSelect && selectedOptions.length > 0 && (
                     <button
                       onClick={() => handleSubmit()}
                       className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
