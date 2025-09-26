@@ -191,57 +191,72 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
               Quick Actions
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <button
-                onClick={() => router.push('/marketplace')}
-                className="p-4 rounded-lg border hover:border-blue-500 transition-all group"
-                style={{ 
+                onClick={() => router.push('/marketplace/public')}
+                className="p-4 rounded-lg border hover:border-blue-500 transition-all group relative"
+                style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
+                <span className="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-blue-500 text-white">New</span>
                 <ShoppingCart className="h-8 w-8 mb-2 group-hover:text-blue-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
-                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Marketplace</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Browse AI products</div>
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>AI Marketplace</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Browse pre-built agents</div>
               </button>
-              
+
               <button
-                onClick={() => router.push('/dashboard/products/customize')}
-                className="p-4 rounded-lg border hover:border-green-500 transition-all group"
-                style={{ 
+                onClick={() => router.push('/custom-products')}
+                className="p-4 rounded-lg border hover:border-purple-500 transition-all group relative"
+                style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
-                <Settings className="h-8 w-8 mb-2 group-hover:text-green-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
-                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Customize Products</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Configure skills & features</div>
-              </button>
-              
-              <button
-                onClick={() => router.push('/dashboard/platform/upgrade')}
-                className="p-4 rounded-lg border hover:border-purple-500 transition-all group"
-                style={{ 
-                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                  borderColor: 'rgba(169, 189, 203, 0.15)'
-                }}
-              >
+                <span className="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-purple-500 text-white">New</span>
                 <Sparkles className="h-8 w-8 mb-2 group-hover:text-purple-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
-                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Platform Intelligence</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Connect all products</div>
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Custom Builder</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Build your own solution</div>
               </button>
-              
+
               <button
-                onClick={() => router.push('/dashboard/agent-builder')}
-                className="p-4 rounded-lg border hover:border-orange-500 transition-all group relative"
-                style={{ 
+                onClick={() => router.push('/agent-builder')}
+                className="p-4 rounded-lg border hover:border-orange-500 transition-all group"
+                style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
                 <Cpu className="h-8 w-8 mb-2 group-hover:text-orange-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
                 <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Agent Builder</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Build custom agents</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Conversational builder</div>
+              </button>
+
+              <button
+                onClick={() => router.push('/dashboard/agent-builder')}
+                className="p-4 rounded-lg border hover:border-green-500 transition-all group"
+                style={{
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <Settings className="h-8 w-8 mb-2 group-hover:text-green-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Dashboard Designer</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Drag & drop builder</div>
+              </button>
+
+              <button
+                onClick={() => router.push('/products')}
+                className="p-4 rounded-lg border hover:border-cyan-500 transition-all group"
+                style={{
+                  backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                  borderColor: 'rgba(169, 189, 203, 0.15)'
+                }}
+              >
+                <Package className="h-8 w-8 mb-2 group-hover:text-cyan-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>My Products</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Manage your products</div>
               </button>
             </div>
           </div>
