@@ -8,23 +8,17 @@ export async function GET(request: NextRequest) {
     // Get user context from cookies
     const licenseKey = request.cookies.get('licenseKey')?.value;
     const userId = request.cookies.get('userId')?.value;
-    
-    // Get user details if logged in
+
+    // For now, use mock data for user industry (can be enhanced later)
     let userIndustry = null;
     let userRole = null;
-    if (licenseKey) {
-      const license = await prisma.licenses.findUnique({
-        where: { license_key: licenseKey },
-        select: {
-          metadata: true
-        }
-      });
 
-      if (license?.metadata && typeof license.metadata === 'object') {
-        const metadata = license.metadata as any;
-        userIndustry = metadata.industry || null;
-        userRole = metadata.role || null;
-      }
+    // In the future, this could be fetched from a user profile table
+    // or stored in session data
+    if (licenseKey) {
+      // Temporary: randomly assign an industry for demo purposes
+      const industries = ['ecommerce', 'saas', 'healthcare', 'finance', 'marketing'];
+      userIndustry = industries[Math.floor(Math.random() * industries.length)];
     }
 
     // Pre-built agents catalog
