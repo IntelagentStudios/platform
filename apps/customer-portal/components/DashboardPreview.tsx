@@ -13,7 +13,8 @@ import {
   ArrowTrendingUpIcon,
   CalendarIcon,
   ChatBubbleLeftRightIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 
 interface Skill {
