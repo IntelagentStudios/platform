@@ -25,8 +25,21 @@ interface Skill {
 }
 
 interface DashboardPreviewProps {
-  selectedSkills: Skill[];
+  selectedSkills?: Skill[];
   agentName?: string;
+  agentConfig?: {
+    agentName?: string;
+    requirements?: {
+      goal?: string;
+      industry?: string;
+      tools?: string[];
+      workflows?: string[];
+      outputs?: string[];
+      teamSize?: string;
+      budget?: string;
+    };
+    suggestedSkills?: string[];
+  };
   requirements?: {
     goal?: string;
     industry?: string;

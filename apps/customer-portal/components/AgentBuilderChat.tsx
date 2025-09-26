@@ -29,7 +29,9 @@ interface AgentRequirements {
 }
 
 interface AgentBuilderChatProps {
-  onRequirementsComplete: (requirements: AgentRequirements, suggestedSkills: string[]) => void;
+  onRequirementsComplete?: (requirements: AgentRequirements, suggestedSkills: string[]) => void;
+  onComplete?: (config: any) => void;
+  isDemo?: boolean;
   onReset?: () => void;
 }
 
@@ -136,6 +138,8 @@ const CONVERSATION_FLOW = {
 
 export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
   onRequirementsComplete,
+  onComplete,
+  isDemo,
   onReset
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -253,7 +257,25 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
 
       // Trigger completion callback
       setTimeout(() => {
-        onRequirementsComplete(updatedRequirements, suggestedSkills);
+        if (onComplete && isDemo) {
+          // For demo mode, return complete configuration
+          onComplete({
+            agentName: `${updatedRequirements.industry || 'Custom'} Agent`,
+            requirements: updatedRequirements,
+            suggestedSkills,
+            configuration: {
+              goal: updatedRequirements.goal,
+              tools: updatedRequirements.tools,
+              workflows: updatedRequirements.workflows,
+              outputs: updatedRequirements.outputs,
+              industry: updatedRequirements.industry,
+              teamSize: updatedRequirements.teamSize,
+              budget: updatedRequirements.budget
+            }
+          });
+        } else if (onRequirementsComplete) {
+          onRequirementsComplete(updatedRequirements, suggestedSkills);
+        }
       }, 3000);
     } else {
       setCurrentStep(flow.next as keyof typeof CONVERSATION_FLOW);
@@ -328,9 +350,9 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col h-full rounded-lg shadow-lg" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
+      <div className="px-6 py-4 text-white rounded-t-lg" style={{ background: 'linear-gradient(to right, #4CAF50, #45a049)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChatBubbleLeftRightIcon className="w-6 h-6" />
@@ -352,15 +374,18 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
       </div>
 
       {/* Progress Bar */}
-      <div className="px-6 py-2 bg-gray-50">
-        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+      <div className="px-6 py-2" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+        <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
           <span>Progress</span>
           <span>{Object.keys(requirements).length} / 7</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full rounded-full h-2" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}>
           <div
-            className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all"
-            style={{ width: `${(Object.keys(requirements).length / 7) * 100}%` }}
+            className="h-2 rounded-full transition-all"
+            style={{
+              background: 'linear-gradient(to right, #4CAF50, #45a049)',
+              width: `${(Object.keys(requirements).length / 7) * 100}%`
+            }}
           />
         </div>
       </div>
@@ -375,14 +400,18 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
             <div
               className={`max-w-[70%] rounded-lg px-4 py-3 ${
                 message.type === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-800'
+                  ? ''
+                  : ''
               }`}
+              style={{
+                backgroundColor: message.type === 'user' ? '#4CAF50' : 'rgba(58, 64, 64, 0.8)',
+                color: message.type === 'user' ? 'white' : 'rgb(229, 227, 220)'
+              }}
             >
               {message.type === 'bot' && (
                 <div className="flex items-center gap-2 mb-1">
                   <SparklesIcon className="w-4 h-4 text-purple-500" />
-                  <span className="text-xs font-medium text-purple-600">AI Assistant</span>
+                  <span className="text-xs font-medium" style={{ color: '#4CAF50' }}>AI Assistant</span>
                 </div>
               )}
               <p className="whitespace-pre-wrap">{message.content}</p>
@@ -396,9 +425,14 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
                       onClick={() => toggleOption(option)}
                       className={`block w-full text-left px-3 py-2 rounded border transition ${
                         selectedOptions.includes(option)
-                          ? 'bg-blue-50 border-blue-300 text-blue-700'
-                          : 'bg-white border-gray-200 hover:bg-gray-50'
+                          ? ''
+                          : ''
                       }`}
+                      style={{
+                        backgroundColor: selectedOptions.includes(option) ? 'rgba(76, 175, 80, 0.2)' : 'rgba(58, 64, 64, 0.5)',
+                        borderColor: selectedOptions.includes(option) ? '#4CAF50' : 'rgba(169, 189, 203, 0.3)',
+                        color: selectedOptions.includes(option) ? '#4CAF50' : 'rgb(229, 227, 220)'
+                      }}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-sm">{option}</span>
@@ -411,7 +445,8 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
                   {'multiSelect' in CONVERSATION_FLOW[currentStep] && CONVERSATION_FLOW[currentStep].multiSelect && selectedOptions.length > 0 && (
                     <button
                       onClick={() => handleSubmit()}
-                      className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                      className="w-full px-4 py-2 text-white rounded-lg transition hover:opacity-80"
+                      style={{ backgroundColor: '#4CAF50' }}
                     >
                       Continue with {selectedOptions.length} selected
                     </button>
@@ -425,11 +460,11 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-3">
+            <div className="rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(58, 64, 64, 0.8)' }}>
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '0ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '150ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -439,7 +474,7 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t">
+      <div className="px-6 py-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -448,12 +483,18 @@ export const AgentBuilderChat: React.FC<AgentBuilderChatProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
             placeholder="Type your answer or select from options above..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.3)',
+              color: 'rgb(229, 227, 220)'
+            }}
           />
           <button
             onClick={() => handleSubmit()}
             disabled={!inputValue.trim() && selectedOptions.length === 0}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2"
+            className="px-4 py-2 text-white rounded-lg transition hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            style={{ backgroundColor: '#4CAF50' }}
           >
             <PaperAirplaneIcon className="w-5 h-5" />
           </button>
