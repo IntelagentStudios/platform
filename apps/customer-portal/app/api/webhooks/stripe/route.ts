@@ -29,9 +29,57 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as any;
-        
-        // Update license with subscription ID
-        if (session.subscription && session.metadata?.license_key) {
+
+        // Handle agent activation
+        if (session.metadata?.agent_id) {
+          const agentId = session.metadata.agent_id;
+          const licenseKey = session.metadata.license_key;
+
+          // Find agent configuration
+          const agent = await db.product_configurations.findFirst({
+            where: {
+              product_key: licenseKey,
+              customization_type: 'agent',
+              custom_name: agentId
+            }
+          });
+
+          if (agent) {
+            // Update agent status to active
+            const config = JSON.parse(agent.configuration as string || '{}');
+            config.status = 'active';
+            config.subscriptionId = session.subscription;
+            config.customerId = session.customer;
+            config.activatedAt = new Date().toISOString();
+
+            await db.product_configurations.update({
+              where: { id: agent.id },
+              data: {
+                configuration: JSON.stringify(config),
+                updated_at: new Date()
+              }
+            });
+
+            // Log activation event
+            await db.skill_audit_log.create({
+              data: {
+                event_type: 'agent_activated',
+                skill_id: 'agent_builder',
+                user_id: session.metadata?.user_id || 'system',
+                license_key: licenseKey,
+                event_data: {
+                  agent_id: agentId,
+                  subscription_id: session.subscription,
+                  customer_id: session.customer
+                },
+                created_at: new Date()
+              }
+            });
+          }
+        }
+
+        // Update license with subscription ID (existing flow)
+        if (session.subscription && session.metadata?.license_key && !session.metadata?.agent_id) {
           await db.licenses.update({
             where: { license_key: session.metadata.license_key },
             data: {
@@ -67,8 +115,54 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as any;
-        
-        if (subscription.metadata?.license_key) {
+
+        // Handle agent cancellation
+        if (subscription.metadata?.agent_id) {
+          const agentId = subscription.metadata.agent_id;
+          const licenseKey = subscription.metadata.license_key;
+
+          // Find agent configuration
+          const agent = await db.product_configurations.findFirst({
+            where: {
+              product_key: licenseKey,
+              customization_type: 'agent',
+              custom_name: agentId
+            }
+          });
+
+          if (agent) {
+            // Update agent status to cancelled
+            const config = JSON.parse(agent.configuration as string || '{}');
+            config.status = 'cancelled';
+            config.cancelledAt = new Date().toISOString();
+
+            await db.product_configurations.update({
+              where: { id: agent.id },
+              data: {
+                configuration: JSON.stringify(config),
+                updated_at: new Date()
+              }
+            });
+
+            // Log cancellation event
+            await db.skill_audit_log.create({
+              data: {
+                event_type: 'agent_cancelled',
+                skill_id: 'agent_builder',
+                user_id: subscription.metadata?.user_id || 'system',
+                license_key: licenseKey,
+                event_data: {
+                  agent_id: agentId,
+                  subscription_id: subscription.id
+                },
+                created_at: new Date()
+              }
+            });
+          }
+        }
+
+        // Handle license cancellation (existing flow)
+        if (subscription.metadata?.license_key && !subscription.metadata?.agent_id) {
           await db.licenses.update({
             where: { license_key: subscription.metadata.license_key },
             data: {

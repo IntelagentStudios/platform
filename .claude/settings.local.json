@@ -17,7 +17,9 @@
       "Bash(curl:*)",
       "Bash(taskkill:*)",
       "Bash(del \"apps\\customer-portal\\app\\admin\\route.ts\")",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(del \"C:\\Projects\\Intelagent Platform\\GOALS_AND_STATUS.md\")"
     ],
     "deny": [],
     "ask": []

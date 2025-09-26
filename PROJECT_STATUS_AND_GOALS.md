@@ -10,6 +10,36 @@ The Intelagent Platform is a sophisticated AI-powered business automation system
 
 ## 🎯 Ultimate Project Vision
 
+### 🆕 Custom Agent Builder + Configurator Preview (Target: Q1 2025)
+
+**Purpose**: Allow users to create their own AI agent by describing tasks and selecting skills, with real-time preview.
+
+#### Core Components
+
+1. **Conversational Onboarding Chatbot**
+   - Guides users through requirements gathering
+   - Asks about: goals, tools, workflows, outputs
+   - AI-powered skill recommendations
+   - Progressive disclosure of complexity
+
+2. **Skills Configurator**
+   - Browse 310+ available skills by category
+   - See skill dependencies and pricing
+   - Estimated monthly cost calculator
+   - Pre-built templates for common use cases
+
+3. **Dashboard Preview System**
+   - Real-time mockup generation
+   - Shows tabs, widgets, and data flows
+   - Interactive prototype before purchase
+   - Customizable layouts
+
+4. **Purchase & Activation Flow**
+   - Transparent pricing breakdown
+   - One-click provisioning
+   - Instant dashboard generation
+   - Onboarding wizard for new users
+
 ### New Product Architecture (V2)
 
 **Core Philosophy**: Modular, customizable products that adapt to specific business needs, with intelligent platform integration that multiplies value.
