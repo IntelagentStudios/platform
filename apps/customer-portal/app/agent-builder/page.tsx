@@ -193,8 +193,8 @@ export default function AgentBuilderPage() {
             borderColor: 'rgba(169, 189, 203, 0.15)',
             minHeight: '600px'
           }}>
-            {!isLoggedIn || showChatbot ? (
-              /* Chatbot for non-logged in users */
+            {(!isLoggedIn || (isLoggedIn && showChatbot)) ? (
+              /* Chatbot interface */
               <div style={{ height: '600px' }}>
                 <AgentBuilderChatV2
                   onComplete={handleChatComplete}
