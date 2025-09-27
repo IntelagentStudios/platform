@@ -18,7 +18,9 @@ import {
   EnvelopeIcon,
   ShieldCheckIcon,
   CloudIcon,
-  CurrencyPoundIcon
+  CurrencyPoundIcon,
+  CogIcon,
+  CircleStackIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../../components/DashboardLayout';
 
@@ -28,8 +30,6 @@ interface Product {
   description: string;
   category: string;
   price: number;
-  rating: number;
-  reviews: number;
   features: string[];
   popular: boolean;
   badge?: string;
@@ -44,8 +44,6 @@ const PRODUCTS: Product[] = [
     description: 'Intelligent chatbot with natural language understanding and custom knowledge base',
     category: 'support',
     price: 349,
-    rating: 4.9,
-    reviews: 47,
     features: ['Custom Training', 'Multi-channel', 'Knowledge Base', 'Analytics Dashboard'],
     popular: true,
     badge: 'Active',
@@ -58,27 +56,51 @@ const PRODUCTS: Product[] = [
     description: 'Automated sales outreach with personalized email campaigns and lead management',
     category: 'sales',
     price: 649,
-    rating: 4.8,
-    reviews: 23,
     features: ['Email Automation', 'Lead Scoring', 'CRM Integration', 'Campaign Analytics'],
     popular: true,
     badge: 'Active',
     icon: UserGroupIcon,
     color: 'rgb(169, 189, 203)'
+  },
+  {
+    id: 'operations',
+    name: 'Operations Agent',
+    description: 'Streamline business operations with automated workflows and process optimization',
+    category: 'automation',
+    price: 549,
+    features: ['Workflow Automation', 'Task Management', 'Process Optimization', 'Performance Monitoring'],
+    popular: false,
+    badge: 'New',
+    icon: CogIcon,
+    color: 'rgb(169, 189, 203)'
+  },
+  {
+    id: 'data',
+    name: 'Data Agent',
+    description: 'Advanced data processing, analysis, and insights generation for informed decision-making',
+    category: 'analytics',
+    price: 449,
+    features: ['Data Processing', 'Real-time Analytics', 'Custom Reports', 'Predictive Insights'],
+    popular: false,
+    badge: 'New',
+    icon: CircleStackIcon,
+    color: 'rgb(169, 189, 203)'
   }
 ];
 
 const CATEGORIES = [
-  { id: 'all', name: 'All Products', count: PRODUCTS.length },
+  { id: 'all', name: 'All Products', count: 4 },
   { id: 'sales', name: 'Sales', count: 1 },
   { id: 'support', name: 'Support', count: 1 },
+  { id: 'automation', name: 'Automation', count: 1 },
+  { id: 'analytics', name: 'Analytics', count: 1 },
 ];
 
 export default function MarketplacePage() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'popular' | 'price' | 'rating'>('popular');
+  const [sortBy, setSortBy] = useState<'popular' | 'price'>('popular');
   const [priceRange, setPriceRange] = useState<'all' | 'under200' | '200-300' | 'over300'>('all');
 
   const filteredProducts = PRODUCTS
@@ -94,7 +116,6 @@ export default function MarketplacePage() {
     .sort((a, b) => {
       if (sortBy === 'popular') return b.popular ? 1 : -1;
       if (sortBy === 'price') return a.price - b.price;
-      if (sortBy === 'rating') return b.rating - a.rating;
       return 0;
     });
 
@@ -166,7 +187,6 @@ export default function MarketplacePage() {
             >
               <option value="popular">Most Popular</option>
               <option value="price">Price: Low to High</option>
-              <option value="rating">Highest Rated</option>
             </select>
 
             {/* Price Filter */}
@@ -270,26 +290,10 @@ export default function MarketplacePage() {
                         <product.icon className="h-8 w-8" style={{ color: product.color }} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg group-hover:text-green-400 transition"
+                        <h3 className="font-semibold text-lg group-hover:opacity-80 transition"
                           style={{ color: 'rgb(229, 227, 220)' }}>
                           {product.name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <StarIcon
-                                key={i}
-                                className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'fill-current' : ''}`}
-                                style={{
-                                  color: i < Math.floor(product.rating) ? '#FFB800' : 'rgba(169, 189, 203, 0.3)'
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                            {product.rating} ({product.reviews})
-                          </span>
-                        </div>
                       </div>
                     </div>
 
