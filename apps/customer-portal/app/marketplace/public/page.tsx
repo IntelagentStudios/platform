@@ -43,7 +43,7 @@ const PRODUCTS: Product[] = [
     name: 'AI Chatbot',
     description: 'Intelligent chatbot with natural language understanding and custom knowledge base',
     category: 'support',
-    price: 199,
+    price: 349,
     rating: 4.9,
     reviews: 47,
     features: ['Custom Training', 'Multi-channel', 'Knowledge Base', 'Analytics Dashboard'],
@@ -57,7 +57,7 @@ const PRODUCTS: Product[] = [
     name: 'Sales Outreach Agent',
     description: 'Automated sales outreach with personalized email campaigns and lead management',
     category: 'sales',
-    price: 299,
+    price: 649,
     rating: 4.8,
     reviews: 23,
     features: ['Email Automation', 'Lead Scoring', 'CRM Integration', 'Campaign Analytics'],
@@ -87,8 +87,8 @@ export default function MarketplacePage() {
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
           !product.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (priceRange === 'under200' && product.price >= 200) return false;
-      if (priceRange === '200-300' && (product.price < 200 || product.price > 300)) return false;
-      if (priceRange === 'over300' && product.price <= 300) return false;
+      if (priceRange === '200-300' && (product.price < 200 || product.price > 649)) return false;
+      if (priceRange === 'over300' && product.price <= 649) return false;
       return true;
     })
     .sort((a, b) => {
@@ -181,9 +181,9 @@ export default function MarketplacePage() {
               }}
             >
               <option value="all">All Prices</option>
-              <option value="under200">Under $200</option>
-              <option value="200-300">$200 - $300</option>
-              <option value="over300">Over $300</option>
+              <option value="under200">Under £200</option>
+              <option value="200-300">£200 - £649</option>
+              <option value="over300">Over £649</option>
             </select>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function MarketplacePage() {
                       style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
                       <div>
                         <span className="text-2xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-                          ${product.price}
+                          £{product.price}
                         </span>
                         <span className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                           /month

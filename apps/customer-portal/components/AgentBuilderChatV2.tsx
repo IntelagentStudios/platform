@@ -181,12 +181,12 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     });
 
     // Extract budget
-    let detectedBudget = '$100-500/month'; // Default
+    let detectedBudget = '£100-500/month'; // Default
     Object.entries(BUDGET_PATTERNS).forEach(([budget, pattern]) => {
       if (pattern.test(description)) {
-        detectedBudget = budget === '<100' ? '< $100/month' :
-                        budget === '>5000' ? '> $5000/month' :
-                        `$${budget}/month`;
+        detectedBudget = budget === '<100' ? '< £100/month' :
+                        budget === '>5000' ? '> £5000/month' :
+                        `£${budget}/month`;
       }
     });
 
@@ -481,12 +481,12 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                             color: 'rgb(229, 227, 220)'
                           }}
                         >
-                          <option value="< $100/month">Less than $100/month</option>
-                          <option value="$100-500/month">$100-500/month</option>
-                          <option value="$500-1000/month">$500-1000/month</option>
-                          <option value="$1000-2500/month">$1000-2500/month</option>
-                          <option value="$2500-5000/month">$2500-5000/month</option>
-                          <option value="> $5000/month">More than $5000/month</option>
+                          <option value="< £100/month">Less than £100/month</option>
+                          <option value="£100-500/month">£100-500/month</option>
+                          <option value="£500-1000/month">£500-1000/month</option>
+                          <option value="£1000-2500/month">£1000-2500/month</option>
+                          <option value="£2500-5000/month">£2500-5000/month</option>
+                          <option value="> £5000/month">More than £5000/month</option>
                         </select>
                       </div>
                     </div>

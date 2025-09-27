@@ -519,12 +519,12 @@ export default function BillingPage() {
                 </div>
                 <div className="flex justify-between">
                   <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>Amount</span>
-                  <span className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>$599.00</span>
+                  <span className="font-bold" style={{ color: 'rgb(229, 227, 220)' }}>£599.00</span>
                 </div>
                 <div className="pt-3 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4" style={{ color: '#4CAF50' }} />
-                    <span style={{ color: '#4CAF50' }}>Auto-renewal enabled</span>
+                    <CheckCircle className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                    <span style={{ color: 'rgb(169, 189, 203)' }}>Auto-renewal enabled</span>
                   </div>
                 </div>
               </div>
