@@ -50,7 +50,7 @@ const PRODUCTS: Product[] = [
     popular: true,
     badge: 'Active',
     icon: ChatBubbleLeftRightIcon,
-    color: '#4CAF50'
+    color: 'rgb(169, 189, 203)'
   },
   {
     id: 'sales-outreach',
@@ -64,7 +64,7 @@ const PRODUCTS: Product[] = [
     popular: true,
     badge: 'Active',
     icon: UserGroupIcon,
-    color: '#4CAF50'
+    color: 'rgb(169, 189, 203)'
   }
 ];
 
@@ -115,7 +115,7 @@ export default function MarketplacePage() {
             onClick={() => router.push('/agent-builder/demo')}
             className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
             style={{
-              backgroundColor: '#4CAF50',
+              backgroundColor: 'rgb(169, 189, 203)',
               color: 'white'
             }}
           >
@@ -204,10 +204,10 @@ export default function MarketplacePage() {
                   }`}
                   style={{
                     backgroundColor: selectedCategory === category.id
-                      ? 'rgba(76, 175, 80, 0.1)'
+                      ? 'rgba(169, 189, 203, 0.1)'
                       : 'transparent',
                     borderLeft: selectedCategory === category.id
-                      ? '3px solid #4CAF50'
+                      ? '3px solid rgb(169, 189, 203)'
                       : '3px solid transparent',
                     color: selectedCategory === category.id
                       ? 'rgb(229, 227, 220)'
@@ -254,8 +254,8 @@ export default function MarketplacePage() {
                       <div className="flex justify-between items-start mb-4">
                         <span className="px-3 py-1 text-xs rounded-full"
                           style={{
-                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                            color: '#4CAF50'
+                            backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                            color: 'rgb(169, 189, 203)'
                           }}>
                           {product.badge}
                         </span>
@@ -265,7 +265,7 @@ export default function MarketplacePage() {
                     {/* Icon and Title */}
                     <div className="flex items-start gap-4 mb-4">
                       <div className="p-3 rounded-lg" style={{
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)'
+                        backgroundColor: 'rgba(169, 189, 203, 0.1)'
                       }}>
                         <product.icon className="h-8 w-8" style={{ color: product.color }} />
                       </div>
@@ -327,7 +327,7 @@ export default function MarketplacePage() {
                       <button
                         className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
                         style={{
-                          backgroundColor: '#4CAF50',
+                          backgroundColor: 'rgb(169, 189, 203)',
                           color: 'white'
                         }}
                         onClick={(e) => {

@@ -46,7 +46,7 @@ export default function AgentBuilderDemo() {
               AI Agent Builder
             </h1>
             <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-              Build your custom AI agent with our conversational interface - try it free
+              Configure and preview your AI agent with no payment required
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function AgentBuilderDemo() {
           <div className="flex items-center justify-center space-x-8">
             <div className={`flex items-center space-x-2 ${currentStep === 'chat' ? 'opacity-100' : 'opacity-50'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'chat' ? 'bg-green-500' : 'bg-gray-600'
+                currentStep === 'chat' ? 'bg-gray-400' : 'bg-gray-600'
               }`}>
                 <span className="text-white text-sm">1</span>
               </div>
@@ -73,7 +73,7 @@ export default function AgentBuilderDemo() {
 
             <div className={`flex items-center space-x-2 ${currentStep === 'preview' ? 'opacity-100' : 'opacity-50'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'preview' ? 'bg-green-500' : agentConfig ? 'bg-green-500' : 'bg-gray-600'
+                currentStep === 'preview' ? 'bg-gray-400' : agentConfig ? 'bg-gray-400' : 'bg-gray-600'
               }`}>
                 {agentConfig ? <Check className="h-4 w-4 text-white" /> : <span className="text-white text-sm">2</span>}
               </div>
@@ -84,7 +84,7 @@ export default function AgentBuilderDemo() {
 
             <div className={`flex items-center space-x-2 ${currentStep === 'payment' ? 'opacity-100' : 'opacity-50'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'payment' ? 'bg-green-500' : 'bg-gray-600'
+                currentStep === 'payment' ? 'bg-gray-400' : 'bg-gray-600'
               }`}>
                 <span className="text-white text-sm">3</span>
               </div>
@@ -106,7 +106,7 @@ export default function AgentBuilderDemo() {
               }}>
                 <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
                   <div className="flex items-center space-x-2">
-                    <Sparkles className="h-5 w-5" style={{ color: '#4CAF50' }} />
+                    <Sparkles className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
                     <h3 className="font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
                       AI Configuration Assistant
                     </h3>
@@ -135,7 +135,7 @@ export default function AgentBuilderDemo() {
                     'No coding required'
                   ].map((item, i) => (
                     <li key={i} className="flex items-start space-x-2">
-                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#4CAF50' }} />
+                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
                       <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>{item}</span>
                     </li>
                   ))}
@@ -143,14 +143,14 @@ export default function AgentBuilderDemo() {
               </div>
 
               <div className="rounded-xl p-6 shadow-sm border" style={{
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                borderColor: 'rgba(76, 175, 80, 0.3)'
+                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                borderColor: 'rgba(169, 189, 203, 0.3)'
               }}>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: '#4CAF50' }}>
-                  Free Demo Mode
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  No Payment Required
                 </h3>
                 <p style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                  Try building your agent completely free. See the preview, test features, and only pay when you're ready to activate.
+                  Configure your agent, preview the dashboard, and test all features. Payment is only required when you're ready to activate.
                 </p>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function AgentBuilderDemo() {
                   onClick={handleProceedToPayment}
                   className="px-6 py-2 rounded-lg transition hover:opacity-80 flex items-center space-x-2"
                   style={{
-                    backgroundColor: '#4CAF50',
+                    backgroundColor: 'rgb(169, 189, 203)',
                     color: 'white'
                   }}
                 >
@@ -222,7 +222,7 @@ export default function AgentBuilderDemo() {
               borderColor: 'rgba(169, 189, 203, 0.15)'
             }}>
               <div className="p-8 text-center">
-                <CreditCard className="h-16 w-16 mx-auto mb-4" style={{ color: '#4CAF50' }} />
+                <CreditCard className="h-16 w-16 mx-auto mb-4" style={{ color: 'rgb(169, 189, 203)' }} />
                 <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
                   Ready to Activate Your Agent?
                 </h2>
@@ -234,20 +234,20 @@ export default function AgentBuilderDemo() {
                   <h3 className="text-lg font-semibold mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
                     {agentConfig?.agentName || 'Custom AI Agent'}
                   </h3>
-                  <div className="text-3xl font-bold mb-2" style={{ color: '#4CAF50' }}>
+                  <div className="text-3xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
                     $299<span className="text-lg font-normal">/month</span>
                   </div>
                   <ul className="space-y-2 mt-4 text-left max-w-sm mx-auto">
                     <li className="flex items-start space-x-2">
-                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#4CAF50' }} />
+                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
                       <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Full agent activation</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#4CAF50' }} />
+                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
                       <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Unlimited operations</span>
                     </li>
                     <li className="flex items-start space-x-2">
-                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: '#4CAF50' }} />
+                      <Check className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
                       <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>24/7 support</span>
                     </li>
                   </ul>
@@ -258,7 +258,7 @@ export default function AgentBuilderDemo() {
                     onClick={handleLoginToPurchase}
                     className="w-full px-6 py-3 rounded-lg transition hover:opacity-80"
                     style={{
-                      backgroundColor: '#4CAF50',
+                      backgroundColor: 'rgb(169, 189, 203)',
                       color: 'white'
                     }}
                   >

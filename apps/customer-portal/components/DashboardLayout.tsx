@@ -147,8 +147,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <span
                           className="px-2 py-0.5 text-xs rounded-full"
                           style={{
-                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                            color: '#4CAF50'
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(169, 189, 203)'
                           }}
                         >
                           {item.badge}

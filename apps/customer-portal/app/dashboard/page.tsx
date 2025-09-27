@@ -194,28 +194,26 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <button
                 onClick={() => router.push('/marketplace/public')}
-                className="p-4 rounded-lg border hover:border-green-500 transition-all group relative"
+                className="p-4 rounded-lg border hover:opacity-80 transition-all group"
                 style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
-                <span className="absolute top-2 right-2 px-2 py-1 text-xs rounded" style={{ backgroundColor: '#4CAF50', color: 'white' }}>New</span>
-                <ShoppingCart className="h-8 w-8 mb-2 group-hover:text-green-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <ShoppingCart className="h-8 w-8 mb-2 transition" style={{ color: 'rgb(169, 189, 203)' }} />
                 <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>AI Marketplace</div>
                 <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Browse pre-built agents</div>
               </button>
 
               <button
                 onClick={() => router.push('/agent-builder/demo')}
-                className="p-4 rounded-lg border hover:border-green-500 transition-all group relative"
+                className="p-4 rounded-lg border hover:opacity-80 transition-all group"
                 style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',
                   borderColor: 'rgba(169, 189, 203, 0.15)'
                 }}
               >
-                <span className="absolute top-2 right-2 px-2 py-1 text-xs rounded" style={{ backgroundColor: '#4CAF50', color: 'white' }}>Try Free</span>
-                <Sparkles className="h-8 w-8 mb-2 group-hover:text-green-400 transition" style={{ color: 'rgb(169, 189, 203)' }} />
+                <Sparkles className="h-8 w-8 mb-2 transition" style={{ color: 'rgb(169, 189, 203)' }} />
                 <div className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>Build AI Agent</div>
                 <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Conversational builder</div>
               </button>
@@ -292,7 +290,7 @@ export default function DashboardPage() {
                                     isComingSoon ? 'Coming Soon' :
                                     isPurchaseRequired && !isOwned ? 'Purchase Required' :
                                     'Ready to configure';
-                  const statusColor = hasKey ? '#4CAF50' : 
+                  const statusColor = hasKey ? 'rgb(169, 189, 203)' : 
                                      isComingSoon ? '#FF9800' :
                                      isPurchaseRequired && !isOwned ? '#2196F3' :
                                      'rgb(169, 189, 203)';
@@ -300,7 +298,7 @@ export default function DashboardPage() {
                                     isComingSoon ? 'Coming Soon' :
                                     isPurchaseRequired && !isOwned ? 'Purchase' :
                                     'Configure';
-                  const buttonColor = hasKey ? '#4CAF50' : 
+                  const buttonColor = hasKey ? 'rgb(169, 189, 203)' : 
                                      isComingSoon ? '#999' :
                                      isPurchaseRequired && !isOwned ? '#2196F3' :
                                      'rgb(169, 189, 203)';
@@ -364,7 +362,7 @@ export default function DashboardPage() {
                         className="px-3 py-1 rounded text-sm transition hover:opacity-80 cursor-pointer"
                         style={{ 
                           backgroundColor: buttonColor,
-                          color: buttonColor === '#4CAF50' ? 'white' : 'rgb(48, 54, 54)'
+                          color: 'rgb(48, 54, 54)'
                         }}
                       >
                         {buttonText}
@@ -411,8 +409,8 @@ export default function DashboardPage() {
                   <div className="text-sm mb-1" style={{ color: 'rgb(169, 189, 203)' }}>Status</div>
                   <div className="inline-flex items-center px-3 py-1 rounded-full text-sm"
                        style={{ 
-                         backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                         color: '#4CAF50'
+                         backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                         color: 'rgb(169, 189, 203)'
                        }}>
                     Active
                   </div>

@@ -351,7 +351,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   return (
     <div className="flex flex-col h-full rounded-lg shadow-lg" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
       {/* Header */}
-      <div className="px-6 py-4 text-white rounded-t-lg" style={{ background: 'linear-gradient(to right, #4CAF50, #45a049)' }}>
+      <div className="px-6 py-4 text-white rounded-t-lg" style={{ background: 'linear-gradient(to right, rgb(169, 189, 203), rgb(150, 170, 185))' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <SparklesIcon className="w-6 h-6" />
@@ -382,14 +382,14 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
             <div
               className={`max-w-[70%] rounded-lg px-4 py-3`}
               style={{
-                backgroundColor: message.type === 'user' ? '#4CAF50' : 'rgba(58, 64, 64, 0.8)',
+                backgroundColor: message.type === 'user' ? 'rgb(169, 189, 203)' : 'rgba(58, 64, 64, 0.8)',
                 color: message.type === 'user' ? 'white' : 'rgb(229, 227, 220)'
               }}
             >
               {message.type === 'bot' && (
                 <div className="flex items-center gap-2 mb-1">
-                  <SparklesIcon className="w-4 h-4" style={{ color: '#4CAF50' }} />
-                  <span className="text-xs font-medium" style={{ color: '#4CAF50' }}>AI Assistant</span>
+                  <SparklesIcon className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                  <span className="text-xs font-medium" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</span>
                 </div>
               )}
               <p className="whitespace-pre-wrap">{message.content}</p>
@@ -399,13 +399,13 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                 <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold flex items-center gap-2">
-                      <CheckCircleIcon className="w-5 h-5" style={{ color: '#4CAF50' }} />
+                      <CheckCircleIcon className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
                       Detected Configuration
                     </h4>
                     <button
                       onClick={() => setShowConfigEditor(!showConfigEditor)}
                       className="flex items-center gap-1 text-sm px-2 py-1 rounded hover:bg-white/10 transition"
-                      style={{ color: '#4CAF50' }}
+                      style={{ color: 'rgb(169, 189, 203)' }}
                     >
                       <PencilIcon className="w-4 h-4" />
                       {showConfigEditor ? 'Hide' : 'Edit'}
@@ -432,9 +432,9 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                                 editableConfig.tools.includes(tool) ? '' : ''
                               }`}
                               style={{
-                                backgroundColor: editableConfig.tools.includes(tool) ? 'rgba(76, 175, 80, 0.2)' : 'rgba(58, 64, 64, 0.5)',
-                                borderColor: editableConfig.tools.includes(tool) ? '#4CAF50' : 'rgba(169, 189, 203, 0.3)',
-                                color: editableConfig.tools.includes(tool) ? '#4CAF50' : 'rgba(229, 227, 220, 0.8)',
+                                backgroundColor: editableConfig.tools.includes(tool) ? 'rgba(169, 189, 203, 0.2)' : 'rgba(58, 64, 64, 0.5)',
+                                borderColor: editableConfig.tools.includes(tool) ? 'rgb(169, 189, 203)' : 'rgba(169, 189, 203, 0.3)',
+                                color: editableConfig.tools.includes(tool) ? 'rgb(169, 189, 203)' : 'rgba(229, 227, 220, 0.8)',
                                 border: '1px solid'
                               }}
                             >
@@ -501,7 +501,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                   <button
                     onClick={handleConfirmConfig}
                     className="w-full mt-4 px-4 py-2 text-white rounded-lg transition hover:opacity-80"
-                    style={{ backgroundColor: '#4CAF50' }}
+                    style={{ backgroundColor: 'rgb(169, 189, 203)' }}
                   >
                     Continue with this configuration →
                   </button>
@@ -516,9 +516,9 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
           <div className="flex justify-start">
             <div className="rounded-lg px-4 py-3" style={{ backgroundColor: 'rgba(58, 64, 64, 0.8)' }}>
               <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#4CAF50', animationDelay: '300ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'rgb(169, 189, 203)', animationDelay: '0ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'rgb(169, 189, 203)', animationDelay: '150ms' }} />
+                <span className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: 'rgb(169, 189, 203)', animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -553,7 +553,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
             onClick={handleSubmit}
             disabled={!inputValue.trim()}
             className="px-4 py-2 text-white rounded-lg transition hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            style={{ backgroundColor: '#4CAF50' }}
+            style={{ backgroundColor: 'rgb(169, 189, 203)' }}
           >
             <PaperAirplaneIcon className="w-5 h-5" />
           </button>
