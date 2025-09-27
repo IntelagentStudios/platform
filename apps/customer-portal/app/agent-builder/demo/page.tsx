@@ -64,14 +64,6 @@ export default function AgentBuilderDemo() {
                 backgroundColor: 'rgba(58, 64, 64, 0.5)',
                 borderColor: 'rgba(169, 189, 203, 0.15)'
               }}>
-                <div className="p-4 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.15)' }}>
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                    <h3 className="font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      Configuration Assistant
-                    </h3>
-                  </div>
-                </div>
                 <div style={{ height: '500px' }}>
                   <AgentBuilderChatV2 onComplete={handleChatComplete} isDemo={true} />
                 </div>
@@ -80,6 +72,18 @@ export default function AgentBuilderDemo() {
 
             {/* Info Section */}
             <div className="space-y-6">
+              <div className="rounded-xl p-6 shadow-sm border" style={{
+                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                borderColor: 'rgba(169, 189, 203, 0.3)'
+              }}>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Explore Your Options
+                </h3>
+                <p style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                  See what's possible with our AI platform. Configure and preview your custom solution to understand all capabilities.
+                </p>
+              </div>
+
               <div className="rounded-xl p-6 shadow-sm border" style={{
                 backgroundColor: 'rgba(58, 64, 64, 0.3)',
                 borderColor: 'rgba(169, 189, 203, 0.15)'
@@ -100,18 +104,6 @@ export default function AgentBuilderDemo() {
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              <div className="rounded-xl p-6 shadow-sm border" style={{
-                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                borderColor: 'rgba(169, 189, 203, 0.3)'
-              }}>
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                  No Payment Required
-                </h3>
-                <p style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
-                  Configure your agent, preview the dashboard, and explore basic functionality. See all features and capabilities before deciding to activate.
-                </p>
               </div>
             </div>
           </div>

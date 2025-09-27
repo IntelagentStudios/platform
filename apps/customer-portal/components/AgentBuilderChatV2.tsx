@@ -131,10 +131,9 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   useEffect(() => {
     if (messages.length === 0) {
       addBotMessage(
-        "👋 Hi! Tell me what you want your AI agent to do, and I'll set everything up for you automatically.\n\n" +
-        "For example: 'I need help sending personalized sales emails to leads from my CRM and tracking responses' or " +
-        "'I want to automate customer support tickets and generate weekly reports'.\n\n" +
-        "Just describe your needs naturally!"
+        "Describe what you need and I'll configure everything for you.\n\n" +
+        "Examples: 'I need a chatbot for customer support' or 'Help me automate sales outreach'.\n\n" +
+        "What would you like to build?"
       );
     }
   }, []);
@@ -314,16 +313,16 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     // Add bot response with detected configuration
     setTimeout(() => {
       addBotMessage(
-        "✨ Perfect! I've analyzed your requirements and configured everything for you:\n\n" +
-        `🎯 **Goal**: ${config.goal}\n` +
-        `🛠️ **Tools Detected**: ${config.tools.join(', ')}\n` +
-        `📊 **Workflows**: ${config.workflows.join(', ')}\n` +
-        `📈 **Output Types**: ${config.outputs.join(', ')}\n` +
-        `🏢 **Industry**: ${config.industry}\n` +
-        `👥 **Team Size**: ${config.teamSize}\n` +
-        `💰 **Budget**: ${config.budget}\n\n` +
-        `I've selected ${config.suggestedSkills.length} AI skills that will power your agent.\n\n` +
-        "Does this look right? You can edit anything below or continue to see your dashboard preview!",
+        "I've analyzed your requirements:\n\n" +
+        `Goal: ${config.goal}\n` +
+        `Tools: ${config.tools.join(', ')}\n` +
+        `Workflows: ${config.workflows.join(', ')}\n` +
+        `Outputs: ${config.outputs.join(', ')}\n` +
+        `Industry: ${config.industry}\n` +
+        `Team Size: ${config.teamSize}\n` +
+        `Budget: ${config.budget}\n\n` +
+        `${config.suggestedSkills.length} AI skills selected.\n\n` +
+        "Edit below or continue to preview.",
         config
       );
     }, 1500);
@@ -351,26 +350,6 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   return (
     <div className="flex flex-col h-full rounded-lg shadow-lg" style={{ backgroundColor: 'rgb(48, 54, 54)' }}>
       {/* Header */}
-      <div className="px-6 py-4 text-white rounded-t-lg" style={{ background: 'linear-gradient(to right, rgb(169, 189, 203), rgb(150, 170, 185))' }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <SparklesIcon className="w-6 h-6" />
-            <div>
-              <h3 className="font-semibold">Intelligent Agent Builder</h3>
-              <p className="text-xs opacity-90">Just describe what you need</p>
-            </div>
-          </div>
-          {onReset && (
-            <button
-              onClick={onReset}
-              className="p-2 hover:bg-white/20 rounded-lg transition"
-              title="Start over"
-            >
-              <ArrowPathIcon className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
@@ -388,8 +367,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
             >
               {message.type === 'bot' && (
                 <div className="flex items-center gap-2 mb-1">
-                  <SparklesIcon className="w-4 h-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                  <span className="text-xs font-medium" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</span>
+                  <span className="text-xs font-medium" style={{ color: 'rgb(169, 189, 203)' }}>Assistant</span>
                 </div>
               )}
               <p className="whitespace-pre-wrap">{message.content}</p>
