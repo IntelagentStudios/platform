@@ -39,95 +39,39 @@ interface Product {
 
 const PRODUCTS: Product[] = [
   {
-    id: 'sales-pro',
-    name: 'Sales Pro Agent',
-    description: 'Complete sales automation with AI-powered outreach and CRM integration',
-    category: 'sales',
-    price: 299,
-    rating: 4.8,
-    reviews: 234,
-    features: ['Email Automation', 'Lead Scoring', 'CRM Sync', 'Analytics'],
-    popular: true,
-    badge: 'Most Popular',
-    icon: UserGroupIcon,
-    color: '#4CAF50'
-  },
-  {
-    id: 'support-ai',
-    name: 'Customer Support AI',
-    description: '24/7 automated customer support with intelligent ticket routing',
+    id: 'chatbot',
+    name: 'AI Chatbot',
+    description: 'Intelligent chatbot with natural language understanding and custom knowledge base',
     category: 'support',
     price: 199,
     rating: 4.9,
-    reviews: 189,
-    features: ['Multi-channel', 'Auto-routing', 'Knowledge Base', 'Sentiment Analysis'],
-    popular: false,
+    reviews: 47,
+    features: ['Custom Training', 'Multi-channel', 'Knowledge Base', 'Analytics Dashboard'],
+    popular: true,
+    badge: 'Active',
     icon: ChatBubbleLeftRightIcon,
     color: '#4CAF50'
   },
   {
-    id: 'marketing-genius',
-    name: 'Marketing Genius',
-    description: 'AI-powered marketing automation for content and campaigns',
-    category: 'marketing',
-    price: 249,
-    rating: 4.7,
-    reviews: 156,
-    features: ['Content Creation', 'SEO Tools', 'Social Media', 'Campaign Analytics'],
-    popular: false,
-    icon: BoltIcon,
-    color: '#4CAF50'
-  },
-  {
-    id: 'data-wizard',
-    name: 'Data Analytics Wizard',
-    description: 'Advanced data analysis and visualization with predictive insights',
-    category: 'analytics',
-    price: 399,
-    rating: 4.6,
-    reviews: 98,
-    features: ['Real-time Dashboards', 'Predictive Analytics', 'Custom Reports', 'Data Integration'],
-    popular: false,
-    badge: 'Pro',
-    icon: ChartBarIcon,
-    color: '#4CAF50'
-  },
-  {
-    id: 'hr-assistant',
-    name: 'HR Assistant Plus',
-    description: 'Streamline recruitment, onboarding, and employee management',
-    category: 'hr',
-    price: 179,
-    rating: 4.5,
-    reviews: 67,
-    features: ['Resume Screening', 'Interview Scheduling', 'Onboarding', 'Performance Tracking'],
-    popular: false,
-    icon: ShieldCheckIcon,
-    color: '#4CAF50'
-  },
-  {
-    id: 'finance-bot',
-    name: 'Finance Bot Pro',
-    description: 'Automated bookkeeping, invoicing, and financial reporting',
-    category: 'finance',
-    price: 329,
+    id: 'sales-outreach',
+    name: 'Sales Outreach Agent',
+    description: 'Automated sales outreach with personalized email campaigns and lead management',
+    category: 'sales',
+    price: 299,
     rating: 4.8,
-    reviews: 143,
-    features: ['Auto Bookkeeping', 'Invoice Processing', 'Expense Tracking', 'Financial Forecasting'],
-    popular: false,
-    badge: 'New',
-    icon: CurrencyPoundIcon,
+    reviews: 23,
+    features: ['Email Automation', 'Lead Scoring', 'CRM Integration', 'Campaign Analytics'],
+    popular: true,
+    badge: 'Active',
+    icon: UserGroupIcon,
     color: '#4CAF50'
   }
 ];
 
 const CATEGORIES = [
   { id: 'all', name: 'All Products', count: PRODUCTS.length },
-  { id: 'sales', name: 'Sales', count: 2 },
+  { id: 'sales', name: 'Sales', count: 1 },
   { id: 'support', name: 'Support', count: 1 },
-  { id: 'marketing', name: 'Marketing', count: 1 },
-  { id: 'analytics', name: 'Analytics', count: 1 },
-  { id: 'finance', name: 'Finance', count: 1 },
 ];
 
 export default function MarketplacePage() {
@@ -310,12 +254,8 @@ export default function MarketplacePage() {
                       <div className="flex justify-between items-start mb-4">
                         <span className="px-3 py-1 text-xs rounded-full"
                           style={{
-                            backgroundColor: product.badge === 'Most Popular'
-                              ? 'rgba(76, 175, 80, 0.2)'
-                              : 'rgba(169, 189, 203, 0.2)',
-                            color: product.badge === 'Most Popular'
-                              ? '#4CAF50'
-                              : 'rgba(169, 189, 203, 0.9)'
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            color: '#4CAF50'
                           }}>
                           {product.badge}
                         </span>
