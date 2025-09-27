@@ -28,6 +28,8 @@ interface AgentConfig {
   teamSize: string;
   budget: string;
   suggestedSkills: string[];
+  completeness: number; // 0-100% completeness of information gathering
+  conversationStage: 'initial' | 'gathering' | 'confirming' | 'ready';
 }
 
 interface AgentBuilderChatV2Props {
@@ -73,6 +75,7 @@ const WORKFLOW_PATTERNS = {
 };
 
 const INDUSTRY_PATTERNS = {
+  construction: /construction|building|contractor|architecture|engineering|renovation|civil/i,
   technology: /tech|software|saas|startup|app/i,
   ecommerce: /e-commerce|online store|retail|shop/i,
   healthcare: /health|medical|clinic|doctor|patient/i,
@@ -116,6 +119,14 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   const [detectedConfig, setDetectedConfig] = useState<AgentConfig | null>(null);
   const [showConfigEditor, setShowConfigEditor] = useState(false);
   const [editableConfig, setEditableConfig] = useState<AgentConfig | null>(null);
+  const [conversationContext, setConversationContext] = useState<{
+    hasAskedAboutBusiness?: boolean;
+    hasAskedAboutChallenges?: boolean;
+    hasAskedAboutTeamSize?: boolean;
+    hasAskedAboutBudget?: boolean;
+    hasAskedAboutTools?: boolean;
+    isGatheringInfo: boolean;
+  }>({ isGatheringInfo: true });
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
@@ -131,9 +142,8 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   useEffect(() => {
     if (messages.length === 0) {
       addBotMessage(
-        "Describe what you need and I'll configure everything for you.\n\n" +
-        "Examples: 'I need a chatbot for customer support' or 'Help me automate sales outreach'.\n\n" +
-        "What would you like to build?"
+        "I'm here to help you explore AI solutions for your business. Let's have a conversation to understand your needs better.\n\n" +
+        "Tell me about your business - what industry are you in and what challenges are you facing?"
       );
     }
   }, []);
@@ -154,25 +164,41 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
   };
 
   // Parse user description and extract configuration
-  const parseUserDescription = (description: string): AgentConfig => {
+  const parseUserDescription = (description: string, previousConfig?: AgentConfig): AgentConfig => {
+    const baseConfig = previousConfig || {
+      goal: '',
+      tools: [],
+      workflows: [],
+      outputs: [],
+      industry: '',
+      teamSize: '',
+      budget: '',
+      suggestedSkills: [],
+      completeness: 0,
+      conversationStage: 'initial'
+    };
+
     // Extract tools
-    const detectedTools: string[] = [];
+    const detectedTools: string[] = [...baseConfig.tools];
     Object.entries(TOOL_PATTERNS).forEach(([tool, pattern]) => {
-      if (pattern.test(description)) {
+      if (pattern.test(description) && !detectedTools.includes(tool.charAt(0).toUpperCase() + tool.slice(1))) {
         detectedTools.push(tool.charAt(0).toUpperCase() + tool.slice(1));
       }
     });
 
     // Extract workflows
-    const detectedWorkflows: string[] = [];
+    const detectedWorkflows: string[] = [...baseConfig.workflows];
     Object.entries(WORKFLOW_PATTERNS).forEach(([workflow, pattern]) => {
       if (pattern.test(description)) {
-        detectedWorkflows.push(workflow.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+        const formatted = workflow.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        if (!detectedWorkflows.includes(formatted)) {
+          detectedWorkflows.push(formatted);
+        }
       }
     });
 
     // Extract industry
-    let detectedIndustry = 'Technology/Software'; // Default
+    let detectedIndustry = baseConfig.industry;
     Object.entries(INDUSTRY_PATTERNS).forEach(([industry, pattern]) => {
       if (pattern.test(description)) {
         detectedIndustry = industry.charAt(0).toUpperCase() + industry.slice(1);
@@ -180,7 +206,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     });
 
     // Extract budget
-    let detectedBudget = '£100-500/month'; // Default
+    let detectedBudget = baseConfig.budget;
     Object.entries(BUDGET_PATTERNS).forEach(([budget, pattern]) => {
       if (pattern.test(description)) {
         detectedBudget = budget === '<100' ? '< £100/month' :
@@ -190,7 +216,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     });
 
     // Extract team size
-    let detectedTeamSize = '2-5 people'; // Default
+    let detectedTeamSize = baseConfig.teamSize;
     Object.entries(TEAM_SIZE_PATTERNS).forEach(([size, pattern]) => {
       if (pattern.test(description)) {
         detectedTeamSize = size;
@@ -198,50 +224,86 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     });
 
     // Determine outputs based on description
-    const detectedOutputs: string[] = [];
+    const detectedOutputs: string[] = [...baseConfig.outputs];
     if (/report|analytics|metrics|dashboard/i.test(description)) {
-      detectedOutputs.push('Daily/Weekly reports', 'Real-time dashboards');
+      if (!detectedOutputs.includes('Daily/Weekly reports')) detectedOutputs.push('Daily/Weekly reports');
+      if (!detectedOutputs.includes('Real-time dashboards')) detectedOutputs.push('Real-time dashboards');
     }
     if (/email|notify|alert/i.test(description)) {
-      detectedOutputs.push('Email notifications');
+      if (!detectedOutputs.includes('Email notifications')) detectedOutputs.push('Email notifications');
     }
     if (/slack|teams|chat/i.test(description)) {
-      detectedOutputs.push('Slack alerts');
+      if (!detectedOutputs.includes('Slack alerts')) detectedOutputs.push('Slack alerts');
     }
     if (/export|csv|excel/i.test(description)) {
-      detectedOutputs.push('CSV exports');
+      if (!detectedOutputs.includes('CSV exports')) detectedOutputs.push('CSV exports');
     }
     if (/calendar|schedule/i.test(description)) {
-      detectedOutputs.push('Calendar events');
+      if (!detectedOutputs.includes('Calendar events')) detectedOutputs.push('Calendar events');
     }
 
-    // If no outputs detected, add defaults
-    if (detectedOutputs.length === 0) {
-      detectedOutputs.push('Email notifications', 'Real-time dashboards');
-    }
+    // Calculate completeness
+    let completeness = 0;
+    if (detectedIndustry) completeness += 20;
+    if (detectedTeamSize) completeness += 20;
+    if (detectedBudget) completeness += 20;
+    if (detectedTools.length > 0) completeness += 20;
+    if (detectedWorkflows.length > 0 || baseConfig.goal) completeness += 20;
+
+    // Determine conversation stage
+    let conversationStage: 'initial' | 'gathering' | 'confirming' | 'ready' = 'initial';
+    if (completeness >= 80) conversationStage = 'ready';
+    else if (completeness >= 60) conversationStage = 'confirming';
+    else if (completeness >= 20) conversationStage = 'gathering';
+
+    // Update goal
+    const goal = baseConfig.goal || description;
 
     // Generate suggested skills based on the configuration
     const suggestedSkills = generateSkillRecommendations(
-      description,
+      goal,
       detectedTools,
       detectedWorkflows
     );
 
     return {
-      goal: description,
-      tools: detectedTools.length > 0 ? detectedTools : ['Gmail', 'Slack', 'Google Sheets'],
-      workflows: detectedWorkflows.length > 0 ? detectedWorkflows : ['Email Outreach', 'Lead Generation', 'Reporting'],
+      goal,
+      tools: detectedTools,
+      workflows: detectedWorkflows,
       outputs: detectedOutputs,
       industry: detectedIndustry,
       teamSize: detectedTeamSize,
       budget: detectedBudget,
-      suggestedSkills
+      suggestedSkills,
+      completeness,
+      conversationStage
     };
   };
 
   // Generate skill recommendations
   const generateSkillRecommendations = (goal: string, tools: string[], workflows: string[]): string[] => {
     const skills: string[] = [];
+
+    // Construction-specific skills
+    if (/construction|building|contractor/i.test(goal)) {
+      skills.push('project_tracker', 'bid_generator', 'safety_compliance', 'resource_scheduler');
+      skills.push('document_manager', 'permit_tracker', 'subcontractor_manager', 'equipment_tracker');
+    }
+    if (/estimate|quote|bid|proposal/i.test(goal)) {
+      skills.push('cost_estimator', 'bid_generator', 'proposal_builder', 'quote_tracker');
+    }
+    if (/project|timeline|schedule|deadline/i.test(goal)) {
+      skills.push('project_scheduler', 'gantt_chart_builder', 'milestone_tracker', 'delay_alerter');
+    }
+    if (/safety|compliance|regulation|osha/i.test(goal)) {
+      skills.push('safety_compliance', 'incident_reporter', 'inspection_scheduler', 'certification_tracker');
+    }
+    if (/inventory|materials|supplies|equipment/i.test(goal)) {
+      skills.push('inventory_manager', 'material_tracker', 'equipment_scheduler', 'purchase_order_generator');
+    }
+    if (/subcontractor|crew|team|worker/i.test(goal)) {
+      skills.push('crew_scheduler', 'timesheet_tracker', 'subcontractor_manager', 'payroll_assistant');
+    }
 
     // Based on goal keywords
     if (/email|outreach|campaign/i.test(goal)) {
@@ -290,6 +352,60 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
     return [...new Set(skills)];
   };
 
+  // Generate appropriate bot response based on conversation stage
+  const generateBotResponse = (input: string, config: AgentConfig): string => {
+    const lowerInput = input.toLowerCase();
+
+    // Check if construction industry was mentioned
+    if (/construction|building|contractor|architecture|engineering|renovation/i.test(input)) {
+      if (!conversationContext.hasAskedAboutChallenges) {
+        setConversationContext(prev => ({ ...prev, hasAskedAboutChallenges: true }));
+        return "Great! I understand you're in the construction industry. AI can really transform how construction businesses operate.\n\n" +
+               "What are the biggest challenges you're facing in your business right now?\n\n" +
+               "For example:\n" +
+               "• Managing multiple projects and deadlines\n" +
+               "• Tracking equipment and materials\n" +
+               "• Coordinating with subcontractors\n" +
+               "• Generating accurate estimates and proposals\n" +
+               "• Safety compliance and documentation\n" +
+               "• Finding new clients and projects";
+      }
+    }
+
+    // Check for team size information
+    if (!conversationContext.hasAskedAboutTeamSize && config.teamSize && config.completeness < 60) {
+      setConversationContext(prev => ({ ...prev, hasAskedAboutTeamSize: true }));
+      return "I see you have a team of " + config.teamSize + ". That's helpful to know.\n\n" +
+             "What tools or software are you currently using to manage your construction business?\n\n" +
+             "For example:\n" +
+             "• Project management tools (Procore, Buildertrend, etc.)\n" +
+             "• Accounting software (QuickBooks, Xero, etc.)\n" +
+             "• Communication tools (Email, Slack, Teams, etc.)\n" +
+             "• Document management systems";
+    }
+
+    // Check for budget information
+    if (!conversationContext.hasAskedAboutBudget && !config.budget && config.completeness >= 40) {
+      setConversationContext(prev => ({ ...prev, hasAskedAboutBudget: true }));
+      return "Based on what you've told me, I'm starting to see some great AI opportunities for your business.\n\n" +
+             "To recommend the best solution that fits your needs, what's your monthly budget for AI tools?\n\n" +
+             "Most construction companies find value in the £300-£1000 range, but we have options from under £100 to enterprise solutions.";
+    }
+
+    // If we have enough information (>60% complete), start showing what we can do
+    if (config.completeness >= 60) {
+      return "Excellent! Based on what you've shared, I can see several AI solutions that would benefit your construction business:\n\n" +
+             "✓ **Project Management AI** - Automatically track project timelines, predict delays, and optimize resource allocation\n" +
+             "✓ **Smart Estimating** - Generate accurate quotes and proposals based on historical data\n" +
+             "✓ **Safety Compliance Assistant** - Monitor safety requirements and automate documentation\n" +
+             "✓ **Client Communication Bot** - Handle inquiries and provide project updates 24/7\n\n" +
+             "I've prepared a preview of your custom dashboard. Would you like to see what this would look like for your business?";
+    }
+
+    // Default response for continuing the conversation
+    return "That's helpful information. Let me understand better - what specific tasks take up most of your time that you'd like to automate?";
+  };
+
   // Handle user input submission
   const handleSubmit = () => {
     const input = inputValue.trim();
@@ -305,26 +421,23 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
 
     setInputValue('');
 
-    // Parse the user's description
-    const config = parseUserDescription(input);
+    // Parse the user's description, building on previous config
+    const config = parseUserDescription(input, detectedConfig || undefined);
     setDetectedConfig(config);
     setEditableConfig({ ...config });
 
-    // Add bot response with detected configuration
+    // Generate conversational response based on what we know
+    const response = generateBotResponse(input, config);
+
+    // Add bot response
     setTimeout(() => {
-      addBotMessage(
-        "I've analyzed your requirements:\n\n" +
-        `Goal: ${config.goal}\n` +
-        `Tools: ${config.tools.join(', ')}\n` +
-        `Workflows: ${config.workflows.join(', ')}\n` +
-        `Outputs: ${config.outputs.join(', ')}\n` +
-        `Industry: ${config.industry}\n` +
-        `Team Size: ${config.teamSize}\n` +
-        `Budget: ${config.budget}\n\n` +
-        `${config.suggestedSkills.length} AI skills selected.\n\n` +
-        "Edit below or continue to preview.",
-        config
-      );
+      if (config.completeness >= 60) {
+        // Show configuration summary when we have enough info
+        addBotMessage(response, config);
+      } else {
+        // Continue conversation to gather more info
+        addBotMessage(response);
+      }
     }, 1500);
   };
 
@@ -375,10 +488,33 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
               {/* Configuration Editor */}
               {message.detectedConfig && (
                 <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: 'rgba(48, 54, 54, 0.5)' }}>
+                  {/* Progress Indicator */}
+                  {message.detectedConfig.completeness < 100 && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                          Configuration Progress
+                        </span>
+                        <span className="text-xs" style={{ color: 'rgb(169, 189, 203)' }}>
+                          {message.detectedConfig.completeness}% Complete
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${message.detectedConfig.completeness}%`,
+                            backgroundColor: 'rgb(169, 189, 203)'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold flex items-center gap-2">
                       <CheckCircleIcon className="w-5 h-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Detected Configuration
+                      {message.detectedConfig.completeness >= 60 ? 'Your Configuration' : 'Building Your Configuration'}
                     </h4>
                     <button
                       onClick={() => setShowConfigEditor(!showConfigEditor)}
@@ -435,6 +571,7 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                             color: 'rgb(229, 227, 220)'
                           }}
                         >
+                          <option value="Construction">Construction/Engineering</option>
                           <option value="Technology/Software">Technology/Software</option>
                           <option value="E-commerce">E-commerce/Retail</option>
                           <option value="Healthcare">Healthcare</option>
@@ -443,6 +580,9 @@ export const AgentBuilderChatV2: React.FC<AgentBuilderChatV2Props> = ({
                           <option value="Education">Education</option>
                           <option value="Marketing">Marketing Agency</option>
                           <option value="Consulting">Consulting</option>
+                          <option value="Manufacturing">Manufacturing</option>
+                          <option value="Legal">Legal Services</option>
+                          <option value="Hospitality">Hospitality/Tourism</option>
                         </select>
                       </div>
 
