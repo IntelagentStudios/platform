@@ -52,8 +52,9 @@ const TOOLS = [
 ];
 
 // Skill detection mappings - expanded to include more skills per type
-const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
+const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: number } } = {
   sales: {
+    name: 'Sales Outreach Agent',
     skills: [
       'Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management',
       'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder',
@@ -62,6 +63,7 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     price: 649
   },
   support: {
+    name: 'Customer Support Agent',
     skills: [
       'Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder',
       'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk',
@@ -70,6 +72,7 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     price: 349
   },
   marketing: {
+    name: 'Marketing Automation Agent',
     skills: [
       'Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization',
       'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking',
@@ -78,6 +81,7 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     price: 449
   },
   operations: {
+    name: 'Operations Agent',
     skills: [
       'Workflow Automation', 'Task Management', 'Reporting', 'Data Sync', 'Process Optimization',
       'Resource Planning', 'Inventory Tracking', 'Supply Chain Management', 'Quality Control', 'Performance Monitoring',
@@ -86,6 +90,7 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     price: 549
   },
   data: {
+    name: 'Data Analytics Agent',
     skills: [
       'Data Processing', 'Analytics', 'Custom Reports', 'Dashboard Creation', 'Predictive Insights',
       'Data Visualization', 'ETL Pipeline', 'Data Cleansing', 'Real-time Analytics', 'Business Intelligence',
@@ -94,12 +99,22 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     price: 449
   },
   construction: {
+    name: 'Construction Management Agent',
     skills: [
       'Project Tracking', 'Bid Generation', 'Safety Compliance', 'Resource Scheduling', 'Permit Tracking',
       'Blueprint Management', 'Cost Estimation', 'Subcontractor Management', 'Equipment Tracking', 'Site Inspection',
       'Change Order Management', 'Progress Reporting', 'Material Management', 'Quality Assurance', 'Risk Assessment'
     ],
     price: 599
+  },
+  general: {
+    name: 'Custom AI Agent',
+    skills: [
+      'Data Analysis', 'Document Generation', 'API Integration', 'Custom Workflows', 'Basic Automation',
+      'File Management', 'Calendar Integration', 'Notification System', 'User Management', 'Access Control',
+      'Audit Logging', 'Backup & Recovery', 'Data Export', 'Custom Reports', 'Dashboard Creation'
+    ],
+    price: 299
   }
 };
 
