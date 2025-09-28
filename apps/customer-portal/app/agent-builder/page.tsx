@@ -483,7 +483,16 @@ export default function AgentBuilderPage() {
 
         {/* Main Content */}
         {previewMode ? (
-          <DashboardPreview agentConfig={agentConfig} />
+          <DashboardPreview
+            agentName={agentConfig.name}
+            requirements={{
+              goal: agentConfig.description,
+              tools: agentConfig.features || [],
+              outputs: [`Monthly £${agentConfig.price} value`],
+              industry: detectedIndustry
+            }}
+            suggestedSkills={agentConfig.skills || []}
+          />
         ) : (
           <div className="flex">
             {/* Left: Chat Interface */}
