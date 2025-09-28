@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Sparkles, Eye, CreditCard, Check, ArrowRight } from 'lucide-react';
 import AgentBuilderChatV2 from '../../../components/AgentBuilderChatV2';
@@ -12,6 +12,23 @@ export default function AgentBuilderDemo() {
   const [agentConfig, setAgentConfig] = useState<any>(null);
   const [previewReady, setPreviewReady] = useState(false);
   const router = useRouter();
+
+  // Check if coming from agent-builder page with existing config
+  useEffect(() => {
+    const storedConfig = sessionStorage.getItem('agentConfig');
+    if (storedConfig) {
+      try {
+        const config = JSON.parse(storedConfig);
+        setAgentConfig(config);
+        setCurrentStep('preview');
+        setTimeout(() => setPreviewReady(true), 1000);
+        // Clear it so refresh doesn't keep showing preview
+        sessionStorage.removeItem('agentConfig');
+      } catch (e) {
+        console.error('Failed to parse agent config:', e);
+      }
+    }
+  }, []);
 
   const handleChatComplete = (config: any) => {
     setAgentConfig(config);
