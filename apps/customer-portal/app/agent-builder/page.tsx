@@ -934,21 +934,16 @@ export default function AgentBuilderPage() {
                         borderLeft: '3px solid rgb(169, 189, 203)'
                       }}>
                         <p style={{ color: 'rgb(229, 227, 220)' }}>
-                          {chatStep === 0 ? "What's the main job you'd like your AI agent to do?" :
-                           chatStep === 1 ? "Great! Now, what industry or type of business are you in?" :
-                           chatStep === 2 ? "What are your biggest pain points or challenges right now?" :
-                           chatStep === 3 ? "How many people/customers do you typically handle per day?" :
-                           chatStep === 4 ? "What tools or software do you currently use?" :
-                           chatStep === 5 ? "What would success look like for this AI agent?" :
+                          {chatStep === 0 ? "Tell me about your business and what you'd like your AI agent to help with. I'll analyze your needs and show you what we can build." :
                            "Perfect! I'm tailoring your agent based on your needs..."}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* User Responses */}
-                  {Object.entries(chatResponses).map(([step, response]) => (
-                    <div key={step} className="flex gap-3">
+                  {/* User's Initial Response */}
+                  {chatResponses[0] && (
+                    <div key="0" className="flex gap-3">
                       <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
                         backgroundColor: 'rgba(229, 227, 220, 0.2)'
                       }}>
@@ -960,14 +955,14 @@ export default function AgentBuilderPage() {
                           backgroundColor: 'rgba(58, 64, 64, 0.5)',
                           border: '1px solid rgba(169, 189, 203, 0.2)'
                         }}>
-                          <p style={{ color: 'rgb(229, 227, 220)' }}>{response}</p>
+                          <p style={{ color: 'rgb(229, 227, 220)' }}>{chatResponses[0]}</p>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )}
 
-                  {/* AI Follow-up Question */}
-                  {chatStep > 0 && chatStep < 6 && chatResponses[chatStep - 1] && (
+                  {/* AI Analysis Block - Shows after first user response */}
+                  {chatResponses[0] && (
                     <div className="flex gap-3">
                       <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
                         backgroundColor: 'rgba(169, 189, 203, 0.2)'
@@ -976,21 +971,153 @@ export default function AgentBuilderPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                        <div className="p-3 rounded-lg" style={{
+                        <div className="p-4 rounded-lg space-y-4" style={{
                           backgroundColor: 'rgba(169, 189, 203, 0.1)',
                           borderLeft: '3px solid rgb(169, 189, 203)'
                         }}>
-                          <p style={{ color: 'rgb(229, 227, 220)' }}>
-                            {chatStep === 1 ? "Great! Now, what industry or type of business are you in?" :
-                             chatStep === 2 ? "What are your biggest pain points or challenges right now?" :
-                             chatStep === 3 ? "How many people/customers do you typically handle per day?" :
-                             chatStep === 4 ? "What tools or software do you currently use?" :
-                             chatStep === 5 ? "What would success look like for this AI agent?" :
-                             "Perfect! I'm tailoring your agent based on your needs..."}
-                          </p>
+                          <div>
+                            <p className="font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                              Based on your requirements, here's what I'm building for you:
+                            </p>
+
+                            {/* Agent Type & Industry */}
+                            <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                              <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>Agent Type</p>
+                              <p style={{ color: 'rgb(229, 227, 220)' }}>{SKILL_MAPPINGS[agentConfig.agentType]?.name || 'Custom Agent'}</p>
+                            </div>
+
+                            {/* Detected Skills */}
+                            <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                              <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Core Capabilities ({agentConfig.skills.length} skills)</p>
+                              <div className="flex flex-wrap gap-2">
+                                {agentConfig.skills.slice(0, 8).map(skill => (
+                                  <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                                    backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                                    color: 'rgb(229, 227, 220)'
+                                  }}>
+                                    {skill}
+                                  </span>
+                                ))}
+                                {agentConfig.skills.length > 8 && (
+                                  <span className="px-2 py-1 text-xs rounded" style={{
+                                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                    color: 'rgba(169, 189, 203, 0.8)'
+                                  }}>
+                                    +{agentConfig.skills.length - 8} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Recommended Features */}
+                            {agentConfig.features.length > 0 && (
+                              <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                                <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Recommended Features</p>
+                                <div className="space-y-1">
+                                  {agentConfig.features.map(featureId => {
+                                    const feature = POPULAR_FEATURES.find(f => f.id === featureId);
+                                    return feature ? (
+                                      <div key={featureId} className="flex items-center gap-2">
+                                        <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
+                                        <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>{feature.name}</span>
+                                      </div>
+                                    ) : null;
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Follow-up prompt */}
+                            <p className="mt-3 text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {chatStep === 1 ? "Now, let me ask a few questions to better understand your specific needs:" :
+                               chatStep > 1 && chatStep < 6 ? "" :
+                               chatStep >= 6 ? "Perfect! I've customized your agent based on all your inputs. You can now review the configuration or make adjustments." :
+                               "Let me ask a few questions to refine this further and make it perfect for your needs:"}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Follow-up Questions and Responses */}
+                  {chatStep > 0 && chatResponses[0] && (
+                    <>
+                      {/* Question 1 */}
+                      {chatStep >= 1 && (
+                        <div className="flex gap-3">
+                          <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                          }}>
+                            <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
+                            <div className="p-3 rounded-lg" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                              borderLeft: '3px solid rgb(169, 189, 203)'
+                            }}>
+                              <p style={{ color: 'rgb(229, 227, 220)' }}>
+                                What are your biggest pain points or challenges that this agent should address?
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* User responses and follow-up questions */}
+                      {[1, 2, 3, 4, 5].map(step => (
+                        <React.Fragment key={step}>
+                          {chatResponses[step] && (
+                            <>
+                              {/* User Response */}
+                              <div className="flex gap-3">
+                                <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                                  backgroundColor: 'rgba(229, 227, 220, 0.2)'
+                                }}>
+                                  <span style={{ color: 'rgb(229, 227, 220)', fontSize: '12px' }}>You</span>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium mb-1" style={{ color: 'rgb(229, 227, 220)' }}>You</p>
+                                  <div className="p-3 rounded-lg" style={{
+                                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                                    border: '1px solid rgba(169, 189, 203, 0.2)'
+                                  }}>
+                                    <p style={{ color: 'rgb(229, 227, 220)' }}>{chatResponses[step]}</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Next Question */}
+                              {step < 5 && chatStep > step && (
+                                <div className="flex gap-3">
+                                  <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                                    backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                                  }}>
+                                    <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
+                                    <div className="p-3 rounded-lg" style={{
+                                      backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                      borderLeft: '3px solid rgb(169, 189, 203)'
+                                    }}>
+                                      <p style={{ color: 'rgb(229, 227, 220)' }}>
+                                        {step === 1 ? "How many customers or requests do you typically handle per day?" :
+                                         step === 2 ? "What tools or platforms do you currently use that the agent should integrate with?" :
+                                         step === 3 ? "What specific tasks would you like to automate first?" :
+                                         step === 4 ? "What would success look like for this AI agent in your business?" :
+                                         "Perfect! Let me update your configuration..."}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </>
                   )}
                 </div>
 
@@ -1018,12 +1145,12 @@ export default function AgentBuilderPage() {
                           setInputDescription('');
                         }
                       }}
-                      placeholder={chatStep === 0 ? "E.g., Handle customer support tickets..." :
-                                   chatStep === 1 ? "E.g., E-commerce, SaaS, Healthcare..." :
-                                   chatStep === 2 ? "E.g., Too many repetitive inquiries..." :
-                                   chatStep === 3 ? "E.g., 50-100 customers..." :
-                                   chatStep === 4 ? "E.g., Slack, Gmail, Salesforce..." :
-                                   chatStep === 5 ? "E.g., 50% reduction in response time..." :
+                      placeholder={chatStep === 0 ? "E.g., I run an e-commerce store and need help managing customer inquiries, processing returns, and tracking orders..." :
+                                   chatStep === 1 ? "E.g., Too many repetitive questions, slow response times, manual order tracking..." :
+                                   chatStep === 2 ? "E.g., 50-100 customers per day..." :
+                                   chatStep === 3 ? "E.g., Shopify, Slack, Gmail, Stripe..." :
+                                   chatStep === 4 ? "E.g., Handle FAQs, process returns, update order statuses..." :
+                                   chatStep === 5 ? "E.g., 50% reduction in response time, 24/7 availability..." :
                                    "Type your answer..."}
                       className="flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgb(169,189,203)]"
                       style={{
