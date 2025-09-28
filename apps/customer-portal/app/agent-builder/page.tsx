@@ -58,7 +58,12 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     skills: [
       'Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management',
       'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder',
-      'Follow-up Automation', 'Lead Nurturing', 'Sales Analytics', 'Commission Tracking', 'Territory Management'
+      'Follow-up Automation', 'Lead Nurturing', 'Sales Analytics', 'Commission Tracking', 'Territory Management',
+      'Account Management', 'Opportunity Tracking', 'Revenue Forecasting', 'Sales Cadence', 'Email Sequences',
+      'Meeting Scheduler', 'Calendar Sync', 'Video Meeting Integration', 'Call Recording', 'Conversation Intelligence',
+      'Sales Enablement', 'Content Library', 'Battle Cards', 'Competitor Intelligence', 'Win/Loss Analysis',
+      'Customer Segmentation', 'Personalization Engine', 'Dynamic Pricing', 'Contract Management', 'E-signature Integration',
+      'Sales Coaching', 'Performance Metrics', 'Team Collaboration', 'Mobile CRM Access', 'Offline Sync'
     ],
     price: 649
   },
@@ -67,7 +72,12 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     skills: [
       'Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder',
       'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk',
-      'Live Chat Widget', 'Email Support', 'Phone Support Integration', 'Social Media Support', 'Community Forum'
+      'Live Chat Widget', 'Email Support', 'Phone Support Integration', 'Social Media Support', 'Community Forum',
+      'Sentiment Analysis', 'Priority Routing', 'Agent Assignment', 'Workload Balancing', 'Response Templates',
+      'Macro Management', 'Canned Responses', 'Multi-language Support', 'Translation Services', 'Screen Sharing',
+      'Co-browsing', 'Remote Desktop', 'File Sharing', 'Video Support', 'Voice Recognition',
+      'Chatbot Integration', 'AI Suggestions', 'Smart Routing', 'Customer Journey Tracking', 'Issue Prediction',
+      'Proactive Support', 'Customer Health Score', 'Retention Analytics', 'Churn Prevention', 'Feedback Loop'
     ],
     price: 349
   },
@@ -76,7 +86,12 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     skills: [
       'Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization',
       'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking',
-      'Content Calendar', 'Social Media Scheduling', 'Influencer Outreach', 'Brand Monitoring', 'Competitor Analysis'
+      'Content Calendar', 'Social Media Scheduling', 'Influencer Outreach', 'Brand Monitoring', 'Competitor Analysis',
+      'Marketing Attribution', 'ROI Tracking', 'Conversion Optimization', 'Funnel Analysis', 'Customer Segmentation',
+      'Personalization', 'Dynamic Content', 'Behavioral Triggers', 'Drip Campaigns', 'Newsletter Management',
+      'SMS Marketing', 'Push Notifications', 'In-app Messaging', 'Webinar Management', 'Event Marketing',
+      'Referral Programs', 'Loyalty Programs', 'Affiliate Marketing', 'Content Syndication', 'PR Distribution',
+      'Media Planning', 'Ad Campaign Management', 'Retargeting', 'Lookalike Audiences', 'Marketing Mix Modeling'
     ],
     price: 449
   },
@@ -85,7 +100,12 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     skills: [
       'Workflow Automation', 'Task Management', 'Reporting', 'Data Sync', 'Process Optimization',
       'Resource Planning', 'Inventory Tracking', 'Supply Chain Management', 'Quality Control', 'Performance Monitoring',
-      'Document Management', 'Approval Workflows', 'Time Tracking', 'Expense Management', 'Compliance Tracking'
+      'Document Management', 'Approval Workflows', 'Time Tracking', 'Expense Management', 'Compliance Tracking',
+      'Asset Management', 'Vendor Management', 'Purchase Orders', 'Invoice Processing', 'Budget Tracking',
+      'Project Management', 'Milestone Tracking', 'Gantt Charts', 'Resource Allocation', 'Capacity Planning',
+      'Risk Management', 'Audit Trail', 'Policy Management', 'Standard Operating Procedures', 'Training Management',
+      'Shift Scheduling', 'Leave Management', 'Payroll Integration', 'Employee Onboarding', 'Performance Reviews',
+      'KPI Dashboards', 'Real-time Monitoring', 'Alert System', 'Escalation Management', 'Business Continuity'
     ],
     price: 549
   },
@@ -94,7 +114,12 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     skills: [
       'Data Processing', 'Analytics', 'Custom Reports', 'Dashboard Creation', 'Predictive Insights',
       'Data Visualization', 'ETL Pipeline', 'Data Cleansing', 'Real-time Analytics', 'Business Intelligence',
-      'Data Mining', 'Statistical Analysis', 'Trend Analysis', 'Forecasting Models', 'Data Integration'
+      'Data Mining', 'Statistical Analysis', 'Trend Analysis', 'Forecasting Models', 'Data Integration',
+      'Machine Learning Models', 'Anomaly Detection', 'Pattern Recognition', 'Clustering Analysis', 'Regression Analysis',
+      'Time Series Analysis', 'Cohort Analysis', 'Funnel Analysis', 'Attribution Modeling', 'Predictive Scoring',
+      'Data Warehousing', 'Data Lake Management', 'Stream Processing', 'Batch Processing', 'Data Governance',
+      'Data Quality Monitoring', 'Metadata Management', 'Master Data Management', 'Data Lineage', 'Data Cataloging',
+      'API Integration', 'Database Optimization', 'Query Optimization', 'Index Management', 'Performance Tuning'
     ],
     price: 449
   },
@@ -1003,22 +1028,32 @@ export default function AgentBuilderPage() {
 
                             {/* Detected Skills */}
                             <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
-                              <p className="text-sm font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>Core Capabilities ({agentConfig.skills.length} skills)</p>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>Core Capabilities</p>
+                                <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
+                                  backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                                  color: 'rgb(169, 189, 203)'
+                                }}>
+                                  {agentConfig.skills.length} Skills Activated
+                                </span>
+                              </div>
                               <div className="flex flex-wrap gap-2">
-                                {agentConfig.skills.slice(0, 8).map(skill => (
-                                  <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                                {agentConfig.skills.slice(0, 12).map(skill => (
+                                  <span key={skill} className="px-2 py-1 text-xs rounded animate-pulse" style={{
                                     backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                                    color: 'rgb(229, 227, 220)'
+                                    color: 'rgb(229, 227, 220)',
+                                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                                   }}>
                                     {skill}
                                   </span>
                                 ))}
-                                {agentConfig.skills.length > 8 && (
-                                  <span className="px-2 py-1 text-xs rounded" style={{
-                                    backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                                    color: 'rgba(169, 189, 203, 0.8)'
+                                {agentConfig.skills.length > 12 && (
+                                  <span className="px-3 py-1 text-xs font-medium rounded" style={{
+                                    backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                                    color: 'rgb(169, 189, 203)',
+                                    border: '1px solid rgba(169, 189, 203, 0.3)'
                                   }}>
-                                    +{agentConfig.skills.length - 8} more
+                                    +{agentConfig.skills.length - 12} more capabilities
                                   </span>
                                 )}
                               </div>
@@ -1278,23 +1313,12 @@ export default function AgentBuilderPage() {
                     </button>
                   </div>
 
-                  {/* Progress Indicator */}
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)'
-                    }}>
-                      <div
-                        className="h-full transition-all duration-500"
-                        style={{
-                          width: `${(Object.keys(chatResponses).length / 6) * 100}%`,
-                          backgroundColor: 'rgb(169, 189, 203)'
-                        }}
-                      />
+                  {/* Optional: Show refining indicator */}
+                  {chatStep > 0 && (
+                    <div className="mt-3 text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                      Refining your agent configuration...
                     </div>
-                    <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                      {Object.keys(chatResponses).length}/6 questions
-                    </span>
-                  </div>
+                  )}
                 </div>
 
                 {/* Popular Features Section */}
