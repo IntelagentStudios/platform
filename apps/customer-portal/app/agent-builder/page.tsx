@@ -352,30 +352,6 @@ const ALL_SKILLS = [
   { id: 'regex_tester', name: 'Regex Tester', category: 'Utility' }
 ];
 
-// Skill categories with counts
-const SKILL_CATEGORIES = [
-  { name: 'Communication', count: 50, icon: EnvelopeIcon },
-  { name: 'Data Processing', count: 60, icon: ServerStackIcon },
-  { name: 'AI/ML', count: 70, icon: SparklesIcon },
-  { name: 'Integration', count: 80, icon: BoltIcon },
-  { name: 'Automation', count: 50, icon: CogIcon },
-  { name: 'Analytics', count: 40, icon: ChartBarIcon },
-  { name: 'Security', count: 30, icon: CheckIcon },
-  { name: 'Utility', count: 45, icon: CircleStackIcon }
-];
-
-// Suggested enhancements based on selected skills
-const SKILL_SUGGESTIONS: { [key: string]: string[] } = {
-  'email_sender': ['email_automation', 'email_templates', 'email_tracking', 'spam_filter'],
-  'slack_integration': ['teams_integration', 'discord_webhook', 'notification_manager'],
-  'csv_processor': ['data_cleaner', 'data_validator', 'etl_pipeline', 'excel_processor'],
-  'text_classification': ['sentiment_analysis', 'nlp_entity_extraction', 'content_moderation'],
-  'salesforce_sync': ['hubspot_connector', 'crm_automation', 'lead_scoring', 'contact_sync'],
-  'task_scheduler': ['workflow_builder', 'event_trigger', 'process_automation'],
-  'dashboard_builder': ['report_generator', 'kpi_tracker', 'custom_visualizations'],
-  'web_scraper': ['data_extractor', 'content_monitor', 'change_detection']
-};
-
 interface AgentConfig {
   name: string;
   description: string;
@@ -413,7 +389,6 @@ export default function AgentBuilderPage() {
   const [chatStep, setChatStep] = useState(0);
   const [chatResponses, setChatResponses] = useState<{[key: string]: string}>({});
   const [suggestedEnhancements, setSuggestedEnhancements] = useState<string[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check authentication
   useEffect(() => {
