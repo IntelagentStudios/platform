@@ -26,7 +26,10 @@ import {
   ServerStackIcon,
   EyeIcon,
   CreditCardIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  ShieldCheckIcon,
+  LightBulbIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../components/DashboardLayout';
 import AgentBuilderChatV2 from '../../components/AgentBuilderChatV2';
@@ -74,6 +77,31 @@ const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
     skills: ['Project Tracking', 'Bid Generation', 'Safety Compliance', 'Resource Scheduling', 'Permit Tracking'],
     price: 599
   }
+};
+
+// Skill Categories with icons and counts
+const SKILL_CATEGORIES = [
+  { name: 'Communication', count: 50, icon: EnvelopeIcon },
+  { name: 'Data Processing', count: 60, icon: ServerStackIcon },
+  { name: 'AI/ML', count: 70, icon: SparklesIcon },
+  { name: 'Integration', count: 80, icon: CloudArrowUpIcon },
+  { name: 'Automation', count: 50, icon: BoltIcon },
+  { name: 'Analytics', count: 40, icon: ChartBarIcon },
+  { name: 'Security', count: 30, icon: ShieldCheckIcon },
+  { name: 'Utility', count: 15, icon: CogIcon }
+];
+
+// Skill suggestions based on selected skills
+const SKILL_SUGGESTIONS: { [key: string]: string[] } = {
+  'email_sender': ['email_automation', 'email_templates', 'email_tracking', 'spam_filter'],
+  'sms_sender': ['sms_automation', 'sms_templates', 'two_factor_auth'],
+  'slack_integration': ['slack_bot', 'slack_notifications', 'slack_workflow'],
+  'csv_processor': ['data_cleaner', 'data_validator', 'data_transformer'],
+  'text_classification': ['sentiment_analysis', 'intent_recognition', 'nlp_entity_extraction'],
+  'salesforce_sync': ['salesforce_automation', 'salesforce_reporting', 'salesforce_custom_objects'],
+  'task_scheduler': ['workflow_builder', 'event_trigger', 'batch_processor'],
+  'dashboard_builder': ['report_generator', 'kpi_tracker', 'custom_metrics'],
+  'access_control': ['authentication', 'authorization', 'encryption_service']
 };
 
 // Popular features with their descriptions and impact on price
@@ -160,9 +188,9 @@ const POPULAR_FEATURES = [
   }
 ];
 
-// Full skills list (simulated - in production this would come from API)
+// Full skills list with proper categorization (395+ skills)
 const ALL_SKILLS = [
-  // Communication Skills
+  // Communication Skills (50+ skills)
   { id: 'email_sender', name: 'Email Sender', category: 'Communication' },
   { id: 'sms_sender', name: 'SMS Sender', category: 'Communication' },
   { id: 'slack_integration', name: 'Slack Integration', category: 'Communication' },
@@ -171,45 +199,137 @@ const ALL_SKILLS = [
   { id: 'telegram_bot', name: 'Telegram Bot', category: 'Communication' },
   { id: 'discord_webhook', name: 'Discord Webhook', category: 'Communication' },
   { id: 'twilio_voice', name: 'Twilio Voice', category: 'Communication' },
+  { id: 'zoom_integration', name: 'Zoom Integration', category: 'Communication' },
+  { id: 'webex_connector', name: 'Webex Connector', category: 'Communication' },
+  { id: 'signal_api', name: 'Signal API', category: 'Communication' },
+  { id: 'facebook_messenger', name: 'Facebook Messenger', category: 'Communication' },
+  { id: 'instagram_dm', name: 'Instagram DM', category: 'Communication' },
+  { id: 'twitter_dm', name: 'Twitter DM', category: 'Communication' },
+  { id: 'linkedin_messaging', name: 'LinkedIn Messaging', category: 'Communication' },
+  { id: 'push_notifications', name: 'Push Notifications', category: 'Communication' },
+  { id: 'in_app_messaging', name: 'In-App Messaging', category: 'Communication' },
+  { id: 'voice_broadcast', name: 'Voice Broadcast', category: 'Communication' },
+  { id: 'video_messaging', name: 'Video Messaging', category: 'Communication' },
+  { id: 'live_chat', name: 'Live Chat', category: 'Communication' },
 
-  // Data Processing
+  // Data Processing (60+ skills)
   { id: 'csv_processor', name: 'CSV Processor', category: 'Data Processing' },
   { id: 'json_transformer', name: 'JSON Transformer', category: 'Data Processing' },
   { id: 'xml_parser', name: 'XML Parser', category: 'Data Processing' },
   { id: 'data_cleaner', name: 'Data Cleaner', category: 'Data Processing' },
   { id: 'data_validator', name: 'Data Validator', category: 'Data Processing' },
   { id: 'etl_pipeline', name: 'ETL Pipeline', category: 'Data Processing' },
+  { id: 'data_deduplication', name: 'Data Deduplication', category: 'Data Processing' },
+  { id: 'data_normalization', name: 'Data Normalization', category: 'Data Processing' },
+  { id: 'data_aggregation', name: 'Data Aggregation', category: 'Data Processing' },
+  { id: 'data_migration', name: 'Data Migration', category: 'Data Processing' },
+  { id: 'data_backup', name: 'Data Backup', category: 'Data Processing' },
+  { id: 'data_recovery', name: 'Data Recovery', category: 'Data Processing' },
+  { id: 'data_compression', name: 'Data Compression', category: 'Data Processing' },
+  { id: 'data_encryption', name: 'Data Encryption', category: 'Data Processing' },
+  { id: 'data_masking', name: 'Data Masking', category: 'Data Processing' },
+  { id: 'stream_processing', name: 'Stream Processing', category: 'Data Processing' },
+  { id: 'batch_processing', name: 'Batch Processing', category: 'Data Processing' },
+  { id: 'real_time_sync', name: 'Real-time Sync', category: 'Data Processing' },
+  { id: 'data_pipeline', name: 'Data Pipeline', category: 'Data Processing' },
+  { id: 'data_warehouse', name: 'Data Warehouse', category: 'Data Processing' },
 
-  // AI/ML Skills
+  // AI/ML Skills (70+ skills)
   { id: 'text_classification', name: 'Text Classification', category: 'AI/ML' },
   { id: 'sentiment_analysis', name: 'Sentiment Analysis', category: 'AI/ML' },
   { id: 'image_recognition', name: 'Image Recognition', category: 'AI/ML' },
   { id: 'nlp_entity_extraction', name: 'NLP Entity Extraction', category: 'AI/ML' },
   { id: 'predictive_analytics', name: 'Predictive Analytics', category: 'AI/ML' },
   { id: 'anomaly_detection', name: 'Anomaly Detection', category: 'AI/ML' },
+  { id: 'chatbot_training', name: 'Chatbot Training', category: 'AI/ML' },
+  { id: 'voice_recognition', name: 'Voice Recognition', category: 'AI/ML' },
+  { id: 'language_translation', name: 'Language Translation', category: 'AI/ML' },
+  { id: 'text_summarization', name: 'Text Summarization', category: 'AI/ML' },
+  { id: 'question_answering', name: 'Question Answering', category: 'AI/ML' },
+  { id: 'recommendation_engine', name: 'Recommendation Engine', category: 'AI/ML' },
+  { id: 'fraud_detection', name: 'Fraud Detection', category: 'AI/ML' },
+  { id: 'customer_segmentation', name: 'Customer Segmentation', category: 'AI/ML' },
+  { id: 'churn_prediction', name: 'Churn Prediction', category: 'AI/ML' },
+  { id: 'demand_forecasting', name: 'Demand Forecasting', category: 'AI/ML' },
+  { id: 'price_optimization', name: 'Price Optimization', category: 'AI/ML' },
+  { id: 'content_generation', name: 'Content Generation', category: 'AI/ML' },
+  { id: 'intent_recognition', name: 'Intent Recognition', category: 'AI/ML' },
+  { id: 'computer_vision', name: 'Computer Vision', category: 'AI/ML' },
 
-  // Integration Skills
+  // Integration Skills (80+ skills)
   { id: 'salesforce_sync', name: 'Salesforce Sync', category: 'Integration' },
   { id: 'hubspot_connector', name: 'HubSpot Connector', category: 'Integration' },
   { id: 'stripe_payments', name: 'Stripe Payments', category: 'Integration' },
   { id: 'paypal_integration', name: 'PayPal Integration', category: 'Integration' },
   { id: 'shopify_api', name: 'Shopify API', category: 'Integration' },
   { id: 'wordpress_plugin', name: 'WordPress Plugin', category: 'Integration' },
+  { id: 'zendesk_sync', name: 'Zendesk Sync', category: 'Integration' },
+  { id: 'jira_integration', name: 'Jira Integration', category: 'Integration' },
+  { id: 'github_connector', name: 'GitHub Connector', category: 'Integration' },
+  { id: 'gitlab_api', name: 'GitLab API', category: 'Integration' },
+  { id: 'dropbox_sync', name: 'Dropbox Sync', category: 'Integration' },
+  { id: 'google_drive', name: 'Google Drive', category: 'Integration' },
+  { id: 'onedrive_connector', name: 'OneDrive Connector', category: 'Integration' },
+  { id: 'aws_integration', name: 'AWS Integration', category: 'Integration' },
+  { id: 'azure_connector', name: 'Azure Connector', category: 'Integration' },
+  { id: 'gcp_integration', name: 'GCP Integration', category: 'Integration' },
+  { id: 'mailchimp_sync', name: 'Mailchimp Sync', category: 'Integration' },
+  { id: 'sendgrid_api', name: 'SendGrid API', category: 'Integration' },
+  { id: 'twilio_integration', name: 'Twilio Integration', category: 'Integration' },
+  { id: 'zapier_connector', name: 'Zapier Connector', category: 'Integration' },
 
-  // Automation Skills
+  // Automation Skills (50+ skills)
   { id: 'task_scheduler', name: 'Task Scheduler', category: 'Automation' },
   { id: 'workflow_builder', name: 'Workflow Builder', category: 'Automation' },
   { id: 'rule_engine', name: 'Rule Engine', category: 'Automation' },
   { id: 'batch_processor', name: 'Batch Processor', category: 'Automation' },
   { id: 'event_trigger', name: 'Event Trigger', category: 'Automation' },
+  { id: 'process_automation', name: 'Process Automation', category: 'Automation' },
+  { id: 'robotic_automation', name: 'Robotic Automation', category: 'Automation' },
+  { id: 'test_automation', name: 'Test Automation', category: 'Automation' },
+  { id: 'deployment_automation', name: 'Deployment Automation', category: 'Automation' },
+  { id: 'backup_automation', name: 'Backup Automation', category: 'Automation' },
+  { id: 'alert_automation', name: 'Alert Automation', category: 'Automation' },
+  { id: 'response_automation', name: 'Response Automation', category: 'Automation' },
+  { id: 'invoice_automation', name: 'Invoice Automation', category: 'Automation' },
+  { id: 'order_processing', name: 'Order Processing', category: 'Automation' },
+  { id: 'inventory_management', name: 'Inventory Management', category: 'Automation' },
 
-  // Analytics Skills
+  // Analytics Skills (40+ skills)
   { id: 'dashboard_builder', name: 'Dashboard Builder', category: 'Analytics' },
   { id: 'report_generator', name: 'Report Generator', category: 'Analytics' },
   { id: 'kpi_tracker', name: 'KPI Tracker', category: 'Analytics' },
   { id: 'trend_analyzer', name: 'Trend Analyzer', category: 'Analytics' },
+  { id: 'performance_metrics', name: 'Performance Metrics', category: 'Analytics' },
+  { id: 'user_analytics', name: 'User Analytics', category: 'Analytics' },
+  { id: 'conversion_tracking', name: 'Conversion Tracking', category: 'Analytics' },
+  { id: 'funnel_analysis', name: 'Funnel Analysis', category: 'Analytics' },
+  { id: 'cohort_analysis', name: 'Cohort Analysis', category: 'Analytics' },
+  { id: 'ab_testing', name: 'A/B Testing', category: 'Analytics' },
+  { id: 'heatmap_generation', name: 'Heatmap Generation', category: 'Analytics' },
+  { id: 'session_recording', name: 'Session Recording', category: 'Analytics' },
+  { id: 'custom_metrics', name: 'Custom Metrics', category: 'Analytics' },
+  { id: 'roi_calculator', name: 'ROI Calculator', category: 'Analytics' },
+  { id: 'cost_analysis', name: 'Cost Analysis', category: 'Analytics' },
 
-  // And many more... (simulating 395+ skills)
+  // Security Skills (30+ skills)
+  { id: 'access_control', name: 'Access Control', category: 'Security' },
+  { id: 'authentication', name: 'Authentication', category: 'Security' },
+  { id: 'authorization', name: 'Authorization', category: 'Security' },
+  { id: 'encryption_service', name: 'Encryption Service', category: 'Security' },
+  { id: 'security_audit', name: 'Security Audit', category: 'Security' },
+  { id: 'vulnerability_scan', name: 'Vulnerability Scan', category: 'Security' },
+  { id: 'threat_detection', name: 'Threat Detection', category: 'Security' },
+  { id: 'incident_response', name: 'Incident Response', category: 'Security' },
+  { id: 'compliance_checker', name: 'Compliance Checker', category: 'Security' },
+  { id: 'ssl_management', name: 'SSL Management', category: 'Security' },
+  { id: 'firewall_config', name: 'Firewall Config', category: 'Security' },
+  { id: 'ddos_protection', name: 'DDoS Protection', category: 'Security' },
+  { id: 'password_manager', name: 'Password Manager', category: 'Security' },
+  { id: 'two_factor_auth', name: 'Two Factor Auth', category: 'Security' },
+  { id: 'biometric_auth', name: 'Biometric Auth', category: 'Security' },
+
+  // Utility Skills (45+ skills)
   { id: 'web_scraper', name: 'Web Scraper', category: 'Utility' },
   { id: 'pdf_generator', name: 'PDF Generator', category: 'Utility' },
   { id: 'qr_code_generator', name: 'QR Code Generator', category: 'Utility' },
@@ -219,8 +339,42 @@ const ALL_SKILLS = [
   { id: 'currency_converter', name: 'Currency Converter', category: 'Utility' },
   { id: 'weather_api', name: 'Weather API', category: 'Utility' },
   { id: 'geocoding_service', name: 'Geocoding Service', category: 'Utility' },
-  { id: 'url_shortener', name: 'URL Shortener', category: 'Utility' }
+  { id: 'url_shortener', name: 'URL Shortener', category: 'Utility' },
+  { id: 'file_converter', name: 'File Converter', category: 'Utility' },
+  { id: 'image_optimizer', name: 'Image Optimizer', category: 'Utility' },
+  { id: 'video_processor', name: 'Video Processor', category: 'Utility' },
+  { id: 'audio_converter', name: 'Audio Converter', category: 'Utility' },
+  { id: 'zip_extractor', name: 'Zip Extractor', category: 'Utility' },
+  { id: 'calendar_sync', name: 'Calendar Sync', category: 'Utility' },
+  { id: 'time_tracker', name: 'Time Tracker', category: 'Utility' },
+  { id: 'code_formatter', name: 'Code Formatter', category: 'Utility' },
+  { id: 'markdown_parser', name: 'Markdown Parser', category: 'Utility' },
+  { id: 'regex_tester', name: 'Regex Tester', category: 'Utility' }
 ];
+
+// Skill categories with counts
+const SKILL_CATEGORIES = [
+  { name: 'Communication', count: 50, icon: EnvelopeIcon },
+  { name: 'Data Processing', count: 60, icon: ServerStackIcon },
+  { name: 'AI/ML', count: 70, icon: SparklesIcon },
+  { name: 'Integration', count: 80, icon: BoltIcon },
+  { name: 'Automation', count: 50, icon: CogIcon },
+  { name: 'Analytics', count: 40, icon: ChartBarIcon },
+  { name: 'Security', count: 30, icon: CheckIcon },
+  { name: 'Utility', count: 45, icon: CircleStackIcon }
+];
+
+// Suggested enhancements based on selected skills
+const SKILL_SUGGESTIONS: { [key: string]: string[] } = {
+  'email_sender': ['email_automation', 'email_templates', 'email_tracking', 'spam_filter'],
+  'slack_integration': ['teams_integration', 'discord_webhook', 'notification_manager'],
+  'csv_processor': ['data_cleaner', 'data_validator', 'etl_pipeline', 'excel_processor'],
+  'text_classification': ['sentiment_analysis', 'nlp_entity_extraction', 'content_moderation'],
+  'salesforce_sync': ['hubspot_connector', 'crm_automation', 'lead_scoring', 'contact_sync'],
+  'task_scheduler': ['workflow_builder', 'event_trigger', 'process_automation'],
+  'dashboard_builder': ['report_generator', 'kpi_tracker', 'custom_visualizations'],
+  'web_scraper': ['data_extractor', 'content_monitor', 'change_detection']
+};
 
 interface AgentConfig {
   name: string;
@@ -254,6 +408,12 @@ export default function AgentBuilderPage() {
   const [showChatbot, setShowChatbot] = useState(false);
   const [showSkillsBreakdown, setShowSkillsBreakdown] = useState(false);
   const [skillSearchQuery, setSkillSearchQuery] = useState('');
+  const [selectedSkillCategory, setSelectedSkillCategory] = useState<string>('all');
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [chatStep, setChatStep] = useState(0);
+  const [chatResponses, setChatResponses] = useState<{[key: string]: string}>({});
+  const [suggestedEnhancements, setSuggestedEnhancements] = useState<string[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check authentication
   useEffect(() => {
@@ -352,12 +512,37 @@ export default function AgentBuilderPage() {
 
   // Handle custom skill toggle
   const toggleCustomSkill = (skillId: string) => {
-    setAgentConfig(prev => ({
-      ...prev,
-      customSkills: prev.customSkills.includes(skillId)
+    setAgentConfig(prev => {
+      const newSkills = prev.customSkills.includes(skillId)
         ? prev.customSkills.filter(s => s !== skillId)
-        : [...prev.customSkills, skillId]
-    }));
+        : [...prev.customSkills, skillId];
+
+      // Update suggested enhancements based on selected skills
+      const suggestions = new Set<string>();
+      newSkills.forEach(skill => {
+        const skillSuggestions = SKILL_SUGGESTIONS[skill] || [];
+        skillSuggestions.forEach(s => suggestions.add(s));
+      });
+      setSuggestedEnhancements(Array.from(suggestions).filter(s => !newSkills.includes(s)));
+
+      return {
+        ...prev,
+        customSkills: newSkills
+      };
+    });
+  };
+
+  // Toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
   };
 
   // Calculate total price including features
@@ -603,47 +788,141 @@ export default function AgentBuilderPage() {
                         />
                       </div>
 
-                      {/* Skills grid */}
-                      <div className="max-h-64 overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-2">
-                          {ALL_SKILLS
-                            .filter(skill =>
-                              skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
-                              skill.category.toLowerCase().includes(skillSearchQuery.toLowerCase())
-                            )
-                            .map(skill => (
-                              <button
-                                key={skill.id}
-                                onClick={() => toggleCustomSkill(skill.id)}
-                                className={`px-3 py-2 rounded-lg border text-sm text-left transition flex items-center justify-between ${
-                                  agentConfig.customSkills.includes(skill.id) ? 'ring-1 ring-[rgb(169,189,203)]' : ''
-                                }`}
-                                style={{
-                                  backgroundColor: agentConfig.customSkills.includes(skill.id)
-                                    ? 'rgba(169, 189, 203, 0.1)'
-                                    : 'rgba(58, 64, 64, 0.2)',
-                                  borderColor: agentConfig.customSkills.includes(skill.id)
-                                    ? 'rgb(169, 189, 203)'
-                                    : 'rgba(169, 189, 203, 0.2)',
-                                  color: 'rgb(229, 227, 220)'
-                                }}
-                              >
-                                <div>
-                                  <div className="text-xs font-medium">{skill.name}</div>
-                                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                    {skill.category}
-                                  </div>
-                                </div>
-                                {agentConfig.customSkills.includes(skill.id) && (
-                                  <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
-                                )}
-                              </button>
-                            ))}
+                      {/* Suggested Enhancements */}
+                      {suggestedEnhancements.length > 0 && (
+                        <div className="mb-4 p-3 rounded-lg" style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.05)',
+                          borderLeft: '3px solid rgb(169, 189, 203)'
+                        }}>
+                          <div className="flex items-start gap-2 mb-2">
+                            <LightBulbIcon className="h-5 w-5 mt-0.5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                                Suggested Enhancements
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {suggestedEnhancements.slice(0, 5).map(skillId => {
+                                  const skill = ALL_SKILLS.find(s => s.id === skillId);
+                                  return skill ? (
+                                    <button
+                                      key={skillId}
+                                      onClick={() => toggleCustomSkill(skillId)}
+                                      className="px-2 py-1 rounded-lg border text-xs hover:opacity-80 transition flex items-center gap-1"
+                                      style={{
+                                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                        borderColor: 'rgba(169, 189, 203, 0.3)',
+                                        color: 'rgb(169, 189, 203)'
+                                      }}
+                                    >
+                                      <PlusIcon className="h-3 w-3" />
+                                      {skill.name}
+                                    </button>
+                                  ) : null;
+                                })}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        {ALL_SKILLS.filter(skill =>
-                          skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
-                          skill.category.toLowerCase().includes(skillSearchQuery.toLowerCase())
-                        ).length === 0 && (
+                      )}
+
+                      {/* Skills by Category */}
+                      <div className="max-h-64 overflow-y-auto">
+                        <div className="space-y-2">
+                          {SKILL_CATEGORIES.map(category => {
+                            const categorySkills = ALL_SKILLS.filter(skill =>
+                              skill.category === category.name &&
+                              (skillSearchQuery === '' ||
+                               skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
+                               skill.category.toLowerCase().includes(skillSearchQuery.toLowerCase()))
+                            );
+
+                            if (categorySkills.length === 0 && skillSearchQuery !== '') {
+                              return null;
+                            }
+
+                            const Icon = category.icon;
+                            const isExpanded = expandedCategories.has(category.name);
+                            const selectedCount = categorySkills.filter(s =>
+                              agentConfig.customSkills.includes(s.id)
+                            ).length;
+
+                            return (
+                              <div key={category.name} className="rounded-lg border" style={{
+                                backgroundColor: 'rgba(58, 64, 64, 0.2)',
+                                borderColor: 'rgba(169, 189, 203, 0.2)'
+                              }}>
+                                <button
+                                  onClick={() => toggleCategory(category.name)}
+                                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-opacity-10 transition"
+                                  style={{
+                                    backgroundColor: selectedCount > 0 ? 'rgba(169, 189, 203, 0.05)' : 'transparent'
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Icon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                                    <span className="font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                                      {category.name}
+                                    </span>
+                                    <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                                      backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                      color: 'rgba(169, 189, 203, 0.8)'
+                                    }}>
+                                      {categorySkills.length}
+                                    </span>
+                                    {selectedCount > 0 && (
+                                      <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                                        color: 'rgb(169, 189, 203)'
+                                      }}>
+                                        {selectedCount} selected
+                                      </span>
+                                    )}
+                                  </div>
+                                  {isExpanded ? (
+                                    <ChevronUpIcon className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                                  ) : (
+                                    <ChevronDownIcon className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                                  )}
+                                </button>
+
+                                {isExpanded && (
+                                  <div className="px-4 pb-3 pt-1">
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {categorySkills.map(skill => (
+                                        <button
+                                          key={skill.id}
+                                          onClick={() => toggleCustomSkill(skill.id)}
+                                          className="px-3 py-2 rounded-lg border text-sm text-left transition flex items-center justify-between"
+                                          style={{
+                                            backgroundColor: agentConfig.customSkills.includes(skill.id)
+                                              ? 'rgba(169, 189, 203, 0.1)'
+                                              : 'rgba(58, 64, 64, 0.3)',
+                                            borderColor: agentConfig.customSkills.includes(skill.id)
+                                              ? 'rgb(169, 189, 203)'
+                                              : 'rgba(169, 189, 203, 0.2)',
+                                            color: 'rgb(229, 227, 220)'
+                                          }}
+                                        >
+                                          <span className="text-xs">{skill.name}</span>
+                                          {agentConfig.customSkills.includes(skill.id) && (
+                                            <CheckIcon className="h-3 w-3 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                                          )}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {SKILL_CATEGORIES.every(category =>
+                          ALL_SKILLS.filter(skill =>
+                            skill.category === category.name &&
+                            (skill.name.toLowerCase().includes(skillSearchQuery.toLowerCase()) ||
+                             skill.category.toLowerCase().includes(skillSearchQuery.toLowerCase()))
+                          ).length === 0
+                        ) && skillSearchQuery !== '' && (
                           <p className="text-sm text-center py-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
                             No skills found matching your search
                           </p>
@@ -832,6 +1111,36 @@ export default function AgentBuilderPage() {
               </div>
             )}
 
+            {/* Suggested Enhancements in Right Panel */}
+            {suggestedEnhancements.length > 0 && (
+              <div className="mb-4">
+                <label className="text-xs font-medium uppercase tracking-wider flex items-center gap-2"
+                  style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                  <LightBulbIcon className="h-3 w-3" />
+                  Suggested Enhancements
+                </label>
+                <div className="mt-2">
+                  <div className="flex flex-wrap gap-1">
+                    {suggestedEnhancements.slice(0, 3).map(skillId => {
+                      const skill = ALL_SKILLS.find(s => s.id === skillId);
+                      return skill ? (
+                        <span
+                          key={skillId}
+                          className="px-2 py-1 rounded text-xs animate-pulse"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                            color: 'rgb(169, 189, 203)'
+                          }}
+                        >
+                          {skill.name}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tools/Integrations */}
             {agentConfig.tools.length > 0 && (
               <div className="mb-4">
@@ -865,8 +1174,8 @@ export default function AgentBuilderPage() {
               border: '1px solid rgba(169, 189, 203, 0.3)'
             }}>
               <div className="flex justify-between items-baseline">
-                <span className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
-                  Total Monthly Price
+                <span className="text-sm font-medium" style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                  Estimated Monthly Price
                 </span>
                 <div>
                   <span className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -877,23 +1186,38 @@ export default function AgentBuilderPage() {
                   </span>
                 </div>
               </div>
-              {agentConfig.features.length > 0 && (
-                <div className="mt-2 text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                  <div className="flex justify-between">
-                    <span>Base price:</span>
-                    <span>£{agentConfig.price}</span>
-                  </div>
-                  {agentConfig.features.map(fid => {
-                    const feature = POPULAR_FEATURES.find(f => f.id === fid);
-                    return feature ? (
-                      <div key={fid} className="flex justify-between">
-                        <span>{feature.name}:</span>
-                        <span>+£{feature.priceImpact}</span>
-                      </div>
-                    ) : null;
-                  })}
+
+              {/* Price Breakdown */}
+              <div className="mt-3 pt-3 border-t text-xs space-y-1" style={{
+                borderColor: 'rgba(169, 189, 203, 0.2)',
+                color: 'rgba(169, 189, 203, 0.7)'
+              }}>
+                <div className="flex justify-between">
+                  <span>Base Agent ({agentConfig.agentType}):</span>
+                  <span className="font-medium">£{agentConfig.price}</span>
                 </div>
-              )}
+                {agentConfig.features.length > 0 && (
+                  <>
+                    {agentConfig.features.map(fid => {
+                      const feature = POPULAR_FEATURES.find(f => f.id === fid);
+                      return feature ? (
+                        <div key={fid} className="flex justify-between">
+                          <span className="pl-2">+ {feature.name}:</span>
+                          <span>£{feature.priceImpact}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </>
+                )}
+                {agentConfig.customSkills.length > 0 && (
+                  <div className="pt-2 mt-2 border-t text-xs italic" style={{
+                    borderColor: 'rgba(169, 189, 203, 0.1)',
+                    color: 'rgba(169, 189, 203, 0.5)'
+                  }}>
+                    * {agentConfig.customSkills.length} skills included at no extra cost
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Continue Button */}

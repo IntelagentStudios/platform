@@ -88,8 +88,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       }
       
       const path = '/' + paths.slice(0, i + 1).join('/');
-      const label = currentPath.charAt(0).toUpperCase() + currentPath.slice(1).replace(/-/g, ' ');
-      
+      // Capitalize each word in the label
+      const label = currentPath
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
       // Special handling for chatbot - should go to dashboard
       if (currentPath === 'chatbot') {
         breadcrumbs.push({ label, path: '/products/chatbot/dashboard' });
