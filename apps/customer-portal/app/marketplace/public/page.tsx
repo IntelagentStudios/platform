@@ -133,7 +133,7 @@ export default function MarketplacePage() {
             </p>
           </div>
           <button
-            onClick={() => router.push('/agent-builder/demo')}
+            onClick={() => router.push('/agent-builder')}
             className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
             style={{
               backgroundColor: 'rgb(169, 189, 203)',

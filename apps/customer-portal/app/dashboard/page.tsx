@@ -206,7 +206,7 @@ export default function DashboardPage() {
               </button>
 
               <button
-                onClick={() => router.push('/agent-builder/demo')}
+                onClick={() => router.push('/agent-builder')}
                 className="p-4 rounded-lg border hover:opacity-80 transition-all group"
                 style={{
                   backgroundColor: 'rgba(58, 64, 64, 0.5)',

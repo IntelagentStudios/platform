@@ -23,10 +23,14 @@ import {
   ChevronUpIcon,
   MagnifyingGlassIcon,
   CodeBracketIcon,
-  ServerStackIcon
+  ServerStackIcon,
+  EyeIcon,
+  CreditCardIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../components/DashboardLayout';
 import AgentBuilderChatV2 from '../../components/AgentBuilderChatV2';
+import DashboardPreview from '../../components/DashboardPreview';
 
 // Tool options with categories
 const TOOLS = [
@@ -229,9 +233,13 @@ interface AgentConfig {
   customSkills: string[];
 }
 
+type ViewMode = 'configure' | 'preview' | 'payment';
+
 export default function AgentBuilderPage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('configure');
+  const [previewReady, setPreviewReady] = useState(false);
   const [agentConfig, setAgentConfig] = useState<AgentConfig>({
     name: 'Custom AI Agent',
     description: '',
@@ -378,25 +386,82 @@ export default function AgentBuilderPage() {
 
   // Continue to preview
   const handleContinue = () => {
-    sessionStorage.setItem('agentConfig', JSON.stringify(agentConfig));
-    router.push('/agent-builder/demo');
+    setViewMode('preview');
+    setPreviewReady(false);
+    setTimeout(() => setPreviewReady(true), 1000);
+  };
+
+  // Handle payment
+  const handleProceedToPayment = () => {
+    setViewMode('payment');
+  };
+
+  // Handle back navigation
+  const handleBackToConfigure = () => {
+    setViewMode('configure');
+  };
+
+  // Handle try another
+  const handleTryAnother = () => {
+    setViewMode('configure');
+    setAgentConfig({
+      name: 'Custom AI Agent',
+      description: '',
+      tools: [],
+      skills: [],
+      price: 299,
+      agentType: 'general',
+      features: [],
+      customSkills: []
+    });
+    setInputDescription('');
+  };
+
+  // Handle login to purchase
+  const handleLoginToPurchase = () => {
+    sessionStorage.setItem('pendingAgentConfig', JSON.stringify(agentConfig));
+    router.push('/login?redirect=/agent-builder');
   };
 
   return (
     <DashboardLayout>
       {/* Header */}
       <header className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-        <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
-          Build Your Custom AI Agent
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-          Describe your needs and see what we'll build for you
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'rgb(229, 227, 220)' }}>
+              {viewMode === 'configure' ? 'Build Your Custom AI Agent' :
+               viewMode === 'preview' ? 'Preview Your AI Dashboard' :
+               'Activate Your Agent'}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+              {viewMode === 'configure' ? 'Describe your needs and see what we\'ll build for you' :
+               viewMode === 'preview' ? 'Explore the features and capabilities of your custom dashboard' :
+               'Choose your plan to activate your agent'}
+            </p>
+          </div>
+          {viewMode !== 'configure' && (
+            <button
+              onClick={handleBackToConfigure}
+              className="px-4 py-2 rounded-lg border transition hover:opacity-80 flex items-center gap-2"
+              style={{
+                borderColor: 'rgba(169, 189, 203, 0.3)',
+                backgroundColor: 'transparent',
+                color: 'rgba(229, 227, 220, 0.9)'
+              }}
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Back to Configure
+            </button>
+          )}
+        </div>
       </header>
 
-      <div className="flex gap-6 p-8">
-        {/* Left Panel - Input/Chat */}
-        <div className="flex-1">
+      {/* Configuration View */}
+      {viewMode === 'configure' && (
+        <div className="flex gap-6 p-8">
+          {/* Left Panel - Input/Chat */}
+          <div className="flex-1">
           <div className="rounded-xl shadow-sm border" style={{
             backgroundColor: 'rgba(58, 64, 64, 0.5)',
             borderColor: 'rgba(169, 189, 203, 0.15)',
@@ -853,6 +918,199 @@ export default function AgentBuilderPage() {
           </div>
         </div>
       </div>
+      )}
+
+      {/* Preview View */}
+      {viewMode === 'preview' && (
+        <div className="p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                Your AI Agent Dashboard
+              </h2>
+              <p style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                This is how your custom dashboard will look once activated
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleTryAnother}
+                className="px-4 py-2 rounded-lg border transition hover:opacity-80"
+                style={{
+                  borderColor: 'rgba(169, 189, 203, 0.3)',
+                  backgroundColor: 'transparent',
+                  color: 'rgba(229, 227, 220, 0.9)'
+                }}
+              >
+                Build Another
+              </button>
+              <button
+                onClick={handleProceedToPayment}
+                className="px-6 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                style={{
+                  backgroundColor: 'rgb(169, 189, 203)',
+                  color: 'white'
+                }}
+              >
+                <span>Activate This Agent</span>
+                <ArrowRightIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Dashboard Preview */}
+          {!previewReady ? (
+            <div className="rounded-xl border p-32 text-center" style={{
+              backgroundColor: 'rgba(58, 64, 64, 0.3)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}>
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 rounded w-3/4 mx-auto" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}></div>
+                <div className="h-4 rounded w-1/2 mx-auto" style={{ backgroundColor: 'rgba(169, 189, 203, 0.2)' }}></div>
+              </div>
+              <p className="mt-6" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                Generating your dashboard preview...
+              </p>
+            </div>
+          ) : (
+            <DashboardPreview
+              selectedSkills={(agentConfig.skills || []).concat(
+                agentConfig.customSkills.map(sid => {
+                  const skill = ALL_SKILLS.find(s => s.id === sid);
+                  return skill?.name || sid;
+                })
+              ).map((skill: string, index: number) => ({
+                id: `skill-${index}`,
+                name: skill,
+                category: 'automation'
+              }))}
+              agentName={agentConfig.name || 'Custom AI Agent'}
+              requirements={{
+                goal: agentConfig.description || '',
+                industry: agentConfig.agentType || 'general'
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Payment View */}
+      {viewMode === 'payment' && (
+        <div className="p-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-xl shadow-sm border overflow-hidden" style={{
+              backgroundColor: 'rgba(58, 64, 64, 0.5)',
+              borderColor: 'rgba(169, 189, 203, 0.15)'
+            }}>
+              <div className="p-8 text-center">
+                <CreditCardIcon className="h-16 w-16 mx-auto mb-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Ready to Activate Your Agent?
+                </h2>
+
+                <div className="rounded-lg p-6 mb-6" style={{
+                  backgroundColor: 'rgba(58, 64, 64, 0.3)',
+                  border: '1px solid rgba(169, 189, 203, 0.15)'
+                }}>
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
+                    {agentConfig.name}
+                  </h3>
+                  <div className="text-3xl font-bold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    £{calculateTotalPrice()}<span className="text-lg font-normal">/month</span>
+                  </div>
+
+                  {/* Features Summary */}
+                  <div className="mt-4 space-y-2">
+                    {agentConfig.features.length > 0 && (
+                      <div className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                        <strong>Features:</strong> {agentConfig.features.map(fid =>
+                          POPULAR_FEATURES.find(f => f.id === fid)?.name
+                        ).filter(Boolean).join(', ')}
+                      </div>
+                    )}
+                    {agentConfig.skills.length > 0 && (
+                      <div className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                        <strong>Skills:</strong> {agentConfig.skills.length} pre-configured
+                      </div>
+                    )}
+                    {agentConfig.customSkills.length > 0 && (
+                      <div className="text-sm" style={{ color: 'rgba(229, 227, 220, 0.8)' }}>
+                        <strong>Custom Skills:</strong> {agentConfig.customSkills.length} selected
+                      </div>
+                    )}
+                  </div>
+
+                  <ul className="space-y-2 mt-6 text-left max-w-sm mx-auto">
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                      <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Full agent activation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                      <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Unlimited operations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                      <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>24/7 support</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => router.push('/billing?product=custom-agent')}
+                      className="w-full px-6 py-3 rounded-lg transition hover:opacity-80"
+                      style={{
+                        backgroundColor: 'rgb(169, 189, 203)',
+                        color: 'white'
+                      }}
+                    >
+                      Proceed to Payment
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleLoginToPurchase}
+                        className="w-full px-6 py-3 rounded-lg transition hover:opacity-80"
+                        style={{
+                          backgroundColor: 'rgb(169, 189, 203)',
+                          color: 'white'
+                        }}
+                      >
+                        Sign In to Purchase
+                      </button>
+
+                      <button
+                        onClick={() => router.push('/signup?plan=agent')}
+                        className="w-full px-6 py-3 rounded-lg border transition hover:opacity-80"
+                        style={{
+                          borderColor: 'rgba(169, 189, 203, 0.3)',
+                          backgroundColor: 'transparent',
+                          color: 'rgba(229, 227, 220, 0.9)'
+                        }}
+                      >
+                        Create Account & Purchase
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    onClick={handleTryAnother}
+                    className="w-full px-6 py-3 rounded-lg transition hover:opacity-80"
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: 'rgba(169, 189, 203, 0.8)'
+                    }}
+                  >
+                    Build Another Agent
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

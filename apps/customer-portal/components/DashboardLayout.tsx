@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { id: 'platform', label: 'Platform', icon: Cpu, path: '/platform' },
     { id: 'products', label: 'Products', icon: Package, path: '/products' },
     { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, path: '/marketplace/public' },
-    { id: 'agent-builder', label: 'Build AI Agent', icon: MessageCircle, path: '/agent-builder/demo' },
+    { id: 'agent-builder', label: 'Build AI Agent', icon: MessageCircle, path: '/agent-builder' },
     { id: 'billing', label: 'Billing', icon: CreditCard, path: '/billing' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' }
   ];
