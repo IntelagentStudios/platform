@@ -41,7 +41,7 @@ export class OllamaProvider extends LLMProvider {
       throw new Error(`Ollama request failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     
     // Apply PII redaction if enabled
     const content = this.redactPII(data.response);
@@ -87,7 +87,7 @@ export class OllamaProvider extends LLMProvider {
         throw new Error(`Ollama embeddings failed: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       embeddings.push({
         text,
         vector: data.embedding,
@@ -138,7 +138,7 @@ export class OllamaProvider extends LLMProvider {
       
       for (const line of lines) {
         try {
-          const data = JSON.parse(line);
+          const data: any = JSON.parse(line);
           if (data.response) {
             onChunk(this.redactPII(data.response));
           }

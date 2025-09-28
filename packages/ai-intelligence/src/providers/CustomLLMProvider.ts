@@ -42,7 +42,7 @@ export class CustomLLMProvider extends LLMProvider {
       throw new Error(`Custom LLM request failed: ${response.status} - ${error}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     
     // Extract response based on common patterns
     const content = this.extractContent(data);
@@ -74,7 +74,7 @@ export class CustomLLMProvider extends LLMProvider {
       throw new Error(`Custom embeddings failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     
     // Handle various response formats
     if (Array.isArray(data.embeddings)) {
