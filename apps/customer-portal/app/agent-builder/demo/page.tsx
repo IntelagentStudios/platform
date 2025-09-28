@@ -179,7 +179,18 @@ export default function AgentBuilderDemo() {
                 </p>
               </div>
             ) : (
-              <DashboardPreview agentConfig={agentConfig} />
+              <DashboardPreview
+                selectedSkills={(agentConfig?.skills || agentConfig?.suggestedSkills || []).map((skill: string, index: number) => ({
+                  id: `skill-${index}`,
+                  name: skill,
+                  category: 'automation'
+                }))}
+                agentName={agentConfig?.name || agentConfig?.agentName || 'Custom AI Agent'}
+                requirements={{
+                  goal: agentConfig?.description || agentConfig?.goal || '',
+                  industry: agentConfig?.agentType || agentConfig?.industry || 'general'
+                }}
+              />
             )}
           </div>
         )}
