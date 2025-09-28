@@ -1027,12 +1027,35 @@ export default function AgentBuilderPage() {
                               </div>
                             )}
 
+                            {/* Action Buttons */}
+                            <div className="mt-4 flex gap-3">
+                              <button
+                                onClick={handleContinue}
+                                className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                                style={{
+                                  backgroundColor: 'rgb(169, 189, 203)',
+                                  color: 'white'
+                                }}
+                              >
+                                Continue to Preview
+                                <ArrowRightIcon className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => setChatStep(1)}
+                                className="px-4 py-2 rounded-lg border transition hover:opacity-80"
+                                style={{
+                                  borderColor: 'rgba(169, 189, 203, 0.3)',
+                                  backgroundColor: 'transparent',
+                                  color: 'rgba(229, 227, 220, 0.9)'
+                                }}
+                              >
+                                Refine Further
+                              </button>
+                            </div>
+
                             {/* Follow-up prompt */}
-                            <p className="mt-3 text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {chatStep === 1 ? "Now, let me ask a few questions to better understand your specific needs:" :
-                               chatStep > 1 && chatStep < 6 ? "" :
-                               chatStep >= 6 ? "Perfect! I've customized your agent based on all your inputs. You can now review the configuration or make adjustments." :
-                               "Let me ask a few questions to refine this further and make it perfect for your needs:"}
+                            <p className="mt-3 text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
+                              Or I can ask you some questions to make this even more tailored to your needs.
                             </p>
                           </div>
                         </div>
@@ -1040,7 +1063,7 @@ export default function AgentBuilderPage() {
                     </div>
                   )}
 
-                  {/* Follow-up Questions and Responses */}
+                  {/* Optional Follow-up Questions and Responses - Only if user chooses to refine */}
                   {chatStep > 0 && chatResponses[0] && (
                     <>
                       {/* Question 1 */}
@@ -1117,6 +1140,38 @@ export default function AgentBuilderPage() {
                           )}
                         </React.Fragment>
                       ))}
+                      {/* Final refinement complete message */}
+                      {chatStep >= 6 && chatResponses[5] && (
+                        <div className="flex gap-3">
+                          <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                          }}>
+                            <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
+                            <div className="p-3 rounded-lg" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                              borderLeft: '3px solid rgb(169, 189, 203)'
+                            }}>
+                              <p className="mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
+                                Excellent! I've refined your agent configuration with all your inputs.
+                              </p>
+                              <button
+                                onClick={handleContinue}
+                                className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                                style={{
+                                  backgroundColor: 'rgb(169, 189, 203)',
+                                  color: 'white'
+                                }}
+                              >
+                                View Updated Preview
+                                <ArrowRightIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -1130,17 +1185,27 @@ export default function AgentBuilderPage() {
                       onChange={(e) => setInputDescription(e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter' && inputDescription.trim()) {
-                          // Save response and analyze
-                          const newResponses = { ...chatResponses, [chatStep]: inputDescription };
-                          setChatResponses(newResponses);
+                          if (chatStep === 0) {
+                            // First response - save and analyze
+                            const newResponses = { ...chatResponses, 0: inputDescription };
+                            setChatResponses(newResponses);
+                            analyzeDescription(inputDescription);
+                            // Don't auto-advance, let user choose to continue or refine
+                          } else {
+                            // Follow-up responses - save and re-analyze
+                            const newResponses = { ...chatResponses, [chatStep]: inputDescription };
+                            setChatResponses(newResponses);
 
-                          // Analyze all responses to build config
-                          const fullDescription = Object.values(newResponses).join(' ');
-                          analyzeDescription(fullDescription);
+                            // Re-analyze with all responses
+                            const fullDescription = Object.values(newResponses).join(' ');
+                            analyzeDescription(fullDescription);
 
-                          // Move to next step
-                          if (chatStep < 5) {
-                            setChatStep(chatStep + 1);
+                            // Move to next question
+                            if (chatStep < 5) {
+                              setChatStep(chatStep + 1);
+                            } else {
+                              setChatStep(6); // Move to completion state
+                            }
                           }
                           setInputDescription('');
                         }
@@ -1162,17 +1227,27 @@ export default function AgentBuilderPage() {
                     <button
                       onClick={() => {
                         if (inputDescription.trim()) {
-                          // Save response and analyze
-                          const newResponses = { ...chatResponses, [chatStep]: inputDescription };
-                          setChatResponses(newResponses);
+                          if (chatStep === 0) {
+                            // First response - save and analyze
+                            const newResponses = { ...chatResponses, 0: inputDescription };
+                            setChatResponses(newResponses);
+                            analyzeDescription(inputDescription);
+                            // Don't auto-advance, let user choose to continue or refine
+                          } else {
+                            // Follow-up responses - save and re-analyze
+                            const newResponses = { ...chatResponses, [chatStep]: inputDescription };
+                            setChatResponses(newResponses);
 
-                          // Analyze all responses to build config
-                          const fullDescription = Object.values(newResponses).join(' ');
-                          analyzeDescription(fullDescription);
+                            // Re-analyze with all responses
+                            const fullDescription = Object.values(newResponses).join(' ');
+                            analyzeDescription(fullDescription);
 
-                          // Move to next step
-                          if (chatStep < 5) {
-                            setChatStep(chatStep + 1);
+                            // Move to next question
+                            if (chatStep < 5) {
+                              setChatStep(chatStep + 1);
+                            } else {
+                              setChatStep(6); // Move to completion state
+                            }
                           }
                           setInputDescription('');
                         }
