@@ -88,13 +88,12 @@ export default function AgentBuilderPage() {
       try {
         const response = await fetch('/api/auth/session');
         setIsLoggedIn(response.ok);
-        // For non-logged in users, show chatbot by default
-        if (!response.ok) {
-          setShowChatbot(true);
-        }
+        // Non-logged in users get chatbot by default for more guidance
+        // Logged in users get direct form by default (less hand-holding)
+        setShowChatbot(!response.ok);
       } catch {
         setIsLoggedIn(false);
-        setShowChatbot(true);
+        setShowChatbot(true); // Default to chatbot if auth check fails
       }
     };
     checkAuth();
@@ -193,8 +192,8 @@ export default function AgentBuilderPage() {
             borderColor: 'rgba(169, 189, 203, 0.15)',
             minHeight: '600px'
           }}>
-            {(!isLoggedIn || (isLoggedIn && showChatbot)) ? (
-              /* Chatbot interface */
+            {showChatbot ? (
+              /* Chatbot interface - available to everyone */
               <div style={{ height: '600px' }}>
                 <AgentBuilderChatV2
                   onComplete={handleChatComplete}
@@ -202,7 +201,7 @@ export default function AgentBuilderPage() {
                 />
               </div>
             ) : (
-              /* Direct input for logged in users */
+              /* Direct input form - available to everyone */
               <div className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2"
@@ -264,7 +263,7 @@ export default function AgentBuilderPage() {
                   style={{ color: 'rgb(169, 189, 203)' }}
                 >
                   <SparklesIcon className="h-4 w-4" />
-                  {showChatbot ? 'Switch to quick form' : 'Need help? Use our AI assistant'}
+                  {showChatbot ? 'Switch to quick form' : 'Prefer guided help? Use AI assistant'}
                 </button>
               </div>
             )}
