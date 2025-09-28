@@ -51,30 +51,54 @@ const TOOLS = [
   { id: 'wordpress', name: 'WordPress', category: 'Website' },
 ];
 
-// Skill detection mappings
+// Skill detection mappings - expanded to include more skills per type
 const SKILL_MAPPINGS: { [key: string]: { skills: string[], price: number } } = {
   sales: {
-    skills: ['Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management'],
+    skills: [
+      'Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management',
+      'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder',
+      'Follow-up Automation', 'Lead Nurturing', 'Sales Analytics', 'Commission Tracking', 'Territory Management'
+    ],
     price: 649
   },
   support: {
-    skills: ['Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder'],
+    skills: [
+      'Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder',
+      'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk',
+      'Live Chat Widget', 'Email Support', 'Phone Support Integration', 'Social Media Support', 'Community Forum'
+    ],
     price: 349
   },
   marketing: {
-    skills: ['Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization'],
+    skills: [
+      'Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization',
+      'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking',
+      'Content Calendar', 'Social Media Scheduling', 'Influencer Outreach', 'Brand Monitoring', 'Competitor Analysis'
+    ],
     price: 449
   },
   operations: {
-    skills: ['Workflow Automation', 'Task Management', 'Reporting', 'Data Sync', 'Process Optimization'],
+    skills: [
+      'Workflow Automation', 'Task Management', 'Reporting', 'Data Sync', 'Process Optimization',
+      'Resource Planning', 'Inventory Tracking', 'Supply Chain Management', 'Quality Control', 'Performance Monitoring',
+      'Document Management', 'Approval Workflows', 'Time Tracking', 'Expense Management', 'Compliance Tracking'
+    ],
     price: 549
   },
   data: {
-    skills: ['Data Processing', 'Analytics', 'Custom Reports', 'Dashboard Creation', 'Predictive Insights'],
+    skills: [
+      'Data Processing', 'Analytics', 'Custom Reports', 'Dashboard Creation', 'Predictive Insights',
+      'Data Visualization', 'ETL Pipeline', 'Data Cleansing', 'Real-time Analytics', 'Business Intelligence',
+      'Data Mining', 'Statistical Analysis', 'Trend Analysis', 'Forecasting Models', 'Data Integration'
+    ],
     price: 449
   },
   construction: {
-    skills: ['Project Tracking', 'Bid Generation', 'Safety Compliance', 'Resource Scheduling', 'Permit Tracking'],
+    skills: [
+      'Project Tracking', 'Bid Generation', 'Safety Compliance', 'Resource Scheduling', 'Permit Tracking',
+      'Blueprint Management', 'Cost Estimation', 'Subcontractor Management', 'Equipment Tracking', 'Site Inspection',
+      'Change Order Management', 'Progress Reporting', 'Material Management', 'Quality Assurance', 'Risk Assessment'
+    ],
     price: 599
   }
 };
@@ -211,6 +235,36 @@ const ALL_SKILLS = [
   { id: 'voice_broadcast', name: 'Voice Broadcast', category: 'Communication' },
   { id: 'video_messaging', name: 'Video Messaging', category: 'Communication' },
   { id: 'live_chat', name: 'Live Chat', category: 'Communication' },
+  { id: 'chat_widget', name: 'Chat Widget', category: 'Communication' },
+  { id: 'helpdesk_system', name: 'Helpdesk System', category: 'Communication' },
+  { id: 'ticketing_system', name: 'Ticketing System', category: 'Communication' },
+  { id: 'customer_portal', name: 'Customer Portal', category: 'Communication' },
+  { id: 'feedback_collector', name: 'Feedback Collector', category: 'Communication' },
+  { id: 'survey_builder', name: 'Survey Builder', category: 'Communication' },
+  { id: 'notification_center', name: 'Notification Center', category: 'Communication' },
+  { id: 'alert_system', name: 'Alert System', category: 'Communication' },
+  { id: 'broadcast_messaging', name: 'Broadcast Messaging', category: 'Communication' },
+  { id: 'mass_mailer', name: 'Mass Mailer', category: 'Communication' },
+  { id: 'newsletter_manager', name: 'Newsletter Manager', category: 'Communication' },
+  { id: 'email_templates', name: 'Email Templates', category: 'Communication' },
+  { id: 'email_tracking', name: 'Email Tracking', category: 'Communication' },
+  { id: 'email_automation', name: 'Email Automation', category: 'Communication' },
+  { id: 'spam_filter', name: 'Spam Filter', category: 'Communication' },
+  { id: 'message_queue', name: 'Message Queue', category: 'Communication' },
+  { id: 'webhook_manager', name: 'Webhook Manager', category: 'Communication' },
+  { id: 'api_gateway', name: 'API Gateway', category: 'Communication' },
+  { id: 'event_streaming', name: 'Event Streaming', category: 'Communication' },
+  { id: 'pubsub_system', name: 'PubSub System', category: 'Communication' },
+  { id: 'mqtt_broker', name: 'MQTT Broker', category: 'Communication' },
+  { id: 'websocket_server', name: 'WebSocket Server', category: 'Communication' },
+  { id: 'sse_handler', name: 'SSE Handler', category: 'Communication' },
+  { id: 'grpc_service', name: 'gRPC Service', category: 'Communication' },
+  { id: 'graphql_endpoint', name: 'GraphQL Endpoint', category: 'Communication' },
+  { id: 'rest_api', name: 'REST API', category: 'Communication' },
+  { id: 'soap_service', name: 'SOAP Service', category: 'Communication' },
+  { id: 'rss_feed', name: 'RSS Feed', category: 'Communication' },
+  { id: 'atom_feed', name: 'Atom Feed', category: 'Communication' },
+  { id: 'comment_system', name: 'Comment System', category: 'Communication' },
 
   // Data Processing (60+ skills)
   { id: 'csv_processor', name: 'CSV Processor', category: 'Data Processing' },
@@ -233,6 +287,46 @@ const ALL_SKILLS = [
   { id: 'real_time_sync', name: 'Real-time Sync', category: 'Data Processing' },
   { id: 'data_pipeline', name: 'Data Pipeline', category: 'Data Processing' },
   { id: 'data_warehouse', name: 'Data Warehouse', category: 'Data Processing' },
+  { id: 'data_lake', name: 'Data Lake', category: 'Data Processing' },
+  { id: 'data_mart', name: 'Data Mart', category: 'Data Processing' },
+  { id: 'data_catalog', name: 'Data Catalog', category: 'Data Processing' },
+  { id: 'schema_validation', name: 'Schema Validation', category: 'Data Processing' },
+  { id: 'data_profiling', name: 'Data Profiling', category: 'Data Processing' },
+  { id: 'data_quality', name: 'Data Quality', category: 'Data Processing' },
+  { id: 'data_lineage', name: 'Data Lineage', category: 'Data Processing' },
+  { id: 'master_data', name: 'Master Data', category: 'Data Processing' },
+  { id: 'reference_data', name: 'Reference Data', category: 'Data Processing' },
+  { id: 'metadata_management', name: 'Metadata Management', category: 'Data Processing' },
+  { id: 'data_governance', name: 'Data Governance', category: 'Data Processing' },
+  { id: 'data_stewardship', name: 'Data Stewardship', category: 'Data Processing' },
+  { id: 'data_archiving', name: 'Data Archiving', category: 'Data Processing' },
+  { id: 'data_retention', name: 'Data Retention', category: 'Data Processing' },
+  { id: 'data_purging', name: 'Data Purging', category: 'Data Processing' },
+  { id: 'change_data_capture', name: 'Change Data Capture', category: 'Data Processing' },
+  { id: 'data_replication', name: 'Data Replication', category: 'Data Processing' },
+  { id: 'data_federation', name: 'Data Federation', category: 'Data Processing' },
+  { id: 'data_virtualization', name: 'Data Virtualization', category: 'Data Processing' },
+  { id: 'data_mesh', name: 'Data Mesh', category: 'Data Processing' },
+  { id: 'event_sourcing', name: 'Event Sourcing', category: 'Data Processing' },
+  { id: 'cqrs_pattern', name: 'CQRS Pattern', category: 'Data Processing' },
+  { id: 'saga_pattern', name: 'Saga Pattern', category: 'Data Processing' },
+  { id: 'data_sharding', name: 'Data Sharding', category: 'Data Processing' },
+  { id: 'data_partitioning', name: 'Data Partitioning', category: 'Data Processing' },
+  { id: 'index_management', name: 'Index Management', category: 'Data Processing' },
+  { id: 'query_optimization', name: 'Query Optimization', category: 'Data Processing' },
+  { id: 'cache_management', name: 'Cache Management', category: 'Data Processing' },
+  { id: 'buffer_pool', name: 'Buffer Pool', category: 'Data Processing' },
+  { id: 'connection_pooling', name: 'Connection Pooling', category: 'Data Processing' },
+  { id: 'transaction_management', name: 'Transaction Management', category: 'Data Processing' },
+  { id: 'deadlock_detection', name: 'Deadlock Detection', category: 'Data Processing' },
+  { id: 'concurrency_control', name: 'Concurrency Control', category: 'Data Processing' },
+  { id: 'isolation_levels', name: 'Isolation Levels', category: 'Data Processing' },
+  { id: 'acid_compliance', name: 'ACID Compliance', category: 'Data Processing' },
+  { id: 'base_properties', name: 'BASE Properties', category: 'Data Processing' },
+  { id: 'cap_theorem', name: 'CAP Theorem', category: 'Data Processing' },
+  { id: 'data_consistency', name: 'Data Consistency', category: 'Data Processing' },
+  { id: 'eventual_consistency', name: 'Eventual Consistency', category: 'Data Processing' },
+  { id: 'strong_consistency', name: 'Strong Consistency', category: 'Data Processing' },
 
   // AI/ML Skills (70+ skills)
   { id: 'text_classification', name: 'Text Classification', category: 'AI/ML' },
@@ -255,6 +349,56 @@ const ALL_SKILLS = [
   { id: 'content_generation', name: 'Content Generation', category: 'AI/ML' },
   { id: 'intent_recognition', name: 'Intent Recognition', category: 'AI/ML' },
   { id: 'computer_vision', name: 'Computer Vision', category: 'AI/ML' },
+  { id: 'object_detection', name: 'Object Detection', category: 'AI/ML' },
+  { id: 'face_recognition', name: 'Face Recognition', category: 'AI/ML' },
+  { id: 'ocr_processing', name: 'OCR Processing', category: 'AI/ML' },
+  { id: 'video_analysis', name: 'Video Analysis', category: 'AI/ML' },
+  { id: 'speech_synthesis', name: 'Speech Synthesis', category: 'AI/ML' },
+  { id: 'emotion_detection', name: 'Emotion Detection', category: 'AI/ML' },
+  { id: 'topic_modeling', name: 'Topic Modeling', category: 'AI/ML' },
+  { id: 'keyword_extraction', name: 'Keyword Extraction', category: 'AI/ML' },
+  { id: 'text_generation', name: 'Text Generation', category: 'AI/ML' },
+  { id: 'paraphrase_detection', name: 'Paraphrase Detection', category: 'AI/ML' },
+  { id: 'semantic_search', name: 'Semantic Search', category: 'AI/ML' },
+  { id: 'knowledge_graph', name: 'Knowledge Graph', category: 'AI/ML' },
+  { id: 'reinforcement_learning', name: 'Reinforcement Learning', category: 'AI/ML' },
+  { id: 'transfer_learning', name: 'Transfer Learning', category: 'AI/ML' },
+  { id: 'federated_learning', name: 'Federated Learning', category: 'AI/ML' },
+  { id: 'automl_platform', name: 'AutoML Platform', category: 'AI/ML' },
+  { id: 'model_versioning', name: 'Model Versioning', category: 'AI/ML' },
+  { id: 'model_monitoring', name: 'Model Monitoring', category: 'AI/ML' },
+  { id: 'feature_engineering', name: 'Feature Engineering', category: 'AI/ML' },
+  { id: 'data_augmentation', name: 'Data Augmentation', category: 'AI/ML' },
+  { id: 'hyperparameter_tuning', name: 'Hyperparameter Tuning', category: 'AI/ML' },
+  { id: 'model_explainability', name: 'Model Explainability', category: 'AI/ML' },
+  { id: 'bias_detection', name: 'Bias Detection', category: 'AI/ML' },
+  { id: 'model_compression', name: 'Model Compression', category: 'AI/ML' },
+  { id: 'edge_ai', name: 'Edge AI', category: 'AI/ML' },
+  { id: 'mlops_pipeline', name: 'MLOps Pipeline', category: 'AI/ML' },
+  { id: 'neural_architecture', name: 'Neural Architecture', category: 'AI/ML' },
+  { id: 'gan_models', name: 'GAN Models', category: 'AI/ML' },
+  { id: 'transformer_models', name: 'Transformer Models', category: 'AI/ML' },
+  { id: 'bert_implementation', name: 'BERT Implementation', category: 'AI/ML' },
+  { id: 'gpt_integration', name: 'GPT Integration', category: 'AI/ML' },
+  { id: 'llm_fine_tuning', name: 'LLM Fine-tuning', category: 'AI/ML' },
+  { id: 'prompt_engineering', name: 'Prompt Engineering', category: 'AI/ML' },
+  { id: 'vector_database', name: 'Vector Database', category: 'AI/ML' },
+  { id: 'embedding_generation', name: 'Embedding Generation', category: 'AI/ML' },
+  { id: 'similarity_search', name: 'Similarity Search', category: 'AI/ML' },
+  { id: 'clustering_algorithms', name: 'Clustering Algorithms', category: 'AI/ML' },
+  { id: 'regression_models', name: 'Regression Models', category: 'AI/ML' },
+  { id: 'classification_models', name: 'Classification Models', category: 'AI/ML' },
+  { id: 'time_series_analysis', name: 'Time Series Analysis', category: 'AI/ML' },
+  { id: 'survival_analysis', name: 'Survival Analysis', category: 'AI/ML' },
+  { id: 'causal_inference', name: 'Causal Inference', category: 'AI/ML' },
+  { id: 'bayesian_inference', name: 'Bayesian Inference', category: 'AI/ML' },
+  { id: 'monte_carlo', name: 'Monte Carlo', category: 'AI/ML' },
+  { id: 'genetic_algorithms', name: 'Genetic Algorithms', category: 'AI/ML' },
+  { id: 'swarm_intelligence', name: 'Swarm Intelligence', category: 'AI/ML' },
+  { id: 'fuzzy_logic', name: 'Fuzzy Logic', category: 'AI/ML' },
+  { id: 'expert_systems', name: 'Expert Systems', category: 'AI/ML' },
+  { id: 'decision_trees', name: 'Decision Trees', category: 'AI/ML' },
+  { id: 'random_forests', name: 'Random Forests', category: 'AI/ML' },
 
   // Integration Skills (80+ skills)
   { id: 'salesforce_sync', name: 'Salesforce Sync', category: 'Integration' },
@@ -277,6 +421,67 @@ const ALL_SKILLS = [
   { id: 'sendgrid_api', name: 'SendGrid API', category: 'Integration' },
   { id: 'twilio_integration', name: 'Twilio Integration', category: 'Integration' },
   { id: 'zapier_connector', name: 'Zapier Connector', category: 'Integration' },
+  { id: 'ifttt_integration', name: 'IFTTT Integration', category: 'Integration' },
+  { id: 'make_connector', name: 'Make Connector', category: 'Integration' },
+  { id: 'pipedream_api', name: 'Pipedream API', category: 'Integration' },
+  { id: 'monday_integration', name: 'Monday Integration', category: 'Integration' },
+  { id: 'asana_connector', name: 'Asana Connector', category: 'Integration' },
+  { id: 'trello_api', name: 'Trello API', category: 'Integration' },
+  { id: 'notion_integration', name: 'Notion Integration', category: 'Integration' },
+  { id: 'airtable_sync', name: 'Airtable Sync', category: 'Integration' },
+  { id: 'clickup_connector', name: 'ClickUp Connector', category: 'Integration' },
+  { id: 'basecamp_api', name: 'Basecamp API', category: 'Integration' },
+  { id: 'freshdesk_integration', name: 'Freshdesk Integration', category: 'Integration' },
+  { id: 'intercom_connector', name: 'Intercom Connector', category: 'Integration' },
+  { id: 'drift_api', name: 'Drift API', category: 'Integration' },
+  { id: 'crisp_integration', name: 'Crisp Integration', category: 'Integration' },
+  { id: 'helpscout_sync', name: 'HelpScout Sync', category: 'Integration' },
+  { id: 'activecampaign_api', name: 'ActiveCampaign API', category: 'Integration' },
+  { id: 'convertkit_integration', name: 'ConvertKit Integration', category: 'Integration' },
+  { id: 'klaviyo_connector', name: 'Klaviyo Connector', category: 'Integration' },
+  { id: 'drip_api', name: 'Drip API', category: 'Integration' },
+  { id: 'constant_contact', name: 'Constant Contact', category: 'Integration' },
+  { id: 'square_payments', name: 'Square Payments', category: 'Integration' },
+  { id: 'braintree_integration', name: 'Braintree Integration', category: 'Integration' },
+  { id: 'razorpay_api', name: 'Razorpay API', category: 'Integration' },
+  { id: 'mollie_connector', name: 'Mollie Connector', category: 'Integration' },
+  { id: 'adyen_integration', name: 'Adyen Integration', category: 'Integration' },
+  { id: 'quickbooks_sync', name: 'QuickBooks Sync', category: 'Integration' },
+  { id: 'xero_connector', name: 'Xero Connector', category: 'Integration' },
+  { id: 'sage_integration', name: 'Sage Integration', category: 'Integration' },
+  { id: 'freshbooks_api', name: 'FreshBooks API', category: 'Integration' },
+  { id: 'wave_accounting', name: 'Wave Accounting', category: 'Integration' },
+  { id: 'bigcommerce_sync', name: 'BigCommerce Sync', category: 'Integration' },
+  { id: 'woocommerce_api', name: 'WooCommerce API', category: 'Integration' },
+  { id: 'magento_connector', name: 'Magento Connector', category: 'Integration' },
+  { id: 'prestashop_integration', name: 'PrestaShop Integration', category: 'Integration' },
+  { id: 'ecwid_api', name: 'Ecwid API', category: 'Integration' },
+  { id: 'google_analytics', name: 'Google Analytics', category: 'Integration' },
+  { id: 'mixpanel_connector', name: 'Mixpanel Connector', category: 'Integration' },
+  { id: 'amplitude_api', name: 'Amplitude API', category: 'Integration' },
+  { id: 'segment_integration', name: 'Segment Integration', category: 'Integration' },
+  { id: 'heap_analytics', name: 'Heap Analytics', category: 'Integration' },
+  { id: 'hotjar_connector', name: 'Hotjar Connector', category: 'Integration' },
+  { id: 'fullstory_api', name: 'FullStory API', category: 'Integration' },
+  { id: 'datadog_integration', name: 'Datadog Integration', category: 'Integration' },
+  { id: 'new_relic_connector', name: 'New Relic Connector', category: 'Integration' },
+  { id: 'sentry_api', name: 'Sentry API', category: 'Integration' },
+  { id: 'pagerduty_integration', name: 'PagerDuty Integration', category: 'Integration' },
+  { id: 'opsgenie_connector', name: 'OpsGenie Connector', category: 'Integration' },
+  { id: 'statuspage_api', name: 'StatusPage API', category: 'Integration' },
+  { id: 'atlassian_suite', name: 'Atlassian Suite', category: 'Integration' },
+  { id: 'confluence_sync', name: 'Confluence Sync', category: 'Integration' },
+  { id: 'bitbucket_connector', name: 'Bitbucket Connector', category: 'Integration' },
+  { id: 'bamboo_integration', name: 'Bamboo Integration', category: 'Integration' },
+  { id: 'jenkins_api', name: 'Jenkins API', category: 'Integration' },
+  { id: 'circleci_connector', name: 'CircleCI Connector', category: 'Integration' },
+  { id: 'travis_integration', name: 'Travis Integration', category: 'Integration' },
+  { id: 'docker_api', name: 'Docker API', category: 'Integration' },
+  { id: 'kubernetes_connector', name: 'Kubernetes Connector', category: 'Integration' },
+  { id: 'terraform_integration', name: 'Terraform Integration', category: 'Integration' },
+  { id: 'ansible_api', name: 'Ansible API', category: 'Integration' },
+  { id: 'puppet_connector', name: 'Puppet Connector', category: 'Integration' },
+  { id: 'chef_integration', name: 'Chef Integration', category: 'Integration' },
 
   // Automation Skills (50+ skills)
   { id: 'task_scheduler', name: 'Task Scheduler', category: 'Automation' },
@@ -294,6 +499,41 @@ const ALL_SKILLS = [
   { id: 'invoice_automation', name: 'Invoice Automation', category: 'Automation' },
   { id: 'order_processing', name: 'Order Processing', category: 'Automation' },
   { id: 'inventory_management', name: 'Inventory Management', category: 'Automation' },
+  { id: 'supply_chain', name: 'Supply Chain', category: 'Automation' },
+  { id: 'procurement_automation', name: 'Procurement Automation', category: 'Automation' },
+  { id: 'expense_management', name: 'Expense Management', category: 'Automation' },
+  { id: 'payroll_processing', name: 'Payroll Processing', category: 'Automation' },
+  { id: 'hr_automation', name: 'HR Automation', category: 'Automation' },
+  { id: 'onboarding_workflow', name: 'Onboarding Workflow', category: 'Automation' },
+  { id: 'offboarding_process', name: 'Offboarding Process', category: 'Automation' },
+  { id: 'leave_management', name: 'Leave Management', category: 'Automation' },
+  { id: 'timesheet_automation', name: 'Timesheet Automation', category: 'Automation' },
+  { id: 'contract_management', name: 'Contract Management', category: 'Automation' },
+  { id: 'document_workflow', name: 'Document Workflow', category: 'Automation' },
+  { id: 'approval_chains', name: 'Approval Chains', category: 'Automation' },
+  { id: 'signature_workflow', name: 'Signature Workflow', category: 'Automation' },
+  { id: 'form_automation', name: 'Form Automation', category: 'Automation' },
+  { id: 'survey_automation', name: 'Survey Automation', category: 'Automation' },
+  { id: 'feedback_collection', name: 'Feedback Collection', category: 'Automation' },
+  { id: 'report_scheduling', name: 'Report Scheduling', category: 'Automation' },
+  { id: 'data_sync_automation', name: 'Data Sync Automation', category: 'Automation' },
+  { id: 'file_transfer', name: 'File Transfer', category: 'Automation' },
+  { id: 'ftp_automation', name: 'FTP Automation', category: 'Automation' },
+  { id: 'sftp_scheduler', name: 'SFTP Scheduler', category: 'Automation' },
+  { id: 'database_sync', name: 'Database Sync', category: 'Automation' },
+  { id: 'api_orchestration', name: 'API Orchestration', category: 'Automation' },
+  { id: 'webhook_automation', name: 'Webhook Automation', category: 'Automation' },
+  { id: 'cron_management', name: 'Cron Management', category: 'Automation' },
+  { id: 'job_scheduler', name: 'Job Scheduler', category: 'Automation' },
+  { id: 'queue_management', name: 'Queue Management', category: 'Automation' },
+  { id: 'message_broker', name: 'Message Broker', category: 'Automation' },
+  { id: 'event_bus', name: 'Event Bus', category: 'Automation' },
+  { id: 'state_machine', name: 'State Machine', category: 'Automation' },
+  { id: 'business_rules', name: 'Business Rules', category: 'Automation' },
+  { id: 'decision_automation', name: 'Decision Automation', category: 'Automation' },
+  { id: 'policy_enforcement', name: 'Policy Enforcement', category: 'Automation' },
+  { id: 'compliance_automation', name: 'Compliance Automation', category: 'Automation' },
+  { id: 'audit_automation', name: 'Audit Automation', category: 'Automation' },
 
   // Analytics Skills (40+ skills)
   { id: 'dashboard_builder', name: 'Dashboard Builder', category: 'Analytics' },
@@ -311,6 +551,31 @@ const ALL_SKILLS = [
   { id: 'custom_metrics', name: 'Custom Metrics', category: 'Analytics' },
   { id: 'roi_calculator', name: 'ROI Calculator', category: 'Analytics' },
   { id: 'cost_analysis', name: 'Cost Analysis', category: 'Analytics' },
+  { id: 'revenue_tracking', name: 'Revenue Tracking', category: 'Analytics' },
+  { id: 'profit_analysis', name: 'Profit Analysis', category: 'Analytics' },
+  { id: 'budget_tracking', name: 'Budget Tracking', category: 'Analytics' },
+  { id: 'forecast_modeling', name: 'Forecast Modeling', category: 'Analytics' },
+  { id: 'scenario_analysis', name: 'Scenario Analysis', category: 'Analytics' },
+  { id: 'what_if_analysis', name: 'What-If Analysis', category: 'Analytics' },
+  { id: 'risk_assessment', name: 'Risk Assessment', category: 'Analytics' },
+  { id: 'market_analysis', name: 'Market Analysis', category: 'Analytics' },
+  { id: 'competitor_analysis', name: 'Competitor Analysis', category: 'Analytics' },
+  { id: 'customer_insights', name: 'Customer Insights', category: 'Analytics' },
+  { id: 'behavior_tracking', name: 'Behavior Tracking', category: 'Analytics' },
+  { id: 'engagement_metrics', name: 'Engagement Metrics', category: 'Analytics' },
+  { id: 'retention_analysis', name: 'Retention Analysis', category: 'Analytics' },
+  { id: 'ltv_calculation', name: 'LTV Calculation', category: 'Analytics' },
+  { id: 'cac_analysis', name: 'CAC Analysis', category: 'Analytics' },
+  { id: 'attribution_modeling', name: 'Attribution Modeling', category: 'Analytics' },
+  { id: 'path_analysis', name: 'Path Analysis', category: 'Analytics' },
+  { id: 'click_tracking', name: 'Click Tracking', category: 'Analytics' },
+  { id: 'scroll_tracking', name: 'Scroll Tracking', category: 'Analytics' },
+  { id: 'form_analytics', name: 'Form Analytics', category: 'Analytics' },
+  { id: 'error_tracking', name: 'Error Tracking', category: 'Analytics' },
+  { id: 'performance_monitoring', name: 'Performance Monitoring', category: 'Analytics' },
+  { id: 'uptime_monitoring', name: 'Uptime Monitoring', category: 'Analytics' },
+  { id: 'load_testing', name: 'Load Testing', category: 'Analytics' },
+  { id: 'stress_testing', name: 'Stress Testing', category: 'Analytics' },
 
   // Security Skills (30+ skills)
   { id: 'access_control', name: 'Access Control', category: 'Security' },
@@ -328,6 +593,21 @@ const ALL_SKILLS = [
   { id: 'password_manager', name: 'Password Manager', category: 'Security' },
   { id: 'two_factor_auth', name: 'Two Factor Auth', category: 'Security' },
   { id: 'biometric_auth', name: 'Biometric Auth', category: 'Security' },
+  { id: 'single_sign_on', name: 'Single Sign-On', category: 'Security' },
+  { id: 'oauth_provider', name: 'OAuth Provider', category: 'Security' },
+  { id: 'saml_integration', name: 'SAML Integration', category: 'Security' },
+  { id: 'ldap_connector', name: 'LDAP Connector', category: 'Security' },
+  { id: 'active_directory', name: 'Active Directory', category: 'Security' },
+  { id: 'role_management', name: 'Role Management', category: 'Security' },
+  { id: 'permission_system', name: 'Permission System', category: 'Security' },
+  { id: 'audit_logging', name: 'Audit Logging', category: 'Security' },
+  { id: 'security_monitoring', name: 'Security Monitoring', category: 'Security' },
+  { id: 'intrusion_detection', name: 'Intrusion Detection', category: 'Security' },
+  { id: 'penetration_testing', name: 'Penetration Testing', category: 'Security' },
+  { id: 'security_scanning', name: 'Security Scanning', category: 'Security' },
+  { id: 'code_scanning', name: 'Code Scanning', category: 'Security' },
+  { id: 'dependency_check', name: 'Dependency Check', category: 'Security' },
+  { id: 'secrets_management', name: 'Secrets Management', category: 'Security' },
 
   // Utility Skills (45+ skills)
   { id: 'web_scraper', name: 'Web Scraper', category: 'Utility' },
@@ -636,28 +916,168 @@ export default function AgentBuilderPage() {
                 />
               </div>
             ) : (
-              /* Direct input form - available to everyone */
-              <div className="p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2"
-                    style={{ color: 'rgb(229, 227, 220)' }}>
-                    What's the main job you'd like your agent to do?
-                  </label>
-                  <textarea
-                    value={inputDescription}
-                    onChange={(e) => {
-                      setInputDescription(e.target.value);
-                      analyzeDescription(e.target.value);
-                    }}
-                    placeholder="E.g., I need an agent to handle customer support tickets, respond to common questions, and escalate complex issues. We use Slack and Gmail for communication..."
-                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgb(169,189,203)]"
-                    rows={6}
-                    style={{
-                      backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                      borderColor: 'rgba(169, 189, 203, 0.3)',
-                      color: 'rgb(229, 227, 220)'
-                    }}
-                  />
+              /* Interactive conversational form - available to everyone */
+              <div className="p-6 h-full flex flex-col">
+                {/* Conversation History */}
+                <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+                  {/* Initial Question */}
+                  <div className="flex gap-3">
+                    <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                      backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                    }}>
+                      <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
+                      <div className="p-3 rounded-lg" style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                        borderLeft: '3px solid rgb(169, 189, 203)'
+                      }}>
+                        <p style={{ color: 'rgb(229, 227, 220)' }}>
+                          {chatStep === 0 ? "What's the main job you'd like your AI agent to do?" :
+                           chatStep === 1 ? "Great! Now, what industry or type of business are you in?" :
+                           chatStep === 2 ? "What are your biggest pain points or challenges right now?" :
+                           chatStep === 3 ? "How many people/customers do you typically handle per day?" :
+                           chatStep === 4 ? "What tools or software do you currently use?" :
+                           chatStep === 5 ? "What would success look like for this AI agent?" :
+                           "Perfect! I'm tailoring your agent based on your needs..."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User Responses */}
+                  {Object.entries(chatResponses).map(([step, response]) => (
+                    <div key={step} className="flex gap-3">
+                      <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                        backgroundColor: 'rgba(229, 227, 220, 0.2)'
+                      }}>
+                        <span style={{ color: 'rgb(229, 227, 220)', fontSize: '12px' }}>You</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium mb-1" style={{ color: 'rgb(229, 227, 220)' }}>You</p>
+                        <div className="p-3 rounded-lg" style={{
+                          backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                          border: '1px solid rgba(169, 189, 203, 0.2)'
+                        }}>
+                          <p style={{ color: 'rgb(229, 227, 220)' }}>{response}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* AI Follow-up Question */}
+                  {chatStep > 0 && chatStep < 6 && chatResponses[chatStep - 1] && (
+                    <div className="flex gap-3">
+                      <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                      }}>
+                        <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
+                        <div className="p-3 rounded-lg" style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                          borderLeft: '3px solid rgb(169, 189, 203)'
+                        }}>
+                          <p style={{ color: 'rgb(229, 227, 220)' }}>
+                            {chatStep === 1 ? "Great! Now, what industry or type of business are you in?" :
+                             chatStep === 2 ? "What are your biggest pain points or challenges right now?" :
+                             chatStep === 3 ? "How many people/customers do you typically handle per day?" :
+                             chatStep === 4 ? "What tools or software do you currently use?" :
+                             chatStep === 5 ? "What would success look like for this AI agent?" :
+                             "Perfect! I'm tailoring your agent based on your needs..."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Area */}
+                <div className="border-t pt-4" style={{ borderColor: 'rgba(169, 189, 203, 0.2)' }}>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      value={inputDescription}
+                      onChange={(e) => setInputDescription(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && inputDescription.trim()) {
+                          // Save response and analyze
+                          const newResponses = { ...chatResponses, [chatStep]: inputDescription };
+                          setChatResponses(newResponses);
+
+                          // Analyze all responses to build config
+                          const fullDescription = Object.values(newResponses).join(' ');
+                          analyzeDescription(fullDescription);
+
+                          // Move to next step
+                          if (chatStep < 5) {
+                            setChatStep(chatStep + 1);
+                          }
+                          setInputDescription('');
+                        }
+                      }}
+                      placeholder={chatStep === 0 ? "E.g., Handle customer support tickets..." :
+                                   chatStep === 1 ? "E.g., E-commerce, SaaS, Healthcare..." :
+                                   chatStep === 2 ? "E.g., Too many repetitive inquiries..." :
+                                   chatStep === 3 ? "E.g., 50-100 customers..." :
+                                   chatStep === 4 ? "E.g., Slack, Gmail, Salesforce..." :
+                                   chatStep === 5 ? "E.g., 50% reduction in response time..." :
+                                   "Type your answer..."}
+                      className="flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[rgb(169,189,203)]"
+                      style={{
+                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                        borderColor: 'rgba(169, 189, 203, 0.3)',
+                        color: 'rgb(229, 227, 220)'
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (inputDescription.trim()) {
+                          // Save response and analyze
+                          const newResponses = { ...chatResponses, [chatStep]: inputDescription };
+                          setChatResponses(newResponses);
+
+                          // Analyze all responses to build config
+                          const fullDescription = Object.values(newResponses).join(' ');
+                          analyzeDescription(fullDescription);
+
+                          // Move to next step
+                          if (chatStep < 5) {
+                            setChatStep(chatStep + 1);
+                          }
+                          setInputDescription('');
+                        }
+                      }}
+                      className="px-4 py-3 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                      style={{
+                        backgroundColor: 'rgb(169, 189, 203)',
+                        color: 'white'
+                      }}
+                    >
+                      <PaperAirplaneIcon className="h-4 w-4" />
+                      Send
+                    </button>
+                  </div>
+
+                  {/* Progress Indicator */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="flex-1 h-1 rounded-full overflow-hidden" style={{
+                      backgroundColor: 'rgba(169, 189, 203, 0.2)'
+                    }}>
+                      <div
+                        className="h-full transition-all duration-500"
+                        style={{
+                          width: `${(Object.keys(chatResponses).length / 6) * 100}%`,
+                          backgroundColor: 'rgb(169, 189, 203)'
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                      {Object.keys(chatResponses).length}/6 questions
+                    </span>
+                  </div>
                 </div>
 
                 {/* Popular Features Section */}
