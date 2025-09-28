@@ -7,6 +7,8 @@ const publicPaths = [
   '/api/auth',
   '/api/widget',  // Widget endpoints must be public for embedding
   '/api/webhook', // Webhook endpoints for external services
+  '/agent-builder', // Allow public access to agent builder
+  '/marketplace/public', // Public marketplace
   '/_next',
   '/favicon.ico',
   '/chatbot-widget.js'
