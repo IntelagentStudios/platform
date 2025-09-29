@@ -35,8 +35,9 @@ import {
   WrenchIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../components/DashboardLayout';
-import AgentBuilderChatbotEnhanced from '../../components/AgentBuilderChatbotEnhanced';
+import EmbeddedChatbot from '../../components/EmbeddedChatbot';
 import DashboardPreview from '../../components/DashboardPreview';
+import { SKILLS_CATALOG, getSkillsByAgentType, TOTAL_SKILLS } from '../../utils/skillsCatalog';
 
 // Comprehensive integrations list organized by category
 const INTEGRATIONS = {
@@ -62,53 +63,36 @@ const INTEGRATIONS = {
   ],
 };
 
-// Skill detection mappings
+// Skill detection mappings - now using comprehensive catalog
 const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: number } } = {
   sales: {
     name: 'Sales Outreach Agent',
-    skills: [
-      'Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management',
-      'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder'
-    ],
+    skills: getSkillsByAgentType('sales').map(s => s.name),
     price: 649
   },
   support: {
     name: 'Customer Support Agent',
-    skills: [
-      'Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder',
-      'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk'
-    ],
+    skills: getSkillsByAgentType('support').map(s => s.name),
     price: 349
   },
   marketing: {
     name: 'Marketing Automation Agent',
-    skills: [
-      'Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization',
-      'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking'
-    ],
+    skills: getSkillsByAgentType('marketing').map(s => s.name),
     price: 449
   },
   operations: {
     name: 'Operations Agent',
-    skills: [
-      'Workflow Automation', 'Process Optimization', 'Task Management', 'Resource Planning', 'Inventory Control',
-      'Supply Chain Management', 'Quality Assurance', 'Performance Monitoring', 'Capacity Planning', 'Scheduling'
-    ],
+    skills: getSkillsByAgentType('operations').map(s => s.name),
     price: 549
   },
   data: {
     name: 'Data Analytics Agent',
-    skills: [
-      'Data Collection', 'Data Cleaning', 'Data Transformation', 'ETL Pipelines', 'Data Warehousing',
-      'Statistical Analysis', 'Predictive Analytics', 'Machine Learning', 'Deep Learning', 'Neural Networks'
-    ],
+    skills: getSkillsByAgentType('data').map(s => s.name),
     price: 749
   },
   general: {
     name: 'Custom AI Agent',
-    skills: [
-      'Task Automation', 'Data Processing', 'API Integration', 'Custom Workflows', 'Report Generation'
-    ],
+    skills: getSkillsByAgentType('general').map(s => s.name),
     price: 299
   }
 };
@@ -360,7 +344,7 @@ export default function AgentBuilderPage() {
                 AI Agent Builder
               </h1>
               <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                Build your custom AI agent with our intelligent configuration system
+                Build your custom AI agent from our library of {TOTAL_SKILLS}+ skills
               </p>
             </div>
             {previewMode && (
@@ -401,115 +385,20 @@ export default function AgentBuilderPage() {
           />
         ) : (
           <div className="p-8">
-            {/* Top Section: AI Conversation Area */}
+            {/* Top Section: Embedded Chatbot */}
             <div className="max-w-4xl mx-auto mb-8">
-              <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                <div className="space-y-4">
-                  {/* AI Initial Message */}
-                  <div className="flex gap-3">
-                    <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500">
-                      <SparklesIcon className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                      <div className="p-4 rounded-lg" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                        borderLeft: '3px solid rgb(169, 189, 203)'
-                      }}>
-                        <p style={{ color: 'rgb(229, 227, 220)' }}>
-                          Tell me about your business and what you'd like your AI agent to help with. I'll analyze your needs and configure the perfect solution.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <EmbeddedChatbot
+                title="AI Agent Configuration Assistant"
+                placeholder="Describe your business needs..."
+                welcomeMessage="Hello! I'm here to help you build the perfect AI agent for your business. Tell me about your needs, and I'll configure the optimal solution with the right skills and integrations."
+                height="400px"
+                onSend={(message) => {
+                  analyzeDescription(message);
+                  setChatResponses({ 0: message });
+                  setHasInteracted(true);
+                }}
+              />
 
-                  {/* User's Response if provided */}
-                  {chatResponses[0] && (
-                    <>
-                      <div className="flex gap-3">
-                        <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
-                          backgroundColor: 'rgba(229, 227, 220, 0.2)'
-                        }}>
-                          <span style={{ color: 'rgb(229, 227, 220)', fontSize: '12px' }}>You</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium mb-1" style={{ color: 'rgb(229, 227, 220)' }}>You</p>
-                          <div className="p-4 rounded-lg" style={{
-                            backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                            border: '1px solid rgba(169, 189, 203, 0.2)'
-                          }}>
-                            <p style={{ color: 'rgb(229, 227, 220)' }}>{chatResponses[0]}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* AI Analysis Response */}
-                      <div className="flex gap-3">
-                        <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500">
-                          <SparklesIcon className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                          <div className="p-4 rounded-lg" style={{
-                            backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                            borderLeft: '3px solid rgb(169, 189, 203)'
-                          }}>
-                            <p style={{ color: 'rgb(229, 227, 220)' }}>
-                              Perfect! I've configured a <strong>{agentConfig.name}</strong> with {agentConfig.skills.length} specialized skills.
-                              Customize the options below or continue to preview your solution.
-                            </p>
-                            <div className="flex gap-3 mt-4">
-                              <button
-                                onClick={handleContinue}
-                                className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
-                                style={{
-                                  backgroundColor: 'rgb(169, 189, 203)',
-                                  color: 'white'
-                                }}
-                              >
-                                Preview Dashboard
-                                <ArrowRightIcon className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Input Area */}
-                {!chatResponses[0] && (
-                  <div className="mt-6 pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        value={inputDescription}
-                        onChange={(e) => setInputDescription(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleInputSubmit()}
-                        placeholder="E.g., I need help managing customer support tickets and automating responses..."
-                        className="flex-1 px-4 py-3 rounded-lg border"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          borderColor: 'rgba(169, 189, 203, 0.3)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      />
-                      <button
-                        onClick={handleInputSubmit}
-                        className="px-6 py-3 rounded-lg transition hover:opacity-80 flex items-center gap-2"
-                        style={{
-                          backgroundColor: 'rgb(169, 189, 203)',
-                          color: 'white'
-                        }}
-                      >
-                        <PaperAirplaneIcon className="h-5 w-5" />
-                        Analyze
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Bottom Section: Configuration Grid */}
@@ -684,7 +573,7 @@ export default function AgentBuilderPage() {
                         backgroundColor: 'rgba(169, 189, 203, 0.2)',
                         color: 'rgb(169, 189, 203)'
                       }}>
-                        {agentConfig.skills.length} Active
+                        {agentConfig.skills.length}/{TOTAL_SKILLS} Skills
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -721,8 +610,8 @@ export default function AgentBuilderPage() {
                       <div className="flex flex-wrap gap-2 mt-2">
                         {agentConfig.integrations.map(int => (
                           <span key={int} className="px-2 py-1 text-xs rounded" style={{
-                            backgroundColor: 'rgba(76, 175, 80, 0.15)',
-                            color: 'rgb(76, 175, 80)'
+                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                            color: 'rgb(169, 189, 203)'
                           }}>
                             {int}
                           </span>
@@ -733,7 +622,10 @@ export default function AgentBuilderPage() {
 
                   <button
                     onClick={() => setPreviewMode(true)}
-                    className="w-full mt-4 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                    className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: 'rgb(169, 189, 203)'
+                    }}
                   >
                     <EyeIcon className="h-5 w-5" />
                     Preview Dashboard
@@ -822,7 +714,7 @@ export default function AgentBuilderPage() {
               <div className="p-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.2)' }}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                    {agentConfig.name} - Complete Skills Breakdown
+                    {agentConfig.name} - Complete Skills Breakdown ({agentConfig.skills.length} Skills)
                   </h2>
                   <button
                     onClick={() => setShowSkillsBreakdown(false)}
@@ -853,16 +745,7 @@ export default function AgentBuilderPage() {
           </div>
         )}
 
-        {/* Agent Builder Chatbot - Floating Widget */}
-        <AgentBuilderChatbotEnhanced
-          onConfigUpdate={handleChatbotConfigUpdate}
-          agentContext={{
-            currentType: agentConfig.agentType,
-            selectedIntegrations: agentConfig.integrations,
-            selectedSkills: agentConfig.skills,
-            hasInteracted: hasInteracted
-          }}
-        />
+        {/* No floating widget needed - using embedded chatbot */}
       </div>
     </DashboardLayout>
   );
