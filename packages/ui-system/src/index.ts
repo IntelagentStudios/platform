@@ -61,12 +61,12 @@ export interface DesignerRequest {
   product: string;
   skills: string[];
   integrations?: string[];
-  currentLayout?: LayoutSchema;
+  currentLayout?: any;
 }
 
 export interface DesignerResponse {
   success: boolean;
-  draftLayout?: LayoutSchema;
+  draftLayout?: any;
   changes?: string[];
   suggestions?: string[];
   error?: string;

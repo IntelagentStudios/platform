@@ -41,17 +41,17 @@ export abstract class IntegrationAdapter {
   /**
    * Initialize the integration (e.g., verify credentials)
    */
-  abstract async initialize(): Promise<boolean>;
+  abstract initialize(): Promise<boolean>;
 
   /**
    * Fetch data from the integration
    */
-  abstract async fetchData(endpoint: string, params?: Record<string, any>): Promise<IntegrationData>;
+  abstract fetchData(endpoint: string, params?: Record<string, any>): Promise<IntegrationData>;
 
   /**
    * Push data to the integration
    */
-  abstract async pushData(endpoint: string, data: any): Promise<IntegrationData>;
+  abstract pushData(endpoint: string, data: any): Promise<IntegrationData>;
 
   /**
    * Subscribe to webhooks
@@ -66,7 +66,7 @@ export abstract class IntegrationAdapter {
   /**
    * Get available fields for mapping
    */
-  abstract async getAvailableFields(): Promise<string[]>;
+  abstract getAvailableFields(): Promise<string[]>;
 
   /**
    * Validate configuration

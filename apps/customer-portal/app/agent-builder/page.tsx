@@ -34,7 +34,7 @@ import {
   LinkIcon,
   WrenchIcon
 } from '@heroicons/react/24/outline';
-import DashboardLayout from '../../components/DashboardLayout';
+// import DashboardLayout from '../../components/DashboardLayout'; // Temporarily commented to fix build
 import AgentBuilderChatV2 from '../../components/AgentBuilderChatV2';
 import DashboardPreview from '../../components/DashboardPreview';
 
@@ -452,10 +452,10 @@ export default function AgentBuilderPage() {
     return basePrice + featuresPrice;
   };
 
+  // Temporarily removing DashboardLayout wrapper to fix production build
   return (
-    <DashboardLayout>
-      <div className="min-h-screen">
-        {/* Header */}
+    <div className="min-h-screen bg-gray-900">
+      {/* Header */}
         <div className="px-8 py-6 border-b" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
           <div className="flex justify-between items-center">
             <div>
@@ -967,8 +967,8 @@ export default function AgentBuilderPage() {
                     </div>
                   </div>
                 </div>
+              </div>
             </div>
-          </div>
         )}
 
         {/* Skills Breakdown Modal */}
@@ -1008,7 +1008,6 @@ export default function AgentBuilderPage() {
             </div>
           </div>
         )}
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

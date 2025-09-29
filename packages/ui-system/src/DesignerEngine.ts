@@ -128,7 +128,7 @@ export class DesignerEngine {
     const availableWidgets = this.catalog.getAvailableWidgets(catalogNamespace);
 
     // Use default generator as base
-    const defaultLayout = LayoutBuilder.generateDefault(product, skills);
+    const defaultLayout = LayoutBuilder.generateDefault(product);
 
     // Enhance based on intent
     if (intent.action === 'add' && intent.metrics.length > 0) {
@@ -347,7 +347,7 @@ export class DesignerEngine {
       .join(' ');
   }
 
-  private addRequestedMetrics(layout: LayoutSchema, metrics: string[], namespace: string) {
+  private addRequestedMetrics(layout: LayoutSchema, metrics: string[], _namespace: string) {
     // Add requested metrics to the first tab
     if (layout.tabs[0] && layout.tabs[0].rows[0]) {
       metrics.forEach(metric => {
@@ -376,7 +376,7 @@ export class DesignerEngine {
     }
   }
 
-  private addIntegrationWidgets(layout: LayoutSchema, integrations: string[], namespace: string) {
+  private addIntegrationWidgets(layout: LayoutSchema, integrations: string[], _namespace: string) {
     // Add a tab for each integration
     integrations.forEach(integration => {
       const tab = {
@@ -436,7 +436,7 @@ export class DesignerEngine {
     return parts.join(' ');
   }
 
-  private generateSuggestions(product: string, availableWidgets: string[]): string[] {
+  private generateSuggestions(_product: string, availableWidgets: string[]): string[] {
     const suggestions: string[] = [];
 
     suggestions.push(`You can add any of ${availableWidgets.length} available widgets.`);

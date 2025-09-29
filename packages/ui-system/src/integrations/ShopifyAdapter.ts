@@ -77,7 +77,7 @@ export class ShopifyAdapter extends IntegrationAdapter {
 
     const response = await fetch(url.toString(), {
       headers: {
-        'X-Shopify-Access-Token': this.config.accessToken,
+        'X-Shopify-Access-Token': this.config.accessToken || '',
         'Content-Type': 'application/json'
       }
     });
@@ -196,7 +196,7 @@ export class ShopifyAdapter extends IntegrationAdapter {
         {
           method: 'POST',
           headers: {
-            'X-Shopify-Access-Token': this.config.accessToken,
+            'X-Shopify-Access-Token': this.config.accessToken || '',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
