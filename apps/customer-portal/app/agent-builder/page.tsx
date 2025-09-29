@@ -487,7 +487,7 @@ export default function AgentBuilderPage() {
             agentName={agentConfig.name}
             requirements={{
               goal: agentConfig.description,
-              industry: detectedIndustry
+              industry: 'Technology' // Default industry
             }}
             agentConfig={{
               agentName: agentConfig.name,
@@ -495,7 +495,7 @@ export default function AgentBuilderPage() {
                 goal: agentConfig.description,
                 tools: agentConfig.features || [],
                 outputs: [`Monthly £${agentConfig.price} value`],
-                industry: detectedIndustry
+                industry: 'Technology' // Default industry
               },
               suggestedSkills: agentConfig.skills || []
             }}
