@@ -321,28 +321,160 @@ const POPULAR_FEATURES = [
     name: 'AI-Powered Chatbot',
     description: 'Natural language understanding',
     icon: ChatBubbleLeftRightIcon,
-    priceImpact: 50
+    priceImpact: 50,
+    category: 'communication'
   },
   {
     id: 'voice_assistant',
     name: 'Voice Commands',
     description: 'Control with voice',
     icon: MicrophoneIcon,
-    priceImpact: 75
+    priceImpact: 75,
+    category: 'communication'
   },
   {
     id: 'multi_language',
     name: 'Multi-Language',
     description: '95+ languages',
     icon: DocumentChartBarIcon,
-    priceImpact: 100
+    priceImpact: 100,
+    category: 'localization'
   },
   {
     id: 'white_label',
     name: 'White Label',
     description: 'Your branding',
     icon: PencilIcon,
-    priceImpact: 150
+    priceImpact: 150,
+    category: 'customization'
+  },
+  {
+    id: 'api_access',
+    name: 'API Access',
+    description: 'Full REST API',
+    icon: CodeBracketIcon,
+    priceImpact: 100,
+    category: 'integration'
+  },
+  {
+    id: 'custom_workflows',
+    name: 'Custom Workflows',
+    description: 'Workflow automation',
+    icon: CogIcon,
+    priceImpact: 125,
+    category: 'automation'
+  },
+  {
+    id: 'advanced_analytics',
+    name: 'Advanced Analytics',
+    description: 'Deep insights & reports',
+    icon: ChartBarIcon,
+    priceImpact: 80,
+    category: 'analytics'
+  },
+  {
+    id: 'priority_support',
+    name: 'Priority Support',
+    description: '24/7 dedicated support',
+    icon: ShieldCheckIcon,
+    priceImpact: 200,
+    category: 'support'
+  },
+  {
+    id: 'unlimited_usage',
+    name: 'Unlimited Usage',
+    description: 'No usage limits',
+    icon: BoltIcon,
+    priceImpact: 300,
+    category: 'capacity'
+  },
+  {
+    id: 'advanced_security',
+    name: 'Advanced Security',
+    description: 'Enterprise security',
+    icon: ShieldCheckIcon,
+    priceImpact: 150,
+    category: 'security'
+  },
+  {
+    id: 'data_export',
+    name: 'Data Export',
+    description: 'Export all data',
+    icon: CloudArrowUpIcon,
+    priceImpact: 50,
+    category: 'data'
+  },
+  {
+    id: 'custom_integrations',
+    name: 'Custom Integrations',
+    description: 'Build custom connectors',
+    icon: LinkIcon,
+    priceImpact: 175,
+    category: 'integration'
+  },
+  {
+    id: 'sla_guarantee',
+    name: 'SLA Guarantee',
+    description: '99.9% uptime SLA',
+    icon: ShieldCheckIcon,
+    priceImpact: 100,
+    category: 'reliability'
+  },
+  {
+    id: 'dedicated_instance',
+    name: 'Dedicated Instance',
+    description: 'Private deployment',
+    icon: ServerStackIcon,
+    priceImpact: 500,
+    category: 'infrastructure'
+  },
+  {
+    id: 'audit_logs',
+    name: 'Audit Logs',
+    description: 'Complete audit trail',
+    icon: DocumentChartBarIcon,
+    priceImpact: 75,
+    category: 'compliance'
+  },
+  {
+    id: 'role_based_access',
+    name: 'Role-Based Access',
+    description: 'Team permissions',
+    icon: ShieldCheckIcon,
+    priceImpact: 60,
+    category: 'security'
+  },
+  {
+    id: 'webhooks',
+    name: 'Webhooks',
+    description: 'Real-time events',
+    icon: BoltIcon,
+    priceImpact: 40,
+    category: 'integration'
+  },
+  {
+    id: 'sandbox_environment',
+    name: 'Sandbox Environment',
+    description: 'Test environment',
+    icon: WrenchIcon,
+    priceImpact: 80,
+    category: 'development'
+  },
+  {
+    id: 'custom_reporting',
+    name: 'Custom Reporting',
+    description: 'Build custom reports',
+    icon: DocumentChartBarIcon,
+    priceImpact: 90,
+    category: 'analytics'
+  },
+  {
+    id: 'mobile_app',
+    name: 'Mobile App',
+    description: 'iOS & Android apps',
+    icon: CubeIcon,
+    priceImpact: 200,
+    category: 'platform'
   }
 ];
 
@@ -390,6 +522,8 @@ export default function AgentBuilderPage() {
   const [chatResponses, setChatResponses] = useState<{[key: string]: string}>({});
   const [hasInteracted, setHasInteracted] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [expandedSkillCategory, setExpandedSkillCategory] = useState<string | null>(null);
+  const [suggestedFeatures, setSuggestedFeatures] = useState<string[]>([]);
 
   // Check authentication
   useEffect(() => {
@@ -485,6 +619,62 @@ export default function AgentBuilderPage() {
         price: basePrice + featurePrice
       };
     });
+  };
+
+  // Toggle skill selection
+  const toggleSkill = (skillId: string) => {
+    setAgentConfig(prev => {
+      const skills = prev.skills.includes(skillId)
+        ? prev.skills.filter(s => s !== skillId)
+        : [...prev.skills, skillId];
+
+      // Update suggested features based on skills
+      updateSuggestedFeatures(skills);
+
+      return {
+        ...prev,
+        skills,
+        price: 299 + Math.floor(skills.length / 10) * 50 // Price increases with more skills
+      };
+    });
+  };
+
+  // Update suggested features based on selected skills
+  const updateSuggestedFeatures = (skills: string[]) => {
+    const features = new Set<string>();
+
+    // Analyze skills to suggest features
+    const skillCategories = new Set<string>();
+    skills.forEach(skillId => {
+      Object.entries(SKILLS_CATALOG).forEach(([category, categorySkills]) => {
+        if (categorySkills.some(s => s.id === skillId)) {
+          skillCategories.add(category);
+        }
+      });
+    });
+
+    // Suggest features based on skill categories
+    if (skillCategories.has('Sales & CRM') || skillCategories.has('Customer Support')) {
+      features.add('ai_chatbot');
+      features.add('voice_assistant');
+    }
+    if (skillCategories.has('Marketing & Social') || skillCategories.has('Social & Content')) {
+      features.add('multi_language');
+      features.add('white_label');
+    }
+    if (skillCategories.has('Data & Analytics') || skillCategories.has('AI & Machine Learning')) {
+      features.add('custom_workflows');
+      features.add('api_access');
+    }
+    if (skillCategories.has('Finance & Accounting')) {
+      features.add('advanced_security');
+      features.add('priority_support');
+    }
+    if (skills.length > 20) {
+      features.add('unlimited_usage');
+    }
+
+    setSuggestedFeatures(Array.from(features));
   };
 
   // Calculate total price
@@ -621,148 +811,7 @@ export default function AgentBuilderPage() {
             {/* Bottom Section: Configuration Grid */}
             <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Configuration Column */}
-                <div>
-                  <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      <CogIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Configuration
-                    </h3>
-
-                    <div className="space-y-4">
-                      {/* Agent Type */}
-                      <div>
-                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Agent Type
-                        </label>
-                        <select
-                          value={agentConfig.agentType}
-                          onChange={(e) => {
-                            const newType = e.target.value;
-                            const mapping = SKILL_MAPPINGS[newType] || SKILL_MAPPINGS.general;
-                            setAgentConfig(prev => ({
-                              ...prev,
-                              agentType: newType,
-                              name: mapping.name,
-                              skills: mapping.skills,
-                              price: mapping.price
-                            }));
-                          }}
-                          className="w-full px-3 py-2 rounded-lg border text-sm"
-                          style={{
-                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                            borderColor: 'rgba(169, 189, 203, 0.3)',
-                            color: 'rgb(229, 227, 220)'
-                          }}
-                        >
-                          <option value="sales">Sales Agent</option>
-                          <option value="support">Support Agent</option>
-                          <option value="marketing">Marketing Agent</option>
-                          <option value="operations">Operations Agent</option>
-                          <option value="data">Data Analytics Agent</option>
-                          <option value="general">Custom AI Agent</option>
-                        </select>
-                      </div>
-
-                      {/* Industry */}
-                      <div>
-                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Industry
-                        </label>
-                        <select
-                          value={agentConfig.industry || 'Technology'}
-                          onChange={(e) => setAgentConfig(prev => ({ ...prev, industry: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg border text-sm"
-                          style={{
-                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                            borderColor: 'rgba(169, 189, 203, 0.3)',
-                            color: 'rgb(229, 227, 220)'
-                          }}
-                        >
-                          <option value="Technology">Technology</option>
-                          <option value="E-commerce">E-commerce</option>
-                          <option value="Healthcare">Healthcare</option>
-                          <option value="Finance">Finance</option>
-                          <option value="Education">Education</option>
-                          <option value="Real Estate">Real Estate</option>
-                        </select>
-                      </div>
-
-                      {/* Company Size */}
-                      <div>
-                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Company Size
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          {['1-10', '11-50', '51-200', '200+'].map(size => (
-                            <button
-                              key={size}
-                              onClick={() => setAgentConfig(prev => ({ ...prev, companySize: size }))}
-                              className="px-3 py-2 rounded-lg border text-xs transition"
-                              style={{
-                                backgroundColor: agentConfig.companySize === size
-                                  ? 'rgba(169, 189, 203, 0.1)'
-                                  : 'rgba(48, 54, 54, 0.3)',
-                                borderColor: agentConfig.companySize === size
-                                  ? 'rgb(169, 189, 203)'
-                                  : 'rgba(169, 189, 203, 0.2)',
-                                color: 'rgb(229, 227, 220)'
-                              }}
-                            >
-                              {size}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mt-6 bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Features
-                    </h3>
-                    <div className="space-y-2">
-                      {POPULAR_FEATURES.map(feature => {
-                        const Icon = feature.icon;
-                        return (
-                          <button
-                            key={feature.id}
-                            onClick={() => toggleFeature(feature.id)}
-                            className="w-full p-3 rounded-lg border transition hover:opacity-90 text-left"
-                            style={{
-                              backgroundColor: agentConfig.features.includes(feature.id)
-                                ? 'rgba(169, 189, 203, 0.1)'
-                                : 'transparent',
-                              borderColor: agentConfig.features.includes(feature.id)
-                                ? 'rgb(169, 189, 203)'
-                                : 'rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <Icon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }} />
-                                <div>
-                                  <div className="text-sm font-medium">{feature.name}</div>
-                                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
-                                    +£{feature.priceImpact}/mo
-                                  </div>
-                                </div>
-                              </div>
-                              {agentConfig.features.includes(feature.id) && (
-                                <CheckIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Integrations Column */}
+                {/* Integrations Column (Left) */}
                 <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                     <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -833,19 +882,116 @@ export default function AgentBuilderPage() {
                   </div>
                 </div>
 
-                {/* Current Build Column (moved to middle) */}
+                {/* Features & Capabilities Column (Middle) */}
                 <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                      {agentConfig.name}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      Features & Capabilities
                     </h3>
-                    <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                      color: 'rgb(169, 189, 203)'
-                    }}>
-                      £{calculateTotalPrice()}/mo
-                    </span>
+                    {suggestedFeatures.length > 0 && (
+                      <div className="p-2 rounded-lg mb-3" style={{ backgroundColor: 'rgba(169, 189, 203, 0.05)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                        <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
+                          <LightBulbIcon className="h-3 w-3 inline mr-1" />
+                          Suggested based on your skills:
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {suggestedFeatures.map(featureId => {
+                            const feature = POPULAR_FEATURES.find(f => f.id === featureId);
+                            if (!feature) return null;
+                            return (
+                              <button
+                                key={featureId}
+                                onClick={() => toggleFeature(featureId)}
+                                className="px-2 py-1 text-xs rounded transition hover:opacity-80"
+                                style={{
+                                  backgroundColor: agentConfig.features.includes(featureId)
+                                    ? 'rgba(169, 189, 203, 0.2)'
+                                    : 'rgba(169, 189, 203, 0.1)',
+                                  color: 'rgb(229, 227, 220)',
+                                  border: agentConfig.features.includes(featureId)
+                                    ? '1px solid rgba(169, 189, 203, 0.5)'
+                                    : '1px solid transparent'
+                                }}
+                              >
+                                {feature.name}
+                                {agentConfig.features.includes(featureId) && (
+                                  <CheckIcon className="h-3 w-3 inline ml-1" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                    {POPULAR_FEATURES.map(feature => {
+                      const Icon = feature.icon;
+                      const isRecommended = suggestedFeatures.includes(feature.id);
+                      return (
+                        <button
+                          key={feature.id}
+                          onClick={() => toggleFeature(feature.id)}
+                          className="w-full p-3 rounded-lg border transition hover:opacity-90 text-left relative"
+                          style={{
+                            backgroundColor: agentConfig.features.includes(feature.id)
+                              ? 'rgba(169, 189, 203, 0.1)'
+                              : 'transparent',
+                            borderColor: agentConfig.features.includes(feature.id)
+                              ? 'rgb(169, 189, 203)'
+                              : 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        >
+                          {isRecommended && (
+                            <div className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs rounded-full" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(169, 189, 203)',
+                              fontSize: '10px'
+                            }}>
+                              Recommended
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Icon className="h-5 w-5" style={{ color: 'rgba(169, 189, 203, 0.8)' }} />
+                              <div>
+                                <div className="text-sm font-medium">{feature.name}</div>
+                                <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                  {feature.description}
+                                </div>
+                                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                  +£{feature.priceImpact}/month
+                                </div>
+                              </div>
+                            </div>
+                            {agentConfig.features.includes(feature.id) && (
+                              <CheckIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Skills Matrix & Summary Column (Right) */}
+                <div>
+                  {/* Summary Section */}
+                  <div className="bg-gray-800/30 rounded-xl p-6 mb-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                        {agentConfig.name || 'Your AI Agent'}
+                      </h3>
+                      <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(169, 189, 203)'
+                      }}>
+                        £{calculateTotalPrice()}/mo
+                      </span>
+                    </div>
 
                   <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
                     {agentConfig.description || 'Your custom AI agent tailored to your needs'}
@@ -908,19 +1054,82 @@ export default function AgentBuilderPage() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => setPreviewMode(true)}
-                    className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                    style={{
-                      backgroundColor: 'rgb(169, 189, 203)'
-                    }}
-                  >
-                    <EyeIcon className="h-5 w-5" />
-                    Preview Dashboard
-                  </button>
-                </div>
+                    <button
+                      onClick={() => setPreviewMode(true)}
+                      className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                      style={{
+                        backgroundColor: 'rgb(169, 189, 203)'
+                      }}
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                      Preview Dashboard
+                    </button>
+                  </div>
 
-                {/* Configuration and Features Column (moved to right) */}
+                  {/* Skills Matrix */}
+                  <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      Skills Library ({agentConfig.skills.length}/{TOTAL_SKILLS} selected)
+                    </h3>
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {Object.entries(SKILLS_CATALOG).map(([category, skills]) => (
+                        <div key={category} className="rounded-lg border" style={{
+                          backgroundColor: 'rgba(58, 64, 64, 0.2)',
+                          borderColor: 'rgba(169, 189, 203, 0.2)'
+                        }}>
+                          <button
+                            onClick={() => setExpandedSkillCategory(
+                              expandedSkillCategory === category ? null : category
+                            )}
+                            className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
+                          >
+                            <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                              {category}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                color: 'rgba(169, 189, 203, 0.8)'
+                              }}>
+                                {skills.filter(s => agentConfig.skills.includes(s.id)).length}/{skills.length}
+                              </span>
+                              {expandedSkillCategory === category ? (
+                                <ChevronUpIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                              ) : (
+                                <ChevronDownIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                              )}
+                            </div>
+                          </button>
+                          {expandedSkillCategory === category && (
+                            <div className="p-2 grid grid-cols-1 gap-1">
+                              {skills.map(skill => (
+                                <button
+                                  key={skill.id}
+                                  onClick={() => toggleSkill(skill.id)}
+                                  className="px-2 py-1 rounded text-xs text-left hover:bg-opacity-10 transition flex items-center justify-between"
+                                  style={{
+                                    backgroundColor: agentConfig.skills.includes(skill.id)
+                                      ? 'rgba(169, 189, 203, 0.15)'
+                                      : 'transparent',
+                                    color: agentConfig.skills.includes(skill.id)
+                                      ? 'rgb(229, 227, 220)'
+                                      : 'rgba(229, 227, 220, 0.7)'
+                                  }}
+                                >
+                                  <span className="truncate">{skill.name}</span>
+                                  {agentConfig.skills.includes(skill.id) && (
+                                    <CheckIcon className="h-3 w-3 ml-1 flex-shrink-0" style={{ color: 'rgb(169, 189, 203)' }} />
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
