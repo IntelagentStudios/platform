@@ -5,8 +5,8 @@ import { BaseAdapter, QueryResult, QueryOptions } from './DatabaseAdapter';
  * Provides complete data isolation and security
  */
 export class ApiAdapter extends BaseAdapter {
-  private baseUrl: string;
-  private headers: Record<string, string>;
+  private baseUrl!: string;
+  private headers!: Record<string, string>;
 
   async connect(): Promise<void> {
     if (!this.config.apiEndpoint) {

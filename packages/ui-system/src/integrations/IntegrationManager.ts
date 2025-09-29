@@ -157,9 +157,9 @@ export class IntegrationManager {
    */
   private async saveConfiguration(
     key: string,
-    type: string,
-    config: IntegrationConfig,
-    tenantId: string
+    _type: string,
+    _config: IntegrationConfig,
+    _tenantId: string
   ): Promise<void> {
     // In production, save to database
     console.log(`Saving integration config: ${key}`);

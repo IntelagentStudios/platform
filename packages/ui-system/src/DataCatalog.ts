@@ -3,7 +3,7 @@
  * Maps UI widgets to skills, integrations, and data sources
  */
 
-import { SkillsRegistry } from '@intelagent/skills-orchestrator';
+// import { SkillsRegistry } from '@intelagent/skills-orchestrator';
 
 export interface CatalogRead {
   source: 'db' | 'analytics' | 'integration' | 'skill';
@@ -364,7 +364,7 @@ export class DataCatalog {
     return { success: true, data: {}, skill: skillName };
   }
 
-  private async fetchAnalytics(readDef: CatalogRead, params: Record<string, any>) {
+  private async fetchAnalytics(readDef: CatalogRead, _params: Record<string, any>) {
     // Implementation would fetch from analytics service
     // This is a placeholder
     return {

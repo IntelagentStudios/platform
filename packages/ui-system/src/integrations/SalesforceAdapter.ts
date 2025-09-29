@@ -1,4 +1,4 @@
-import { IntegrationAdapter, IntegrationConfig, IntegrationMetadata, IntegrationData } from './IntegrationAdapter';
+import { IntegrationAdapter, IntegrationMetadata, IntegrationData } from './IntegrationAdapter';
 
 export class SalesforceAdapter extends IntegrationAdapter {
   metadata: IntegrationMetadata = {

@@ -23,7 +23,8 @@
       "WebFetch(domain:github.com)",
       "Bash(cat:*)",
       "Bash(timeout 30 npm run build)",
-      "Bash(ren:*)"
+      "Bash(ren:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
