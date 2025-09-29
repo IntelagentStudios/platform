@@ -503,10 +503,114 @@ export default function AgentBuilderPage() {
             }}
           />
         ) : (
-          <div className="flex">
-            {/* Left: Chat Interface */}
-            <div className="flex-1 border-r" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-              <div className="p-6 h-full flex flex-col">
+          <div className="px-8 py-6">
+            {/* Top Section: Configuration Controls */}
+            <div className="grid grid-cols-4 gap-6 mb-6">
+              {/* Agent Type Selector */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Agent Type
+                </label>
+                <select
+                  value={agentConfig.agentType}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    const mapping = SKILL_MAPPINGS[newType] || SKILL_MAPPINGS.general;
+                    setAgentConfig(prev => ({
+                      ...prev,
+                      agentType: newType,
+                      name: mapping.name,
+                      skills: mapping.skills,
+                      price: mapping.price
+                    }));
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border"
+                  style={{
+                    backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                    borderColor: 'rgba(169, 189, 203, 0.3)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  <option value="sales">Sales Agent</option>
+                  <option value="support">Support Agent</option>
+                  <option value="marketing">Marketing Agent</option>
+                  <option value="operations">Operations Agent</option>
+                  <option value="data">Data Analysis Agent</option>
+                  <option value="general">Custom AI Agent</option>
+                </select>
+              </div>
+
+              {/* Industry Selector */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Industry
+                </label>
+                <select
+                  value={agentConfig.industry || 'Technology'}
+                  onChange={(e) => setAgentConfig(prev => ({ ...prev, industry: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border"
+                  style={{
+                    backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                    borderColor: 'rgba(169, 189, 203, 0.3)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  <option value="Technology">Technology</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Education">Education</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="Retail">Retail</option>
+                </select>
+              </div>
+
+              {/* Company Size */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  Company Size
+                </label>
+                <select
+                  value={agentConfig.companySize || '1-10'}
+                  onChange={(e) => setAgentConfig(prev => ({ ...prev, companySize: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border"
+                  style={{
+                    backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                    borderColor: 'rgba(169, 189, 203, 0.3)',
+                    color: 'rgb(229, 227, 220)'
+                  }}
+                >
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-200">51-200 employees</option>
+                  <option value="200+">200+ employees</option>
+                </select>
+              </div>
+
+              {/* Price Display */}
+              <div className="p-4 rounded-lg border" style={{
+                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                borderColor: 'rgba(169, 189, 203, 0.3)'
+              }}>
+                <div className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Monthly Cost</div>
+                <div className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                  £{calculateTotalPrice()}
+                </div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                  {agentConfig.skills.length} skills • {agentConfig.features.length} features
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex gap-6">
+              {/* Left: Compact Chat Interface */}
+              <div className="w-96 border rounded-lg" style={{
+                borderColor: 'rgba(169, 189, 203, 0.2)',
+                backgroundColor: 'rgba(48, 54, 54, 0.2)'
+              }}>
+                <div className="p-4 h-full flex flex-col" style={{ maxHeight: '500px' }}>
                 {/* Conversation History */}
                 <div className="flex-1 overflow-y-auto mb-4 space-y-4">
                   {/* Initial Question */}
@@ -626,123 +730,46 @@ export default function AgentBuilderPage() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
 
-            {/* Right: Features Panel - Always visible with customization options */}
-            <div className="w-96 p-6 overflow-y-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                <div className="space-y-4 h-full overflow-y-auto">
-                  {/* Manual Configuration Controls */}
-                  <div className="space-y-3">
-                    {/* Agent Type Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Agent Type
-                      </label>
-                      <select
-                        value={agentConfig.agentType}
-                        onChange={(e) => {
-                          const newType = e.target.value;
-                          const mapping = SKILL_MAPPINGS[newType] || SKILL_MAPPINGS.general;
-                          setAgentConfig(prev => ({
-                            ...prev,
-                            agentType: newType,
-                            name: mapping.name,
-                            skills: mapping.skills,
-                            price: mapping.price
-                          }));
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded-lg border"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          borderColor: 'rgba(169, 189, 203, 0.3)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      >
-                        <option value="sales">Sales Agent</option>
-                        <option value="support">Support Agent</option>
-                        <option value="marketing">Marketing Agent</option>
-                        <option value="operations">Operations Agent</option>
-                        <option value="data">Data Analysis Agent</option>
-                        <option value="general">Custom AI Agent</option>
-                      </select>
-                    </div>
-
-                    {/* Industry Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Industry
-                      </label>
-                      <select
-                        value={agentConfig.industry || 'Technology'}
-                        onChange={(e) => setAgentConfig(prev => ({ ...prev, industry: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm rounded-lg border"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          borderColor: 'rgba(169, 189, 203, 0.3)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      >
-                        <option value="Technology">Technology</option>
-                        <option value="E-commerce">E-commerce</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Education">Education</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Professional Services">Professional Services</option>
-                      </select>
-                    </div>
-
-                    {/* Company Size Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Company Size
-                      </label>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {['1-10', '11-50', '51-200', '200+'].map(size => (
-                          <button
-                            key={size}
-                            onClick={() => setAgentConfig(prev => ({ ...prev, companySize: size }))}
-                            className="px-2 py-1.5 rounded-lg border text-xs transition"
-                            style={{
-                              backgroundColor: agentConfig.companySize === size
-                                ? 'rgba(169, 189, 203, 0.1)'
-                                : 'rgba(48, 54, 54, 0.3)',
-                              borderColor: agentConfig.companySize === size
-                                ? 'rgb(169, 189, 203)'
-                                : 'rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          >
-                            {size} employees
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* What You're Building Section */}
-                  <div className="p-3 rounded-lg" style={{
-                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-md font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                        {agentConfig.name}
-                      </h4>
-                      <span className="px-2.5 py-1 text-xs font-bold rounded-full" style={{
+              {/* Right: Customization Area */}
+              <div className="flex-1">
+                <div className="grid grid-cols-3 gap-6">
+                  {/* Core Skills Section */}
+                  <div>
+                    <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      <CogIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      Core Skills
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full ml-auto" style={{
                         backgroundColor: 'rgba(169, 189, 203, 0.2)',
                         color: 'rgb(169, 189, 203)'
                       }}>
-                        £{calculateTotalPrice()}/mo
+                        {agentConfig.skills.length}
                       </span>
+                    </h3>
+                    <div className="p-4 rounded-lg border" style={{
+                      backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                      borderColor: 'rgba(169, 189, 203, 0.2)',
+                      maxHeight: '400px',
+                      overflowY: 'auto'
+                    }}>
+                      <div className="flex flex-wrap gap-2">
+                        {agentConfig.skills.map(skill => (
+                          <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                            color: 'rgb(229, 227, 220)'
+                          }}>
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                      {agentConfig.skills.length === 0 && (
+                        <p className="text-sm text-center py-8" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                          Describe your needs in the chat to activate skills
+                        </p>
+                      )}
                     </div>
-
-                    <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
-                      {agentConfig.description || 'Your custom AI agent tailored to your needs'}
-                    </p>
+                  </div>
 
                     {/* Core Skills */}
                     <div className="mb-3">
@@ -803,48 +830,53 @@ export default function AgentBuilderPage() {
                       <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
                       Popular Features
                     </h3>
-                    <div className="space-y-2">
-                      {POPULAR_FEATURES.map(feature => {
-                        const Icon = feature.icon;
-                        return (
-                          <button
-                            key={feature.id}
-                            onClick={() => toggleFeature(feature.id)}
-                            className="w-full p-3 rounded-lg border transition hover:opacity-90 text-left"
-                            style={{
-                              backgroundColor: agentConfig.features.includes(feature.id)
-                                ? 'rgba(169, 189, 203, 0.1)'
-                                : 'rgba(48, 54, 54, 0.3)',
-                              borderColor: agentConfig.features.includes(feature.id)
-                                ? 'rgb(169, 189, 203)'
-                                : 'rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          >
-                            <div className="flex items-start gap-3">
-                              <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{
-                                color: agentConfig.features.includes(feature.id)
+                    <div className="p-4 rounded-lg border" style={{
+                      backgroundColor: 'rgba(48, 54, 54, 0.3)',
+                      borderColor: 'rgba(169, 189, 203, 0.2)',
+                      maxHeight: '400px',
+                      overflowY: 'auto'
+                    }}>
+                      <div className="space-y-2">
+                        {POPULAR_FEATURES.map(feature => {
+                          const Icon = feature.icon;
+                          return (
+                            <button
+                              key={feature.id}
+                              onClick={() => toggleFeature(feature.id)}
+                              className="w-full p-2 rounded-lg border transition hover:opacity-90 text-left"
+                              style={{
+                                backgroundColor: agentConfig.features.includes(feature.id)
+                                  ? 'rgba(169, 189, 203, 0.1)'
+                                  : 'transparent',
+                                borderColor: agentConfig.features.includes(feature.id)
                                   ? 'rgb(169, 189, 203)'
-                                  : 'rgba(169, 189, 203, 0.6)'
-                              }} />
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium">{feature.name}</span>
-                                  {agentConfig.features.includes(feature.id) && (
-                                    <CheckIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                                  )}
+                                  : 'rgba(169, 189, 203, 0.1)',
+                                color: 'rgb(229, 227, 220)'
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4 flex-shrink-0" style={{
+                                  color: agentConfig.features.includes(feature.id)
+                                    ? 'rgb(169, 189, 203)'
+                                    : 'rgba(169, 189, 203, 0.6)'
+                                }} />
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium">{feature.name}</span>
+                                    {agentConfig.features.includes(feature.id) ? (
+                                      <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
+                                    ) : (
+                                      <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
+                                        +£{feature.priceImpact}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                                  {feature.description}
-                                </p>
-                                <span className="text-xs font-medium" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                                  +£{feature.priceImpact}/mo
-                                </span>
                               </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -879,67 +911,57 @@ export default function AgentBuilderPage() {
                     </div>
                   )}
 
-                  {/* Integrations */}
-                  <div>
-                    <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Integrations
-                    </h3>
-                    <div className="space-y-2">
+                </div>
+
+                {/* Bottom Section: Integrations */}
+                <div className="mt-6">
+                  <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                    Integrations
+                  </h3>
+                  <div className="grid grid-cols-4 gap-4">
                       {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
                         <div key={category} className="rounded-lg border" style={{
                           backgroundColor: 'rgba(58, 64, 64, 0.2)',
                           borderColor: 'rgba(169, 189, 203, 0.2)'
                         }}>
-                          <button
-                            onClick={() => setExpandedIntegrationCategory(
-                              expandedIntegrationCategory === category ? null : category
-                            )}
-                            className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
-                          >
-                            <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                          <div className="p-3">
+                            <div className="text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
                               {category}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                                color: 'rgba(169, 189, 203, 0.8)'
-                              }}>
-                                {integrations.length}
-                              </span>
-                              {expandedIntegrationCategory === category ? (
-                                <ChevronUpIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                              ) : (
-                                <ChevronDownIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                            </div>
+                            <div className="space-y-1">
+                              {integrations.slice(0, 3).map(integration => (
+                                <button
+                                  key={integration.id}
+                                  onClick={() => toggleIntegration(integration.id)}
+                                  className="w-full px-2 py-1 rounded text-left text-xs transition hover:opacity-80"
+                                  style={{
+                                    backgroundColor: agentConfig.integrations.includes(integration.id)
+                                      ? 'rgba(169, 189, 203, 0.1)'
+                                      : 'transparent',
+                                    color: 'rgb(229, 227, 220)'
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span>{integration.name}</span>
+                                    {agentConfig.integrations.includes(integration.id) && (
+                                      <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
+                                    )}
+                                  </div>
+                                </button>
+                              ))}
+                              {integrations.length > 3 && (
+                                <button
+                                  onClick={() => setExpandedIntegrationCategory(
+                                    expandedIntegrationCategory === category ? null : category
+                                  )}
+                                  className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}
+                                >
+                                  +{integrations.length - 3} more
+                                </button>
                               )}
                             </div>
-                          </button>
-                          {expandedIntegrationCategory === category && (
-                            <div className="px-3 pb-3">
-                              <div className="grid grid-cols-1 gap-1.5">
-                                {integrations.map(integration => (
-                                  <button
-                                    key={integration.id}
-                                    onClick={() => toggleIntegration(integration.id)}
-                                    className="px-3 py-2 rounded text-left text-xs transition hover:opacity-80"
-                                    style={{
-                                      backgroundColor: agentConfig.integrations.includes(integration.id)
-                                        ? 'rgba(169, 189, 203, 0.1)'
-                                        : 'transparent',
-                                      color: 'rgb(229, 227, 220)'
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <span>{integration.name}</span>
-                                      {agentConfig.integrations.includes(integration.id) && (
-                                        <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
-                                      )}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -289,7 +289,7 @@ export class TelemetryCollector {
    * Calculate engagement score
    */
   calculateEngagementScore(): number {
-    const metrics = this.getSessionMetrics();
+    // Removed unused variable: const metrics = this.getSessionMetrics();
     const viewWeight = 1;
     const actionWeight = 5;
     const errorPenalty = -10;

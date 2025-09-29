@@ -96,7 +96,7 @@ export class ShopifyAdapter extends IntegrationAdapter {
       {
         method: 'POST',
         headers: {
-          'X-Shopify-Access-Token': this.config.accessToken,
+          'X-Shopify-Access-Token': this.config.accessToken || '',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
@@ -152,7 +152,7 @@ export class ShopifyAdapter extends IntegrationAdapter {
       {
         method: 'POST',
         headers: {
-          'X-Shopify-Access-Token': this.config.accessToken,
+          'X-Shopify-Access-Token': this.config.accessToken || '',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

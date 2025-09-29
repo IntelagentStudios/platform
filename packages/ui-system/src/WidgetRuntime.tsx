@@ -3,14 +3,12 @@
  * Secure rendering and data fetching for widgets
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DataCatalog } from './DataCatalog';
 import { Widget, WidgetAction } from './LayoutSchema';
 import {
   ChartBarIcon,
-  TableCellsIcon,
   ClockIcon,
-  DocumentTextIcon,
   PlayIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
@@ -146,6 +144,7 @@ export const WidgetRuntime: React.FC<WidgetRuntimeProps> = ({
       const interval = setInterval(fetchWidgetData, widget.refresh_interval * 1000);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [widget, fetchWidgetData]);
 
   // Handle widget actions
@@ -309,7 +308,7 @@ const KPIWidget: React.FC<{ data: any; config?: any }> = ({ data, config }) => {
   );
 };
 
-const ChartWidget: React.FC<{ data: any; viz?: string; config?: any }> = ({ data, viz }) => {
+const ChartWidget: React.FC<{ data: any; viz?: string; config?: any }> = ({ viz }) => {
   // Placeholder - would integrate with a charting library like Recharts
   return (
     <div className="flex items-center justify-center h-full">
@@ -351,7 +350,7 @@ const TableWidget: React.FC<{ data: any; config?: any }> = ({ data, config }) =>
   );
 };
 
-const TimelineWidget: React.FC<{ data: any; config?: any }> = ({ data }) => {
+const TimelineWidget: React.FC<{ data: any; config?: any }> = () => {
   return (
     <div className="flex items-center justify-center h-full">
       <ClockIcon className="w-12 h-12 text-gray-400" />
@@ -391,7 +390,7 @@ const ActionWidget: React.FC<{
   );
 };
 
-const DataExplorerWidget: React.FC<{ namespace: string; tenantId: string }> = ({ namespace, tenantId }) => {
+const DataExplorerWidget: React.FC<{ namespace: string; tenantId: string }> = () => {
   // Placeholder for data explorer
   return (
     <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg">

@@ -156,7 +156,7 @@ export class LayoutBuilder {
   }
 
   // Generate default layouts for each product
-  static generateDefault(product: string, skills: string[]): LayoutSchema {
+  static generateDefault(product: string): LayoutSchema {
     const builder = new LayoutBuilder(product, `${product} Dashboard`);
 
     switch (product) {
