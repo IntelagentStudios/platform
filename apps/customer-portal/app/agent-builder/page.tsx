@@ -556,89 +556,15 @@ export default function AgentBuilderPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                          <div className="p-4 rounded-lg space-y-4" style={{
+                          <div className="p-3 rounded-lg" style={{
                             backgroundColor: 'rgba(169, 189, 203, 0.1)',
                             borderLeft: '3px solid rgb(169, 189, 203)'
                           }}>
-                            {/* What You're Building Section */}
-                            <div>
-                              <h3 className="font-semibold mb-3" style={{ color: 'rgb(229, 227, 220)' }}>
-                                What You're Building
-                              </h3>
-
-                              <div className="p-4 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className="text-lg font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                                    {agentConfig.name}
-                                  </h4>
-                                  <span className="px-3 py-1 text-sm rounded-full" style={{
-                                    backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                                    color: 'rgb(169, 189, 203)'
-                                  }}>
-                                    £{calculateTotalPrice()}/month
-                                  </span>
-                                </div>
-
-                                <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
-                                  {agentConfig.description || 'Your custom AI agent tailored to your needs'}
-                                </p>
-
-                                {/* Core Skills */}
-                                <div className="mb-3">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                                      Core Skills
-                                    </span>
-                                    <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{
-                                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                                      color: 'rgb(169, 189, 203)'
-                                    }}>
-                                      {agentConfig.skills.length} Active
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {agentConfig.skills.slice(0, 8).map(skill => (
-                                      <span key={skill} className="px-2 py-1 text-xs rounded" style={{
-                                        backgroundColor: 'rgba(169, 189, 203, 0.15)',
-                                        color: 'rgb(229, 227, 220)'
-                                      }}>
-                                        {skill}
-                                      </span>
-                                    ))}
-                                    {agentConfig.skills.length > 8 && (
-                                      <button
-                                        onClick={() => setShowSkillsBreakdown(true)}
-                                        className="px-2 py-1 text-xs rounded hover:opacity-80 transition"
-                                        style={{
-                                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                                          color: 'rgb(169, 189, 203)',
-                                          border: '1px solid rgba(169, 189, 203, 0.3)'
-                                        }}
-                                      >
-                                        +{agentConfig.skills.length - 8} more
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* View Full Breakdown Button */}
-                                <button
-                                  onClick={() => setShowSkillsBreakdown(true)}
-                                  className="w-full mt-3 px-3 py-2 rounded-lg border transition hover:opacity-80 flex items-center justify-center gap-2"
-                                  style={{
-                                    borderColor: 'rgba(169, 189, 203, 0.3)',
-                                    backgroundColor: 'transparent',
-                                    color: 'rgb(169, 189, 203)'
-                                  }}
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                  View Full Breakdown
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-3">
+                            <p style={{ color: 'rgb(229, 227, 220)' }}>
+                              Perfect! I've analyzed your requirements and built a custom {agentConfig.name} with {agentConfig.skills.length} specialized skills.
+                              You can customize features and integrations on the right, or continue to preview your complete solution.
+                            </p>
+                            <div className="flex gap-3 mt-4">
                               <button
                                 onClick={handleContinue}
                                 className="px-4 py-2 rounded-lg transition hover:opacity-80 flex items-center gap-2"
@@ -739,6 +665,80 @@ export default function AgentBuilderPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
+                  {/* What You're Building Section */}
+                  <div className="p-4 rounded-lg" style={{
+                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
+                    border: '1px solid rgba(169, 189, 203, 0.2)'
+                  }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                        {agentConfig.name}
+                      </h4>
+                      <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(169, 189, 203)'
+                      }}>
+                        £{calculateTotalPrice()}/month
+                      </span>
+                    </div>
+
+                    <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
+                      {agentConfig.description || 'Your custom AI agent tailored to your needs'}
+                    </p>
+
+                    {/* Core Skills */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Core Skills
+                        </span>
+                        <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                          color: 'rgb(169, 189, 203)'
+                        }}>
+                          {agentConfig.skills.length} Active
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {agentConfig.skills.slice(0, 8).map(skill => (
+                          <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                            color: 'rgb(229, 227, 220)'
+                          }}>
+                            {skill}
+                          </span>
+                        ))}
+                        {agentConfig.skills.length > 8 && (
+                          <button
+                            onClick={() => setShowSkillsBreakdown(true)}
+                            className="px-2 py-1 text-xs rounded hover:opacity-80 transition"
+                            style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                              color: 'rgb(169, 189, 203)',
+                              border: '1px solid rgba(169, 189, 203, 0.3)'
+                            }}
+                          >
+                            +{agentConfig.skills.length - 8} more
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* View Full Breakdown Button */}
+                    <button
+                      onClick={() => setShowSkillsBreakdown(true)}
+                      className="w-full mt-3 px-3 py-2 rounded-lg border transition hover:opacity-80 flex items-center justify-center gap-2"
+                      style={{
+                        borderColor: 'rgba(169, 189, 203, 0.3)',
+                        backgroundColor: 'transparent',
+                        color: 'rgb(169, 189, 203)'
+                      }}
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                      View Full Breakdown
+                    </button>
+                  </div>
+
                   {/* Popular Features */}
                   <div>
                     <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
