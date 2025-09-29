@@ -41,140 +41,34 @@ import DashboardPreview from '../../components/DashboardPreview';
 // Comprehensive integrations list organized by category
 const INTEGRATIONS = {
   'CRM & Sales': [
-    { id: 'salesforce', name: 'Salesforce', description: 'Full CRM integration with custom objects' },
-    { id: 'hubspot', name: 'HubSpot', description: 'Marketing and sales automation' },
-    { id: 'pipedrive', name: 'Pipedrive', description: 'Sales pipeline management' },
-    { id: 'zoho_crm', name: 'Zoho CRM', description: 'Complete CRM suite integration' },
-    { id: 'microsoft_dynamics', name: 'Microsoft Dynamics', description: 'Enterprise CRM solution' },
-    { id: 'freshsales', name: 'Freshsales', description: 'AI-powered CRM' },
-    { id: 'copper', name: 'Copper', description: 'G Suite CRM integration' },
-    { id: 'insightly', name: 'Insightly', description: 'CRM and project management' }
+    { id: 'salesforce', name: 'Salesforce', description: 'Full CRM integration' },
+    { id: 'hubspot', name: 'HubSpot', description: 'Marketing and sales' },
+    { id: 'pipedrive', name: 'Pipedrive', description: 'Sales pipeline' },
   ],
   'Communication': [
-    { id: 'gmail', name: 'Gmail', description: 'Email automation and management' },
-    { id: 'outlook', name: 'Outlook', description: 'Microsoft email and calendar' },
-    { id: 'slack', name: 'Slack', description: 'Team messaging and workflows' },
-    { id: 'teams', name: 'Microsoft Teams', description: 'Collaboration and communication' },
-    { id: 'discord', name: 'Discord', description: 'Community messaging platform' },
-    { id: 'telegram', name: 'Telegram', description: 'Instant messaging and bots' },
-    { id: 'whatsapp', name: 'WhatsApp Business', description: 'Business messaging' },
-    { id: 'twilio', name: 'Twilio', description: 'SMS and voice communication' }
+    { id: 'gmail', name: 'Gmail', description: 'Email automation' },
+    { id: 'slack', name: 'Slack', description: 'Team messaging' },
+    { id: 'teams', name: 'Teams', description: 'Collaboration' },
   ],
   'E-commerce': [
-    { id: 'shopify', name: 'Shopify', description: 'Complete e-commerce platform' },
-    { id: 'woocommerce', name: 'WooCommerce', description: 'WordPress e-commerce' },
-    { id: 'magento', name: 'Magento', description: 'Open-source e-commerce' },
-    { id: 'bigcommerce', name: 'BigCommerce', description: 'SaaS e-commerce platform' },
-    { id: 'amazon', name: 'Amazon Seller', description: 'Marketplace integration' },
-    { id: 'ebay', name: 'eBay', description: 'Online marketplace' },
-    { id: 'etsy', name: 'Etsy', description: 'Creative marketplace' },
-    { id: 'square', name: 'Square', description: 'Payment and commerce' }
-  ],
-  'Marketing': [
-    { id: 'mailchimp', name: 'Mailchimp', description: 'Email marketing automation' },
-    { id: 'activecampaign', name: 'ActiveCampaign', description: 'Marketing automation' },
-    { id: 'klaviyo', name: 'Klaviyo', description: 'E-commerce email marketing' },
-    { id: 'sendgrid', name: 'SendGrid', description: 'Email delivery service' },
-    { id: 'convertkit', name: 'ConvertKit', description: 'Creator marketing platform' },
-    { id: 'drip', name: 'Drip', description: 'E-commerce CRM' },
-    { id: 'marketo', name: 'Marketo', description: 'Enterprise marketing automation' },
-    { id: 'pardot', name: 'Pardot', description: 'B2B marketing automation' }
+    { id: 'shopify', name: 'Shopify', description: 'E-commerce platform' },
+    { id: 'woocommerce', name: 'WooCommerce', description: 'WordPress shop' },
+    { id: 'stripe', name: 'Stripe', description: 'Payment processing' },
   ],
   'Analytics': [
-    { id: 'google_analytics', name: 'Google Analytics', description: 'Web analytics platform' },
+    { id: 'google_analytics', name: 'Google Analytics', description: 'Web analytics' },
     { id: 'mixpanel', name: 'Mixpanel', description: 'Product analytics' },
-    { id: 'amplitude', name: 'Amplitude', description: 'Digital analytics platform' },
-    { id: 'segment', name: 'Segment', description: 'Customer data platform' },
-    { id: 'heap', name: 'Heap', description: 'Automatic analytics' },
-    { id: 'hotjar', name: 'Hotjar', description: 'Behavior analytics' },
-    { id: 'fullstory', name: 'FullStory', description: 'Digital experience analytics' },
-    { id: 'tableau', name: 'Tableau', description: 'Business intelligence' }
+    { id: 'segment', name: 'Segment', description: 'Customer data' },
   ],
-  'Project Management': [
-    { id: 'jira', name: 'Jira', description: 'Agile project management' },
-    { id: 'asana', name: 'Asana', description: 'Work management platform' },
-    { id: 'monday', name: 'Monday.com', description: 'Work OS platform' },
-    { id: 'trello', name: 'Trello', description: 'Visual project boards' },
-    { id: 'clickup', name: 'ClickUp', description: 'All-in-one productivity' },
-    { id: 'notion', name: 'Notion', description: 'Workspace and notes' },
-    { id: 'basecamp', name: 'Basecamp', description: 'Team collaboration' },
-    { id: 'airtable', name: 'Airtable', description: 'Spreadsheet database' }
-  ],
-  'Payments': [
-    { id: 'stripe', name: 'Stripe', description: 'Payment processing' },
-    { id: 'paypal', name: 'PayPal', description: 'Online payments' },
-    { id: 'square_payments', name: 'Square Payments', description: 'Payment solutions' },
-    { id: 'braintree', name: 'Braintree', description: 'Payment gateway' },
-    { id: 'razorpay', name: 'Razorpay', description: 'Payment solutions' },
-    { id: 'adyen', name: 'Adyen', description: 'Payment platform' },
-    { id: 'mollie', name: 'Mollie', description: 'European payments' },
-    { id: 'authorize_net', name: 'Authorize.Net', description: 'Payment gateway' }
-  ],
-  'Cloud Storage': [
-    { id: 'google_drive', name: 'Google Drive', description: 'Cloud file storage' },
-    { id: 'dropbox', name: 'Dropbox', description: 'File sync and sharing' },
-    { id: 'onedrive', name: 'OneDrive', description: 'Microsoft cloud storage' },
-    { id: 'box', name: 'Box', description: 'Enterprise content management' },
-    { id: 'aws_s3', name: 'AWS S3', description: 'Object storage service' },
-    { id: 'azure_storage', name: 'Azure Storage', description: 'Microsoft cloud storage' },
-    { id: 'google_cloud_storage', name: 'Google Cloud Storage', description: 'GCP storage' },
-    { id: 'backblaze', name: 'Backblaze', description: 'Cloud backup' }
-  ],
-  'Accounting': [
-    { id: 'quickbooks', name: 'QuickBooks', description: 'Small business accounting' },
-    { id: 'xero', name: 'Xero', description: 'Online accounting software' },
-    { id: 'freshbooks', name: 'FreshBooks', description: 'Invoice and accounting' },
-    { id: 'sage', name: 'Sage', description: 'Business management' },
-    { id: 'wave', name: 'Wave', description: 'Free accounting software' },
-    { id: 'zoho_books', name: 'Zoho Books', description: 'Online accounting' },
-    { id: 'netsuite', name: 'NetSuite', description: 'ERP and financials' },
-    { id: 'intuit', name: 'Intuit', description: 'Financial software' }
-  ],
-  'Customer Support': [
-    { id: 'zendesk', name: 'Zendesk', description: 'Customer service platform' },
-    { id: 'intercom', name: 'Intercom', description: 'Customer messaging' },
-    { id: 'freshdesk', name: 'Freshdesk', description: 'Help desk software' },
-    { id: 'helpscout', name: 'Help Scout', description: 'Customer support' },
-    { id: 'drift', name: 'Drift', description: 'Conversational marketing' },
-    { id: 'crisp', name: 'Crisp', description: 'Customer messaging' },
-    { id: 'livechat', name: 'LiveChat', description: 'Live chat software' },
-    { id: 'uservoice', name: 'UserVoice', description: 'Customer feedback' }
-  ],
-  'Social Media': [
-    { id: 'facebook', name: 'Facebook', description: 'Social media marketing' },
-    { id: 'instagram', name: 'Instagram', description: 'Visual content platform' },
-    { id: 'twitter', name: 'Twitter/X', description: 'Social networking' },
-    { id: 'linkedin', name: 'LinkedIn', description: 'Professional networking' },
-    { id: 'youtube', name: 'YouTube', description: 'Video platform' },
-    { id: 'tiktok', name: 'TikTok', description: 'Short-form video' },
-    { id: 'pinterest', name: 'Pinterest', description: 'Visual discovery' },
-    { id: 'reddit', name: 'Reddit', description: 'Community platform' }
-  ],
-  'Development': [
-    { id: 'github', name: 'GitHub', description: 'Code repository hosting' },
-    { id: 'gitlab', name: 'GitLab', description: 'DevOps platform' },
-    { id: 'bitbucket', name: 'Bitbucket', description: 'Git repository' },
-    { id: 'jenkins', name: 'Jenkins', description: 'CI/CD automation' },
-    { id: 'circleci', name: 'CircleCI', description: 'Continuous integration' },
-    { id: 'docker', name: 'Docker', description: 'Containerization' },
-    { id: 'kubernetes', name: 'Kubernetes', description: 'Container orchestration' },
-    { id: 'terraform', name: 'Terraform', description: 'Infrastructure as code' }
-  ]
 };
 
-// Skill detection mappings - expanded to include more skills per type
+// Skill detection mappings
 const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: number } } = {
   sales: {
     name: 'Sales Outreach Agent',
     skills: [
       'Lead Generation', 'Email Outreach', 'CRM Sync', 'Lead Scoring', 'Pipeline Management',
-      'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder',
-      'Follow-up Automation', 'Lead Nurturing', 'Sales Analytics', 'Commission Tracking', 'Territory Management',
-      'Account Management', 'Opportunity Tracking', 'Revenue Forecasting', 'Sales Cadence', 'Email Sequences',
-      'Meeting Scheduler', 'Calendar Sync', 'Video Meeting Integration', 'Call Recording', 'Conversation Intelligence',
-      'Sales Enablement', 'Content Library', 'Battle Cards', 'Competitor Intelligence', 'Win/Loss Analysis',
-      'Customer Segmentation', 'Personalization Engine', 'Dynamic Pricing', 'Contract Management', 'E-signature Integration',
-      'Sales Coaching', 'Performance Metrics', 'Team Collaboration', 'Mobile CRM Access', 'Offline Sync'
+      'Contact Management', 'Deal Tracking', 'Sales Forecasting', 'Quote Generation', 'Proposal Builder'
     ],
     price: 649
   },
@@ -182,13 +76,7 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     name: 'Customer Support Agent',
     skills: [
       'Ticket Management', 'Auto Response', 'Knowledge Base', 'Chat Support', 'FAQ Builder',
-      'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk',
-      'Live Chat Widget', 'Email Support', 'Phone Support Integration', 'Social Media Support', 'Community Forum',
-      'Sentiment Analysis', 'Priority Routing', 'Agent Assignment', 'Workload Balancing', 'Response Templates',
-      'Macro Management', 'Canned Responses', 'Multi-language Support', 'Translation Services', 'Screen Sharing',
-      'Co-browsing', 'Remote Desktop', 'File Sharing', 'Video Support', 'Voice Recognition',
-      'Chatbot Integration', 'AI Suggestions', 'Smart Routing', 'Customer Journey Tracking', 'Issue Prediction',
-      'Proactive Support', 'Customer Health Score', 'Retention Analytics', 'Churn Prevention', 'Feedback Loop'
+      'Customer Portal', 'SLA Management', 'Escalation Rules', 'Satisfaction Surveys', 'Help Desk'
     ],
     price: 349
   },
@@ -196,13 +84,7 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     name: 'Marketing Automation Agent',
     skills: [
       'Content Creation', 'Social Media', 'Email Campaigns', 'Analytics', 'SEO Optimization',
-      'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking',
-      'Content Calendar', 'Social Media Scheduling', 'Influencer Outreach', 'Brand Monitoring', 'Competitor Analysis',
-      'Marketing Attribution', 'ROI Tracking', 'Conversion Optimization', 'Funnel Analysis', 'Customer Segmentation',
-      'Personalization', 'Dynamic Content', 'Behavioral Triggers', 'Drip Campaigns', 'Newsletter Management',
-      'SMS Marketing', 'Push Notifications', 'In-app Messaging', 'Webinar Management', 'Event Marketing',
-      'Referral Programs', 'Loyalty Programs', 'Affiliate Marketing', 'Content Syndication', 'PR Distribution',
-      'Media Planning', 'Ad Campaign Management', 'Retargeting', 'Lookalike Audiences', 'Marketing Mix Modeling'
+      'Landing Page Builder', 'A/B Testing', 'Marketing Automation', 'Lead Capture Forms', 'Campaign Tracking'
     ],
     price: 449
   },
@@ -210,13 +92,7 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     name: 'Operations Agent',
     skills: [
       'Workflow Automation', 'Process Optimization', 'Task Management', 'Resource Planning', 'Inventory Control',
-      'Supply Chain Management', 'Quality Assurance', 'Performance Monitoring', 'Capacity Planning', 'Scheduling',
-      'Document Management', 'Compliance Tracking', 'Audit Management', 'Risk Assessment', 'Vendor Management',
-      'Purchase Order Processing', 'Invoice Processing', 'Expense Management', 'Budget Tracking', 'Cost Analysis',
-      'Time Tracking', 'Employee Scheduling', 'Shift Management', 'Leave Management', 'Attendance Tracking',
-      'Asset Management', 'Maintenance Scheduling', 'Equipment Tracking', 'Facility Management', 'Space Planning',
-      'Project Coordination', 'Resource Allocation', 'Milestone Tracking', 'Dependency Management', 'Critical Path Analysis',
-      'Business Intelligence', 'Operational Analytics', 'KPI Monitoring', 'Dashboard Reporting', 'Trend Analysis'
+      'Supply Chain Management', 'Quality Assurance', 'Performance Monitoring', 'Capacity Planning', 'Scheduling'
     ],
     price: 549
   },
@@ -224,37 +100,14 @@ const SKILL_MAPPINGS: { [key: string]: { name: string, skills: string[], price: 
     name: 'Data Analytics Agent',
     skills: [
       'Data Collection', 'Data Cleaning', 'Data Transformation', 'ETL Pipelines', 'Data Warehousing',
-      'Statistical Analysis', 'Predictive Analytics', 'Machine Learning', 'Deep Learning', 'Neural Networks',
-      'Natural Language Processing', 'Computer Vision', 'Time Series Forecasting', 'Anomaly Detection', 'Pattern Recognition',
-      'Data Visualization', 'Interactive Dashboards', 'Real-time Analytics', 'Streaming Analytics', 'Big Data Processing',
-      'SQL Queries', 'NoSQL Databases', 'Graph Databases', 'Data Lakes', 'Cloud Data Platforms',
-      'Business Intelligence', 'Executive Reporting', 'Ad-hoc Analysis', 'Self-service Analytics', 'Embedded Analytics',
-      'Data Governance', 'Data Quality Management', 'Master Data Management', 'Metadata Management', 'Data Lineage',
-      'Privacy Compliance', 'Data Security', 'Encryption', 'Access Control', 'Audit Trails'
+      'Statistical Analysis', 'Predictive Analytics', 'Machine Learning', 'Deep Learning', 'Neural Networks'
     ],
     price: 749
-  },
-  construction: {
-    name: 'Construction Management Agent',
-    skills: [
-      'Project Planning', 'Resource Scheduling', 'Cost Estimation', 'Bid Management', 'Contract Administration',
-      'Subcontractor Management', 'Material Tracking', 'Equipment Management', 'Safety Compliance', 'Quality Control',
-      'Document Control', 'Drawing Management', 'RFI Management', 'Change Order Processing', 'Progress Reporting',
-      'Time Tracking', 'Labor Management', 'Payroll Integration', 'Union Compliance', 'Certification Tracking',
-      'Inspection Management', 'Punch List Tracking', 'Warranty Management', 'Maintenance Scheduling', 'Asset Tracking',
-      'BIM Integration', '3D Modeling', 'Clash Detection', 'Quantity Takeoff', 'Cost Analysis',
-      'Risk Management', 'Issue Tracking', 'Daily Reporting', 'Photo Documentation', 'Weather Tracking',
-      'Client Communication', 'Stakeholder Updates', 'Meeting Minutes', 'Action Items', 'Milestone Notifications'
-    ],
-    price: 849
   },
   general: {
     name: 'Custom AI Agent',
     skills: [
-      'Task Automation', 'Data Processing', 'API Integration', 'Custom Workflows', 'Report Generation',
-      'File Management', 'Email Integration', 'Calendar Management', 'Notification System', 'User Authentication',
-      'Role-based Access', 'Activity Logging', 'Data Backup', 'Export/Import', 'Dashboard Creation',
-      'Search Functionality', 'Filter & Sort', 'Bulk Operations', 'Template Management', 'Version Control'
+      'Task Automation', 'Data Processing', 'API Integration', 'Custom Workflows', 'Report Generation'
     ],
     price: 299
   }
@@ -265,28 +118,28 @@ const POPULAR_FEATURES = [
   {
     id: 'ai_chatbot',
     name: 'AI-Powered Chatbot',
-    description: 'Natural language understanding for customer interactions',
+    description: 'Natural language understanding',
     icon: ChatBubbleLeftRightIcon,
     priceImpact: 50
   },
   {
     id: 'voice_assistant',
     name: 'Voice Commands',
-    description: 'Control your agent with voice instructions',
+    description: 'Control with voice',
     icon: MicrophoneIcon,
     priceImpact: 75
   },
   {
     id: 'multi_language',
-    name: 'Multi-Language Support',
-    description: 'Operate in 95+ languages with automatic translation',
+    name: 'Multi-Language',
+    description: '95+ languages',
     icon: DocumentChartBarIcon,
     priceImpact: 100
   },
   {
     id: 'white_label',
-    name: 'White Label Branding',
-    description: 'Custom branding with your company identity',
+    name: 'White Label',
+    description: 'Your branding',
     icon: PencilIcon,
     priceImpact: 150
   }
@@ -299,7 +152,6 @@ const SUGGESTED_FEATURES: { [key: string]: string[] } = {
   marketing: ['multi_language', 'white_label'],
   operations: ['voice_assistant', 'white_label'],
   data: ['multi_language'],
-  construction: ['voice_assistant', 'white_label'],
   general: ['ai_chatbot']
 };
 
@@ -307,6 +159,7 @@ interface AgentConfig {
   name: string;
   description: string;
   agentType: string;
+  type?: string;
   industry?: string;
   companySize?: string;
   skills: string[];
@@ -383,18 +236,6 @@ export default function AgentBuilderPage() {
       price: basePrice,
       name: SKILL_MAPPINGS[detectedType]?.name || 'Custom AI Agent'
     }));
-  };
-
-  // Handle chat complete
-  const handleChatComplete = (config: any) => {
-    setAgentConfig({
-      ...agentConfig,
-      name: config.name || agentConfig.name,
-      description: config.description || agentConfig.description,
-      agentType: config.agentType || agentConfig.agentType,
-      skills: config.skills || agentConfig.skills
-    });
-    setPreviewMode(true);
   };
 
   // Handle initial input submission
@@ -519,7 +360,7 @@ export default function AgentBuilderPage() {
                 AI Agent Builder
               </h1>
               <p className="text-sm mt-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                Build your custom AI agent with our conversational builder
+                Build your custom AI agent with our intelligent configuration system
               </p>
             </div>
             {previewMode && (
@@ -545,7 +386,7 @@ export default function AgentBuilderPage() {
             agentName={agentConfig.name}
             requirements={{
               goal: agentConfig.description,
-              industry: 'Technology' // Default industry
+              industry: 'Technology'
             }}
             agentConfig={{
               agentName: agentConfig.name,
@@ -553,39 +394,36 @@ export default function AgentBuilderPage() {
                 goal: agentConfig.description,
                 tools: agentConfig.features || [],
                 outputs: [`Monthly £${agentConfig.price} value`],
-                industry: 'Technology' // Default industry
+                industry: 'Technology'
               },
               suggestedSkills: agentConfig.skills || []
             }}
           />
         ) : (
-          <div className="flex">
-            {/* Left: Chat Interface */}
-            <div className="flex-1 border-r" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-              <div className="p-6 h-full flex flex-col">
-                {/* Conversation History */}
-                <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-                  {/* Initial Question */}
+          <div className="p-8">
+            {/* Top Section: AI Conversation Area */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                <div className="space-y-4">
+                  {/* AI Initial Message */}
                   <div className="flex gap-3">
-                    <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
-                      backgroundColor: 'rgba(169, 189, 203, 0.2)'
-                    }}>
-                      <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                    <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500">
+                      <SparklesIcon className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                      <div className="p-3 rounded-lg" style={{
+                      <div className="p-4 rounded-lg" style={{
                         backgroundColor: 'rgba(169, 189, 203, 0.1)',
                         borderLeft: '3px solid rgb(169, 189, 203)'
                       }}>
                         <p style={{ color: 'rgb(229, 227, 220)' }}>
-                          Tell me about your business and what you'd like your AI agent to help with. I'll analyze your needs and show you what we can build.
+                          Tell me about your business and what you'd like your AI agent to help with. I'll analyze your needs and configure the perfect solution.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* User's Response */}
+                  {/* User's Response if provided */}
                   {chatResponses[0] && (
                     <>
                       <div className="flex gap-3">
@@ -596,7 +434,7 @@ export default function AgentBuilderPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium mb-1" style={{ color: 'rgb(229, 227, 220)' }}>You</p>
-                          <div className="p-3 rounded-lg" style={{
+                          <div className="p-4 rounded-lg" style={{
                             backgroundColor: 'rgba(58, 64, 64, 0.5)',
                             border: '1px solid rgba(169, 189, 203, 0.2)'
                           }}>
@@ -605,22 +443,20 @@ export default function AgentBuilderPage() {
                         </div>
                       </div>
 
-                      {/* AI Analysis */}
+                      {/* AI Analysis Response */}
                       <div className="flex gap-3">
-                        <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center" style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.2)'
-                        }}>
-                          <SparklesIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                        <div className="p-2 rounded-full h-8 w-8 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500">
+                          <SparklesIcon className="h-4 w-4 text-white" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium mb-1" style={{ color: 'rgb(169, 189, 203)' }}>AI Assistant</p>
-                          <div className="p-3 rounded-lg" style={{
+                          <div className="p-4 rounded-lg" style={{
                             backgroundColor: 'rgba(169, 189, 203, 0.1)',
                             borderLeft: '3px solid rgb(169, 189, 203)'
                           }}>
                             <p style={{ color: 'rgb(229, 227, 220)' }}>
-                              Perfect! I've analyzed your requirements and built a custom {agentConfig.name} with {agentConfig.skills.length} specialized skills.
-                              You can customize features and integrations on the right, or continue to preview your complete solution.
+                              Perfect! I've configured a <strong>{agentConfig.name}</strong> with {agentConfig.skills.length} specialized skills.
+                              Customize the options below or continue to preview your solution.
                             </p>
                             <div className="flex gap-3 mt-4">
                               <button
@@ -631,19 +467,8 @@ export default function AgentBuilderPage() {
                                   color: 'white'
                                 }}
                               >
-                                Continue to Preview
+                                Preview Dashboard
                                 <ArrowRightIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => setChatStep(1)}
-                                className="px-4 py-2 rounded-lg border transition hover:opacity-80"
-                                style={{
-                                  borderColor: 'rgba(169, 189, 203, 0.3)',
-                                  backgroundColor: 'transparent',
-                                  color: 'rgba(229, 227, 220, 0.9)'
-                                }}
-                              >
-                                Refine Further
                               </button>
                             </div>
                           </div>
@@ -654,210 +479,143 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="border-t pt-4" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={inputDescription}
-                      onChange={(e) => setInputDescription(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleInputSubmit()}
-                      placeholder="Describe your business needs..."
-                      className="flex-1 px-4 py-3 rounded-lg border"
-                      style={{
-                        backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                        borderColor: 'rgba(169, 189, 203, 0.3)',
-                        color: 'rgb(229, 227, 220)'
-                      }}
-                    />
-                    <button
-                      onClick={handleInputSubmit}
-                      className="px-4 py-3 rounded-lg transition hover:opacity-80 flex items-center gap-2"
-                      style={{
-                        backgroundColor: 'rgb(169, 189, 203)',
-                        color: 'white'
-                      }}
-                    >
-                      <PaperAirplaneIcon className="h-5 w-5" />
-                    </button>
+                {!chatResponses[0] && (
+                  <div className="mt-6 pt-4 border-t" style={{ borderColor: 'rgba(169, 189, 203, 0.1)' }}>
+                    <div className="flex gap-3">
+                      <input
+                        type="text"
+                        value={inputDescription}
+                        onChange={(e) => setInputDescription(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleInputSubmit()}
+                        placeholder="E.g., I need help managing customer support tickets and automating responses..."
+                        className="flex-1 px-4 py-3 rounded-lg border"
+                        style={{
+                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                          borderColor: 'rgba(169, 189, 203, 0.3)',
+                          color: 'rgb(229, 227, 220)'
+                        }}
+                      />
+                      <button
+                        onClick={handleInputSubmit}
+                        className="px-6 py-3 rounded-lg transition hover:opacity-80 flex items-center gap-2"
+                        style={{
+                          backgroundColor: 'rgb(169, 189, 203)',
+                          color: 'white'
+                        }}
+                      >
+                        <PaperAirplaneIcon className="h-5 w-5" />
+                        Analyze
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Right: Features Panel - Always visible with customization options */}
-            <div className="w-96 p-6 overflow-y-auto" style={{ backgroundColor: 'rgba(48, 54, 54, 0.3)' }}>
-                <div className="space-y-4 h-full overflow-y-auto">
-                  {/* Manual Configuration Controls */}
-                  <div className="space-y-3">
-                    {/* Agent Type Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Agent Type
-                      </label>
-                      <select
-                        value={agentConfig.agentType}
-                        onChange={(e) => {
-                          const newType = e.target.value;
-                          const mapping = SKILL_MAPPINGS[newType] || SKILL_MAPPINGS.general;
-                          setAgentConfig(prev => ({
-                            ...prev,
-                            agentType: newType,
-                            name: mapping.name,
-                            skills: mapping.skills,
-                            price: mapping.price
-                          }));
-                        }}
-                        className="w-full px-3 py-2 text-sm rounded-lg border"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          borderColor: 'rgba(169, 189, 203, 0.3)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      >
-                        <option value="sales">Sales Agent</option>
-                        <option value="support">Support Agent</option>
-                        <option value="marketing">Marketing Agent</option>
-                        <option value="operations">Operations Agent</option>
-                        <option value="data">Data Analysis Agent</option>
-                        <option value="general">Custom AI Agent</option>
-                      </select>
-                    </div>
+            {/* Bottom Section: Configuration Grid */}
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Configuration Column */}
+                <div>
+                  <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      <CogIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      Configuration
+                    </h3>
 
-                    {/* Industry Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Industry
-                      </label>
-                      <select
-                        value={agentConfig.industry || 'Technology'}
-                        onChange={(e) => setAgentConfig(prev => ({ ...prev, industry: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm rounded-lg border"
-                        style={{
-                          backgroundColor: 'rgba(48, 54, 54, 0.5)',
-                          borderColor: 'rgba(169, 189, 203, 0.3)',
-                          color: 'rgb(229, 227, 220)'
-                        }}
-                      >
-                        <option value="Technology">Technology</option>
-                        <option value="E-commerce">E-commerce</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Education">Education</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Retail">Retail</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Professional Services">Professional Services</option>
-                      </select>
-                    </div>
-
-                    {/* Company Size Selector */}
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Company Size
-                      </label>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {['1-10', '11-50', '51-200', '200+'].map(size => (
-                          <button
-                            key={size}
-                            onClick={() => setAgentConfig(prev => ({ ...prev, companySize: size }))}
-                            className="px-2 py-1.5 rounded-lg border text-xs transition"
-                            style={{
-                              backgroundColor: agentConfig.companySize === size
-                                ? 'rgba(169, 189, 203, 0.1)'
-                                : 'rgba(48, 54, 54, 0.3)',
-                              borderColor: agentConfig.companySize === size
-                                ? 'rgb(169, 189, 203)'
-                                : 'rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(229, 227, 220)'
-                            }}
-                          >
-                            {size} employees
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* What You're Building Section */}
-                  <div className="p-3 rounded-lg" style={{
-                    backgroundColor: 'rgba(58, 64, 64, 0.5)',
-                    border: '1px solid rgba(169, 189, 203, 0.2)'
-                  }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-md font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                        {agentConfig.name}
-                      </h4>
-                      <span className="px-2.5 py-1 text-xs font-bold rounded-full" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(169, 189, 203)'
-                      }}>
-                        £{calculateTotalPrice()}/mo
-                      </span>
-                    </div>
-
-                    <p className="text-xs mb-3" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
-                      {agentConfig.description || 'Your custom AI agent tailored to your needs'}
-                    </p>
-
-                    {/* Core Skills */}
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                          Core Skills
-                        </span>
-                        <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                          color: 'rgb(169, 189, 203)'
-                        }}>
-                          {agentConfig.skills.length} Active
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {agentConfig.skills.slice(0, 8).map(skill => (
-                          <span key={skill} className="px-2 py-1 text-xs rounded" style={{
-                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                    <div className="space-y-4">
+                      {/* Agent Type */}
+                      <div>
+                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Agent Type
+                        </label>
+                        <select
+                          value={agentConfig.agentType}
+                          onChange={(e) => {
+                            const newType = e.target.value;
+                            const mapping = SKILL_MAPPINGS[newType] || SKILL_MAPPINGS.general;
+                            setAgentConfig(prev => ({
+                              ...prev,
+                              agentType: newType,
+                              name: mapping.name,
+                              skills: mapping.skills,
+                              price: mapping.price
+                            }));
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border text-sm"
+                          style={{
+                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                            borderColor: 'rgba(169, 189, 203, 0.3)',
                             color: 'rgb(229, 227, 220)'
-                          }}>
-                            {skill}
-                          </span>
-                        ))}
-                        {agentConfig.skills.length > 8 && (
-                          <button
-                            onClick={() => setShowSkillsBreakdown(true)}
-                            className="px-2 py-1 text-xs rounded hover:opacity-80 transition"
-                            style={{
-                              backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                              color: 'rgb(169, 189, 203)',
-                              border: '1px solid rgba(169, 189, 203, 0.3)'
-                            }}
-                          >
-                            +{agentConfig.skills.length - 8} more
-                          </button>
-                        )}
+                          }}
+                        >
+                          <option value="sales">Sales Agent</option>
+                          <option value="support">Support Agent</option>
+                          <option value="marketing">Marketing Agent</option>
+                          <option value="operations">Operations Agent</option>
+                          <option value="data">Data Analytics Agent</option>
+                          <option value="general">Custom AI Agent</option>
+                        </select>
+                      </div>
+
+                      {/* Industry */}
+                      <div>
+                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Industry
+                        </label>
+                        <select
+                          value={agentConfig.industry || 'Technology'}
+                          onChange={(e) => setAgentConfig(prev => ({ ...prev, industry: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-lg border text-sm"
+                          style={{
+                            backgroundColor: 'rgba(48, 54, 54, 0.5)',
+                            borderColor: 'rgba(169, 189, 203, 0.3)',
+                            color: 'rgb(229, 227, 220)'
+                          }}
+                        >
+                          <option value="Technology">Technology</option>
+                          <option value="E-commerce">E-commerce</option>
+                          <option value="Healthcare">Healthcare</option>
+                          <option value="Finance">Finance</option>
+                          <option value="Education">Education</option>
+                          <option value="Real Estate">Real Estate</option>
+                        </select>
+                      </div>
+
+                      {/* Company Size */}
+                      <div>
+                        <label className="block text-xs font-medium mb-2" style={{ color: 'rgb(169, 189, 203)' }}>
+                          Company Size
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {['1-10', '11-50', '51-200', '200+'].map(size => (
+                            <button
+                              key={size}
+                              onClick={() => setAgentConfig(prev => ({ ...prev, companySize: size }))}
+                              className="px-3 py-2 rounded-lg border text-xs transition"
+                              style={{
+                                backgroundColor: agentConfig.companySize === size
+                                  ? 'rgba(169, 189, 203, 0.1)'
+                                  : 'rgba(48, 54, 54, 0.3)',
+                                borderColor: agentConfig.companySize === size
+                                  ? 'rgb(169, 189, 203)'
+                                  : 'rgba(169, 189, 203, 0.2)',
+                                color: 'rgb(229, 227, 220)'
+                              }}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-
-                    {/* View Full Breakdown Button */}
-                    <button
-                      onClick={() => setShowSkillsBreakdown(true)}
-                      className="w-full mt-3 px-3 py-2 rounded-lg border transition hover:opacity-80 flex items-center justify-center gap-2"
-                      style={{
-                        borderColor: 'rgba(169, 189, 203, 0.3)',
-                        backgroundColor: 'transparent',
-                        color: 'rgb(169, 189, 203)'
-                      }}
-                    >
-                      <EyeIcon className="h-4 w-4" />
-                      View Full Breakdown
-                    </button>
                   </div>
 
-                  {/* Popular Features */}
-                  <div>
-                    <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                  {/* Features */}
+                  <div className="mt-6 bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Popular Features
+                      Features
                     </h3>
                     <div className="space-y-2">
                       {POPULAR_FEATURES.map(feature => {
@@ -870,137 +628,189 @@ export default function AgentBuilderPage() {
                             style={{
                               backgroundColor: agentConfig.features.includes(feature.id)
                                 ? 'rgba(169, 189, 203, 0.1)'
-                                : 'rgba(48, 54, 54, 0.3)',
+                                : 'transparent',
                               borderColor: agentConfig.features.includes(feature.id)
                                 ? 'rgb(169, 189, 203)'
                                 : 'rgba(169, 189, 203, 0.2)',
                               color: 'rgb(229, 227, 220)'
                             }}
                           >
-                            <div className="flex items-start gap-3">
-                              <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" style={{
-                                color: agentConfig.features.includes(feature.id)
-                                  ? 'rgb(169, 189, 203)'
-                                  : 'rgba(169, 189, 203, 0.6)'
-                              }} />
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium">{feature.name}</span>
-                                  {agentConfig.features.includes(feature.id) && (
-                                    <CheckIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
-                                  )}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.8)' }} />
+                                <div>
+                                  <div className="text-sm font-medium">{feature.name}</div>
+                                  <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                    +£{feature.priceImpact}/mo
+                                  </div>
                                 </div>
-                                <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                                  {feature.description}
-                                </p>
-                                <span className="text-xs font-medium" style={{ color: 'rgba(169, 189, 203, 0.5)' }}>
-                                  +£{feature.priceImpact}/mo
-                                </span>
                               </div>
+                              {agentConfig.features.includes(feature.id) && (
+                                <CheckIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                              )}
                             </div>
                           </button>
                         );
                       })}
                     </div>
                   </div>
+                </div>
 
-                  {/* Suggested Features */}
-                  {SUGGESTED_FEATURES[agentConfig.agentType] && (
-                    <div>
-                      <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                        <LightBulbIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                        Suggested for {SKILL_MAPPINGS[agentConfig.agentType]?.name}
-                      </h3>
-                      <div className="p-3 rounded-lg" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.05)',
-                        border: '1px solid rgba(169, 189, 203, 0.2)'
+                {/* Current Build Column */}
+                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {agentConfig.name}
+                    </h3>
+                    <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
+                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(169, 189, 203)'
+                    }}>
+                      £{calculateTotalPrice()}/mo
+                    </span>
+                  </div>
+
+                  <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
+                    {agentConfig.description || 'Your custom AI agent tailored to your needs'}
+                  </p>
+
+                  {/* Core Skills */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Core Skills
+                      </span>
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{
+                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                        color: 'rgb(169, 189, 203)'
                       }}>
-                        <p className="text-xs mb-2" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>
-                          Based on your agent type, we recommend:
-                        </p>
-                        <div className="space-y-1">
-                          {SUGGESTED_FEATURES[agentConfig.agentType].map(featureId => {
-                            const feature = POPULAR_FEATURES.find(f => f.id === featureId);
-                            return feature ? (
-                              <div key={featureId} className="flex items-center gap-2">
-                                <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
-                                <span className="text-sm" style={{ color: 'rgb(229, 227, 220)' }}>
-                                  {feature.name}
-                                </span>
-                              </div>
-                            ) : null;
-                          })}
-                        </div>
+                        {agentConfig.skills.length} Active
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {agentConfig.skills.slice(0, 6).map(skill => (
+                        <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                          backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                          color: 'rgb(229, 227, 220)'
+                        }}>
+                          {skill}
+                        </span>
+                      ))}
+                      {agentConfig.skills.length > 6 && (
+                        <button
+                          onClick={() => setShowSkillsBreakdown(true)}
+                          className="px-2 py-1 text-xs rounded hover:opacity-80 transition"
+                          style={{
+                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                            color: 'rgb(169, 189, 203)',
+                            border: '1px solid rgba(169, 189, 203, 0.3)'
+                          }}
+                        >
+                          +{agentConfig.skills.length - 6} more
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selected Integrations */}
+                  {agentConfig.integrations.length > 0 && (
+                    <div className="mb-4">
+                      <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
+                        Integrations
+                      </span>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {agentConfig.integrations.map(int => (
+                          <span key={int} className="px-2 py-1 text-xs rounded" style={{
+                            backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                            color: 'rgb(76, 175, 80)'
+                          }}>
+                            {int}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Integrations */}
-                  <div>
-                    <h3 className="font-medium mb-3 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Integrations
-                    </h3>
-                    <div className="space-y-2">
-                      {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
-                        <div key={category} className="rounded-lg border" style={{
-                          backgroundColor: 'rgba(58, 64, 64, 0.2)',
-                          borderColor: 'rgba(169, 189, 203, 0.2)'
-                        }}>
-                          <button
-                            onClick={() => setExpandedIntegrationCategory(
-                              expandedIntegrationCategory === category ? null : category
-                            )}
-                            className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
-                          >
-                            <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
-                              {category}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
-                                color: 'rgba(169, 189, 203, 0.8)'
-                              }}>
-                                {integrations.length}
-                              </span>
-                              {expandedIntegrationCategory === category ? (
-                                <ChevronUpIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                              ) : (
-                                <ChevronDownIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
-                              )}
-                            </div>
-                          </button>
-                          {expandedIntegrationCategory === category && (
-                            <div className="px-3 pb-3">
-                              <div className="grid grid-cols-1 gap-1.5">
-                                {integrations.map(integration => (
-                                  <button
-                                    key={integration.id}
-                                    onClick={() => toggleIntegration(integration.id)}
-                                    className="px-3 py-2 rounded text-left text-xs transition hover:opacity-80"
-                                    style={{
-                                      backgroundColor: agentConfig.integrations.includes(integration.id)
-                                        ? 'rgba(169, 189, 203, 0.1)'
-                                        : 'transparent',
-                                      color: 'rgb(229, 227, 220)'
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <span>{integration.name}</span>
-                                      {agentConfig.integrations.includes(integration.id) && (
-                                        <CheckIcon className="h-3 w-3" style={{ color: 'rgb(169, 189, 203)' }} />
-                                      )}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
+                  <button
+                    onClick={() => setPreviewMode(true)}
+                    className="w-full mt-4 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                  >
+                    <EyeIcon className="h-5 w-5" />
+                    Preview Dashboard
+                  </button>
+                </div>
+
+                {/* Integrations Column */}
+                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                    Integrations
+                  </h3>
+                  <div className="space-y-2">
+                    {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
+                      <div key={category} className="rounded-lg border" style={{
+                        backgroundColor: 'rgba(58, 64, 64, 0.2)',
+                        borderColor: 'rgba(169, 189, 203, 0.2)'
+                      }}>
+                        <button
+                          onClick={() => setExpandedIntegrationCategory(
+                            expandedIntegrationCategory === category ? null : category
                           )}
-                        </div>
-                      ))}
-                    </div>
+                          className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
+                        >
+                          <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                            {category}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                              color: 'rgba(169, 189, 203, 0.8)'
+                            }}>
+                              {integrations.length}
+                            </span>
+                            {expandedIntegrationCategory === category ? (
+                              <ChevronUpIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                            ) : (
+                              <ChevronDownIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
+                            )}
+                          </div>
+                        </button>
+                        {expandedIntegrationCategory === category && (
+                          <div className="px-3 pb-3">
+                            <div className="space-y-1">
+                              {integrations.map(integration => (
+                                <button
+                                  key={integration.id}
+                                  onClick={() => toggleIntegration(integration.id)}
+                                  className="w-full px-3 py-2 rounded text-left text-xs transition hover:opacity-80"
+                                  style={{
+                                    backgroundColor: agentConfig.integrations.includes(integration.id)
+                                      ? 'rgba(169, 189, 203, 0.1)'
+                                      : 'transparent',
+                                    color: 'rgb(229, 227, 220)'
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className="font-medium">{integration.name}</div>
+                                      <div style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                                        {integration.description}
+                                      </div>
+                                    </div>
+                                    {agentConfig.integrations.includes(integration.id) && (
+                                      <CheckIcon className="h-3 w-3 flex-shrink-0 ml-2" style={{ color: 'rgb(169, 189, 203)' }} />
+                                    )}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
+              </div>
             </div>
           </div>
         )}
