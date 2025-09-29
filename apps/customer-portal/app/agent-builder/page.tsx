@@ -701,8 +701,43 @@ export default function AgentBuilderPage() {
             </div>
 
             {/* Right: Features Panel - Below the chat area */}
-            {chatResponses[0] && (
-              <div className="w-96 p-6 overflow-y-auto">
+            <div className="w-96 p-6 overflow-y-auto">
+              {!chatResponses[0] ? (
+                /* Initial placeholder state */
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="p-4 rounded-full" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
+                    <SparklesIcon className="h-12 w-12" style={{ color: 'rgba(169, 189, 203, 0.5)' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      Tell us about your business
+                    </h3>
+                    <p className="text-sm" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
+                      Once you describe your needs, we'll show you relevant features, integrations, and build your custom agent.
+                    </p>
+                  </div>
+                  <div className="w-full pt-4">
+                    <div className="text-xs font-medium mb-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      What you can customize:
+                    </div>
+                    <div className="space-y-2">
+                      {['Popular Features', 'Suggested Features', 'Integrations'].map((item) => (
+                        <div
+                          key={item}
+                          className="px-3 py-2 rounded-lg text-sm"
+                          style={{
+                            backgroundColor: 'rgba(58, 64, 64, 0.3)',
+                            color: 'rgba(229, 227, 220, 0.6)',
+                            border: '1px solid rgba(169, 189, 203, 0.1)'
+                          }}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-6">
                   {/* Popular Features */}
                   <div>
@@ -852,8 +887,8 @@ export default function AgentBuilderPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
