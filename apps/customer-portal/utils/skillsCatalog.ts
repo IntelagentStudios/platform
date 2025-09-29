@@ -7,6 +7,7 @@ export interface Skill {
   tier?: 'basic' | 'advanced' | 'enterprise';
 }
 
+// Updated catalog with 500+ skills across all categories
 export const SKILLS_CATALOG: { [category: string]: Skill[] } = {
   // Sales & CRM Skills (45 skills)
   'Sales & CRM': [
@@ -413,7 +414,61 @@ export const SKILLS_CATALOG: { [category: string]: Skill[] } = {
     { id: 'transcription', name: 'Transcription Services', category: 'Communication' }
   ],
 
-  // AI & Automation Skills (35 skills)
+  // Industry Specific Skills (50 skills)
+  'Industry Specific': [
+    { id: 'healthcare_ehr', name: 'EHR Management', category: 'Industry Specific' },
+    { id: 'hipaa_compliance', name: 'HIPAA Compliance', category: 'Industry Specific' },
+    { id: 'patient_scheduling', name: 'Patient Scheduling', category: 'Industry Specific' },
+    { id: 'medical_billing', name: 'Medical Billing', category: 'Industry Specific' },
+    { id: 'telemedicine', name: 'Telemedicine Support', category: 'Industry Specific' },
+    { id: 'prescription_management', name: 'Prescription Management', category: 'Industry Specific' },
+    { id: 'clinical_trials', name: 'Clinical Trials Management', category: 'Industry Specific' },
+    { id: 'medical_records', name: 'Medical Records Management', category: 'Industry Specific' },
+    { id: 'insurance_verification', name: 'Insurance Verification', category: 'Industry Specific' },
+    { id: 'lab_results', name: 'Lab Results Integration', category: 'Industry Specific' },
+    { id: 'real_estate_crm', name: 'Real Estate CRM', category: 'Industry Specific' },
+    { id: 'property_listings', name: 'Property Listings Management', category: 'Industry Specific' },
+    { id: 'virtual_tours', name: 'Virtual Property Tours', category: 'Industry Specific' },
+    { id: 'mortgage_calculator', name: 'Mortgage Calculator', category: 'Industry Specific' },
+    { id: 'tenant_screening', name: 'Tenant Screening', category: 'Industry Specific' },
+    { id: 'lease_management', name: 'Lease Management', category: 'Industry Specific' },
+    { id: 'property_maintenance', name: 'Property Maintenance', category: 'Industry Specific' },
+    { id: 'rental_payments', name: 'Rental Payment Processing', category: 'Industry Specific' },
+    { id: 'hoa_management', name: 'HOA Management', category: 'Industry Specific' },
+    { id: 'mls_integration', name: 'MLS Integration', category: 'Industry Specific' },
+    { id: 'legal_case_management', name: 'Legal Case Management', category: 'Industry Specific' },
+    { id: 'contract_review', name: 'Contract Review & Analysis', category: 'Industry Specific' },
+    { id: 'legal_research', name: 'Legal Research Tools', category: 'Industry Specific' },
+    { id: 'court_calendar', name: 'Court Calendar Management', category: 'Industry Specific' },
+    { id: 'document_discovery', name: 'Document Discovery', category: 'Industry Specific' },
+    { id: 'client_intake', name: 'Client Intake Forms', category: 'Industry Specific' },
+    { id: 'legal_billing', name: 'Legal Billing & Timekeeping', category: 'Industry Specific' },
+    { id: 'compliance_legal', name: 'Legal Compliance Tracking', category: 'Industry Specific' },
+    { id: 'litigation_support', name: 'Litigation Support', category: 'Industry Specific' },
+    { id: 'ip_management', name: 'IP Management', category: 'Industry Specific' },
+    { id: 'restaurant_pos', name: 'Restaurant POS', category: 'Industry Specific' },
+    { id: 'table_reservations', name: 'Table Reservations', category: 'Industry Specific' },
+    { id: 'menu_management', name: 'Menu Management', category: 'Industry Specific' },
+    { id: 'food_delivery', name: 'Food Delivery Integration', category: 'Industry Specific' },
+    { id: 'kitchen_display', name: 'Kitchen Display System', category: 'Industry Specific' },
+    { id: 'ingredient_tracking', name: 'Ingredient Tracking', category: 'Industry Specific' },
+    { id: 'recipe_costing', name: 'Recipe Costing', category: 'Industry Specific' },
+    { id: 'staff_scheduling_restaurant', name: 'Restaurant Staff Scheduling', category: 'Industry Specific' },
+    { id: 'loyalty_dining', name: 'Dining Loyalty Programs', category: 'Industry Specific' },
+    { id: 'waitlist_management', name: 'Waitlist Management', category: 'Industry Specific' },
+    { id: 'student_information', name: 'Student Information System', category: 'Industry Specific' },
+    { id: 'gradebook', name: 'Digital Gradebook', category: 'Industry Specific' },
+    { id: 'attendance_school', name: 'School Attendance Tracking', category: 'Industry Specific' },
+    { id: 'parent_portal', name: 'Parent Portal', category: 'Industry Specific' },
+    { id: 'curriculum_planning', name: 'Curriculum Planning', category: 'Industry Specific' },
+    { id: 'assignment_submission', name: 'Assignment Submission', category: 'Industry Specific' },
+    { id: 'exam_proctoring', name: 'Online Exam Proctoring', category: 'Industry Specific' },
+    { id: 'library_management', name: 'Library Management System', category: 'Industry Specific' },
+    { id: 'school_communication', name: 'School Communication Platform', category: 'Industry Specific' },
+    { id: 'tuition_management', name: 'Tuition Management', category: 'Industry Specific' }
+  ],
+
+  // AI & Automation Skills (50 skills)
   'AI & Automation': [
     { id: 'chatbot_builder', name: 'Chatbot Builder', category: 'AI & Automation' },
     { id: 'virtual_assistant', name: 'Virtual Assistant', category: 'AI & Automation' },
@@ -449,7 +504,104 @@ export const SKILLS_CATALOG: { [category: string]: Skill[] } = {
     { id: 'route_optimization', name: 'Route Optimization', category: 'AI & Automation' },
     { id: 'resource_ai', name: 'AI Resource Allocation', category: 'AI & Automation' },
     { id: 'quality_ai', name: 'AI Quality Control', category: 'AI & Automation' },
-    { id: 'compliance_ai', name: 'AI Compliance Monitoring', category: 'AI & Automation' }
+    { id: 'compliance_ai', name: 'AI Compliance Monitoring', category: 'AI & Automation' },
+    { id: 'speech_to_text', name: 'Speech to Text', category: 'AI & Automation' },
+    { id: 'text_to_speech', name: 'Text to Speech', category: 'AI & Automation' },
+    { id: 'language_translation', name: 'Language Translation AI', category: 'AI & Automation' },
+    { id: 'summarization', name: 'Text Summarization', category: 'AI & Automation' },
+    { id: 'keyword_extraction', name: 'Keyword Extraction', category: 'AI & Automation' },
+    { id: 'topic_modeling', name: 'Topic Modeling', category: 'AI & Automation' },
+    { id: 'semantic_search', name: 'Semantic Search', category: 'AI & Automation' },
+    { id: 'knowledge_graph', name: 'Knowledge Graph', category: 'AI & Automation' },
+    { id: 'question_answering', name: 'Question Answering System', category: 'AI & Automation' },
+    { id: 'document_understanding', name: 'Document Understanding', category: 'AI & Automation' },
+    { id: 'video_analysis', name: 'Video Analysis AI', category: 'AI & Automation' },
+    { id: 'audio_analysis', name: 'Audio Analysis', category: 'AI & Automation' },
+    { id: 'facial_recognition', name: 'Facial Recognition', category: 'AI & Automation' },
+    { id: 'object_detection', name: 'Object Detection', category: 'AI & Automation' }
+  ],
+
+  // Specialized Technical Skills (40 skills)
+  'Technical & API': [
+    { id: 'rest_api', name: 'REST API Integration', category: 'Technical & API' },
+    { id: 'graphql', name: 'GraphQL Integration', category: 'Technical & API' },
+    { id: 'webhook_management', name: 'Webhook Management', category: 'Technical & API' },
+    { id: 'oauth_integration', name: 'OAuth Integration', category: 'Technical & API' },
+    { id: 'api_gateway', name: 'API Gateway Management', category: 'Technical & API' },
+    { id: 'rate_limiting', name: 'Rate Limiting', category: 'Technical & API' },
+    { id: 'api_versioning', name: 'API Versioning', category: 'Technical & API' },
+    { id: 'sdk_generation', name: 'SDK Generation', category: 'Technical & API' },
+    { id: 'api_documentation', name: 'API Documentation', category: 'Technical & API' },
+    { id: 'api_testing', name: 'API Testing Automation', category: 'Technical & API' },
+    { id: 'database_sync', name: 'Database Synchronization', category: 'Technical & API' },
+    { id: 'data_migration', name: 'Data Migration Tools', category: 'Technical & API' },
+    { id: 'batch_processing', name: 'Batch Processing', category: 'Technical & API' },
+    { id: 'stream_processing', name: 'Stream Processing', category: 'Technical & API' },
+    { id: 'event_sourcing', name: 'Event Sourcing', category: 'Technical & API' },
+    { id: 'cqrs', name: 'CQRS Implementation', category: 'Technical & API' },
+    { id: 'microservices', name: 'Microservices Architecture', category: 'Technical & API' },
+    { id: 'serverless', name: 'Serverless Computing', category: 'Technical & API' },
+    { id: 'edge_computing', name: 'Edge Computing', category: 'Technical & API' },
+    { id: 'iot_integration', name: 'IoT Device Integration', category: 'Technical & API' },
+    { id: 'mqtt', name: 'MQTT Protocol', category: 'Technical & API' },
+    { id: 'websocket', name: 'WebSocket Connections', category: 'Technical & API' },
+    { id: 'grpc', name: 'gRPC Communication', category: 'Technical & API' },
+    { id: 'message_queue', name: 'Message Queue Systems', category: 'Technical & API' },
+    { id: 'pub_sub', name: 'Pub/Sub Messaging', category: 'Technical & API' },
+    { id: 'circuit_breaker', name: 'Circuit Breaker Pattern', category: 'Technical & API' },
+    { id: 'service_mesh', name: 'Service Mesh', category: 'Technical & API' },
+    { id: 'load_balancing', name: 'Load Balancing', category: 'Technical & API' },
+    { id: 'caching_strategy', name: 'Caching Strategy', category: 'Technical & API' },
+    { id: 'cdn_management', name: 'CDN Management', category: 'Technical & API' },
+    { id: 'ssl_certificates', name: 'SSL Certificate Management', category: 'Technical & API' },
+    { id: 'dns_management', name: 'DNS Management', category: 'Technical & API' },
+    { id: 'reverse_proxy', name: 'Reverse Proxy Setup', category: 'Technical & API' },
+    { id: 'api_monitoring', name: 'API Monitoring', category: 'Technical & API' },
+    { id: 'synthetic_monitoring', name: 'Synthetic Monitoring', category: 'Technical & API' },
+    { id: 'distributed_tracing', name: 'Distributed Tracing', category: 'Technical & API' },
+    { id: 'log_aggregation', name: 'Log Aggregation', category: 'Technical & API' },
+    { id: 'metrics_collection', name: 'Metrics Collection', category: 'Technical & API' },
+    { id: 'alerting_system', name: 'Alerting System', category: 'Technical & API' },
+    { id: 'chaos_engineering', name: 'Chaos Engineering', category: 'Technical & API' }
+  ],
+
+  // Social Media & Content Creation (35 skills)
+  'Social & Content': [
+    { id: 'social_listening', name: 'Social Media Listening', category: 'Social & Content' },
+    { id: 'hashtag_analytics', name: 'Hashtag Analytics', category: 'Social & Content' },
+    { id: 'influencer_discovery', name: 'Influencer Discovery', category: 'Social & Content' },
+    { id: 'content_curation', name: 'Content Curation', category: 'Social & Content' },
+    { id: 'social_contests', name: 'Social Media Contests', category: 'Social & Content' },
+    { id: 'ugc_management', name: 'UGC Management', category: 'Social & Content' },
+    { id: 'social_commerce', name: 'Social Commerce', category: 'Social & Content' },
+    { id: 'live_streaming', name: 'Live Streaming Management', category: 'Social & Content' },
+    { id: 'story_creation', name: 'Story Creation Tools', category: 'Social & Content' },
+    { id: 'reel_creation', name: 'Reel/Short Video Creation', category: 'Social & Content' },
+    { id: 'social_crm', name: 'Social CRM', category: 'Social & Content' },
+    { id: 'community_moderation', name: 'Community Moderation', category: 'Social & Content' },
+    { id: 'social_customer_service', name: 'Social Customer Service', category: 'Social & Content' },
+    { id: 'brand_advocacy', name: 'Brand Advocacy Programs', category: 'Social & Content' },
+    { id: 'social_roi', name: 'Social Media ROI Tracking', category: 'Social & Content' },
+    { id: 'content_planning', name: 'Content Planning', category: 'Social & Content' },
+    { id: 'editorial_calendar', name: 'Editorial Calendar', category: 'Social & Content' },
+    { id: 'content_approval', name: 'Content Approval Workflow', category: 'Social & Content' },
+    { id: 'brand_guidelines', name: 'Brand Guidelines Enforcement', category: 'Social & Content' },
+    { id: 'content_localization', name: 'Content Localization', category: 'Social & Content' },
+    { id: 'content_versioning', name: 'Content Versioning', category: 'Social & Content' },
+    { id: 'digital_asset_management', name: 'Digital Asset Management', category: 'Social & Content' },
+    { id: 'content_distribution', name: 'Content Distribution', category: 'Social & Content' },
+    { id: 'content_monetization', name: 'Content Monetization', category: 'Social & Content' },
+    { id: 'podcast_distribution', name: 'Podcast Distribution', category: 'Social & Content' },
+    { id: 'video_hosting', name: 'Video Hosting & Streaming', category: 'Social & Content' },
+    { id: 'content_analytics', name: 'Content Performance Analytics', category: 'Social & Content' },
+    { id: 'engagement_analytics', name: 'Engagement Analytics', category: 'Social & Content' },
+    { id: 'competitor_content', name: 'Competitor Content Analysis', category: 'Social & Content' },
+    { id: 'trending_topics', name: 'Trending Topics Discovery', category: 'Social & Content' },
+    { id: 'content_ideation', name: 'Content Ideation Tools', category: 'Social & Content' },
+    { id: 'seo_content', name: 'SEO Content Optimization', category: 'Social & Content' },
+    { id: 'content_repurposing', name: 'Content Repurposing', category: 'Social & Content' },
+    { id: 'interactive_content', name: 'Interactive Content Creation', category: 'Social & Content' },
+    { id: 'ar_filters', name: 'AR Filter Creation', category: 'Social & Content' }
   ]
 };
 
@@ -501,4 +653,4 @@ export function getSkillsByAgentType(agentType: string): Skill[] {
 }
 
 // Export total count for easy reference
-export const TOTAL_SKILLS = getTotalSkillsCount(); // Should be 395+
+export const TOTAL_SKILLS = getTotalSkillsCount(); // Now 500+ skills
