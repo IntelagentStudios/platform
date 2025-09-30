@@ -983,7 +983,7 @@ export default function AgentBuilderPage() {
             <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Integrations Column (Left) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1008,7 +1008,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="flex-1 space-y-2 overflow-y-auto integrations-scrollbar">
+                  <div className="space-y-2 overflow-y-auto integrations-scrollbar" style={{ height: '550px' }}>
                     {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
                       <div key={category} className="rounded-lg border" style={{
                         backgroundColor: 'rgba(58, 64, 64, 0.2)',
@@ -1074,7 +1074,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Features & Capabilities Column (Middle) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1135,7 +1135,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="flex-1 space-y-2 overflow-y-auto features-scrollbar">
+                  <div className="space-y-2 overflow-y-auto features-scrollbar" style={{ height: '450px' }}>
                     {POPULAR_FEATURES.map(feature => {
                       const Icon = feature.icon;
                       const isRecommended = suggestedFeatures.includes(feature.id);
@@ -1187,7 +1187,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Skills Matrix Column (Right) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                         <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1212,7 +1212,7 @@ export default function AgentBuilderPage() {
                         background-color: rgba(169, 189, 203, 0.5);
                       }
                     `}</style>
-                    <div className="flex-1 space-y-2 overflow-y-auto skills-scrollbar">
+                    <div className="space-y-2 overflow-y-auto skills-scrollbar" style={{ height: '550px' }}>
                       {Object.entries(SKILLS_CATALOG).map(([category, skills]) => (
                         <div key={category} className="rounded-lg border" style={{
                           backgroundColor: 'rgba(58, 64, 64, 0.2)',
