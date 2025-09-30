@@ -792,20 +792,123 @@ export default function AgentBuilderPage() {
           />
         ) : (
           <div className="p-8">
-            {/* Top Section: Embedded Chatbot */}
-            <div className="max-w-4xl mx-auto mb-8">
-              <EmbeddedChatbot
-                title="AI Agent Configuration Assistant"
-                placeholder="Describe your business needs..."
-                welcomeMessage="Hello! I'm here to help you build the perfect AI agent for your business. Tell me about your needs, and I'll configure the optimal solution with the right skills and integrations."
-                height="400px"
-                onSend={(message) => {
-                  analyzeDescription(message);
-                  setChatResponses({ 0: message });
-                  setHasInteracted(true);
-                }}
-              />
+            {/* Top Section: Chatbot and Summary */}
+            <div className="max-w-7xl mx-auto mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Chatbot Column */}
+                <div>
+                  <EmbeddedChatbot
+                    title="AI Agent Configuration Assistant"
+                    placeholder="Describe your business needs..."
+                    welcomeMessage="Hello! I'm here to help you build the perfect AI agent for your business. Tell me about your needs, and I'll configure the optimal solution with the right skills and integrations."
+                    height="450px"
+                    onSend={(message) => {
+                      analyzeDescription(message);
+                      setChatResponses({ 0: message });
+                      setHasInteracted(true);
+                    }}
+                  />
+                </div>
 
+                {/* Summary & Pricing Column */}
+                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '450px' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                      {agentConfig.name || 'Your AI Agent'}
+                    </h3>
+                    <span className="px-4 py-2 text-lg font-bold rounded-full" style={{
+                      backgroundColor: 'rgba(169, 189, 203, 0.2)',
+                      color: 'rgb(169, 189, 203)'
+                    }}>
+                      £{calculateTotalPrice()}/mo
+                    </span>
+                  </div>
+
+                  <p className="text-sm mb-6" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
+                    {agentConfig.description || 'Configure your custom AI agent with the skills and integrations your business needs'}
+                  </p>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                      <div className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                        {agentConfig.skills.length}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>Skills</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                      <div className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                        {agentConfig.integrations.length}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>Integrations</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(58, 64, 64, 0.5)' }}>
+                      <div className="text-2xl font-bold" style={{ color: 'rgb(169, 189, 203)' }}>
+                        {agentConfig.features.length}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>Features</div>
+                    </div>
+                  </div>
+
+                  {/* Selected Items Preview */}
+                  <div className="space-y-3 mb-6 overflow-y-auto" style={{ maxHeight: '150px' }}>
+                    {agentConfig.skills.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Top Skills</div>
+                        <div className="flex flex-wrap gap-1">
+                          {agentConfig.skills.slice(0, 5).map(skill => (
+                            <span key={skill} className="px-2 py-1 text-xs rounded" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                              color: 'rgb(229, 227, 220)'
+                            }}>
+                              {skill}
+                            </span>
+                          ))}
+                          {agentConfig.skills.length > 5 && (
+                            <span className="px-2 py-1 text-xs rounded" style={{
+                              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                              color: 'rgba(169, 189, 203, 0.7)'
+                            }}>
+                              +{agentConfig.skills.length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {agentConfig.features.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Active Features</div>
+                        <div className="flex flex-wrap gap-1">
+                          {agentConfig.features.map(featureId => {
+                            const feature = POPULAR_FEATURES.find(f => f.id === featureId);
+                            if (!feature) return null;
+                            return (
+                              <span key={featureId} className="px-2 py-1 text-xs rounded" style={{
+                                backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                                color: 'rgb(229, 227, 220)'
+                              }}>
+                                {feature.name}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setPreviewMode(true)}
+                    className="w-full px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: 'rgb(169, 189, 203)'
+                    }}
+                  >
+                    <EyeIcon className="h-5 w-5" />
+                    Preview Dashboard
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Bottom Section: Configuration Grid */}
@@ -977,97 +1080,8 @@ export default function AgentBuilderPage() {
                   </div>
                 </div>
 
-                {/* Skills Matrix & Summary Column (Right) */}
-                <div>
-                  {/* Summary Section */}
-                  <div className="bg-gray-800/30 rounded-xl p-6 mb-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                        {agentConfig.name || 'Your AI Agent'}
-                      </h3>
-                      <span className="px-3 py-1 text-sm font-bold rounded-full" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(169, 189, 203)'
-                      }}>
-                        £{calculateTotalPrice()}/mo
-                      </span>
-                    </div>
-
-                  <p className="text-sm mb-4" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
-                    {agentConfig.description || 'Your custom AI agent tailored to your needs'}
-                  </p>
-
-                  {/* Core Skills */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Core Skills
-                      </span>
-                      <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{
-                        backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                        color: 'rgb(169, 189, 203)'
-                      }}>
-                        {agentConfig.skills.length}/{TOTAL_SKILLS} Skills
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {agentConfig.skills.slice(0, 6).map(skill => (
-                        <span key={skill} className="px-2 py-1 text-xs rounded" style={{
-                          backgroundColor: 'rgba(169, 189, 203, 0.15)',
-                          color: 'rgb(229, 227, 220)'
-                        }}>
-                          {skill}
-                        </span>
-                      ))}
-                      {agentConfig.skills.length > 6 && (
-                        <button
-                          onClick={() => setShowSkillsBreakdown(true)}
-                          className="px-2 py-1 text-xs rounded hover:opacity-80 transition"
-                          style={{
-                            backgroundColor: 'rgba(169, 189, 203, 0.2)',
-                            color: 'rgb(169, 189, 203)',
-                            border: '1px solid rgba(169, 189, 203, 0.3)'
-                          }}
-                        >
-                          +{agentConfig.skills.length - 6} more
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Selected Integrations */}
-                  {agentConfig.integrations.length > 0 && (
-                    <div className="mb-4">
-                      <span className="text-sm font-medium" style={{ color: 'rgb(169, 189, 203)' }}>
-                        Integrations
-                      </span>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {agentConfig.integrations.map(int => (
-                          <span key={int} className="px-2 py-1 text-xs rounded" style={{
-                            backgroundColor: 'rgba(169, 189, 203, 0.15)',
-                            color: 'rgb(169, 189, 203)'
-                          }}>
-                            {int}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                    <button
-                      onClick={() => setPreviewMode(true)}
-                      className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                      style={{
-                        backgroundColor: 'rgb(169, 189, 203)'
-                      }}
-                    >
-                      <EyeIcon className="h-5 w-5" />
-                      Preview Dashboard
-                    </button>
-                  </div>
-
-                  {/* Skills Matrix */}
-                  <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                {/* Skills Matrix Column (Right) */}
+                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
                       Skills Library ({agentConfig.skills.length}/{TOTAL_SKILLS} selected)
@@ -1129,7 +1143,6 @@ export default function AgentBuilderPage() {
                       ))}
                     </div>
                   </div>
-                </div>
               </div>
             </div>
           </div>
