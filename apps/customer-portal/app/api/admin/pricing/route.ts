@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import {
   SKILL_PRICING_TIERS,
   FEATURE_PRICING,
@@ -122,9 +122,9 @@ export async function GET(request: NextRequest) {
           }
         });
 
-        const usageMap = new Map<string, number>();
+        const billingUsageMap = new Map<string, number>();
         usage.forEach(u => {
-          usageMap.set(u.skill_id, u._count.id);
+          billingUsageMap.set(u.skill_id, u._count.id);
         });
 
         // Calculate costs
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
           tier: getSkillTier(id, id.replace(/_/g, ' '))
         }));
 
-        const usageData = Array.from(usageMap.entries()).map(([skillId, executions]) => ({
+        const usageData = Array.from(billingUsageMap.entries()).map(([skillId, executions]) => ({
           skillId,
           executions,
           month
@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
           skillsArray,
           Array.from(configuredFeatures),
           skillDetails.map(s => ({ id: s.id, name: s.name })),
-          usageMap
+          billingUsageMap
         );
 
         return NextResponse.json({
@@ -281,15 +281,20 @@ export async function POST(request: NextRequest) {
         // Apply discount to user's subscription
         const { userId, discountPercent, reason } = data;
 
-        // Create discount record
-        const discount = await prisma.billing_adjustments.create({
+        // Store discount in skill_audit_log with special event type
+        // In production, you'd want a dedicated billing_adjustments table
+        const discount = await prisma.skill_audit_log.create({
           data: {
             user_id: userId,
-            type: 'discount',
-            amount: discountPercent,
-            reason,
-            applied_at: new Date(),
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+            skill_id: 'billing_discount',
+            event_type: 'discount_applied',
+            event_data: {
+              discount_percent: discountPercent,
+              reason: reason,
+              expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            } as any,
+            license_key: 'system',
+            created_at: new Date()
           }
         });
 
