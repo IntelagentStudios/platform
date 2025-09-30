@@ -1008,7 +1008,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="flex-1 space-y-2 overflow-y-auto integrations-scrollbar" style={{ maxHeight: '550px' }}>
+                  <div className="flex-1 space-y-2 overflow-y-auto integrations-scrollbar">
                     {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
                       <div key={category} className="rounded-lg border" style={{
                         backgroundColor: 'rgba(58, 64, 64, 0.2)',
@@ -1135,7 +1135,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="flex-1 space-y-2 overflow-y-auto features-scrollbar" style={{ maxHeight: suggestedFeatures.length > 0 ? '450px' : '550px' }}>
+                  <div className="flex-1 space-y-2 overflow-y-auto features-scrollbar">
                     {POPULAR_FEATURES.map(feature => {
                       const Icon = feature.icon;
                       const isRecommended = suggestedFeatures.includes(feature.id);
@@ -1212,7 +1212,7 @@ export default function AgentBuilderPage() {
                         background-color: rgba(169, 189, 203, 0.5);
                       }
                     `}</style>
-                    <div className="flex-1 space-y-2 overflow-y-auto skills-scrollbar" style={{ maxHeight: '550px' }}>
+                    <div className="flex-1 space-y-2 overflow-y-auto skills-scrollbar">
                       {Object.entries(SKILLS_CATALOG).map(([category, skills]) => (
                         <div key={category} className="rounded-lg border" style={{
                           backgroundColor: 'rgba(58, 64, 64, 0.2)',
