@@ -983,11 +983,16 @@ export default function AgentBuilderPage() {
             <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Integrations Column (Left) */}
-                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                    <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                    Integrations
-                  </h3>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                      <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                      Integrations
+                    </h3>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      Connect with your existing tools
+                    </p>
+                  </div>
                   <style jsx>{`
                     .integrations-scrollbar::-webkit-scrollbar {
                       width: 8px;
@@ -1003,7 +1008,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="space-y-2 max-h-[600px] overflow-y-auto integrations-scrollbar">
+                  <div className="flex-1 space-y-2 overflow-y-auto integrations-scrollbar" style={{ maxHeight: '550px' }}>
                     {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
                       <div key={category} className="rounded-lg border" style={{
                         backgroundColor: 'rgba(58, 64, 64, 0.2)',
@@ -1069,12 +1074,15 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Features & Capabilities Column (Middle) */}
-                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                    <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
                       Features & Capabilities
                     </h3>
+                    <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                      Enhance your agent with premium features
+                    </p>
                     {suggestedFeatures.length > 0 && (
                       <div className="p-2 rounded-lg mb-3" style={{ backgroundColor: 'rgba(169, 189, 203, 0.05)', border: '1px solid rgba(169, 189, 203, 0.2)' }}>
                         <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.9)' }}>
@@ -1127,7 +1135,7 @@ export default function AgentBuilderPage() {
                       background-color: rgba(169, 189, 203, 0.5);
                     }
                   `}</style>
-                  <div className="space-y-2 max-h-[500px] overflow-y-auto features-scrollbar">
+                  <div className="flex-1 space-y-2 overflow-y-auto features-scrollbar" style={{ maxHeight: suggestedFeatures.length > 0 ? '450px' : '550px' }}>
                     {POPULAR_FEATURES.map(feature => {
                       const Icon = feature.icon;
                       const isRecommended = suggestedFeatures.includes(feature.id);
@@ -1179,11 +1187,16 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Skills Matrix Column (Right) */}
-                <div className="bg-gray-800/30 rounded-xl p-6" style={{ border: '1px solid rgba(169, 189, 203, 0.15)' }}>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
-                      <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
-                      Skills Library ({agentConfig.skills.length}/{TOTAL_SKILLS} selected)
-                    </h3>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '650px' }}>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
+                        <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
+                        Skills Library
+                      </h3>
+                      <p className="text-xs mt-1" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                        {agentConfig.skills.length} of {TOTAL_SKILLS} skills selected
+                      </p>
+                    </div>
                     <style jsx>{`
                       .skills-scrollbar::-webkit-scrollbar {
                         width: 8px;
@@ -1199,7 +1212,7 @@ export default function AgentBuilderPage() {
                         background-color: rgba(169, 189, 203, 0.5);
                       }
                     `}</style>
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto skills-scrollbar">
+                    <div className="flex-1 space-y-2 overflow-y-auto skills-scrollbar" style={{ maxHeight: '550px' }}>
                       {Object.entries(SKILLS_CATALOG).map(([category, skills]) => (
                         <div key={category} className="rounded-lg border" style={{
                           backgroundColor: 'rgba(58, 64, 64, 0.2)',
