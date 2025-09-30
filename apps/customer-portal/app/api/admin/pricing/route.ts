@@ -84,9 +84,15 @@ export async function GET(request: NextRequest) {
 
         // Get user's subscribed products and skills
         const licenses = await prisma.licenses.findMany({
-          where: { user_id: userId },
-          include: {
-            product_keys: true
+          where: { user_id: userId }
+        });
+
+        // Get product keys for each license
+        const productKeys = await prisma.product_keys.findMany({
+          where: {
+            license_key: {
+              in: licenses.map(l => l.license_key)
+            }
           }
         });
 
@@ -94,14 +100,21 @@ export async function GET(request: NextRequest) {
         const configuredSkills = new Set<string>();
         const configuredFeatures = new Set<string>();
 
-        for (const license of licenses) {
-          if (license.product_keys?.configuration) {
-            const config = license.product_keys.configuration as any;
-            if (config.skills) {
+        for (const pk of productKeys) {
+          if (pk.skill_config) {
+            const config = pk.skill_config as any;
+            if (config.skills && Array.isArray(config.skills)) {
               config.skills.forEach((s: string) => configuredSkills.add(s));
             }
-            if (config.features) {
+            if (config.features && Array.isArray(config.features)) {
               config.features.forEach((f: string) => configuredFeatures.add(f));
+            }
+          }
+          // Also check assigned_skills field
+          if (pk.assigned_skills) {
+            const skills = pk.assigned_skills as any;
+            if (Array.isArray(skills)) {
+              skills.forEach((s: string) => configuredSkills.add(s));
             }
           }
         }
@@ -184,35 +197,54 @@ export async function GET(request: NextRequest) {
 
         for (const user of allUsers) {
           const licenses = await prisma.licenses.findMany({
-            where: { user_id: user.id },
-            include: { product_keys: true }
+            where: { user_id: user.id }
           });
 
-          licenses.forEach(license => {
-            if (license.product_keys?.configuration) {
-              const config = license.product_keys.configuration as any;
-              if (config.skills) {
-                totalSkills += config.skills.length;
-                config.skills.forEach((skillId: string) => {
+          if (licenses.length > 0) {
+            // Add base platform fee
+            platformStats.totalMonthlyRevenue += 299;
+
+            // Get product keys for this user's licenses
+            const productKeys = await prisma.product_keys.findMany({
+              where: {
+                license_key: {
+                  in: licenses.map(l => l.license_key)
+                }
+              }
+            });
+
+            productKeys.forEach(pk => {
+              // Check skill_config
+              if (pk.skill_config) {
+                const config = pk.skill_config as any;
+                if (config.skills && Array.isArray(config.skills)) {
+                  totalSkills += config.skills.length;
+                  config.skills.forEach((skillId: string) => {
+                    const tier = getSkillTier(skillId, skillId);
+                    tierCounts[tier]++;
+                    platformStats.totalMonthlyRevenue += SKILL_PRICING_TIERS[tier].basePrice;
+                  });
+                }
+                if (config.features && Array.isArray(config.features)) {
+                  config.features.forEach((featureId: string) => {
+                    const pricing = FEATURE_PRICING[featureId as keyof typeof FEATURE_PRICING];
+                    if (pricing) {
+                      platformStats.totalMonthlyRevenue += pricing.price;
+                    }
+                  });
+                }
+              }
+              // Also check assigned_skills
+              if (pk.assigned_skills && Array.isArray(pk.assigned_skills)) {
+                const skills = pk.assigned_skills as string[];
+                totalSkills += skills.length;
+                skills.forEach((skillId: string) => {
                   const tier = getSkillTier(skillId, skillId);
                   tierCounts[tier]++;
                   platformStats.totalMonthlyRevenue += SKILL_PRICING_TIERS[tier].basePrice;
                 });
               }
-              if (config.features) {
-                config.features.forEach((featureId: string) => {
-                  const pricing = FEATURE_PRICING[featureId as keyof typeof FEATURE_PRICING];
-                  if (pricing) {
-                    platformStats.totalMonthlyRevenue += pricing.price;
-                  }
-                });
-              }
-            }
-          });
-
-          // Add base platform fee
-          if (licenses.length > 0) {
-            platformStats.totalMonthlyRevenue += 299;
+            });
           }
         }
 
