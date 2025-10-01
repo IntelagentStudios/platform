@@ -61,6 +61,11 @@ export default function AdaptiveAgentConfigurator({
     features: [] as string[],
     integrations: [] as string[]
   });
+  const [previousConfiguration, setPreviousConfiguration] = useState({
+    skills: [] as string[],
+    features: [] as string[],
+    integrations: [] as string[]
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -160,11 +165,73 @@ export default function AdaptiveAgentConfigurator({
       }
     }
 
-    // Pain point based skills
+    // Pain point based skills (including specific skill mentions)
     if (context.painPoints && context.painPoints.length > 0) {
       context.painPoints.forEach(pain => {
         const painLower = pain.toLowerCase();
 
+        // Direct skill mentions
+        if (painLower.includes('lead_gen') || painLower.includes('leads')) {
+          skills.add('lead_generation');
+          skills.add('lead_scoring');
+          skills.add('lead_nurturing');
+        }
+
+        if (painLower.includes('customer_support') || painLower.includes('support_automation')) {
+          skills.add('customer_support_automation');
+          skills.add('ticket_management');
+          skills.add('faq_automation');
+        }
+
+        if (painLower.includes('email_automation') || painLower.includes('email_marketing')) {
+          skills.add('email_automation');
+          skills.add('email_campaigns');
+          skills.add('email_templates');
+        }
+
+        if (painLower.includes('social_media') || painLower.includes('social_automation')) {
+          skills.add('social_media_automation');
+          skills.add('social_posting');
+          skills.add('social_monitoring');
+        }
+
+        if (painLower.includes('content_creation') || painLower.includes('content_generation')) {
+          skills.add('content_generator');
+          skills.add('blog_writer');
+          skills.add('copywriting');
+        }
+
+        if (painLower.includes('invoice') || painLower.includes('billing')) {
+          skills.add('invoice_automation');
+          skills.add('payment_processing');
+          skills.add('billing_management');
+        }
+
+        if (painLower.includes('project_management') || painLower.includes('task_management')) {
+          skills.add('project_tracker');
+          skills.add('task_automation');
+          skills.add('milestone_tracking');
+        }
+
+        if (painLower.includes('workflow') || painLower.includes('workflows')) {
+          skills.add('workflow_automation');
+          skills.add('process_optimization');
+          skills.add('approval_workflows');
+        }
+
+        if (painLower.includes('chatbot') || painLower.includes('chat_automation')) {
+          skills.add('ai_chatbot');
+          skills.add('conversational_ai');
+          features.add('ai_chatbot');
+        }
+
+        if (painLower.includes('document_processing') || painLower.includes('document_automation')) {
+          skills.add('document_analyzer');
+          skills.add('document_generation');
+          skills.add('ocr_processing');
+        }
+
+        // Original pain point mappings
         if (painLower.includes('time') || painLower.includes('efficiency')) {
           skills.add('process_automation');
           skills.add('batch_processing');
@@ -176,7 +243,7 @@ export default function AdaptiveAgentConfigurator({
           features.add('unlimited_usage');
         }
 
-        if (painLower.includes('data') || painLower.includes('analytics')) {
+        if (painLower.includes('data') || painLower.includes('analytics') || painLower.includes('reporting')) {
           skills.add('data_visualization');
           skills.add('predictive_analytics');
           skills.add('report_generator');
@@ -304,6 +371,9 @@ export default function AdaptiveAgentConfigurator({
       features: Array.from(features),
       integrations: Array.from(integrations)
     };
+
+    // Store previous configuration before updating
+    setPreviousConfiguration(currentConfiguration);
 
     // Update current configuration
     setCurrentConfiguration(finalConfig);
@@ -457,6 +527,32 @@ export default function AdaptiveAgentConfigurator({
       updates.painPoints = [...(updates.painPoints || []), ...detectedPainPoints];
     }
 
+    // Check for specific skill mentions
+    const skillMentions = [
+      'lead generation', 'lead gen', 'leads',
+      'customer support', 'support automation',
+      'email automation', 'email marketing',
+      'social media', 'social automation',
+      'content creation', 'content generation',
+      'analytics', 'reporting', 'reports',
+      'invoicing', 'invoice', 'billing',
+      'project management', 'task management',
+      'crm', 'customer relationship',
+      'sales automation', 'sales pipeline',
+      'seo', 'search optimization',
+      'data visualization', 'dashboards',
+      'workflow automation', 'workflows',
+      'chatbot', 'chat automation',
+      'document processing', 'document automation'
+    ];
+
+    const mentionedSkills: string[] = [];
+    for (const skill of skillMentions) {
+      if (lowerMessage.includes(skill)) {
+        mentionedSkills.push(skill.replace(/ /g, '_'));
+      }
+    }
+
     // Goals extraction
     const goalKeywords = {
       'automate': 'process automation',
@@ -508,6 +604,11 @@ export default function AdaptiveAgentConfigurator({
       updates.budget = 'enterprise';
     }
 
+    // Add mentioned skills to context
+    if (mentionedSkills.length > 0) {
+      updates.painPoints = [...(updates.painPoints || []), ...mentionedSkills];
+    }
+
     return updates;
   };
 
@@ -541,19 +642,44 @@ export default function AdaptiveAgentConfigurator({
 
     // Create response
     setTimeout(() => {
-      const config = currentConfiguration;
+      // Get the new configuration that was just built
+      const newConfig = buildConfiguration(newContext);
+
       let response = '';
 
-      // Acknowledge what we learned
-      if (Object.keys(contextUpdates).length > 0) {
-        response = `I've updated your configuration based on that information.\n\n`;
-      }
+      // Calculate changes
+      const addedSkills = newConfig.skills.filter(s => !previousConfiguration.skills.includes(s));
+      const removedSkills = previousConfiguration.skills.filter(s => !newConfig.skills.includes(s));
+      const addedFeatures = newConfig.features.filter(f => !previousConfiguration.features.includes(f));
+      const removedFeatures = previousConfiguration.features.filter(f => !newConfig.features.includes(f));
+      const addedIntegrations = newConfig.integrations.filter(i => !previousConfiguration.integrations.includes(i));
+      const removedIntegrations = previousConfiguration.integrations.filter(i => !newConfig.integrations.includes(i));
 
-      // Show current configuration summary
-      response += `Current Configuration:\n`;
-      response += `• ${config.skills.length} Skills selected\n`;
-      response += `• ${config.features.length} Features enabled\n`;
-      response += `• ${config.integrations.length} Integrations configured\n\n`;
+      // Show what changed
+      if (addedSkills.length > 0 || removedSkills.length > 0 ||
+          addedFeatures.length > 0 || removedFeatures.length > 0 ||
+          addedIntegrations.length > 0 || removedIntegrations.length > 0) {
+
+        response = 'Configuration updated:\n\n';
+
+        if (addedSkills.length > 0) {
+          response += `Added skills:\n${addedSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+        }
+        if (removedSkills.length > 0) {
+          response += `Removed skills:\n${removedSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+        }
+        if (addedFeatures.length > 0) {
+          response += `Added features:\n${addedFeatures.map(f => `• ${f.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+        }
+        if (addedIntegrations.length > 0) {
+          response += `Added integrations:\n${addedIntegrations.map(i => `• ${i.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+        }
+      } else if (messages.length === 1) {
+        // First response
+        response = 'Let me start building your configuration.\n\n';
+      } else {
+        response = 'Configuration remains optimal based on that information.\n\n';
+      }
 
       // Ask next question
       response += nextQuestion;
