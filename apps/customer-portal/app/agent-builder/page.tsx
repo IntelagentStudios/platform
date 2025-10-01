@@ -726,10 +726,29 @@ export default function AgentBuilderPage() {
     return basePrice + featuresPrice;
   };
 
-  // Get pricing breakdown
+  // Get pricing breakdown with volume discounts
   const getPricingBreakdown = () => {
     const basePrice = 299;
-    const skillsPrice = agentConfig.skills.length * 5;
+    const skillCount = agentConfig.skills.length;
+
+    // Calculate skill price with volume discounts
+    let pricePerSkill = 5;
+    let discount = 0;
+
+    if (skillCount >= 30) {
+      pricePerSkill = 3.5; // 30% discount
+      discount = 30;
+    } else if (skillCount >= 20) {
+      pricePerSkill = 4; // 20% discount
+      discount = 20;
+    } else if (skillCount >= 10) {
+      pricePerSkill = 4.5; // 10% discount
+      discount = 10;
+    }
+
+    const skillsPrice = skillCount * pricePerSkill;
+    const skillsSaved = skillCount * 5 - skillsPrice;
+
     const featuresPrice = agentConfig.features.reduce((total, fid) => {
       const feature = POPULAR_FEATURES.find(f => f.id === fid);
       return total + (feature?.priceImpact || 0);
@@ -738,6 +757,10 @@ export default function AgentBuilderPage() {
     return {
       base: basePrice,
       skills: skillsPrice,
+      skillCount: skillCount,
+      pricePerSkill: pricePerSkill,
+      discount: discount,
+      saved: skillsSaved,
       features: featuresPrice,
       total: basePrice + skillsPrice + featuresPrice
     };
@@ -855,10 +878,13 @@ export default function AgentBuilderPage() {
                 <div>
                   <AdaptiveAgentConfigurator
                     height="450px"
+                    currentConfig={agentConfig}
                     onConfigUpdate={(config) => {
                       // Replace entire configuration each time
                       setAgentConfig(prev => ({
                         ...prev,
+                        name: config.name || prev.name,
+                        description: config.description || prev.description,
                         skills: config.skills || [],
                         features: config.features || [],
                         integrations: config.integrations || []
@@ -925,8 +951,13 @@ export default function AgentBuilderPage() {
                         </div>
                         {agentConfig.skills.length > 0 && (
                           <div className="flex justify-between text-xs">
-                            <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>{agentConfig.skills.length} Skills @ £5/ea</span>
-                            <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>£{getPricingBreakdown().skills}</span>
+                            <span style={{ color: 'rgba(229, 227, 220, 0.7)' }}>
+                              {agentConfig.skills.length} Skills @ £{getPricingBreakdown().pricePerSkill}/ea
+                              {getPricingBreakdown().discount > 0 && (
+                                <span style={{ color: 'rgb(34, 197, 94)' }}> ({getPricingBreakdown().discount}% off)</span>
+                              )}
+                            </span>
+                            <span style={{ color: 'rgba(229, 227, 220, 0.9)' }}>£{getPricingBreakdown().skills.toFixed(0)}</span>
                           </div>
                         )}
                         {agentConfig.features.length > 0 && (
@@ -953,7 +984,7 @@ export default function AgentBuilderPage() {
                                 backgroundColor: 'rgba(169, 189, 203, 0.15)',
                                 color: 'rgb(229, 227, 220)'
                               }}>
-                                {skill}
+                                {skill.replace(/_/g, ' ')}
                               </span>
                             ))}
                             {agentConfig.skills.length > 5 && (
@@ -968,13 +999,11 @@ export default function AgentBuilderPage() {
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Button aligned to bottom */}
-                  <div className="p-6 pt-0">
+                    {/* Preview Dashboard Button */}
                     <button
                       onClick={() => setPreviewMode(true)}
-                      className="w-full px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                      className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                       style={{
                         backgroundColor: 'rgb(169, 189, 203)'
                       }}

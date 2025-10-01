@@ -38,11 +38,13 @@ interface BusinessContext {
 
 interface AdaptiveAgentConfiguratorProps {
   onConfigUpdate: (config: any) => void;
+  currentConfig?: any;
   height?: string;
 }
 
 export default function AdaptiveAgentConfigurator({
   onConfigUpdate,
+  currentConfig,
   height = '450px'
 }: AdaptiveAgentConfiguratorProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -58,14 +60,14 @@ export default function AdaptiveAgentConfigurator({
   const [businessContext, setBusinessContext] = useState<BusinessContext>({});
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [currentConfiguration, setCurrentConfiguration] = useState({
-    skills: [] as string[],
-    features: [] as string[],
-    integrations: [] as string[]
+    skills: currentConfig?.skills || ([] as string[]),
+    features: currentConfig?.features || ([] as string[]),
+    integrations: currentConfig?.integrations || ([] as string[])
   });
   const [previousConfiguration, setPreviousConfiguration] = useState({
-    skills: [] as string[],
-    features: [] as string[],
-    integrations: [] as string[]
+    skills: currentConfig?.skills || ([] as string[]),
+    features: currentConfig?.features || ([] as string[]),
+    integrations: currentConfig?.integrations || ([] as string[])
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,9 +84,10 @@ export default function AdaptiveAgentConfigurator({
 
   // Deep configuration builder that analyzes full conversation and context
   const buildConfiguration = (context: BusinessContext, fullConversation?: Message[]) => {
-    const skills = new Set<string>();
-    const features = new Set<string>();
-    const integrations = new Set<string>();
+    // Start with existing configuration from the page
+    const skills = new Set<string>(currentConfig?.skills || []);
+    const features = new Set<string>(currentConfig?.features || []);
+    const integrations = new Set<string>(currentConfig?.integrations || []);
 
     // Analyze entire conversation history if provided
     let conversationContext = '';
@@ -688,6 +691,8 @@ export default function AdaptiveAgentConfigurator({
 
     // Convert sets to arrays
     const finalConfig = {
+      name: currentConfig?.name || 'Custom AI Agent',
+      description: currentConfig?.description || 'AI-powered automation agent',
       skills: Array.from(skills),
       features: Array.from(features),
       integrations: Array.from(integrations)
