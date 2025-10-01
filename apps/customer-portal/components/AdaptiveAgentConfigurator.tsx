@@ -270,7 +270,105 @@ export default function AdaptiveAgentConfigurator({
         features.add('conversation_intelligence');
       }
 
-      if (fullText.includes('marketing') || fullText.includes('agency')) {
+      // Ultimate marketing configuration
+      if (fullText.includes('ultimate marketing') || fullText.includes('best marketing') ||
+          fullText.includes('complete marketing') || fullText.includes('full marketing')) {
+        // Complete marketing automation suite - 50+ skills
+        skills.add('campaign_management');
+        skills.add('content_generator');
+        skills.add('blog_writer');
+        skills.add('social_media_automation');
+        skills.add('social_media_scheduler');
+        skills.add('social_listening');
+        skills.add('brand_monitoring');
+        skills.add('reputation_management');
+        skills.add('seo_optimization');
+        skills.add('keyword_research');
+        skills.add('backlink_analysis');
+        skills.add('email_marketing_automation');
+        skills.add('email_campaign_builder');
+        skills.add('email_template_designer');
+        skills.add('newsletter_automation');
+        skills.add('lead_generation');
+        skills.add('lead_scoring');
+        skills.add('lead_nurturing');
+        skills.add('lead_magnet_creator');
+        skills.add('conversion_tracking');
+        skills.add('conversion_optimization');
+        skills.add('ab_testing');
+        skills.add('landing_page_optimizer');
+        skills.add('campaign_analytics');
+        skills.add('roi_tracking');
+        skills.add('customer_journey_mapping');
+        skills.add('attribution_modeling');
+        skills.add('predictive_analytics');
+        skills.add('market_research');
+        skills.add('competitor_analysis');
+        skills.add('audience_segmentation');
+        skills.add('persona_builder');
+        skills.add('ad_copy_generator');
+        skills.add('graphic_design_automation');
+        skills.add('video_script_writer');
+        skills.add('video_editor');
+        skills.add('podcast_automation');
+        skills.add('influencer_outreach');
+        skills.add('affiliate_management');
+        skills.add('referral_program');
+        skills.add('loyalty_program');
+        skills.add('survey_automation');
+        skills.add('feedback_collection');
+        skills.add('review_management');
+        skills.add('testimonial_collector');
+        skills.add('case_study_generator');
+        skills.add('press_release_writer');
+        skills.add('media_monitoring');
+        skills.add('event_marketing');
+        skills.add('webinar_automation');
+
+        // Complete marketing stack
+        integrations.add('google_ads');
+        integrations.add('facebook_ads');
+        integrations.add('linkedin_ads');
+        integrations.add('twitter_ads');
+        integrations.add('tiktok_ads');
+        integrations.add('youtube_ads');
+        integrations.add('instagram_ads');
+        integrations.add('pinterest_ads');
+        integrations.add('hootsuite');
+        integrations.add('buffer');
+        integrations.add('sprout_social');
+        integrations.add('mailchimp');
+        integrations.add('hubspot');
+        integrations.add('marketo');
+        integrations.add('pardot');
+        integrations.add('google_analytics');
+        integrations.add('google_tag_manager');
+        integrations.add('hotjar');
+        integrations.add('mixpanel');
+        integrations.add('segment');
+        integrations.add('canva');
+        integrations.add('adobe_creative');
+        integrations.add('figma');
+        integrations.add('wordpress');
+        integrations.add('shopify');
+        integrations.add('semrush');
+        integrations.add('ahrefs');
+        integrations.add('moz');
+        integrations.add('zapier');
+        integrations.add('slack');
+
+        // Premium features for ultimate setup
+        features.add('white_label');
+        features.add('multi_tenant');
+        features.add('client_portals');
+        features.add('custom_reporting');
+        features.add('advanced_analytics');
+        features.add('ai_insights');
+        features.add('predictive_modeling');
+        features.add('unlimited_usage');
+        features.add('api_access');
+        features.add('custom_integrations');
+      } else if (fullText.includes('marketing') || fullText.includes('agency')) {
         // Core marketing skills
         skills.add('campaign_management');
         skills.add('content_generator');
@@ -351,7 +449,7 @@ export default function AdaptiveAgentConfigurator({
       }
     }
 
-    // Size-based configurations
+    // Size-based configurations - only add if explicitly needed
     if (context.size) {
       const sizeLower = context.size.toLowerCase();
 
@@ -362,15 +460,26 @@ export default function AdaptiveAgentConfigurator({
         features.add('mobile_app');
       }
 
-      if (sizeLower.includes('small') || sizeLower.includes('2-10')) {
+      if (sizeLower.includes('small') || sizeLower.includes('5') || sizeLower.includes('6') ||
+          sizeLower.includes('7') || sizeLower.includes('8') || sizeLower.includes('9')) {
         skills.add('team_collaboration');
         skills.add('resource_allocation');
         features.add('role_based_access');
       }
 
-      if (sizeLower.includes('medium') || sizeLower.includes('large') || sizeLower.includes('enterprise')) {
+      // Only add heavy team features for 10+ people
+      if (sizeLower.includes('10') || sizeLower.includes('11') || sizeLower.includes('12') ||
+          sizeLower.includes('15') || sizeLower.includes('20') ||
+          sizeLower.includes('medium') || sizeLower.includes('large') || sizeLower.includes('enterprise')) {
         skills.add('workflow_orchestration');
         skills.add('department_coordination');
+        features.add('role_based_access');
+        features.add('team_management');
+      }
+
+      // Enterprise features only for 50+ or explicit enterprise mention
+      if (sizeLower.includes('50') || sizeLower.includes('100') ||
+          sizeLower.includes('enterprise') || sizeLower.includes('large')) {
         features.add('sla_guarantee');
         features.add('dedicated_instance');
         features.add('white_label');
@@ -838,14 +947,102 @@ export default function AdaptiveAgentConfigurator({
     setInput('');
     setIsTyping(true);
 
-    // Analyze the message
-    const contextUpdates = analyzeMessage(input);
+    const lowerInput = input.toLowerCase();
 
-    // Update business context
+    // Check if this is a question about the configuration rather than a change request
+    const isQuestion =
+      lowerInput.includes('why') ||
+      lowerInput.includes('what') && lowerInput.includes('?') ||
+      lowerInput.includes('how come') ||
+      lowerInput.includes('explain') ||
+      lowerInput.includes('tell me about') ||
+      lowerInput.includes('but like');
+
+    const isRemovalRequest =
+      lowerInput.includes('remove') ||
+      lowerInput.includes('don\'t need') ||
+      lowerInput.includes('take out') ||
+      lowerInput.includes('too much') ||
+      lowerInput.includes('too many');
+
+    // Handle questions about configuration
+    if (isQuestion) {
+      setTimeout(() => {
+        let response = '';
+
+        if (lowerInput.includes('why') && lowerInput.includes('people') ||
+            lowerInput.includes('why') && lowerInput.includes('team')) {
+          response = `Good question! When you mentioned having 12 people, I added:\n\n`;
+          response += `• Workflow orchestration - to coordinate tasks across your team\n`;
+          response += `• Department coordination - for smooth handoffs between team members\n`;
+          response += `• SLA guarantee & dedicated instance - enterprise features for team reliability\n\n`;
+          response += `For a 12-person marketing team, these ensure everyone can collaborate effectively. `;
+          response += `But if you\'re all working independently, we can remove these - would you like me to?`;
+        } else if (lowerInput.includes('why') && lowerInput.includes('added')) {
+          response = `I add skills based on the context you provide. Each detail helps me understand your needs better:\n\n`;
+          response += `• Industry type → relevant core skills\n`;
+          response += `• Team size → collaboration and scaling features\n`;
+          response += `• Challenges → specific solutions\n\n`;
+          response += `Would you like me to adjust anything in your current configuration?`;
+        } else {
+          response = `Let me explain the current configuration:\n\n`;
+          response += `You have ${currentConfiguration.skills.length} skills selected, optimized for ${businessContext.industry || 'your business'}.\n\n`;
+          response += `Is there something specific you\'d like me to clarify or change?`;
+        }
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response,
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+        setIsTyping(false);
+      }, 1500);
+      return;
+    }
+
+    // Handle removal requests
+    if (isRemovalRequest) {
+      setTimeout(() => {
+        let response = 'I\'ll optimize your configuration. ';
+
+        // Remove team-related features if mentioned
+        if (lowerInput.includes('team') || lowerInput.includes('workflow') || lowerInput.includes('department')) {
+          const newConfig = { ...currentConfiguration };
+          newConfig.skills = newConfig.skills.filter(s =>
+            !s.includes('workflow_orchestration') &&
+            !s.includes('department_coordination') &&
+            !s.includes('team_'));
+          newConfig.features = newConfig.features.filter(f =>
+            !f.includes('sla_guarantee') &&
+            !f.includes('dedicated_instance'));
+
+          setCurrentConfiguration(newConfig);
+          onConfigUpdate(newConfig);
+
+          response += `I\'ve removed the team collaboration features. Your configuration is now focused on core marketing automation.\n\n`;
+          response += `New total: ${newConfig.skills.length} skills selected.`;
+        }
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response,
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+        setIsTyping(false);
+      }, 1500);
+      return;
+    }
+
+    // Otherwise, proceed with normal configuration updates
+    const contextUpdates = analyzeMessage(input);
     const newContext = { ...businessContext, ...contextUpdates };
     setBusinessContext(newContext);
-
-    // Build and update configuration based on new context and full conversation
     buildConfiguration(newContext, messages);
 
     // Generate next question
@@ -882,8 +1079,11 @@ export default function AdaptiveAgentConfigurator({
             s.includes('analytics') || s.includes('report') || s.includes('insight'));
           const customerSkills = addedSkills.filter(s =>
             s.includes('customer') || s.includes('client') || s.includes('support'));
+          const teamSkills = addedSkills.filter(s =>
+            s.includes('workflow') || s.includes('department') || s.includes('team'));
           const otherSkills = addedSkills.filter(s =>
-            !coreSkills.includes(s) && !analyticsSkills.includes(s) && !customerSkills.includes(s));
+            !coreSkills.includes(s) && !analyticsSkills.includes(s) &&
+            !customerSkills.includes(s) && !teamSkills.includes(s));
 
           if (coreSkills.length > 0) {
             response += `Core automation capabilities:\n${coreSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
@@ -894,11 +1094,17 @@ export default function AdaptiveAgentConfigurator({
           if (customerSkills.length > 0) {
             response += `Customer experience:\n${customerSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
           }
+          if (teamSkills.length > 0) {
+            response += `Team coordination (${newContext.size || 'your team'}):\n${teamSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          }
           if (otherSkills.length > 0) {
             response += `Additional capabilities:\n${otherSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
           }
 
-          // Explain why these were chosen
+          // Better explanation of why things were added
+          if (teamSkills.length > 0 && newContext.size) {
+            response += `(Added team features because you have ${newContext.size} people)\n\n`;
+          }
           response += `These selections address your `;
           if (newContext.painPoints && newContext.painPoints.length > 0) {
             response += `${newContext.painPoints.slice(0, 2).join(' and ')} challenges`;
