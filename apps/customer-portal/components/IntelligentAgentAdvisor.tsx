@@ -179,29 +179,29 @@ What range works for your business?`;
         setConversationState(prev => ({ ...prev, stage: 'recommendation', monthlyPrice: monthlyBudget }));
 
         // Generate specific recommendations based on budget and needs
-        const recommendations = generateRecommendations(conversationState.businessProfile, budget);
+        const generatedRecommendations = generateRecommendations(conversationState.businessProfile, budget);
 
         // Update the configuration
         onConfigUpdate({
-          skills: recommendations.skills,
-          features: recommendations.features,
-          integrations: recommendations.integrations,
+          skills: generatedRecommendations.skills,
+          features: generatedRecommendations.features,
+          integrations: generatedRecommendations.integrations,
           price: monthlyBudget
         });
 
         return `Perfect! Based on your consulting business and ${budget} budget, here's my recommended AI agent configuration:
 
 **🎯 Core AI Capabilities** (Immediate ROI)
-${recommendations.skills.slice(0, 5).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
+${generatedRecommendations.skills.slice(0, 5).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
 
 **🚀 Growth Accelerators** (Scale without hiring)
-${recommendations.skills.slice(5, 10).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
+${generatedRecommendations.skills.slice(5, 10).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
 
 **💡 Competitive Advantages**
-${recommendations.features.map(feature => `✓ ${formatFeatureName(feature)}`).join('\n')}
+${generatedRecommendations.features.map(feature => `✓ ${formatFeatureName(feature)}`).join('\n')}
 
 **🔌 Integrations with Your Tools**
-${recommendations.integrations.slice(0, 5).map(int => `✓ ${formatIntegrationName(int)}`).join('\n')}
+${generatedRecommendations.integrations.slice(0, 5).map(int => `✓ ${formatIntegrationName(int)}`).join('\n')}
 
 **📊 Expected Results:**
 • Save 15-20 hours per week on routine tasks
