@@ -8,6 +8,7 @@ import {
   ArrowUpTrayIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { SKILLS_CATALOG, TOTAL_SKILLS } from '../utils/skillsCatalog';
 
 interface Message {
   id: string;
@@ -79,24 +80,130 @@ export default function AdaptiveAgentConfigurator({
     scrollToBottom();
   }, [messages]);
 
-  // Intelligent configuration builder
-  const buildConfiguration = (context: BusinessContext) => {
+  // Deep configuration builder that analyzes full conversation and context
+  const buildConfiguration = (context: BusinessContext, fullConversation?: Message[]) => {
     const skills = new Set<string>();
     const features = new Set<string>();
     const integrations = new Set<string>();
 
-    // Industry-specific skills
-    if (context.industry) {
-      const industryLower = context.industry.toLowerCase();
+    // Analyze entire conversation history if provided
+    let conversationContext = '';
+    if (fullConversation) {
+      conversationContext = fullConversation
+        .filter(m => m.sender === 'user')
+        .map(m => m.text)
+        .join(' ')
+        .toLowerCase();
+    }
 
-      if (industryLower.includes('marketing') || industryLower.includes('agency')) {
+    // Get all available skills from catalog
+    const allAvailableSkills: string[] = [];
+    Object.values(SKILLS_CATALOG).forEach(categorySkills => {
+      if (Array.isArray(categorySkills)) {
+        categorySkills.forEach(skill => {
+          if (skill && typeof skill === 'object' && skill.id) {
+            allAvailableSkills.push(skill.id);
+          }
+        });
+      }
+    });
+
+    // Match mentioned skills against actual catalog
+    const matchSkillsFromCatalog = (text: string) => {
+      const matchedSkills = new Set<string>();
+      const lowerText = text.toLowerCase();
+
+      allAvailableSkills.forEach(skillId => {
+        const skillName = skillId.replace(/_/g, ' ');
+        if (lowerText.includes(skillName) || lowerText.includes(skillId)) {
+          matchedSkills.add(skillId);
+
+          // Add related skills based on category
+          Object.entries(SKILLS_CATALOG).forEach(([category, categorySkills]) => {
+            if (Array.isArray(categorySkills)) {
+              const hasSkill = categorySkills.some(s => s && s.id === skillId);
+              if (hasSkill) {
+                // Add other skills from same category that might be relevant
+                categorySkills.forEach(relatedSkill => {
+                  if (relatedSkill && relatedSkill.id) {
+                    const relatedName = relatedSkill.name?.toLowerCase() || '';
+                    const relatedDesc = relatedSkill.description?.toLowerCase() || '';
+
+                    // Add related skills based on semantic similarity
+                    if (relatedName.includes('automat') || relatedDesc.includes('automat')) {
+                      if (lowerText.includes('automat')) matchedSkills.add(relatedSkill.id);
+                    }
+                    if (relatedName.includes('analyt') || relatedDesc.includes('analyt')) {
+                      if (lowerText.includes('analyt') || lowerText.includes('report')) {
+                        matchedSkills.add(relatedSkill.id);
+                      }
+                    }
+                    if (relatedName.includes('customer') || relatedDesc.includes('customer')) {
+                      if (lowerText.includes('customer') || lowerText.includes('client')) {
+                        matchedSkills.add(relatedSkill.id);
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+      });
+
+      return matchedSkills;
+    };
+
+    // Analyze conversation for skill needs
+    if (conversationContext) {
+      const matchedSkills = matchSkillsFromCatalog(conversationContext);
+      matchedSkills.forEach(skill => skills.add(skill));
+    }
+
+    // Deep industry analysis with comprehensive skill mapping
+    if (context.industry || conversationContext) {
+      const industryLower = (context.industry || '').toLowerCase();
+      const fullText = industryLower + ' ' + conversationContext;
+
+      if (fullText.includes('marketing') || fullText.includes('agency')) {
+        // Core marketing skills
         skills.add('campaign_management');
         skills.add('content_generator');
         skills.add('social_media_automation');
         skills.add('brand_monitoring');
+        skills.add('seo_optimization');
+        skills.add('email_marketing_automation');
+        skills.add('lead_generation');
+        skills.add('conversion_tracking');
+
+        // Marketing-specific analytics
+        skills.add('campaign_analytics');
+        skills.add('roi_tracking');
+        skills.add('customer_journey_mapping');
+        skills.add('attribution_modeling');
+
+        // Creative tools
+        skills.add('ad_copy_generator');
+        skills.add('graphic_design_automation');
+        skills.add('video_script_writer');
+
+        // Comprehensive marketing stack
         integrations.add('google_ads');
         integrations.add('facebook_ads');
+        integrations.add('linkedin_ads');
         integrations.add('hootsuite');
+        integrations.add('buffer');
+        integrations.add('mailchimp');
+        integrations.add('hubspot');
+        integrations.add('google_analytics');
+        integrations.add('canva');
+        integrations.add('semrush');
+
+        // Advanced features for agencies
+        features.add('white_label');
+        features.add('multi_tenant');
+        features.add('client_portals');
+        features.add('custom_reporting');
       }
 
       if (industryLower.includes('consulting') || industryLower.includes('professional services')) {
@@ -633,17 +740,17 @@ export default function AdaptiveAgentConfigurator({
     const newContext = { ...businessContext, ...contextUpdates };
     setBusinessContext(newContext);
 
-    // Build and update configuration based on new context
-    buildConfiguration(newContext);
+    // Build and update configuration based on new context and full conversation
+    buildConfiguration(newContext, messages);
 
     // Generate next question
     const nextQuestion = generateNextQuestion(newContext, questionHistory);
     setQuestionHistory(prev => [...prev, nextQuestion]);
 
-    // Create response
+    // Create response with deeper thinking
     setTimeout(() => {
-      // Get the new configuration that was just built
-      const newConfig = buildConfiguration(newContext);
+      // Get the new configuration based on full context and conversation
+      const newConfig = buildConfiguration(newContext, messages);
 
       let response = '';
 
@@ -655,30 +762,75 @@ export default function AdaptiveAgentConfigurator({
       const addedIntegrations = newConfig.integrations.filter(i => !previousConfiguration.integrations.includes(i));
       const removedIntegrations = previousConfiguration.integrations.filter(i => !newConfig.integrations.includes(i));
 
-      // Show what changed
+      // Provide thoughtful analysis of changes
       if (addedSkills.length > 0 || removedSkills.length > 0 ||
           addedFeatures.length > 0 || removedFeatures.length > 0 ||
           addedIntegrations.length > 0 || removedIntegrations.length > 0) {
 
-        response = 'Configuration updated:\n\n';
+        response = 'Based on our conversation so far, I\'ve refined your configuration:\n\n';
 
         if (addedSkills.length > 0) {
-          response += `Added skills:\n${addedSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          // Group skills by purpose for better explanation
+          const coreSkills = addedSkills.filter(s =>
+            s.includes('automation') || s.includes('generator') || s.includes('tracker'));
+          const analyticsSkills = addedSkills.filter(s =>
+            s.includes('analytics') || s.includes('report') || s.includes('insight'));
+          const customerSkills = addedSkills.filter(s =>
+            s.includes('customer') || s.includes('client') || s.includes('support'));
+          const otherSkills = addedSkills.filter(s =>
+            !coreSkills.includes(s) && !analyticsSkills.includes(s) && !customerSkills.includes(s));
+
+          if (coreSkills.length > 0) {
+            response += `Core automation capabilities:\n${coreSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          }
+          if (analyticsSkills.length > 0) {
+            response += `Analytics & insights:\n${analyticsSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          }
+          if (customerSkills.length > 0) {
+            response += `Customer experience:\n${customerSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          }
+          if (otherSkills.length > 0) {
+            response += `Additional capabilities:\n${otherSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          }
+
+          // Explain why these were chosen
+          response += `These selections address your `;
+          if (context.painPoints && context.painPoints.length > 0) {
+            response += `${context.painPoints.slice(0, 2).join(' and ')} challenges`;
+          } else {
+            response += `${context.industry || 'business'} needs`;
+          }
+          response += `.\n\n`;
         }
+
         if (removedSkills.length > 0) {
-          response += `Removed skills:\n${removedSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          response += `Optimized by removing:\n${removedSkills.map(s => `• ${s.replace(/_/g, ' ')}`).join('\n')}\n(These seemed less relevant based on your latest input)\n\n`;
         }
+
         if (addedFeatures.length > 0) {
-          response += `Added features:\n${addedFeatures.map(f => `• ${f.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          response += `Platform features enabled:\n${addedFeatures.map(f => `• ${f.replace(/_/g, ' ')}`).join('\n')}\n\n`;
         }
+
         if (addedIntegrations.length > 0) {
-          response += `Added integrations:\n${addedIntegrations.map(i => `• ${i.replace(/_/g, ' ')}`).join('\n')}\n\n`;
+          response += `Integrations configured:\n${addedIntegrations.map(i => `• ${i.replace(/_/g, ' ')}`).join('\n')}\n\n`;
         }
+
+        // Add insight about the configuration
+        response += `This configuration now includes ${newConfig.skills.length} skills optimized for `;
+        if (context.size === 'solo') {
+          response += `solo operations with maximum automation`;
+        } else if (context.industry) {
+          response += `${context.industry} businesses`;
+        } else {
+          response += `your specific workflow`;
+        }
+        response += `.\n\n`;
+
       } else if (messages.length === 1) {
         // First response
-        response = 'Let me start building your configuration.\n\n';
+        response = 'I\'m analyzing your requirements and building an initial configuration based on industry best practices.\n\n';
       } else {
-        response = 'Configuration remains optimal based on that information.\n\n';
+        response = 'Your current configuration appears well-optimized for the requirements discussed. No changes needed at this point.\n\n';
       }
 
       // Ask next question
@@ -693,7 +845,7 @@ export default function AdaptiveAgentConfigurator({
 
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
-    }, 1000);
+    }, 2500); // Increased thinking time for more thoughtful responses
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -720,7 +872,7 @@ export default function AdaptiveAgentConfigurator({
         const contextUpdates = analyzeMessage(content);
         const newContext = { ...businessContext, ...contextUpdates };
         setBusinessContext(newContext);
-        buildConfiguration(newContext);
+        buildConfiguration(newContext, messages);
 
         // Respond to file upload
         setTimeout(() => {
@@ -731,7 +883,7 @@ export default function AdaptiveAgentConfigurator({
             timestamp: new Date()
           };
           setMessages(prev => [...prev, assistantMessage]);
-        }, 1000);
+        }, 2000); // Thoughtful response time
       };
 
       reader.readAsText(file);
@@ -820,7 +972,7 @@ export default function AdaptiveAgentConfigurator({
               }}
             >
               <span className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.7)' }}>
-                Updating configuration
+                Analyzing full context and optimizing configuration
               </span>
               <div className="flex gap-1">
                 <div
