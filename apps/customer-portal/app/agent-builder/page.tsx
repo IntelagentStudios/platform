@@ -35,7 +35,7 @@ import {
   WrenchIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../components/DashboardLayout';
-import EmbeddedChatbot from '../../components/EmbeddedChatbot';
+import IntelligentAgentAdvisor from '../../components/IntelligentAgentAdvisor';
 import DashboardPreview from '../../components/DashboardPreview';
 import { SKILLS_CATALOG, getSkillsByAgentType, TOTAL_SKILLS } from '../../utils/skillsCatalog';
 
@@ -853,14 +853,31 @@ export default function AgentBuilderPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Chatbot Column */}
                 <div>
-                  <EmbeddedChatbot
-                    title="AI Agent Configuration Assistant"
-                    placeholder="Describe your business needs..."
-                    welcomeMessage="Hello! I'm here to help you build the perfect AI agent for your business. Tell me about your needs, and I'll configure the optimal solution with the right skills and integrations."
+                  <IntelligentAgentAdvisor
                     height="450px"
-                    onSend={(message) => {
-                      analyzeDescription(message);
-                      setChatResponses({ 0: message });
+                    onConfigUpdate={(config) => {
+                      // Update skills
+                      if (config.skills && config.skills.length > 0) {
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          skills: [...new Set([...prev.skills, ...config.skills])],
+                          price: config.price || prev.price
+                        }));
+                      }
+                      // Update features
+                      if (config.features && config.features.length > 0) {
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          features: [...new Set([...prev.features, ...config.features])]
+                        }));
+                      }
+                      // Update integrations
+                      if (config.integrations && config.integrations.length > 0) {
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          integrations: [...new Set([...prev.integrations, ...config.integrations])]
+                        }));
+                      }
                       setHasInteracted(true);
                     }}
                   />
