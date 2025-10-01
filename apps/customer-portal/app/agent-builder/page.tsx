@@ -498,7 +498,6 @@ interface AgentConfig {
   skills: string[];
   integrations: string[];
   features: string[];
-  price: number;
 }
 
 export default function AgentBuilderPage() {
@@ -511,8 +510,7 @@ export default function AgentBuilderPage() {
     agentType: 'general',
     skills: [],
     integrations: [],
-    features: [],
-    price: 299
+    features: []
   });
   const [inputDescription, setInputDescription] = useState('');
   const [showChatbot, setShowChatbot] = useState(false);
@@ -568,7 +566,6 @@ export default function AgentBuilderPage() {
       agentType: detectedType,
       skills: detectedSkills,
       features: suggestedFeatures,
-      price: basePrice,
       name: SKILL_MAPPINGS[detectedType]?.name || 'Custom AI Agent'
     }));
   };
@@ -605,18 +602,10 @@ export default function AgentBuilderPage() {
         ? prev.features.filter(f => f !== featureId)
         : [...prev.features, featureId];
 
-      // Calculate price impact
-      const featurePrice = features.reduce((total, fid) => {
-        const feature = POPULAR_FEATURES.find(f => f.id === fid);
-        return total + (feature?.priceImpact || 0);
-      }, 0);
-
-      const basePrice = SKILL_MAPPINGS[prev.agentType]?.price || 299;
-
+      // Don't calculate price here - let getPricingBreakdown handle it
       return {
         ...prev,
-        features,
-        price: basePrice + featurePrice
+        features
       };
     });
   };
@@ -631,13 +620,10 @@ export default function AgentBuilderPage() {
       // Update suggested features based on skills
       updateSuggestedFeatures(skills);
 
-      // Calculate skills price: Base 299 + £5 per skill
-      const skillsPrice = 299 + (skills.length * 5);
-
+      // Don't calculate price here - let getPricingBreakdown handle it
       return {
         ...prev,
-        skills,
-        price: skillsPrice
+        skills
       };
     });
   };
@@ -663,13 +649,10 @@ export default function AgentBuilderPage() {
       // Update suggested features
       updateSuggestedFeatures(newSkills);
 
-      // Calculate skills price: Base 299 + £5 per skill
-      const skillsPrice = 299 + (newSkills.length * 5);
-
+      // Don't calculate price here - let getPricingBreakdown handle it
       return {
         ...prev,
-        skills: newSkills,
-        price: skillsPrice
+        skills: newSkills
       };
     });
   };
@@ -712,18 +695,10 @@ export default function AgentBuilderPage() {
     setSuggestedFeatures(Array.from(features));
   };
 
-  // Calculate total price
+  // Calculate total price (now uses getPricingBreakdown for consistency)
   const calculateTotalPrice = () => {
-    // Base price (includes skills pricing already)
-    const basePrice = agentConfig.price;
-
-    // Features pricing
-    const featuresPrice = agentConfig.features.reduce((total, fid) => {
-      const feature = POPULAR_FEATURES.find(f => f.id === fid);
-      return total + (feature?.priceImpact || 0);
-    }, 0);
-
-    return basePrice + featuresPrice;
+    const breakdown = getPricingBreakdown();
+    return breakdown.total;
   };
 
   // Get pricing breakdown with volume discounts
@@ -776,8 +751,7 @@ export default function AgentBuilderPage() {
         agentType: config.agentType,
         type: config.agentType,
         name: mapping.name,
-        skills: mapping.skills,
-        price: mapping.price
+        skills: mapping.skills
       }));
     }
 
@@ -863,7 +837,7 @@ export default function AgentBuilderPage() {
               requirements: {
                 goal: agentConfig.description,
                 tools: agentConfig.features || [],
-                outputs: [`Monthly £${agentConfig.price} value`],
+                outputs: [`Monthly £${getPricingBreakdown().total} value`],
                 industry: 'Technology'
               },
               suggestedSkills: agentConfig.skills || []
