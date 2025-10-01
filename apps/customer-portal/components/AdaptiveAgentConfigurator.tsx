@@ -795,10 +795,10 @@ export default function AdaptiveAgentConfigurator({
 
           // Explain why these were chosen
           response += `These selections address your `;
-          if (context.painPoints && context.painPoints.length > 0) {
-            response += `${context.painPoints.slice(0, 2).join(' and ')} challenges`;
+          if (newContext.painPoints && newContext.painPoints.length > 0) {
+            response += `${newContext.painPoints.slice(0, 2).join(' and ')} challenges`;
           } else {
-            response += `${context.industry || 'business'} needs`;
+            response += `${newContext.industry || 'business'} needs`;
           }
           response += `.\n\n`;
         }
@@ -817,10 +817,10 @@ export default function AdaptiveAgentConfigurator({
 
         // Add insight about the configuration
         response += `This configuration now includes ${newConfig.skills.length} skills optimized for `;
-        if (context.size === 'solo') {
+        if (newContext.size === 'solo') {
           response += `solo operations with maximum automation`;
-        } else if (context.industry) {
-          response += `${context.industry} businesses`;
+        } else if (newContext.industry) {
+          response += `${newContext.industry} businesses`;
         } else {
           response += `your specific workflow`;
         }
