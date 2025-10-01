@@ -48,7 +48,7 @@ export default function AdaptiveAgentConfigurator({
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "I'm your AI configuration assistant. I'll help you build the perfect agent by learning about your business needs. You can describe your requirements, upload documents, or answer my questions - I'll continuously refine your agent configuration based on what you share. What brings you here today?",
+      text: "Welcome! I'm here to help you build a powerful AI agent tailored to your needs. With access to over 539 specialized skills, we can create something truly transformative for your business. Tell me, what's your vision for AI automation?",
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -164,6 +164,111 @@ export default function AdaptiveAgentConfigurator({
     if (context.industry || conversationContext) {
       const industryLower = (context.industry || '').toLowerCase();
       const fullText = industryLower + ' ' + conversationContext;
+
+      // Fintech specific configuration
+      if (fullText.includes('fintech') || fullText.includes('financial technology') || fullText.includes('finance tech')) {
+        // Core fintech operations
+        skills.add('payment_processing');
+        skills.add('fraud_detection');
+        skills.add('kyc_automation');
+        skills.add('aml_compliance');
+        skills.add('transaction_monitoring');
+        skills.add('risk_assessment');
+        skills.add('credit_scoring');
+        skills.add('regulatory_reporting');
+        skills.add('audit_automation');
+        skills.add('financial_reconciliation');
+
+        // Customer experience
+        skills.add('customer_onboarding');
+        skills.add('identity_verification');
+        skills.add('account_management');
+        skills.add('customer_support_automation');
+        skills.add('dispute_resolution');
+        skills.add('financial_advisor_bot');
+
+        // Sales and growth
+        skills.add('lead_qualification');
+        skills.add('sales_automation');
+        skills.add('referral_tracking');
+        skills.add('cross_sell_optimization');
+        skills.add('churn_prediction');
+        skills.add('lifetime_value_analysis');
+
+        // Analytics and insights
+        skills.add('transaction_analytics');
+        skills.add('portfolio_analysis');
+        skills.add('market_data_analysis');
+        skills.add('predictive_analytics');
+        skills.add('real_time_reporting');
+        skills.add('executive_dashboards');
+
+        // Security and compliance
+        skills.add('security_monitoring');
+        skills.add('data_encryption');
+        skills.add('access_control');
+        skills.add('compliance_automation');
+        skills.add('audit_trail');
+
+        // Integrations
+        integrations.add('stripe');
+        integrations.add('plaid');
+        integrations.add('square');
+        integrations.add('paypal');
+        integrations.add('quickbooks');
+        integrations.add('salesforce');
+        integrations.add('twilio');
+
+        // Advanced features
+        features.add('advanced_security');
+        features.add('compliance_suite');
+        features.add('real_time_processing');
+        features.add('api_access');
+        features.add('webhooks');
+      }
+
+      // Sales team configuration
+      if (fullText.includes('sales team') || fullText.includes('sales force') || fullText.includes('sales department')) {
+        // Complete sales automation suite
+        skills.add('lead_generation');
+        skills.add('lead_scoring');
+        skills.add('lead_nurturing');
+        skills.add('lead_routing');
+        skills.add('opportunity_management');
+        skills.add('pipeline_management');
+        skills.add('deal_tracking');
+        skills.add('quote_generation');
+        skills.add('proposal_automation');
+        skills.add('contract_management');
+        skills.add('sales_forecasting');
+        skills.add('territory_management');
+        skills.add('commission_tracking');
+        skills.add('sales_coaching');
+        skills.add('call_recording');
+        skills.add('email_tracking');
+        skills.add('meeting_scheduler');
+        skills.add('follow_up_automation');
+        skills.add('sales_analytics');
+        skills.add('performance_tracking');
+        skills.add('competitor_analysis');
+        skills.add('market_intelligence');
+        skills.add('account_mapping');
+        skills.add('relationship_mapping');
+        skills.add('sales_enablement');
+        skills.add('content_management');
+        skills.add('training_automation');
+
+        // CRM integrations
+        integrations.add('salesforce');
+        integrations.add('hubspot');
+        integrations.add('pipedrive');
+        integrations.add('zoho_crm');
+        integrations.add('linkedin_sales_navigator');
+
+        features.add('sales_acceleration');
+        features.add('predictive_scoring');
+        features.add('conversation_intelligence');
+      }
 
       if (fullText.includes('marketing') || fullText.includes('agency')) {
         // Core marketing skills
@@ -492,7 +597,7 @@ export default function AdaptiveAgentConfigurator({
   };
 
   // Generate next intelligent question
-  const generateNextQuestion = (context: BusinessContext, history: string[]): string => {
+  const generateNextQuestion = (context: BusinessContext, history: string[], currentSkillCount: number = 0): string => {
     // Questions in priority order
     const questionFlow = [
       {
@@ -744,7 +849,7 @@ export default function AdaptiveAgentConfigurator({
     buildConfiguration(newContext, messages);
 
     // Generate next question
-    const nextQuestion = generateNextQuestion(newContext, questionHistory);
+    const nextQuestion = generateNextQuestion(newContext, questionHistory, currentConfiguration.skills.length);
     setQuestionHistory(prev => [...prev, nextQuestion]);
 
     // Create response with deeper thinking
@@ -815,8 +920,31 @@ export default function AdaptiveAgentConfigurator({
           response += `Integrations configured:\n${addedIntegrations.map(i => `• ${i.replace(/_/g, ' ')}`).join('\n')}\n\n`;
         }
 
-        // Add insight about the configuration
-        response += `This configuration now includes ${newConfig.skills.length} skills optimized for `;
+        // Add insight about the configuration with pricing
+        const skillCount = newConfig.skills.length;
+        let pricePerSkill = 5;
+        let discount = 0;
+
+        // Volume discounts
+        if (skillCount >= 30) {
+          pricePerSkill = 3.5; // 30% discount
+          discount = 30;
+        } else if (skillCount >= 20) {
+          pricePerSkill = 4; // 20% discount
+          discount = 20;
+        } else if (skillCount >= 10) {
+          pricePerSkill = 4.5; // 10% discount
+          discount = 10;
+        }
+
+        const totalPrice = 299 + (skillCount * pricePerSkill);
+
+        response += `This configuration now includes ${skillCount} skills`;
+        if (discount > 0) {
+          response += ` (${discount}% volume discount applied)`;
+        }
+        response += ` optimized for `;
+
         if (newContext.size === 'solo') {
           response += `solo operations with maximum automation`;
         } else if (newContext.industry) {
@@ -824,13 +952,42 @@ export default function AdaptiveAgentConfigurator({
         } else {
           response += `your specific workflow`;
         }
-        response += `.\n\n`;
+
+        response += `.\\n\\nTotal: £${totalPrice.toFixed(0)}/month`;
+        if (discount > 0) {
+          response += ` (saved £${(skillCount * 5 - skillCount * pricePerSkill).toFixed(0)} with volume discount)`;
+        }
+        response += `.\\n\\n`;
 
       } else if (messages.length === 1) {
-        // First response
-        response = 'I\'m analyzing your requirements and building an initial configuration based on industry best practices.\n\n';
+        // First response - be helpful and engaging
+        response = 'I understand you want to ' + input.toLowerCase() + '.\n\n';
+        response += 'Let me start building a comprehensive solution for you.\n\n';
+      } else if (addedSkills.length === 0 && newConfig.skills.length === 0) {
+        // No configuration yet - be more proactive
+        response = 'I hear you. ';
+
+        if (input.toLowerCase().includes('base') || input.toLowerCase().includes('nothing')) {
+          response += 'Let\'s build something powerful from scratch. ';
+        } else {
+          response += 'Based on what you\'ve told me, let me suggest a starting configuration. ';
+        }
+
+        // Force add some relevant skills based on any context
+        if (newContext.industry) {
+          response += `For your ${newContext.industry} business, I recommend starting with these essential capabilities.\n\n`;
+        } else {
+          response += 'Here are some foundational capabilities to get started.\n\n';
+        }
       } else {
-        response = 'Your current configuration appears well-optimized for the requirements discussed. No changes needed at this point.\n\n';
+        // Configuration exists but no changes
+        response = 'I\'ve maintained your current configuration. ';
+
+        // Still be helpful
+        if (input.length > 10) {
+          response += 'However, based on \"' + input.substring(0, 50) + (input.length > 50 ? '...' : '') + '\", ';
+          response += 'you might also want to consider additional capabilities.\n\n';
+        }
       }
 
       // Ask next question
@@ -872,13 +1029,21 @@ export default function AdaptiveAgentConfigurator({
         const contextUpdates = analyzeMessage(content);
         const newContext = { ...businessContext, ...contextUpdates };
         setBusinessContext(newContext);
-        buildConfiguration(newContext, messages);
+        const fileContext = { ...newContext };
+        // Extract more context from file
+        if (content.toLowerCase().includes('sales')) {
+          fileContext.goals = [...(fileContext.goals || []), 'sales automation'];
+        }
+        if (content.toLowerCase().includes('customer')) {
+          fileContext.goals = [...(fileContext.goals || []), 'customer experience'];
+        }
+        buildConfiguration(fileContext, messages);
 
         // Respond to file upload
         setTimeout(() => {
           const assistantMessage: Message = {
             id: (Date.now() + 1).toString(),
-            text: `I've analyzed ${file.name} and updated your configuration accordingly. ${generateNextQuestion(newContext, questionHistory)}`,
+            text: `I've analyzed ${file.name} and updated your configuration accordingly. ${generateNextQuestion(newContext, questionHistory, currentConfiguration.skills.length)}`,
             sender: 'assistant',
             timestamp: new Date()
           };
