@@ -73,7 +73,10 @@ export default function IntelligentAgentAdvisor({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll in the chat window, not the entire page
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   };
 
   useEffect(() => {
@@ -90,23 +93,11 @@ export default function IntelligentAgentAdvisor({
         if (lowerMessage.includes('consulting') || lowerMessage.includes('consultant')) {
           updateBusinessProfile({ type: 'consulting', industry: 'professional services' });
           setConversationState(prev => ({ ...prev, stage: 'discovery' }));
-          return `A consulting firm - excellent! As a consultant, you need to manage multiple aspects of your business efficiently.
-
-I see you mentioned you're running this solo, which means you're juggling:
-• Client acquisition and relationship management
-• Project delivery and documentation
-• Financial management and invoicing
-• Marketing and thought leadership
-
-What would you say are your top 2-3 pain points right now? For example:
-- Spending too much time on admin tasks?
-- Difficulty scaling without hiring?
-- Need better client communication?
-- Want to automate repetitive processes?`;
+          return `Consulting firm - understood. As a solo consultant, you're managing everything from client work to business development. What are your top 2-3 pain points: admin tasks, scaling challenges, client communication, lead generation, or something else?`;
         } else if (lowerMessage.includes('agency') || lowerMessage.includes('marketing')) {
           updateBusinessProfile({ type: 'agency', industry: 'marketing' });
           setConversationState(prev => ({ ...prev, stage: 'discovery' }));
-          return `A marketing agency - fantastic! Agencies have unique automation opportunities. What are your biggest challenges? Client reporting, content creation, or campaign management?`;
+          return `Marketing agency - understood. Running solo means you're managing client work, business development, and operations. What are your top 2-3 pain points: client reporting, project management, lead generation, content creation, or something else?`;
         } else if (lowerMessage.includes('saas') || lowerMessage.includes('software')) {
           updateBusinessProfile({ type: 'saas', industry: 'technology' });
           setConversationState(prev => ({ ...prev, stage: 'discovery' }));
@@ -139,6 +130,14 @@ What would you say are your top 2-3 pain points right now? For example:
           painPoints.push('reporting');
           recommendations.push('analytics_dashboard', 'report_generator', 'data_visualization');
         }
+        if (lowerMessage.includes('management') || lowerMessage.includes('managing')) {
+          painPoints.push('management');
+          recommendations.push('project_tracker', 'task_automation', 'team_collaboration');
+        }
+        if (lowerMessage.includes('finding') || lowerMessage.includes('new customers') || lowerMessage.includes('new clients')) {
+          painPoints.push('sales_pipeline');
+          recommendations.push('lead_generation', 'sales_automation', 'outreach_campaigns');
+        }
 
         updateBusinessProfile({ challenges: painPoints });
         setConversationState(prev => ({
@@ -147,30 +146,20 @@ What would you say are your top 2-3 pain points right now? For example:
           recommendedSkills: recommendations
         }));
 
-        return `I understand completely. Based on what you've shared, I can see several areas where AI can transform your business:
-
-${painPoints.includes('administrative_burden') ? '📋 **Administrative Automation**: Save 10+ hours/week on paperwork and routine tasks\n' : ''}
-${painPoints.includes('client_management') ? '🤝 **Client Experience**: 24/7 intelligent support and proactive communication\n' : ''}
-${painPoints.includes('scaling_challenges') ? '📈 **Scaling Operations**: Handle 3x more clients without hiring\n' : ''}
-${painPoints.includes('sales_pipeline') ? '💼 **Sales Acceleration**: Automate outreach and qualification\n' : ''}
-${painPoints.includes('reporting') ? '📊 **Intelligent Analytics**: Real-time insights and automated reporting\n' : ''}
-
-Now, let's talk investment. What's your monthly budget for AI automation? This helps me recommend the right balance of capabilities:
-• Starter (£299-500): Core automation for immediate ROI
-• Professional (£500-1000): Comprehensive automation suite
-• Enterprise (£1000+): Full AI transformation
-
-What range works for your business?`;
+        return `Based on your needs, I'll configure an agent that handles:\n\n${painPoints.includes('administrative_burden') ? '- Administrative automation (10+ hours/week saved)\n' : ''}${painPoints.includes('client_management') ? '- Client communication and support automation\n' : ''}${painPoints.includes('scaling_challenges') ? '- Scaling operations without hiring\n' : ''}${painPoints.includes('sales_pipeline') ? '- Lead generation and sales automation\n' : ''}${painPoints.includes('reporting') ? '- Automated reporting and analytics\n' : ''}\nWhat's your monthly budget for AI automation?\n- Starter (£299-500)\n- Professional (£500-1000)\n- Enterprise (£1000+)`;
 
       case 'analysis':
         // Budget analysis and recommendation building
         let budget = 'professional';
         let monthlyBudget = 750;
 
-        if (lowerMessage.includes('starter') || lowerMessage.includes('299') || lowerMessage.includes('500')) {
+        if (lowerMessage.includes('starter') || lowerMessage.includes('299') || lowerMessage.includes('500') || lowerMessage.includes('400')) {
           budget = 'starter';
           monthlyBudget = 400;
-        } else if (lowerMessage.includes('enterprise') || lowerMessage.includes('1000') || lowerMessage.includes('unlimited')) {
+        } else if (lowerMessage.includes('up to 1000') || lowerMessage.includes('up to £1000') || lowerMessage.includes('anything up to')) {
+          budget = 'professional';
+          monthlyBudget = 850;
+        } else if (lowerMessage.includes('enterprise') || lowerMessage.includes('unlimited') || (lowerMessage.includes('1000') && !lowerMessage.includes('up to'))) {
           budget = 'enterprise';
           monthlyBudget = 1500;
         }
@@ -189,35 +178,50 @@ What range works for your business?`;
           price: monthlyBudget
         });
 
-        return `Perfect! Based on your consulting business and ${budget} budget, here's my recommended AI agent configuration:
+        const businessType = conversationState.businessProfile.type === 'agency' ? 'marketing agency' : conversationState.businessProfile.type || 'business';
+        return `Based on your ${businessType} and ${budget} budget (£${monthlyBudget}/month), here's your optimized configuration:
 
-**🎯 Core AI Capabilities** (Immediate ROI)
-${generatedRecommendations.skills.slice(0, 5).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
+Core Capabilities:
+${generatedRecommendations.skills.slice(0, 5).map(skill => `• ${formatSkillName(skill)}`).join('\n')}
 
-**🚀 Growth Accelerators** (Scale without hiring)
-${generatedRecommendations.skills.slice(5, 10).map(skill => `✓ ${formatSkillName(skill)}`).join('\n')}
+Advanced Features:
+${generatedRecommendations.features.slice(0, 3).map(feature => `• ${formatFeatureName(feature)}`).join('\n')}
 
-**💡 Competitive Advantages**
-${generatedRecommendations.features.map(feature => `✓ ${formatFeatureName(feature)}`).join('\n')}
+Integrations:
+${generatedRecommendations.integrations.slice(0, 4).map(int => `• ${formatIntegrationName(int)}`).join('\n')}
 
-**🔌 Integrations with Your Tools**
-${generatedRecommendations.integrations.slice(0, 5).map(int => `✓ ${formatIntegrationName(int)}`).join('\n')}
+Expected ROI:
+• 15+ hours saved weekly
+• 3x client capacity
+• 40% faster delivery
 
-**📊 Expected Results:**
-• Save 15-20 hours per week on routine tasks
-• Handle 3x more clients without additional staff
-• Reduce response time from hours to minutes
-• Increase client satisfaction by 40%
-• ROI in less than 30 days
+Total: £${monthlyBudget}/month
 
-**Total Investment: £${monthlyBudget}/month**
-
-This configuration is specifically optimized for solo consultants. Would you like me to adjust anything or explain how any of these components will work for your specific use case?`;
+Would you like to adjust any skills or shall I explain how these work together?`;
 
       case 'recommendation':
+        // Handle feedback about price
+        if (lowerMessage.includes('not up to') || lowerMessage.includes('too expensive') || lowerMessage.includes('too much')) {
+          // Recalculate with lower budget
+          const newBudget = conversationState.monthlyPrice && conversationState.monthlyPrice > 1000 ? 850 : 400;
+          const newRecommendations = generateRecommendations(conversationState.businessProfile, newBudget > 500 ? 'professional' : 'starter');
+
+          // Update configuration with new budget
+          onConfigUpdate({
+            skills: newRecommendations.skills.slice(0, 8),
+            features: newRecommendations.features.slice(0, 2),
+            integrations: newRecommendations.integrations.slice(0, 3),
+            price: newBudget
+          });
+
+          setConversationState(prev => ({ ...prev, monthlyPrice: newBudget }));
+
+          return `Adjusted to fit your budget (£${newBudget}/month):\n\nCore Skills:\n${newRecommendations.skills.slice(0, 8).map(s => `• ${formatSkillName(s)}`).join('\n')}\n\nThis optimized package still delivers strong ROI while staying within budget. Ready to proceed?`;
+        }
+
         // Handle customization requests
         if (lowerMessage.includes('explain') || lowerMessage.includes('how') || lowerMessage.includes('tell me more')) {
-          return `Absolutely! Let me explain how these components work together for your consulting business:
+          return `Here's how these components work together:
 
 **Client Acquisition System:**
 The AI agent automatically identifies and qualifies leads from multiple sources, creates personalized outreach campaigns, and manages follow-ups. You just review and approve high-quality opportunities.
@@ -275,8 +279,44 @@ Is there anything else you'd like to adjust before we finalize?`;
     const features: string[] = [];
     const integrations: string[] = [];
 
+    // Core skills for marketing agency
+    if (profile.type === 'agency' || profile.type === 'marketing') {
+      skills.push(
+        'campaign_management',
+        'content_generator',
+        'social_media_automation',
+        'client_reporting',
+        'lead_generation',
+        'email_marketing',
+        'seo_optimization',
+        'analytics_dashboard',
+        'proposal_generator',
+        'project_tracker'
+      );
+
+      if (budgetTier === 'professional' || budgetTier === 'enterprise') {
+        skills.push(
+          'competitive_analysis',
+          'market_research',
+          'brand_monitoring',
+          'influencer_outreach',
+          'ad_optimization',
+          'conversion_tracking'
+        );
+      }
+
+      features.push('ai_chatbot', 'custom_workflows', 'api_access');
+      if (budgetTier !== 'starter') {
+        features.push('white_label', 'advanced_analytics');
+      }
+
+      integrations.push('google_ads', 'facebook_ads', 'mailchimp', 'hootsuite', 'canva');
+      if (profile.challenges?.includes('reporting')) {
+        integrations.push('google_analytics', 'data_studio');
+      }
+    }
     // Core skills for consulting
-    if (profile.type === 'consulting') {
+    else if (profile.type === 'consulting') {
       skills.push(
         'client_onboarding_automation',
         'proposal_generator',
@@ -325,6 +365,19 @@ Is there anything else you'd like to adjust before we finalize?`;
       if (profile.challenges?.includes('administrative_burden')) {
         integrations.push('quickbooks', 'xero', 'stripe');
       }
+    }
+
+    // Default skills if no specific profile matched
+    if (skills.length === 0) {
+      skills.push(
+        'task_automation',
+        'email_automation',
+        'document_analyzer',
+        'report_generator',
+        'workflow_automation'
+      );
+      features.push('ai_chatbot', 'api_access');
+      integrations.push('slack', 'google_workspace', 'zoom');
     }
 
     return { skills, features, integrations };
