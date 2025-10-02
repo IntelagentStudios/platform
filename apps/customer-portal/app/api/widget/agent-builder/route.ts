@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Send message to n8n webhook
+    // Send message using existing chatbot infrastructure
     async function sendMessage(message) {
       // Show user message
       addMessage(message, 'user');
@@ -254,17 +254,20 @@ export async function GET(request: NextRequest) {
       const typingId = showTyping();
 
       try {
-        // Send to n8n webhook for agent builder context
-        const response = await fetch('https://n8n.intelagent-saas.com/webhook/agent-builder-chat', {
+        // Use the existing chatbot-skills/modular endpoint like regular chatbots
+        const response = await fetch('/api/chatbot-skills/modular', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: message,
-            currentConfig: currentConfig,
-            context: 'agent-builder',
-            timestamp: new Date().toISOString()
+            message: message + ' [CONTEXT: Agent Builder - Current config has ' +
+                     (currentConfig.skills ? currentConfig.skills.length + ' skills' : 'no skills') + ', ' +
+                     (currentConfig.features ? currentConfig.features.length + ' features' : 'no features') + ', ' +
+                     (currentConfig.integrations ? currentConfig.integrations.length + ' integrations' : 'no integrations') + ']',
+            sessionId: 'agent-builder-' + Date.now(),
+            productKey: 'PK-AGENT-BUILDER-AI',
+            chatHistory: []
           })
         });
 
@@ -273,26 +276,37 @@ export async function GET(request: NextRequest) {
         // Remove typing indicator
         removeTyping(typingId);
 
-        // Show AI response
-        if (data.message) {
-          addMessage(data.message, 'assistant');
-        }
+        // Show AI response (uses 'response' field from modular endpoint)
+        if (data.response) {
+          addMessage(data.response, 'assistant');
 
-        // Handle configuration updates
-        if (data.suggestedConfig) {
-          // Send config update to parent
-          window.parent.postMessage({
-            type: 'agent-config-update',
-            config: data.suggestedConfig
-          }, '*');
+          // Parse response for skill suggestions
+          const skillPattern = /skill[s]?:?\s*([a-z_,\s]+)/gi;
+          const matches = data.response.match(skillPattern);
 
-          // Show config update notification
-          addConfigUpdate(data.suggestedConfig);
-        }
+          if (matches) {
+            // Extract skill names and update configuration
+            const suggestedSkills = [];
+            matches.forEach(match => {
+              const skills = match.replace(/skill[s]?:?\s*/i, '').split(',').map(s => s.trim());
+              suggestedSkills.push(...skills);
+            });
 
-        // Show skill suggestions if provided
-        if (data.skillSuggestions && data.skillSuggestions.length > 0) {
-          addSkillSuggestions(data.skillSuggestions);
+            if (suggestedSkills.length > 0) {
+              // Send config update to parent with suggested skills
+              window.parent.postMessage({
+                type: 'agent-config-update',
+                config: {
+                  skills: [...new Set([...currentConfig.skills || [], ...suggestedSkills])]
+                }
+              }, '*');
+
+              // Show skill suggestions
+              addSkillSuggestions(suggestedSkills.slice(0, 5));
+            }
+          }
+        } else if (data.error) {
+          addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
         }
 
       } catch (error) {
