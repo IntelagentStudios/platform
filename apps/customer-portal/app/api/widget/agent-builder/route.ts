@@ -325,6 +325,8 @@ export async function GET(request: NextRequest) {
           const text = await response.text();
           console.log('Response text:', text.substring(0, 200));
           data = text ? JSON.parse(text) : { response: 'No response received' };
+          console.log('Parsed data:', data);
+          console.log('Recommendations:', data.recommendations);
         } catch (parseError) {
           console.error('Failed to parse response:', parseError);
           data = { response: 'Sorry, I received an invalid response. Please try again.' };
@@ -340,6 +342,7 @@ export async function GET(request: NextRequest) {
 
           // Handle structured response from n8n workflow
           if (data.recommendations && data.recommendations.skills && data.recommendations.skills.length > 0) {
+            console.log('Sending skills to parent:', data.recommendations.skills);
             // Send all skill updates to parent at once
             window.parent.postMessage({
               type: 'agent-config-update',

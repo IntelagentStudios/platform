@@ -860,14 +860,17 @@ export default function AgentBuilderPage() {
                     availableIntegrations={Object.values(INTEGRATIONS).flat().map(i => i.id)}
                     pricingInfo={getPricingBreakdown()}
                     onConfigUpdate={(config) => {
+                      console.log('Agent Builder received config update:', config);
                       // Handle different types of updates
                       if (config.action === 'set_skills' && config.skills) {
+                        console.log('Setting skills from AI:', config.skills);
                         // Clear existing skills and set new ones from AI
                         setAgentConfig(prev => ({
                           ...prev,
                           skills: config.skills
                         }));
                         updateSuggestedFeatures(config.skills);
+                        setHasInteracted(true);
                       } else if (config.action === 'toggle_skill' && config.skillId) {
                         toggleSkill(config.skillId);
                       } else if (config.action === 'toggle_feature' && config.featureId) {
