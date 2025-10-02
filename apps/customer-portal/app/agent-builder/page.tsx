@@ -851,7 +851,7 @@ export default function AgentBuilderPage() {
                 {/* AI Expert Column */}
                 <div>
                   <AgentBuilderAI
-                    height="380px"
+                    height="360px"
                     currentConfig={agentConfig}
                     availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
                       return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
@@ -892,7 +892,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Summary & Pricing Column */}
-                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '380px' }}>
+                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '360px' }}>
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1008,10 +1008,10 @@ export default function AgentBuilderPage() {
             </div>
 
             {/* Bottom Section: Configuration Grid */}
-            <div className="max-w-7xl mx-auto" style={{ marginTop: '-20px' }}>
+            <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Integrations Column (Left) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '600px' }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <LinkIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1102,7 +1102,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Features & Capabilities Column (Middle) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '600px' }}>
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                       <SparklesIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />
@@ -1215,7 +1215,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Skills Matrix Column (Right) */}
-                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>
+                <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '600px' }}>
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'rgb(229, 227, 220)' }}>
                         <CubeIcon className="h-5 w-5" style={{ color: 'rgb(169, 189, 203)' }} />

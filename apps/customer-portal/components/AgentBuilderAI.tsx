@@ -20,7 +20,7 @@ export default function AgentBuilderAI({
   availableFeatures,
   availableIntegrations,
   pricingInfo,
-  height = '450px'
+  height = '360px'
 }: AgentBuilderAIProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
