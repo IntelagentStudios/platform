@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #1e2121;
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       flex-direction: column;
       max-width: 100%;
       margin: 0 auto;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(30, 33, 33, 0.98);
       backdrop-filter: blur(10px);
       overflow: hidden;
     }
@@ -62,6 +62,23 @@ export async function GET(request: NextRequest) {
       display: flex;
       flex-direction: column;
       gap: 16px;
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background-color: rgba(169, 189, 203, 0.3);
+      border-radius: 4px;
+    }
+
+    .messages::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(169, 189, 203, 0.5);
     }
 
     .message {
@@ -79,16 +96,18 @@ export async function GET(request: NextRequest) {
 
     .message.user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
+      background: rgba(169, 189, 203, 0.15);
+      color: rgb(229, 227, 220);
       border-bottom-right-radius: 4px;
+      border: 1px solid rgba(169, 189, 203, 0.2);
     }
 
     .message.assistant {
       align-self: flex-start;
-      background: #f3f4f6;
-      color: #1f2937;
+      background: rgba(58, 64, 64, 0.5);
+      color: rgb(229, 227, 220);
       border-bottom-left-radius: 4px;
+      border: 1px solid rgba(169, 189, 203, 0.15);
     }
 
     .message.assistant.typing {
@@ -101,7 +120,7 @@ export async function GET(request: NextRequest) {
     .typing-dot {
       width: 8px;
       height: 8px;
-      background: #6b7280;
+      background: rgb(169, 189, 203);
       border-radius: 50%;
       animation: bounce 1.4s infinite ease-in-out;
     }
@@ -116,8 +135,8 @@ export async function GET(request: NextRequest) {
 
     .input-area {
       padding: 20px;
-      background: white;
-      border-top: 1px solid #e5e7eb;
+      background: rgba(58, 64, 64, 0.3);
+      border-top: 1px solid rgba(169, 189, 203, 0.15);
     }
 
     .input-form {
@@ -129,30 +148,36 @@ export async function GET(request: NextRequest) {
     .input-field {
       flex: 1;
       padding: 12px 16px;
-      border: 2px solid #e5e7eb;
+      border: 1px solid rgba(169, 189, 203, 0.3);
       border-radius: 24px;
       font-size: 15px;
       outline: none;
       transition: all 0.3s ease;
+      background: rgba(30, 33, 33, 0.5);
+      color: rgb(229, 227, 220);
+    }
+
+    .input-field::placeholder {
+      color: rgba(169, 189, 203, 0.5);
     }
 
     .input-field:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: rgba(169, 189, 203, 0.5);
+      background: rgba(30, 33, 33, 0.7);
     }
 
     .send-button {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
+      background: rgb(169, 189, 203);
+      color: rgb(30, 33, 33);
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .send-button:hover {
@@ -167,8 +192,9 @@ export async function GET(request: NextRequest) {
       display: inline-block;
       padding: 6px 12px;
       margin: 4px;
-      background: #e0e7ff;
-      color: #4338ca;
+      background: rgba(169, 189, 203, 0.15);
+      color: rgb(229, 227, 220);
+      border: 1px solid rgba(169, 189, 203, 0.2);
       border-radius: 16px;
       font-size: 13px;
       cursor: pointer;
@@ -176,17 +202,18 @@ export async function GET(request: NextRequest) {
     }
 
     .skill-suggestion:hover {
-      background: #c7d2fe;
+      background: rgba(169, 189, 203, 0.25);
       transform: translateY(-1px);
     }
 
     .config-update {
-      background: #fef3c7;
-      color: #92400e;
+      background: rgba(169, 189, 203, 0.1);
+      color: rgb(169, 189, 203);
       padding: 12px;
       border-radius: 8px;
       margin: 8px 0;
       font-size: 13px;
+      border: 1px solid rgba(169, 189, 203, 0.2);
     }
   </style>
 </head>
