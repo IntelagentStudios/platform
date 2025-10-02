@@ -523,6 +523,12 @@ export default function AgentBuilderPage() {
   const [expandedSkillCategory, setExpandedSkillCategory] = useState<string | null>(null);
   const [suggestedFeatures, setSuggestedFeatures] = useState<string[]>([]);
 
+  // Monitor skills changes
+  useEffect(() => {
+    console.log('AgentConfig skills updated:', agentConfig.skills);
+    console.log('Number of skills selected:', agentConfig.skills.length);
+  }, [agentConfig.skills]);
+
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
@@ -865,10 +871,14 @@ export default function AgentBuilderPage() {
                       if (config.action === 'set_skills' && config.skills) {
                         console.log('Setting skills from AI:', config.skills);
                         // Clear existing skills and set new ones from AI
-                        setAgentConfig(prev => ({
-                          ...prev,
-                          skills: config.skills
-                        }));
+                        setAgentConfig(prev => {
+                          const newConfig = {
+                            ...prev,
+                            skills: [...config.skills] // Create new array to force re-render
+                          };
+                          console.log('New agent config with skills:', newConfig);
+                          return newConfig;
+                        });
                         updateSuggestedFeatures(config.skills);
                         setHasInteracted(true);
                       } else if (config.action === 'toggle_skill' && config.skillId) {
