@@ -43,26 +43,18 @@ export default function AgentBuilderAI({
       widgetContainer.id = 'agent-builder-chatbot';
       widgetContainer.style.cssText = `
         position: absolute;
-        top: 80px;
+        top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
+        width: 100%;
+        height: 100%;
         border-radius: 12px;
-        overflow: visible;
-        background: rgba(58, 64, 64, 0.3);
-        border: 1px solid rgba(169, 189, 203, 0.15);
+        overflow: hidden;
+        background: transparent;
       `;
 
-      // Add iframe for the chatbot with full context
+      // Add iframe for the chatbot without context in URL (too large)
       const iframe = document.createElement('iframe');
-      const fullContext = {
-        config: currentConfig || {},
-        availableSkills: availableSkills || [],
-        availableFeatures: availableFeatures || [],
-        availableIntegrations: availableIntegrations || [],
-        pricing: pricingInfo || {}
-      };
-      iframe.src = `/api/widget/agent-builder?key=${AGENT_BUILDER_KEY}&context=${encodeURIComponent(JSON.stringify(fullContext))}`;
+      iframe.src = `/api/widget/agent-builder?key=${AGENT_BUILDER_KEY}`;
       iframe.style.cssText = `
         width: 100%;
         height: 100%;
@@ -72,6 +64,20 @@ export default function AgentBuilderAI({
       iframe.onload = () => {
         setIsLoading(false);
         setHasWidget(true);
+
+        // Send context after iframe loads
+        setTimeout(() => {
+          if (iframe.contentWindow) {
+            iframe.contentWindow.postMessage({
+              type: 'initial-context',
+              config: currentConfig || {},
+              availableSkills: availableSkills || [],
+              availableFeatures: availableFeatures || [],
+              availableIntegrations: availableIntegrations || [],
+              pricing: pricingInfo || {}
+            }, window.location.origin);
+          }
+        }, 100);
       };
 
       widgetContainer.appendChild(iframe);
@@ -121,47 +127,8 @@ export default function AgentBuilderAI({
   }, [currentConfig, hasWidget]);
 
   return (
-    <div className="relative w-full" style={{ height }}>
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 rounded-t-xl z-10" style={{
-        backgroundColor: 'rgba(58, 64, 64, 0.5)',
-        borderBottom: '1px solid rgba(169, 189, 203, 0.15)'
-      }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(169, 189, 203, 0.1)' }}>
-              <CpuChipIcon className="h-6 w-6" style={{ color: 'rgb(169, 189, 203)' }} />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>AI Configuration Expert</h3>
-              <p className="text-xs" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Powered by Intelagent AI • 539+ Skills Available</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <SparklesIcon className="h-5 w-5 animate-pulse" style={{ color: 'rgb(169, 189, 203)' }} />
-            <span className="text-sm font-medium" style={{ color: 'rgba(229, 227, 220, 0.9)' }}>Active</span>
-          </div>
-        </div>
-      </div>
+    <div className="relative w-full" style={{ height, backgroundColor: 'rgba(58, 64, 64, 0.3)', border: '1px solid rgba(169, 189, 203, 0.15)', borderRadius: '12px', overflow: 'hidden' }}>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm rounded-xl z-20" style={{
-          backgroundColor: 'rgba(30, 33, 33, 0.8)'
-        }}>
-          <div className="text-center">
-            <div className="relative">
-              <div className="h-16 w-16 rounded-full border-4 animate-spin mx-auto" style={{
-                borderColor: 'rgba(169, 189, 203, 0.2)',
-                borderTopColor: 'rgb(169, 189, 203)'
-              }}></div>
-              <ChatBubbleLeftRightIcon className="h-8 w-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ color: 'rgb(169, 189, 203)' }} />
-            </div>
-            <p className="mt-4 text-sm" style={{ color: 'rgb(229, 227, 220)' }}>Connecting to AI Expert...</p>
-            <p className="mt-1 text-xs" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>This uses your actual chatbot product</p>
-          </div>
-        </div>
-      )}
 
       {/* Chatbot Container */}
       <div

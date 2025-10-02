@@ -4,22 +4,14 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const productKey = searchParams.get('key');
-  const context = searchParams.get('context');
 
   // Validate this is the agent builder key
   if (productKey !== 'PK-AGENT-BUILDER-AI') {
     return NextResponse.json({ error: 'Invalid product key' }, { status: 403 });
   }
 
-  // Parse full context including available options
+  // Don't pass context in URL, it's too large
   let currentConfig = {};
-  try {
-    if (context) {
-      currentConfig = JSON.parse(decodeURIComponent(context));
-    }
-  } catch (e) {
-    console.error('Failed to parse context:', e);
-  }
 
   // Generate the widget HTML with special configuration for agent building
   const html = `
@@ -257,16 +249,21 @@ export async function GET(request: NextRequest) {
 
   <script>
     // Current configuration from parent
-    let currentConfig = ${JSON.stringify(currentConfig)};
+    let currentConfig = {};
+    let contextData = {};
 
     // Message handling
     const messagesEl = document.getElementById('messages');
     const formEl = document.getElementById('chatForm');
     const inputEl = document.getElementById('userInput');
 
-    // Listen for config updates from parent
+    // Listen for initial context and config updates from parent
     window.addEventListener('message', (event) => {
-      if (event.data.type === 'config-update') {
+      if (event.data.type === 'initial-context') {
+        currentConfig = event.data.config || {};
+        contextData = event.data;
+        console.log('Received initial context');
+      } else if (event.data.type === 'config-update') {
         currentConfig = event.data.config;
         console.log('Received config update:', currentConfig);
       }
