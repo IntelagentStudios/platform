@@ -267,25 +267,34 @@ What's your primary business challenge?`,
 
 PRICING: Base £299/month + skills (£5 each, discounts: 10+ skills 10% off, 20+ skills 20% off, 30+ skills 30% off)
 
-TOP SKILLS (use descriptions only, but include skill_id internally):
-- Sales: lead generation, lead scoring, pipeline tracking, deal management, email campaigns
-- E-commerce: inventory management, order processing, payment handling, shipping tracking
-- Support: ticket management, knowledge base, chat support, FAQ automation
-- Marketing: email marketing, social media scheduling, content creation, SEO optimization
-
-INTERNAL MAPPING (for your reference, never show to user):
-lead_generation="lead generation", email_campaigns="email marketing", content_generator="content creation", etc.
-
 Current context: ${JSON.stringify(context, null, 2)}
 
-IMPORTANT RULES:
+CRITICAL FORMATTING RULES:
 1. Be VERY concise - 3-5 sentences max
-2. List 3-5 capabilities as user benefits (NO technical names like email_campaigns)
-3. Calculate price: £299 base + (skills × £5) for <10 skills, or with discount for 10+
-4. End with a short question to guide them
-5. Examples: 5 skills = £324/month, 10 skills = £344/month (10% off), 20 skills = £379/month (20% off)
-6. Format: "For [need], I recommend: • user-friendly description. Total: £XXX/month. [Question]?"
-7. NEVER show skill IDs, only describe what the user gets (e.g., "automated email marketing" not "email_campaigns")`;
+2. ALWAYS provide your recommendation in this EXACT format:
+   "For [their need], I recommend these capabilities:
+   • [user-friendly description 1]
+   • [user-friendly description 2]
+   • [user-friendly description 3]
+   • [user-friendly description 4]
+   • [user-friendly description 5]
+   Total: £XXX/month. [Follow-up question]?"
+3. NEVER use technical IDs or underscored names (NO: email_campaigns, lead_generation)
+4. ALWAYS use natural descriptions (YES: "automated email marketing", "find and qualify leads")
+5. Calculate exact price: £299 base + (skills × price after discount)
+6. Return EXACTLY the skill IDs in a separate JSON block like this:
+   SKILLS:[lead_generation,email_campaigns,content_generator,seo_optimizer,analytics_dashboard]
+
+Example response:
+"For sales automation, I recommend these capabilities:
+• Find and qualify new prospects automatically
+• Score and prioritize high-value opportunities
+• Automated email outreach sequences
+• Track deals through your pipeline
+• Sync with your CRM system
+
+Total: £344/month. What's your average deal size?"
+SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_integration]`;
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
@@ -302,25 +311,26 @@ IMPORTANT RULES:
 
     const aiResponse = completion.choices[0]?.message?.content || 'I can help you build the perfect AI agent. What specific business needs do you have?';
 
-    // Parse AI response for ALL skill recommendations
-    // Match any word followed by " - " which is the pattern the AI uses
+    // Parse AI response for skill recommendations
     const skillMatches: string[] = [];
 
-    // First try to find skills in the format "skill_name - description"
-    const bulletPattern = /•\s+(\w+(?:_\w+)*)\s+-/g;
-    let match;
-    while ((match = bulletPattern.exec(aiResponse)) !== null) {
-      skillMatches.push(match[1].toLowerCase());
-    }
-
-    // If no matches found, fall back to looking for known skill names
-    if (skillMatches.length === 0) {
+    // Look for the SKILLS: block that contains the actual skill IDs
+    const skillsBlockMatch = aiResponse.match(/SKILLS:\[([^\]]+)\]/);
+    if (skillsBlockMatch) {
+      const skillsList = skillsBlockMatch[1].split(',').map(s => s.trim());
+      skillMatches.push(...skillsList);
+    } else {
+      // Fallback: try to extract skills from bullet points if AI didn't follow format
+      // Look for known skill patterns
       const skillPattern = /\b(lead_generation|lead_scoring|pipeline_management|deal_tracking|email_campaigns|inventory_manager|order_processor|payment_processing|ticket_management|knowledge_base|chat_support|email_sender|sms_notifications|content_generator|seo_optimizer|invoice_generator|payment_processor|expense_tracker|bookkeeping|financial_reporting|budget_planning|general_ledger|accounts_receivable|accounts_payable|payroll_processing|tax_preparation|financial_analysis|audit_management|cash_flow_management|crm_integration|calendar_scheduling|proposal_generator|analytics_dashboard|competitor_analysis|sales_forecasting|quote_generation|sales_analytics|data_visualization|report_generator|trend_analysis|predictive_analytics|slack_integration|teams_connector|customer_notifications|shipping_tracker|fraud_detection|review_manager|abandoned_cart|product_recommendations|price_optimizer)\b/gi;
       const matches = aiResponse.match(skillPattern);
       if (matches) {
         skillMatches.push(...Array.from(new Set(matches.map(s => s.toLowerCase()))));
       }
     }
+
+    // Clean the response to remove the SKILLS: block before sending to user
+    const cleanResponse = aiResponse.replace(/\nSKILLS:\[[^\]]+\]/, '').trim();
 
     const recommendedSkills = Array.from(new Set(skillMatches));
 
@@ -360,7 +370,7 @@ IMPORTANT RULES:
     }
 
     return NextResponse.json({
-      response: aiResponse,
+      response: cleanResponse,
       recommendations: {
         skills: recommendedSkills,
         pricing: pricing

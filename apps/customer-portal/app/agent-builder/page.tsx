@@ -1042,22 +1042,7 @@ export default function AgentBuilderPage() {
                       Connect with your existing tools
                     </p>
                   </div>
-                  <style jsx>{`
-                    .integrations-scrollbar::-webkit-scrollbar {
-                      width: 8px;
-                    }
-                    .integrations-scrollbar::-webkit-scrollbar-track {
-                      background: transparent;
-                    }
-                    .integrations-scrollbar::-webkit-scrollbar-thumb {
-                      background-color: rgba(169, 189, 203, 0.3);
-                      border-radius: 4px;
-                    }
-                    .integrations-scrollbar::-webkit-scrollbar-thumb:hover {
-                      background-color: rgba(169, 189, 203, 0.5);
-                    }
-                  `}</style>
-                  <div className="flex-1 space-y-2 overflow-y-auto integrations-scrollbar">
+                  <div className="flex-1 space-y-2">
                     {Object.entries(INTEGRATIONS).map(([category, integrations]) => (
                       <div key={category} className="rounded-lg border" style={{
                         backgroundColor: 'rgba(58, 64, 64, 0.2)',
@@ -1068,16 +1053,27 @@ export default function AgentBuilderPage() {
                             expandedIntegrationCategory === category ? null : category
                           )}
                           className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
+                          style={{
+                            backgroundColor: integrations.some(i => agentConfig.integrations.includes(i.id))
+                              ? 'rgba(169, 189, 203, 0.05)'
+                              : 'transparent'
+                          }}
                         >
-                          <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                          <span className="text-sm font-medium" style={{
+                            color: integrations.some(i => agentConfig.integrations.includes(i.id))
+                              ? 'rgb(169, 189, 203)'
+                              : 'rgb(229, 227, 220)'
+                          }}>
                             {category}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                              backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                              backgroundColor: integrations.some(i => agentConfig.integrations.includes(i.id))
+                                ? 'rgba(169, 189, 203, 0.2)'
+                                : 'rgba(169, 189, 203, 0.1)',
                               color: 'rgba(169, 189, 203, 0.8)'
                             }}>
-                              {integrations.length}
+                              {integrations.filter(i => agentConfig.integrations.includes(i.id)).length}/{integrations.length}
                             </span>
                             {expandedIntegrationCategory === category ? (
                               <ChevronUpIcon className="h-4 w-4" style={{ color: 'rgba(169, 189, 203, 0.6)' }} />
@@ -1275,13 +1271,24 @@ export default function AgentBuilderPage() {
                               expandedSkillCategory === category ? null : category
                             )}
                             className="w-full px-3 py-2 flex items-center justify-between hover:bg-opacity-10 transition"
+                            style={{
+                              backgroundColor: skills.some(s => agentConfig.skills.includes(s.id))
+                                ? 'rgba(169, 189, 203, 0.05)'
+                                : 'transparent'
+                            }}
                           >
-                            <span className="text-sm font-medium" style={{ color: 'rgb(229, 227, 220)' }}>
+                            <span className="text-sm font-medium" style={{
+                              color: skills.some(s => agentConfig.skills.includes(s.id))
+                                ? 'rgb(169, 189, 203)'
+                                : 'rgb(229, 227, 220)'
+                            }}>
                               {category}
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                                backgroundColor: 'rgba(169, 189, 203, 0.1)',
+                                backgroundColor: skills.some(s => agentConfig.skills.includes(s.id))
+                                  ? 'rgba(169, 189, 203, 0.2)'
+                                  : 'rgba(169, 189, 203, 0.1)',
                                 color: 'rgba(169, 189, 203, 0.8)'
                               }}>
                                 {skills.filter(s => agentConfig.skills.includes(s.id)).length}/{skills.length}
