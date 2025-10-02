@@ -278,25 +278,22 @@ export async function GET(request: NextRequest) {
       const typingId = showTyping();
 
       try {
-        // Use the existing chatbot-skills/modular endpoint like regular chatbots
-        const response = await fetch('/api/chatbot-skills/modular', {
+        // Use the custom n8n configurator webhook
+        const response = await fetch('https://1ntelagent.up.railway.app/webhook/configurator', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: message + ' [CONTEXT: Agent Builder - Current config: ' + JSON.stringify({
+            message: message + ' [CONTEXT: Agent Builder - ' + JSON.stringify({
                      skills: currentConfig.skills || [],
                      features: currentConfig.features || [],
                      integrations: currentConfig.integrations || [],
-                     availableSkills: currentConfig.availableSkills || [],
-                     availableFeatures: currentConfig.availableFeatures || [],
-                     availableIntegrations: currentConfig.availableIntegrations || [],
-                     pricing: currentConfig.pricing || {}
-                   }) + ']',
-            sessionId: 'agent-builder-' + Date.now(),
-            productKey: 'PK-AGENT-BUILDER-AI',
-            chatHistory: []
+                     availableSkills: contextData.availableSkills || [],
+                     availableFeatures: contextData.availableFeatures || [],
+                     availableIntegrations: contextData.availableIntegrations || [],
+                     pricing: contextData.pricing || {}
+                   }) + ']'
           })
         });
 
@@ -305,101 +302,41 @@ export async function GET(request: NextRequest) {
         // Remove typing indicator
         removeTyping(typingId);
 
-        // Show AI response (uses 'response' field from modular endpoint)
+        // Show AI response
         if (data.response) {
           addMessage(data.response, 'assistant');
 
-          // Parse response for configuration suggestions
-          const response = data.response.toLowerCase();
-          const updates = {};
+          // Handle structured response from n8n workflow
+          if (data.recommendations && data.recommendations.skills && data.recommendations.skills.length > 0) {
+            // Send skill updates to parent
+            data.recommendations.skills.forEach(skillId => {
+              window.parent.postMessage({
+                type: 'agent-config-update',
+                config: {
+                  action: 'toggle_skill',
+                  skillId: skillId
+                }
+              }, '*');
+            });
 
-          // Parse skill suggestions
-          if (response.includes('skill')) {
-            const skillMatches = response.match(/(?:add|recommend|suggest|enable|activate).*?skill[s]?:?\s*([a-z_,\s]+)/gi);
-            if (skillMatches) {
-              const suggestedSkills = [];
-              skillMatches.forEach(match => {
-                const skills = match.replace(/.*skill[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
-                suggestedSkills.push(...skills);
+            // Show visual feedback with pricing info
+            if (data.recommendations.pricing) {
+              const pricing = data.recommendations.pricing;
+              addConfigUpdate({
+                skills: data.recommendations.skills,
+                pricing: pricing,
+                message: 'Added ' + data.recommendations.skills.length + ' skills - Total: £' + pricing.total + '/month'
               });
-              if (suggestedSkills.length > 0) {
-                updates.skills = suggestedSkills;
-              }
             }
           }
 
-          // Parse feature suggestions
-          if (response.includes('feature')) {
-            const featureMatches = response.match(/(?:add|recommend|suggest|enable).*?feature[s]?:?\s*([a-z_,\s]+)/gi);
-            if (featureMatches) {
-              const suggestedFeatures = [];
-              featureMatches.forEach(match => {
-                const features = match.replace(/.*feature[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
-                suggestedFeatures.push(...features);
-              });
-              if (suggestedFeatures.length > 0) {
-                updates.features = suggestedFeatures;
+          // Handle any actions from the response
+          if (data.actions && data.actions.length > 0) {
+            data.actions.forEach(action => {
+              if (action.type === 'add_skill' && action.skill) {
+                // Already handled above
+                console.log('Skill action:', action.skill);
               }
-            }
-          }
-
-          // Parse integration suggestions
-          if (response.includes('integration')) {
-            const integrationMatches = response.match(/(?:add|recommend|suggest|connect).*?integration[s]?:?\s*([a-z_,\s]+)/gi);
-            if (integrationMatches) {
-              const suggestedIntegrations = [];
-              integrationMatches.forEach(match => {
-                const integrations = match.replace(/.*integration[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
-                suggestedIntegrations.push(...integrations);
-              });
-              if (suggestedIntegrations.length > 0) {
-                updates.integrations = suggestedIntegrations;
-              }
-            }
-          }
-
-          // Send updates to parent if any were found
-          if (Object.keys(updates).length > 0) {
-            // Send specific actions for each type
-            if (updates.skills) {
-              updates.skills.forEach(skillId => {
-                window.parent.postMessage({
-                  type: 'agent-config-update',
-                  config: {
-                    action: 'toggle_skill',
-                    skillId: skillId
-                  }
-                }, '*');
-              });
-            }
-            if (updates.features) {
-              updates.features.forEach(featureId => {
-                window.parent.postMessage({
-                  type: 'agent-config-update',
-                  config: {
-                    action: 'toggle_feature',
-                    featureId: featureId
-                  }
-                }, '*');
-              });
-            }
-            if (updates.integrations) {
-              updates.integrations.forEach(integrationId => {
-                window.parent.postMessage({
-                  type: 'agent-config-update',
-                  config: {
-                    action: 'toggle_integration',
-                    integrationId: integrationId
-                  }
-                }, '*');
-              });
-            }
-
-            // Show visual feedback
-            addConfigUpdate({
-              skills: updates.skills || [],
-              features: updates.features || [],
-              integrations: updates.integrations || []
             });
           }
         } else if (data.error) {
