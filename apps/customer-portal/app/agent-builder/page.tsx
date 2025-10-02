@@ -480,11 +480,11 @@ const POPULAR_FEATURES = [
 
 // Suggested features based on agent type
 const SUGGESTED_FEATURES: { [key: string]: string[] } = {
-  sales: ['ai_chatbot', 'voice_assistant'],
+  sales: ['ai_chatbot', 'api_access'],
   support: ['ai_chatbot', 'multi_language'],
   marketing: ['multi_language', 'white_label'],
-  operations: ['voice_assistant', 'white_label'],
-  data: ['multi_language'],
+  operations: ['api_access', 'white_label'],
+  data: ['multi_language', 'custom_workflows'],
   general: ['ai_chatbot']
 };
 
@@ -563,8 +563,12 @@ export default function AgentBuilderPage() {
       }
     });
 
-    // Suggest features based on agent type
-    const suggestedFeatures = SUGGESTED_FEATURES[detectedType] || [];
+    // Suggest features based on agent type (reduce voice assistant suggestions)
+    let suggestedFeatures = SUGGESTED_FEATURES[detectedType] || [];
+    // Remove voice assistant from most suggestions except support
+    if (detectedType !== 'support') {
+      suggestedFeatures = suggestedFeatures.filter(f => f !== 'voice_assistant');
+    }
 
     setAgentConfig(prev => ({
       ...prev,

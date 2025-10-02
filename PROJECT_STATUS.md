@@ -90,7 +90,7 @@ All required environment variables are properly configured in the Railway produc
 
 ### 1. AI Chatbot Product
 **Status**: ✅ READY FOR SALE
-- Price: £349/month
+- Price: £100/month
 - Features: Custom knowledge base, n8n integration, embeddings
 - Widget deployment ready
 
