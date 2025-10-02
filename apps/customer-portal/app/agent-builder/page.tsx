@@ -849,9 +849,9 @@ export default function AgentBuilderPage() {
             <div className="max-w-7xl mx-auto mb-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* AI Expert Column */}
-                <div style={{ height: '400px', overflow: 'hidden' }}>
+                <div style={{ height: '400px' }}>
                   <AgentBuilderAI
-                    height="100%"
+                    height="400px"
                     currentConfig={agentConfig}
                     availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
                       return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
