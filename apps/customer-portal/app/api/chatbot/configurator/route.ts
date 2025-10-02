@@ -278,9 +278,9 @@ Current context: ${JSON.stringify(context, null, 2)}
 IMPORTANT RULES:
 1. Be VERY concise - 3-5 sentences max
 2. List 3-5 relevant skills with one-line descriptions
-3. Show total price only (not breakdown)
+3. Calculate price: £299 base + (skills × £5) for <10 skills, or with discount for 10+
 4. End with a short question to guide them
-5. Don't explain discounts unless asked
+5. Examples: 5 skills = £324/month, 10 skills = £344/month (10% off), 20 skills = £379/month (20% off)
 6. Format: "For [need], I recommend: • skill_name - brief purpose. Total: £XXX/month. [Question]?"`;
 
     // Use Groq's Llama model for fast, intelligent responses
@@ -322,22 +322,37 @@ IMPORTANT RULES:
 
     console.log('AI Response:', aiResponse);
     console.log('Extracted skills:', recommendedSkills);
+    console.log('Skills count:', recommendedSkills.length);
 
-    // Calculate pricing
+    // Calculate pricing - must match UI calculation exactly
     let pricing = null;
     if (recommendedSkills.length > 0) {
       const skillCount = recommendedSkills.length;
       let pricePerSkill = 5;
-      if (skillCount >= 30) pricePerSkill = 3.5;
-      else if (skillCount >= 20) pricePerSkill = 4;
-      else if (skillCount >= 10) pricePerSkill = 4.5;
+      let discountPercent = 0;
+
+      if (skillCount >= 30) {
+        pricePerSkill = 3.5;
+        discountPercent = 30;
+      } else if (skillCount >= 20) {
+        pricePerSkill = 4;
+        discountPercent = 20;
+      } else if (skillCount >= 10) {
+        pricePerSkill = 4.5;
+        discountPercent = 10;
+      }
+
+      const skillsTotal = skillCount * pricePerSkill;
 
       pricing = {
         base: 299,
-        skills: skillCount * pricePerSkill,
-        total: 299 + (skillCount * pricePerSkill),
-        discount: skillCount >= 10 ? `${((5 - pricePerSkill) / 5 * 100).toFixed(0)}%` : null
+        skills: skillsTotal,
+        total: 299 + skillsTotal,
+        discount: discountPercent > 0 ? `${discountPercent}%` : null,
+        pricePerSkill: pricePerSkill
       };
+
+      console.log('Calculated pricing:', pricing);
     }
 
     return NextResponse.json({
