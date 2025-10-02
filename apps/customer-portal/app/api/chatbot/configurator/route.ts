@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     let userMessage = body.message || '';
     let context = {};
 
-    const contextMatch = userMessage.match(/\[CONTEXT: Agent Builder - (.*)\]$/s);
+    const contextMatch = userMessage.match(/\[CONTEXT: Agent Builder - ([\s\S]*)\]$/);
     if (contextMatch) {
       try {
         context = JSON.parse(contextMatch[1]);
