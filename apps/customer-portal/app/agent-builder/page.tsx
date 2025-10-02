@@ -849,9 +849,9 @@ export default function AgentBuilderPage() {
             <div className="max-w-7xl mx-auto mb-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* AI Expert Column */}
-                <div className="h-full">
+                <div style={{ height: '400px', overflow: 'hidden' }}>
                   <AgentBuilderAI
-                    height="400px"
+                    height="100%"
                     currentConfig={agentConfig}
                     availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
                       return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
@@ -892,8 +892,8 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Summary & Pricing Column */}
-                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '400px' }}>
-                  <div className="p-6 flex-1 flex flex-col">
+                <div className="bg-gray-800/30 rounded-xl" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '400px', overflow: 'hidden' }}>
+                  <div className="p-6 h-full flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
                         {agentConfig.name || 'Your AI Agent'}
@@ -965,7 +965,7 @@ export default function AgentBuilderPage() {
                     </div>
 
                     {/* Selected Items Preview */}
-                    <div className="flex-1 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" style={{ minHeight: '60px' }}>
+                    <div className="flex-1 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" style={{ maxHeight: '80px' }}>
                       {agentConfig.skills.length > 0 && (
                         <div>
                           <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Selected Skills</div>
@@ -994,7 +994,7 @@ export default function AgentBuilderPage() {
                     {/* Preview Dashboard Button */}
                     <button
                       onClick={() => setPreviewMode(true)}
-                      className="w-full mt-4 px-4 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+                      className="w-full mt-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                       style={{
                         backgroundColor: 'rgb(169, 189, 203)'
                       }}

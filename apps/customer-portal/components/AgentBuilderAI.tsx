@@ -42,9 +42,13 @@ export default function AgentBuilderAI({
       const widgetContainer = document.createElement('div');
       widgetContainer.id = 'agent-builder-chatbot';
       widgetContainer.style.cssText = `
-        position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: 100%;
-        height: ${height};
+        height: 100%;
         border-radius: 12px;
         overflow: hidden;
         background: rgba(58, 64, 64, 0.3);
@@ -119,7 +123,7 @@ export default function AgentBuilderAI({
   }, [currentConfig, hasWidget]);
 
   return (
-    <div className="relative w-full" style={{ height }}>
+    <div className="relative w-full h-full">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-4 rounded-t-xl z-10" style={{
         backgroundColor: 'rgba(58, 64, 64, 0.5)',
