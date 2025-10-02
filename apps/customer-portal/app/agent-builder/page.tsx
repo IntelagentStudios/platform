@@ -844,14 +844,14 @@ export default function AgentBuilderPage() {
             }}
           />
         ) : (
-          <div className="p-8">
+          <div className="p-8 space-y-8">
             {/* Top Section: Chatbot and Summary */}
-            <div className="max-w-7xl mx-auto mb-8">
+            <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* AI Expert Column */}
                 <div>
                   <AgentBuilderAI
-                    height="360px"
+                    height="auto"
                     currentConfig={agentConfig}
                     availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
                       return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
@@ -892,7 +892,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Summary & Pricing Column */}
-                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '360px' }}>
+                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', minHeight: '360px' }}>
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -1007,8 +1007,8 @@ export default function AgentBuilderPage() {
               </div>
             </div>
 
-            {/* Bottom Section: Configuration Grid */}
-            <div className="max-w-7xl mx-auto">
+            {/* Bottom Section: Configuration Grid - With proper spacing from top */}
+            <div className="max-w-7xl mx-auto mt-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Integrations Column (Left) */}
                 <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '600px' }}>

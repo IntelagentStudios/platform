@@ -10,7 +10,7 @@ interface AgentBuilderAIProps {
   availableFeatures?: string[];
   availableIntegrations?: string[];
   pricingInfo?: any;
-  height?: string;
+  height?: string | 'auto';
 }
 
 export default function AgentBuilderAI({
@@ -20,7 +20,7 @@ export default function AgentBuilderAI({
   availableFeatures,
   availableIntegrations,
   pricingInfo,
-  height = '360px'
+  height = 'auto'
 }: AgentBuilderAIProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +44,8 @@ export default function AgentBuilderAI({
       widgetContainer.style.cssText = `
         position: relative;
         width: 100%;
-        height: ${height};
+        height: ${height === 'auto' ? '400px' : height};
+        min-height: 360px;
         border-radius: 12px;
         overflow: hidden;
         background: rgba(58, 64, 64, 0.3);
@@ -119,7 +120,7 @@ export default function AgentBuilderAI({
   }, [currentConfig, hasWidget]);
 
   return (
-    <div className="relative w-full" style={{ height }}>
+    <div className="relative w-full" style={{ height: height === 'auto' ? '400px' : height, minHeight: '360px' }}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-4 rounded-t-xl z-10" style={{
         backgroundColor: 'rgba(58, 64, 64, 0.5)',
