@@ -851,67 +851,10 @@ export default function AgentBuilderPage() {
           />
         ) : (
           <div className="p-8">
-            {/* Top Section: Chatbot and Summary */}
+            {/* Top Section: Summary and Chatbot */}
             <div className="max-w-7xl mx-auto mb-12">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* AI Expert Column */}
-                <div style={{ height: '400px' }}>
-                  <AgentBuilderAI
-                    height="400px"
-                    currentConfig={agentConfig}
-                    availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
-                      return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
-                    }, [])}
-                    availableFeatures={POPULAR_FEATURES.map(f => f.id)}
-                    availableIntegrations={Object.values(INTEGRATIONS).flat().map(i => i.id)}
-                    pricingInfo={getPricingBreakdown()}
-                    onConfigUpdate={(config) => {
-                      console.log('Agent Builder received config update:', config);
-                      // Handle different types of updates
-                      if (config.action === 'set_skills' && config.skills) {
-                        console.log('Setting skills from AI:', config.skills);
-                        // Clear existing skills and set new ones from AI
-                        setAgentConfig(prev => {
-                          const newConfig = {
-                            ...prev,
-                            skills: [...config.skills] // Create new array to force re-render
-                          };
-                          console.log('New agent config with skills:', newConfig);
-                          return newConfig;
-                        });
-                        updateSuggestedFeatures(config.skills);
-                        setHasInteracted(true);
-                      } else if (config.action === 'toggle_skill' && config.skillId) {
-                        toggleSkill(config.skillId);
-                      } else if (config.action === 'toggle_feature' && config.featureId) {
-                        toggleFeature(config.featureId);
-                      } else if (config.action === 'toggle_integration' && config.integrationId) {
-                        toggleIntegration(config.integrationId);
-                      } else if (config.action === 'select_all_category' && config.category) {
-                        toggleAllSkillsInCategory(config.category);
-                      } else {
-                        // Full config replacement
-                        setAgentConfig(prev => ({
-                          ...prev,
-                          name: config.name || prev.name,
-                          description: config.description || prev.description,
-                          skills: config.skills || prev.skills,
-                          features: config.features || prev.features,
-                          integrations: config.integrations || prev.integrations
-                        }));
-                      }
-
-                      // Update suggested features based on selected skills
-                      if (config.skills && config.skills.length > 0) {
-                        updateSuggestedFeatures(config.skills);
-                      }
-
-                      setHasInteracted(true);
-                    }}
-                  />
-                </div>
-
-                {/* Summary & Pricing Column */}
+                {/* Summary & Pricing Column - Now on the left */}
                 <div className="bg-gray-800/30 rounded-xl" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '400px', overflow: 'hidden' }}>
                   <div className="p-6 h-full flex flex-col">
                     <div className="flex items-center justify-between mb-3">
@@ -1024,6 +967,64 @@ export default function AgentBuilderPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* AI Expert Column - Now on the right */}
+                <div style={{ height: '400px' }}>
+                  <AgentBuilderAI
+                    height="400px"
+                    currentConfig={agentConfig}
+                    availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
+                      return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
+                    }, [])}
+                    availableFeatures={POPULAR_FEATURES.map(f => f.id)}
+                    availableIntegrations={Object.values(INTEGRATIONS).flat().map(i => i.id)}
+                    pricingInfo={getPricingBreakdown()}
+                    onConfigUpdate={(config) => {
+                      console.log('Agent Builder received config update:', config);
+                      // Handle different types of updates
+                      if (config.action === 'set_skills' && config.skills) {
+                        console.log('Setting skills from AI:', config.skills);
+                        // Clear existing skills and set new ones from AI
+                        setAgentConfig(prev => {
+                          const newConfig = {
+                            ...prev,
+                            skills: [...config.skills] // Create new array to force re-render
+                          };
+                          console.log('New agent config with skills:', newConfig);
+                          return newConfig;
+                        });
+                        updateSuggestedFeatures(config.skills);
+                        setHasInteracted(true);
+                      } else if (config.action === 'toggle_skill' && config.skillId) {
+                        toggleSkill(config.skillId);
+                      } else if (config.action === 'toggle_feature' && config.featureId) {
+                        toggleFeature(config.featureId);
+                      } else if (config.action === 'toggle_integration' && config.integrationId) {
+                        toggleIntegration(config.integrationId);
+                      } else if (config.action === 'select_all_category' && config.category) {
+                        toggleAllSkillsInCategory(config.category);
+                      } else {
+                        // Full config replacement
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          name: config.name || prev.name,
+                          description: config.description || prev.description,
+                          skills: config.skills || prev.skills,
+                          features: config.features || prev.features,
+                          integrations: config.integrations || prev.integrations
+                        }));
+                      }
+
+                      // Update suggested features based on selected skills
+                      if (config.skills && config.skills.length > 0) {
+                        updateSuggestedFeatures(config.skills);
+                      }
+
+                      setHasInteracted(true);
+                    }}
+                  />
+                </div>
+
               </div>
             </div>
 
