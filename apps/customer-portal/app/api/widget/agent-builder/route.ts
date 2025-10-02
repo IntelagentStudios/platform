@@ -340,16 +340,14 @@ export async function GET(request: NextRequest) {
 
           // Handle structured response from n8n workflow
           if (data.recommendations && data.recommendations.skills && data.recommendations.skills.length > 0) {
-            // Send skill updates to parent
-            data.recommendations.skills.forEach(skillId => {
-              window.parent.postMessage({
-                type: 'agent-config-update',
-                config: {
-                  action: 'toggle_skill',
-                  skillId: skillId
-                }
-              }, '*');
-            });
+            // Send all skill updates to parent at once
+            window.parent.postMessage({
+              type: 'agent-config-update',
+              config: {
+                action: 'set_skills',
+                skills: data.recommendations.skills
+              }
+            }, '*');
 
             // Show visual feedback with pricing info
             if (data.recommendations.pricing) {

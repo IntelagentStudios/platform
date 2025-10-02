@@ -103,6 +103,7 @@ export default function AgentBuilderAI({
       if (event.origin !== window.location.origin) return;
 
       if (event.data.type === 'agent-config-update') {
+        console.log('Received config update from AI:', event.data.config);
         onConfigUpdate(event.data.config);
       }
     };

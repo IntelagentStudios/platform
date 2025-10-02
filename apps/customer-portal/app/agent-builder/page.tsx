@@ -861,7 +861,14 @@ export default function AgentBuilderPage() {
                     pricingInfo={getPricingBreakdown()}
                     onConfigUpdate={(config) => {
                       // Handle different types of updates
-                      if (config.action === 'toggle_skill' && config.skillId) {
+                      if (config.action === 'set_skills' && config.skills) {
+                        // Clear existing skills and set new ones from AI
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          skills: config.skills
+                        }));
+                        updateSuggestedFeatures(config.skills);
+                      } else if (config.action === 'toggle_skill' && config.skillId) {
                         toggleSkill(config.skillId);
                       } else if (config.action === 'toggle_feature' && config.featureId) {
                         toggleFeature(config.featureId);
@@ -1075,8 +1082,11 @@ export default function AgentBuilderPage() {
                                   className="w-full px-3 py-2 rounded text-left text-xs transition hover:opacity-80"
                                   style={{
                                     backgroundColor: agentConfig.integrations.includes(integration.id)
-                                      ? 'rgba(169, 189, 203, 0.1)'
+                                      ? 'rgba(169, 189, 203, 0.25)'
                                       : 'transparent',
+                                    border: agentConfig.integrations.includes(integration.id)
+                                      ? '1px solid rgba(169, 189, 203, 0.5)'
+                                      : '1px solid transparent',
                                     color: 'rgb(229, 227, 220)'
                                   }}
                                 >
@@ -1304,11 +1314,17 @@ export default function AgentBuilderPage() {
                                     className="px-2 py-1 rounded text-xs text-left hover:bg-opacity-10 transition flex items-center justify-between"
                                     style={{
                                       backgroundColor: agentConfig.skills.includes(skill.id)
-                                        ? 'rgba(169, 189, 203, 0.15)'
+                                        ? 'rgba(169, 189, 203, 0.25)'
                                         : 'transparent',
+                                      border: agentConfig.skills.includes(skill.id)
+                                        ? '1px solid rgba(169, 189, 203, 0.5)'
+                                        : '1px solid transparent',
                                       color: agentConfig.skills.includes(skill.id)
                                         ? 'rgb(229, 227, 220)'
-                                        : 'rgba(229, 227, 220, 0.7)'
+                                        : 'rgba(229, 227, 220, 0.7)',
+                                      fontWeight: agentConfig.skills.includes(skill.id)
+                                        ? '600'
+                                        : '400'
                                     }}
                                   >
                                     <span className="truncate">{skill.name}</span>
