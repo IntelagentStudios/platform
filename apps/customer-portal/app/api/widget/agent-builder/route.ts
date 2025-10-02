@@ -323,7 +323,8 @@ export async function GET(request: NextRequest) {
         removeTyping(typingId);
 
         // Show AI response
-        if (data.response) {
+        if (data && data.response) {
+          console.log('Adding AI response to chat');
           addMessage(data.response, 'assistant');
 
           // Handle structured response from n8n workflow
@@ -360,7 +361,11 @@ export async function GET(request: NextRequest) {
             });
           }
         } else if (data.error) {
+          console.log('Error in response:', data.error);
           addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+        } else {
+          console.log('No response field in data:', data);
+          addMessage('I received your message but got an unexpected response format. Please try again.', 'assistant');
         }
 
       } catch (error) {

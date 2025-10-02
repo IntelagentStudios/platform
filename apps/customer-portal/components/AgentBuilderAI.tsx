@@ -25,6 +25,7 @@ export default function AgentBuilderAI({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasWidget, setHasWidget] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     // Special product key for the agent builder chatbot
@@ -32,6 +33,11 @@ export default function AgentBuilderAI({
 
     // Function to inject the chatbot widget
     const loadChatbot = () => {
+      // Don't reload if already exists
+      if (hasWidget) {
+        return;
+      }
+
       // Remove any existing widget first
       const existingWidget = document.getElementById('agent-builder-chatbot');
       if (existingWidget) {
@@ -64,6 +70,7 @@ export default function AgentBuilderAI({
       iframe.onload = () => {
         setIsLoading(false);
         setHasWidget(true);
+        iframeRef.current = iframe;
 
         // Send context after iframe loads
         setTimeout(() => {
@@ -111,7 +118,7 @@ export default function AgentBuilderAI({
         widget.remove();
       }
     };
-  }, [height, onConfigUpdate, currentConfig, availableSkills, availableFeatures, availableIntegrations, pricingInfo]);
+  }, []); // Only run once on mount, not on prop changes
 
   // Send current config updates to the iframe
   useEffect(() => {
