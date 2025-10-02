@@ -200,12 +200,23 @@ export async function GET(request: NextRequest) {
 
     .config-update {
       background: rgba(169, 189, 203, 0.1);
-      color: rgb(169, 189, 203);
+      color: rgb(229, 227, 220);
       padding: 12px;
       border-radius: 8px;
       margin: 8px 0;
       font-size: 13px;
       border: 1px solid rgba(169, 189, 203, 0.2);
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .config-update:hover {
+      background: rgba(169, 189, 203, 0.15);
+      border-color: rgba(169, 189, 203, 0.3);
+    }
+
+    .config-update strong {
+      color: rgb(169, 189, 203);
     }
   </style>
 </head>
@@ -345,8 +356,13 @@ export async function GET(request: NextRequest) {
               const pricing = data.recommendations.pricing;
               addConfigUpdate({
                 skills: data.recommendations.skills,
-                pricing: pricing,
-                message: 'Added ' + data.recommendations.skills.length + ' skills - Total: £' + pricing.total + '/month'
+                pricing: pricing
+              });
+            } else {
+              // If no pricing, just show skills
+              addConfigUpdate({
+                skills: data.recommendations.skills,
+                message: 'Skills recommended based on your needs'
               });
             }
           }
@@ -415,10 +431,64 @@ export async function GET(request: NextRequest) {
     function addConfigUpdate(config) {
       const updateEl = document.createElement('div');
       updateEl.className = 'config-update';
-      updateEl.innerHTML = 'Configuration updated: ' +
-        (config.skills ? config.skills.length + ' skills, ' : '') +
-        (config.features ? config.features.length + ' features, ' : '') +
-        (config.integrations ? config.integrations.length + ' integrations' : '');
+      updateEl.style.cursor = 'pointer';
+
+      const summary = document.createElement('div');
+      summary.style.display = 'flex';
+      summary.style.justifyContent = 'space-between';
+      summary.style.alignItems = 'center';
+      summary.innerHTML =
+        '<span>✅ Configuration updated: ' +
+        (config.skills ? config.skills.length + ' skills' : '') +
+        (config.pricing ? ' - Total: £' + config.pricing.total + '/month' : '') +
+        '</span>' +
+        '<span style="font-size: 12px; opacity: 0.7;">▼ Click to expand</span>';
+
+      const details = document.createElement('div');
+      details.style.display = 'none';
+      details.style.marginTop = '10px';
+      details.style.paddingTop = '10px';
+      details.style.borderTop = '1px solid rgba(169, 189, 203, 0.2)';
+
+      let detailsHTML = '<strong>Added Skills:</strong><ul style="margin: 5px 0; padding-left: 20px;">';
+      if (config.skills && config.skills.length > 0) {
+        config.skills.forEach(skill => {
+          detailsHTML += '<li>' + skill.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) + '</li>';
+        });
+      }
+      detailsHTML += '</ul>';
+
+      if (config.pricing) {
+        detailsHTML += '<strong>Pricing Breakdown:</strong><ul style="margin: 5px 0; padding-left: 20px;">';
+        detailsHTML += '<li>Base Platform: £' + config.pricing.base + '/month</li>';
+        detailsHTML += '<li>Skills (' + (config.skills ? config.skills.length : 0) + '): £' + config.pricing.skills + '/month</li>';
+        if (config.pricing.discount) {
+          detailsHTML += '<li>Volume Discount: ' + config.pricing.discount + '</li>';
+        }
+        detailsHTML += '<li><strong>Total: £' + config.pricing.total + '/month</strong></li>';
+        detailsHTML += '</ul>';
+      }
+
+      if (config.message) {
+        detailsHTML += '<p style="margin-top: 10px; font-style: italic;">' + config.message + '</p>';
+      }
+
+      details.innerHTML = detailsHTML;
+
+      updateEl.appendChild(summary);
+      updateEl.appendChild(details);
+
+      // Toggle expansion on click
+      updateEl.addEventListener('click', function() {
+        if (details.style.display === 'none') {
+          details.style.display = 'block';
+          summary.querySelector('span:last-child').innerHTML = '▲ Click to collapse';
+        } else {
+          details.style.display = 'none';
+          summary.querySelector('span:last-child').innerHTML = '▼ Click to expand';
+        }
+      });
+
       messagesEl.appendChild(updateEl);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
