@@ -851,18 +851,35 @@ export default function AgentBuilderPage() {
                 {/* AI Expert Column */}
                 <div>
                   <AgentBuilderAI
-                    height="450px"
+                    height="380px"
                     currentConfig={agentConfig}
+                    availableSkills={Object.keys(SKILLS_CATALOG).reduce((acc, cat) => {
+                      return acc.concat(SKILLS_CATALOG[cat].map(s => s.id));
+                    }, [])}
+                    availableFeatures={POPULAR_FEATURES.map(f => f.id)}
+                    availableIntegrations={Object.values(INTEGRATIONS).flat().map(i => i.id)}
+                    pricingInfo={getPricingBreakdown()}
                     onConfigUpdate={(config) => {
-                      // Replace entire configuration each time
-                      setAgentConfig(prev => ({
-                        ...prev,
-                        name: config.name || prev.name,
-                        description: config.description || prev.description,
-                        skills: config.skills || [],
-                        features: config.features || [],
-                        integrations: config.integrations || []
-                      }));
+                      // Handle different types of updates
+                      if (config.action === 'toggle_skill' && config.skillId) {
+                        toggleSkill(config.skillId);
+                      } else if (config.action === 'toggle_feature' && config.featureId) {
+                        toggleFeature(config.featureId);
+                      } else if (config.action === 'toggle_integration' && config.integrationId) {
+                        toggleIntegration(config.integrationId);
+                      } else if (config.action === 'select_all_category' && config.category) {
+                        toggleAllSkillsInCategory(config.category);
+                      } else {
+                        // Full config replacement
+                        setAgentConfig(prev => ({
+                          ...prev,
+                          name: config.name || prev.name,
+                          description: config.description || prev.description,
+                          skills: config.skills || prev.skills,
+                          features: config.features || prev.features,
+                          integrations: config.integrations || prev.integrations
+                        }));
+                      }
 
                       // Update suggested features based on selected skills
                       if (config.skills && config.skills.length > 0) {
@@ -875,7 +892,7 @@ export default function AgentBuilderPage() {
                 </div>
 
                 {/* Summary & Pricing Column */}
-                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '450px' }}>
+                <div className="bg-gray-800/30 rounded-xl flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '380px' }}>
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
@@ -991,7 +1008,7 @@ export default function AgentBuilderPage() {
             </div>
 
             {/* Bottom Section: Configuration Grid */}
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto" style={{ marginTop: '-20px' }}>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Integrations Column (Left) */}
                 <div className="bg-gray-800/30 rounded-xl p-6 flex flex-col" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '650px' }}>

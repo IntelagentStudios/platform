@@ -24,7 +24,8 @@
       "Bash(cat:*)",
       "Bash(timeout 30 npm run build)",
       "Bash(ren:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

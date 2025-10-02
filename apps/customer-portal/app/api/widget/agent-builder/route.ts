@@ -4,21 +4,21 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const productKey = searchParams.get('key');
-  const config = searchParams.get('config');
+  const context = searchParams.get('context');
 
   // Validate this is the agent builder key
   if (productKey !== 'PK-AGENT-BUILDER-AI') {
     return NextResponse.json({ error: 'Invalid product key' }, { status: 403 });
   }
 
-  // Parse current configuration
+  // Parse full context including available options
   let currentConfig = {};
   try {
-    if (config) {
-      currentConfig = JSON.parse(decodeURIComponent(config));
+    if (context) {
+      currentConfig = JSON.parse(decodeURIComponent(context));
     }
   } catch (e) {
-    console.error('Failed to parse config:', e);
+    console.error('Failed to parse context:', e);
   }
 
   // Generate the widget HTML with special configuration for agent building
@@ -222,7 +222,7 @@ export async function GET(request: NextRequest) {
     <div class="messages" id="messages">
       <div class="message assistant">
         <div>
-          👋 Hello! I'm your AI Configuration Expert. I have access to our complete library of 539+ skills across all categories.
+          Hello! I'm your AI Configuration Expert. I have access to our complete library of 539+ skills across all categories.
           <br><br>
           Tell me about your business needs, and I'll help you build the perfect AI agent configuration with:
           <ul style="margin: 8px 0; padding-left: 20px;">
@@ -288,10 +288,15 @@ export async function GET(request: NextRequest) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: message + ' [CONTEXT: Agent Builder - Current config has ' +
-                     (currentConfig.skills ? currentConfig.skills.length + ' skills' : 'no skills') + ', ' +
-                     (currentConfig.features ? currentConfig.features.length + ' features' : 'no features') + ', ' +
-                     (currentConfig.integrations ? currentConfig.integrations.length + ' integrations' : 'no integrations') + ']',
+            message: message + ' [CONTEXT: Agent Builder - Current config: ' + JSON.stringify({
+                     skills: currentConfig.skills || [],
+                     features: currentConfig.features || [],
+                     integrations: currentConfig.integrations || [],
+                     availableSkills: currentConfig.availableSkills || [],
+                     availableFeatures: currentConfig.availableFeatures || [],
+                     availableIntegrations: currentConfig.availableIntegrations || [],
+                     pricing: currentConfig.pricing || {}
+                   }) + ']',
             sessionId: 'agent-builder-' + Date.now(),
             productKey: 'PK-AGENT-BUILDER-AI',
             chatHistory: []
@@ -307,30 +312,98 @@ export async function GET(request: NextRequest) {
         if (data.response) {
           addMessage(data.response, 'assistant');
 
-          // Parse response for skill suggestions
-          const skillPattern = /skill[s]?:?\s*([a-z_,\s]+)/gi;
-          const matches = data.response.match(skillPattern);
+          // Parse response for configuration suggestions
+          const response = data.response.toLowerCase();
+          const updates = {};
 
-          if (matches) {
-            // Extract skill names and update configuration
-            const suggestedSkills = [];
-            matches.forEach(match => {
-              const skills = match.replace(/skill[s]?:?\s*/i, '').split(',').map(s => s.trim());
-              suggestedSkills.push(...skills);
-            });
-
-            if (suggestedSkills.length > 0) {
-              // Send config update to parent with suggested skills
-              window.parent.postMessage({
-                type: 'agent-config-update',
-                config: {
-                  skills: [...new Set([...currentConfig.skills || [], ...suggestedSkills])]
-                }
-              }, '*');
-
-              // Show skill suggestions
-              addSkillSuggestions(suggestedSkills.slice(0, 5));
+          // Parse skill suggestions
+          if (response.includes('skill')) {
+            const skillMatches = response.match(/(?:add|recommend|suggest|enable|activate).*?skill[s]?:?\s*([a-z_,\s]+)/gi);
+            if (skillMatches) {
+              const suggestedSkills = [];
+              skillMatches.forEach(match => {
+                const skills = match.replace(/.*skill[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
+                suggestedSkills.push(...skills);
+              });
+              if (suggestedSkills.length > 0) {
+                updates.skills = suggestedSkills;
+              }
             }
+          }
+
+          // Parse feature suggestions
+          if (response.includes('feature')) {
+            const featureMatches = response.match(/(?:add|recommend|suggest|enable).*?feature[s]?:?\s*([a-z_,\s]+)/gi);
+            if (featureMatches) {
+              const suggestedFeatures = [];
+              featureMatches.forEach(match => {
+                const features = match.replace(/.*feature[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
+                suggestedFeatures.push(...features);
+              });
+              if (suggestedFeatures.length > 0) {
+                updates.features = suggestedFeatures;
+              }
+            }
+          }
+
+          // Parse integration suggestions
+          if (response.includes('integration')) {
+            const integrationMatches = response.match(/(?:add|recommend|suggest|connect).*?integration[s]?:?\s*([a-z_,\s]+)/gi);
+            if (integrationMatches) {
+              const suggestedIntegrations = [];
+              integrationMatches.forEach(match => {
+                const integrations = match.replace(/.*integration[s]?:?\s*/i, '').split(',').map(s => s.trim().replace(/\s+/g, '_'));
+                suggestedIntegrations.push(...integrations);
+              });
+              if (suggestedIntegrations.length > 0) {
+                updates.integrations = suggestedIntegrations;
+              }
+            }
+          }
+
+          // Send updates to parent if any were found
+          if (Object.keys(updates).length > 0) {
+            // Send specific actions for each type
+            if (updates.skills) {
+              updates.skills.forEach(skillId => {
+                window.parent.postMessage({
+                  type: 'agent-config-update',
+                  config: {
+                    action: 'toggle_skill',
+                    skillId: skillId
+                  }
+                }, '*');
+              });
+            }
+            if (updates.features) {
+              updates.features.forEach(featureId => {
+                window.parent.postMessage({
+                  type: 'agent-config-update',
+                  config: {
+                    action: 'toggle_feature',
+                    featureId: featureId
+                  }
+                }, '*');
+              });
+            }
+            if (updates.integrations) {
+              updates.integrations.forEach(integrationId => {
+                window.parent.postMessage({
+                  type: 'agent-config-update',
+                  config: {
+                    action: 'toggle_integration',
+                    integrationId: integrationId
+                  }
+                }, '*');
+              });
+            }
+
+            // Show visual feedback
+            addConfigUpdate({
+              skills: updates.skills || [],
+              features: updates.features || [],
+              integrations: updates.integrations || []
+            });
           }
         } else if (data.error) {
           addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
@@ -374,7 +447,7 @@ export async function GET(request: NextRequest) {
     function addConfigUpdate(config) {
       const updateEl = document.createElement('div');
       updateEl.className = 'config-update';
-      updateEl.innerHTML = '✨ Configuration updated: ' +
+      updateEl.innerHTML = 'Configuration updated: ' +
         (config.skills ? config.skills.length + ' skills, ' : '') +
         (config.features ? config.features.length + ' features, ' : '') +
         (config.integrations ? config.integrations.length + ' integrations' : '');
@@ -382,26 +455,6 @@ export async function GET(request: NextRequest) {
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    // Add skill suggestions
-    function addSkillSuggestions(skills) {
-      const suggestionsEl = document.createElement('div');
-      suggestionsEl.className = 'message assistant';
-      suggestionsEl.innerHTML = '<div>Consider adding these skills:</div>';
-
-      skills.forEach(skill => {
-        const skillEl = document.createElement('span');
-        skillEl.className = 'skill-suggestion';
-        skillEl.textContent = skill.replace(/_/g, ' ');
-        skillEl.onclick = () => {
-          inputEl.value = 'Add ' + skill.replace(/_/g, ' ') + ' skill';
-          formEl.dispatchEvent(new Event('submit'));
-        };
-        suggestionsEl.appendChild(skillEl);
-      });
-
-      messagesEl.appendChild(suggestionsEl);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
 
     // Handle form submission
     formEl.addEventListener('submit', async (e) => {

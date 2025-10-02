@@ -6,12 +6,20 @@ import { SparklesIcon, ChatBubbleLeftRightIcon, CpuChipIcon } from '@heroicons/r
 interface AgentBuilderAIProps {
   onConfigUpdate: (config: any) => void;
   currentConfig?: any;
+  availableSkills?: string[];
+  availableFeatures?: string[];
+  availableIntegrations?: string[];
+  pricingInfo?: any;
   height?: string;
 }
 
 export default function AgentBuilderAI({
   onConfigUpdate,
   currentConfig,
+  availableSkills,
+  availableFeatures,
+  availableIntegrations,
+  pricingInfo,
   height = '450px'
 }: AgentBuilderAIProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -43,9 +51,16 @@ export default function AgentBuilderAI({
         border: 1px solid rgba(169, 189, 203, 0.15);
       `;
 
-      // Add iframe for the chatbot
+      // Add iframe for the chatbot with full context
       const iframe = document.createElement('iframe');
-      iframe.src = `/api/widget/agent-builder?key=${AGENT_BUILDER_KEY}&config=${encodeURIComponent(JSON.stringify(currentConfig || {}))}`;
+      const fullContext = {
+        config: currentConfig || {},
+        availableSkills: availableSkills || [],
+        availableFeatures: availableFeatures || [],
+        availableIntegrations: availableIntegrations || [],
+        pricing: pricingInfo || {}
+      };
+      iframe.src = `/api/widget/agent-builder?key=${AGENT_BUILDER_KEY}&context=${encodeURIComponent(JSON.stringify(fullContext))}`;
       iframe.style.cssText = `
         width: 100%;
         height: 100%;
@@ -88,7 +103,7 @@ export default function AgentBuilderAI({
         widget.remove();
       }
     };
-  }, [height, onConfigUpdate, currentConfig]);
+  }, [height, onConfigUpdate, currentConfig, availableSkills, availableFeatures, availableIntegrations, pricingInfo]);
 
   // Send current config updates to the iframe
   useEffect(() => {
