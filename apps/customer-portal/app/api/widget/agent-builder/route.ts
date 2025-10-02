@@ -278,6 +278,9 @@ export async function GET(request: NextRequest) {
       const typingId = showTyping();
 
       try {
+        console.log('Sending message:', message);
+        console.log('Current config:', currentConfig);
+
         // Use the proxy endpoint to avoid CORS issues
         const response = await fetch('/api/chatbot/configurator', {
           method: 'POST',
@@ -297,7 +300,24 @@ export async function GET(request: NextRequest) {
           })
         });
 
-        const data = await response.json();
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          console.error('Response not OK:', response.status, response.statusText);
+          removeTyping(typingId);
+          addMessage('Sorry, the service is temporarily unavailable. Please try again later.', 'assistant');
+          return;
+        }
+
+        let data;
+        try {
+          const text = await response.text();
+          console.log('Response text:', text.substring(0, 200));
+          data = text ? JSON.parse(text) : { response: 'No response received' };
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          data = { response: 'Sorry, I received an invalid response. Please try again.' };
+        }
 
         // Remove typing indicator
         removeTyping(typingId);
@@ -346,7 +366,16 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error('Failed to send message:', error);
         removeTyping(typingId);
-        addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+
+        // Check if it's a network error
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          addMessage('Connection error. Please check your internet connection and try again.', 'assistant');
+        } else {
+          addMessage('Sorry, I encountered an error processing your request. Please try again.', 'assistant');
+        }
+
+        // Prevent any page reload
+        return false;
       }
     }
 
@@ -396,7 +425,12 @@ export async function GET(request: NextRequest) {
       const message = inputEl.value.trim();
       if (message) {
         inputEl.value = '';
-        await sendMessage(message);
+        try {
+          await sendMessage(message);
+        } catch (error) {
+          console.error('Error sending message:', error);
+          addMessage('Sorry, there was an error sending your message. Please try again.', 'assistant');
+        }
       }
     });
 
