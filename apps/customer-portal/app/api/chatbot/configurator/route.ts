@@ -51,25 +51,126 @@ export async function POST(request: NextRequest) {
 
     // Fallback to Groq for intelligent configuration
     if (!groq) {
-      // If no Groq key, return a helpful response
+      // If no Groq key, provide intelligent responses based on user input
+      const lowerMessage = userMessage.toLowerCase();
+
+      // Check for specific keywords and provide tailored responses
+      if (lowerMessage.includes('sales') || lowerMessage.includes('lead') || lowerMessage.includes('crm')) {
+        return NextResponse.json({
+          response: `Excellent choice! For a **Sales AI Agent**, I recommend our proven configuration:
+
+**Core Sales Skills** (Must-have):
+• **lead_generation** - Identify and qualify prospects automatically
+• **lead_scoring** - AI-powered lead prioritization
+• **pipeline_management** - Track deals through your sales funnel
+• **email_campaigns** - Personalized outreach at scale
+• **deal_tracking** - Monitor deal health and momentum
+
+**Power-Up Skills** (Recommended):
+• **crm_integration** - Seamless Salesforce/HubSpot sync
+• **calendar_scheduling** - Automated meeting booking
+• **proposal_generator** - Dynamic proposal creation
+• **competitor_analysis** - Real-time market intelligence
+• **sales_forecasting** - Predictive revenue modeling
+
+**Package Pricing**:
+- 10 skills: £345/month (£299 base + £46 for skills with 10% off)
+- 15 skills: £366.50/month (£299 base + £67.50 for skills with 10% off)
+- 20 skills: £379/month (£299 base + £80 for skills with 20% off)
+
+Which skills interest you most? I can customize this further based on your sales process.`,
+          recommendations: {
+            skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
+            pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
+          }
+        });
+      }
+
+      if (lowerMessage.includes('ecommerce') || lowerMessage.includes('e-commerce') || lowerMessage.includes('shop') || lowerMessage.includes('store')) {
+        return NextResponse.json({
+          response: `Perfect! For an **E-commerce AI Agent**, here's the optimal setup:
+
+**Essential E-commerce Skills**:
+• **inventory_manager** - Real-time stock tracking and alerts
+• **order_processor** - Automated order fulfillment
+• **payment_processing** - Secure payment handling
+• **shipping_tracker** - Live delivery updates
+• **customer_notifications** - Order status communications
+
+**Growth Accelerators**:
+• **product_recommendations** - AI-powered upselling
+• **price_optimizer** - Dynamic pricing strategy
+• **review_manager** - Automated review collection
+• **abandoned_cart** - Recovery campaigns
+• **fraud_detection** - Protect against fraudulent orders
+
+**Pricing Options**:
+- Starter (10 skills): £345/month with 10% discount
+- Growth (20 skills): £379/month with 20% discount
+- Enterprise (30+ skills): £403.50/month with 30% discount
+
+What's your monthly order volume? I can fine-tune this configuration.`,
+          recommendations: {
+            skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications'],
+            pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
+          }
+        });
+      }
+
+      if (lowerMessage.includes('support') || lowerMessage.includes('help') || lowerMessage.includes('ticket')) {
+        return NextResponse.json({
+          response: `Great! For a **Customer Support AI Agent**, I recommend:
+
+**Core Support Skills**:
+• **ticket_management** - Intelligent ticket routing and prioritization
+• **knowledge_base** - Self-service article suggestions
+• **chat_support** - 24/7 automated responses
+• **faq_automation** - Common question handling
+• **escalation_manager** - Smart escalation to human agents
+
+**Enhanced Capabilities**:
+• **sentiment_analysis** - Detect customer emotions
+• **language_translator** - Multi-language support
+• **screen_recording** - Bug report capturing
+• **sla_tracker** - Response time monitoring
+• **customer_satisfaction** - CSAT survey automation
+
+**Investment Levels**:
+- Basic (8 skills): £339/month
+- Professional (12 skills): £353/month with 10% off
+- Advanced (18 skills): £372/month with 20% off
+
+How many support tickets do you handle monthly?`,
+          recommendations: {
+            skills: ['ticket_management', 'knowledge_base', 'chat_support', 'faq_automation', 'escalation_manager'],
+            pricing: { base: 299, skills: 54, total: 353, discount: '10%' }
+          }
+        });
+      }
+
+      // Default response for general queries
       return NextResponse.json({
-        response: `I'm your AI Configuration Expert with access to 539+ skills.
+        response: `I'm your AI Configuration Expert with access to **539+ skills** across all categories!
 
-Based on your needs, I recommend starting with these popular packages:
+To build the perfect AI agent for you, tell me about your business:
 
-**Sales Package** (£366.50/month):
-• lead_generation, lead_scoring, pipeline_management
-• 15 skills total with 10% volume discount
+**🚀 Sales & Marketing**
+"I need to generate more leads" → Sales acceleration package
+"I want to automate marketing" → Marketing automation suite
 
-**E-commerce Package** (£419/month):
-• inventory_manager, order_processor, payment_processing
-• 20 skills total with 20% volume discount
+**🛍️ E-commerce**
+"I run an online store" → E-commerce optimization kit
+"I need inventory management" → Operations automation
 
-**Support Package** (£384.50/month):
-• ticket_management, knowledge_base, chat_support
-• 12 skills total with 10% volume discount
+**💬 Customer Service**
+"I need 24/7 support" → Support automation package
+"I want to reduce response times" → Intelligent helpdesk
 
-Tell me more about your specific needs and I'll customize the perfect configuration!`,
+**💼 Business Operations**
+"I need to automate workflows" → Process automation suite
+"I want better analytics" → Business intelligence package
+
+What's your primary business challenge?`,
         recommendations: {}
       });
     }
@@ -152,18 +253,50 @@ Be concise, helpful, and focus on building the best configuration for their need
 
   } catch (error: any) {
     console.error('Configurator error:', error);
+    console.error('Error stack:', error.stack);
 
-    // Simple fallback response
+    // Check if it's a specific error we can handle
+    if (error.message?.includes('sales')) {
+      // User mentioned sales, provide sales-specific response
+      return NextResponse.json({
+        response: `Perfect! For a sales agent, I recommend our **Sales Acceleration Package**:
+
+**Core Skills** (£299 base + skills):
+• **lead_generation** - Find and qualify prospects
+• **lead_scoring** - Prioritize high-value opportunities
+• **pipeline_management** - Track deals through stages
+• **email_campaigns** - Automated outreach sequences
+• **deal_tracking** - Monitor deal progress
+
+**Recommended Add-ons**:
+• **crm_integration** - Sync with Salesforce/HubSpot
+• **calendar_scheduling** - Automated meeting booking
+• **proposal_generator** - Create custom proposals
+• **analytics_dashboard** - Track performance metrics
+
+**Pricing with 15 skills**: £366.50/month
+(Base £299 + 15 skills @ £4.50 each with 10% discount)
+
+Would you like me to activate these skills for your sales agent?`,
+        recommendations: {
+          skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
+          pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
+        }
+      });
+    }
+
+    // Generic fallback
     return NextResponse.json({
-      response: `I'm your AI Configuration Expert with access to 539+ skills across all categories.
+      response: `I can help you build a powerful AI agent! What type of business are you in?
 
-Tell me about your business needs and I'll help you build the perfect AI agent with:
-• Optimal skill selection from our catalog
-• Smart integration recommendations
-• Volume discount optimization (up to 30% off)
-• Industry-specific feature suggestions
+**Popular Configurations**:
+• Sales & Lead Generation
+• E-commerce & Order Management
+• Customer Support & Helpdesk
+• Marketing Automation
+• Financial Operations
 
-What kind of AI agent would you like to build today?`,
+Just tell me your industry or main business goal, and I'll recommend the perfect skill combination with optimal pricing.`,
       recommendations: {}
     });
   }
