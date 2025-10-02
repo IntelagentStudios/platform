@@ -278,8 +278,8 @@ export async function GET(request: NextRequest) {
       const typingId = showTyping();
 
       try {
-        // Use the custom n8n configurator webhook
-        const response = await fetch('https://1ntelagent.up.railway.app/webhook/configurator', {
+        // Use the proxy endpoint to avoid CORS issues
+        const response = await fetch('/api/chatbot/configurator', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
