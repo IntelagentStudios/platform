@@ -1326,9 +1326,13 @@ export default function AgentBuilderPage() {
                                     onClick={() => toggleSkill(skill.id)}
                                     className="px-2 py-1 rounded text-xs text-left hover:bg-opacity-10 transition flex items-center justify-between"
                                     style={{
-                                      backgroundColor: agentConfig.skills.includes(skill.id)
-                                        ? 'rgba(169, 189, 203, 0.25)'
-                                        : 'transparent',
+                                      backgroundColor: (() => {
+                                        const isSelected = agentConfig.skills.includes(skill.id);
+                                        if (skill.id === 'email_campaigns' || skill.id === 'content_generator') {
+                                          console.log(`Skill ${skill.id} selected:`, isSelected, 'in array:', agentConfig.skills);
+                                        }
+                                        return isSelected ? 'rgba(169, 189, 203, 0.25)' : 'transparent';
+                                      })(),
                                       border: agentConfig.skills.includes(skill.id)
                                         ? '1px solid rgba(169, 189, 203, 0.5)'
                                         : '1px solid transparent',
