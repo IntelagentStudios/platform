@@ -134,32 +134,27 @@ Budget: £400-600/month`;
       ]
     });
 
-    // 7. Ensure chatbot config exists
-    const existingConfig = await prisma.chatbot_config.findFirst({
-      where: { product_key: AGENT_BUILDER_KEY }
-    });
-
-    if (!existingConfig) {
-      await prisma.chatbot_config.create({
-        data: {
-          product_key: AGENT_BUILDER_KEY,
-          license_key: 'INTERNAL-AGENT-BUILDER',
+    // 7. Store chatbot settings in product key metadata
+    await prisma.product_keys.update({
+      where: { product_key: AGENT_BUILDER_KEY },
+      data: {
+        metadata: {
           domain: 'agent-builder.intelagent.ai',
-          welcome_message: "👋 I'm your AI Configuration Expert with access to 539+ skills!",
-          primary_color: '#667eea',
-          secondary_color: '#764ba2',
-          position: 'embedded',
-          auto_open_delay: 0,
-          notification_sound: false,
-          collect_email: false,
-          brand_name: 'Agent Builder AI',
-          is_active: true,
-          allowed_domains: ['localhost', 'dashboard.intelagentstudios.com'],
-          created_at: new Date(),
-          updated_at: new Date()
+          company_name: 'Intelagent Agent Builder',
+          chatbot_mode: 'n8n',
+          settings: {
+            welcome_message: "👋 I'm your AI Configuration Expert with access to 539+ skills!",
+            primary_color: '#667eea',
+            secondary_color: '#764ba2',
+            position: 'embedded',
+            brand_name: 'Agent Builder AI',
+            auto_open_delay: 0,
+            notification_sound: false,
+            collect_email: false
+          }
         }
-      });
-    }
+      }
+    });
 
     return NextResponse.json({
       success: true,

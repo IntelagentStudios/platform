@@ -100,43 +100,8 @@ INSERT INTO custom_knowledge (
     NOW()
 );
 
--- 7. Add chatbot configuration
-INSERT INTO chatbot_config (
-    product_key,
-    license_key,
-    domain,
-    welcome_message,
-    primary_color,
-    secondary_color,
-    position,
-    auto_open_delay,
-    notification_sound,
-    collect_email,
-    brand_name,
-    is_active,
-    allowed_domains,
-    created_at,
-    updated_at
-) VALUES (
-    'PK-AGENT-BUILDER-AI',
-    'INTERNAL-AGENT-BUILDER',
-    'agent-builder.intelagent.ai',
-    E'👋 Hello! I''m your AI Configuration Expert. I have access to our complete library of 539+ skills.\n\nTell me about your business needs, and I''ll help you build the perfect AI agent with:\n• Optimal skill selection\n• Smart integrations\n• Volume discount pricing\n• Industry best practices\n\nWhat kind of AI agent would you like to build today?',
-    '#667eea',
-    '#764ba2',
-    'embedded',
-    0,
-    false,
-    false,
-    'Intelagent Agent Builder',
-    true,
-    '{localhost,dashboard.intelagentstudios.com,intelagent.ai}',
-    NOW(),
-    NOW()
-) ON CONFLICT (product_key) DO UPDATE
-SET welcome_message = EXCLUDED.welcome_message,
-    primary_color = EXCLUDED.primary_color,
-    updated_at = NOW();
+-- Note: Chatbot configuration is stored in the product_key metadata
+-- The chatbot_config table doesn't have product_key field
 
 -- Verify the setup
 SELECT
@@ -149,10 +114,4 @@ SELECT
     'Knowledge Pieces Added' as step,
     COUNT(*) as count
 FROM custom_knowledge
-WHERE product_key = 'PK-AGENT-BUILDER-AI'
-UNION ALL
-SELECT
-    'Chatbot Config Created' as step,
-    COUNT(*) as count
-FROM chatbot_config
 WHERE product_key = 'PK-AGENT-BUILDER-AI';
