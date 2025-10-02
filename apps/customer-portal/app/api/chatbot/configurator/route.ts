@@ -43,14 +43,23 @@ export async function POST(request: NextRequest) {
       });
 
       if (n8nResponse.ok) {
-        const data = await n8nResponse.json();
-        if (data && data.response) {
-          return NextResponse.json(data);
+        const responseText = await n8nResponse.text();
+        if (responseText) {
+          try {
+            const data = JSON.parse(responseText);
+            if (data && data.response) {
+              return NextResponse.json(data);
+            }
+          } catch (e) {
+            console.log('n8n response not JSON:', responseText.substring(0, 100));
+          }
         }
       }
     } catch (n8nError) {
       console.log('n8n webhook failed, falling back to Groq directly:', n8nError);
     }
+
+    console.log('Using Groq API with key present:', !!groqKey);
 
     // Fallback to Groq for intelligent configuration
     if (!groq) {
@@ -286,13 +295,15 @@ Be concise, helpful, and focus on building the best configuration for their need
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192', // Fast and powerful model
+      model: 'llama-3.3-70b-versatile', // Latest and most versatile model
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 800,
+      top_p: 0.9,
+      stream: false
     });
 
     const aiResponse = completion.choices[0]?.message?.content || 'I can help you build the perfect AI agent. What specific business needs do you have?';
