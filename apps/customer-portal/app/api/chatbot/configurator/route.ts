@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     console.log('Configurator proxy received request:', {
+      message: body.message?.substring(0, 100),
       messageLength: body.message?.length,
       hasMessage: !!body.message
     });
@@ -19,13 +20,15 @@ export async function POST(request: NextRequest) {
     let userMessage = body.message || '';
     let context = {};
 
-    const contextMatch = userMessage.match(/\[CONTEXT: Agent Builder - (.*?)\]$/);
+    const contextMatch = userMessage.match(/\[CONTEXT: Agent Builder - (.*)\]$/s);
     if (contextMatch) {
       try {
         context = JSON.parse(contextMatch[1]);
         userMessage = userMessage.replace(contextMatch[0], '').trim();
+        console.log('Extracted user message:', userMessage);
       } catch (e) {
         console.error('Failed to parse context:', e);
+        console.error('Context string:', contextMatch[1]?.substring(0, 200));
       }
     }
 
@@ -55,6 +58,44 @@ export async function POST(request: NextRequest) {
       const lowerMessage = userMessage.toLowerCase();
 
       // Check for specific keywords and provide tailored responses
+      if (lowerMessage.includes('marketing') || lowerMessage.includes('campaign') || lowerMessage.includes('advertis') || lowerMessage.includes('social')) {
+        return NextResponse.json({
+          response: `Brilliant! For the **Ultimate Marketing AI Agent**, here's your powerhouse configuration:
+
+**Core Marketing Arsenal**:
+• **content_generator** - AI-powered content creation for blogs, ads, social
+• **social_scheduler** - Multi-platform posting automation
+• **email_campaigns** - Personalized email marketing at scale
+• **seo_optimizer** - Search engine optimization recommendations
+• **analytics_dashboard** - Real-time campaign performance tracking
+
+**Advanced Marketing Tools**:
+• **competitor_analysis** - Monitor competitor strategies
+• **influencer_finder** - Identify partnership opportunities
+• **ad_optimizer** - PPC and social ad optimization
+• **brand_monitoring** - Track brand mentions across the web
+• **video_generator** - Automated video content creation
+• **landing_page_builder** - A/B tested page creation
+
+**Construction Industry Specialization**:
+• **project_showcase** - Before/after portfolio automation
+• **local_seo** - Dominate local search results
+• **review_manager** - Automated review collection
+• **referral_tracker** - Partner and referral management
+
+**Ultimate Package Options**:
+- Professional (20 skills): £379/month with 20% discount
+- Enterprise (30 skills): £403.50/month with 30% discount
+- Ultimate (40+ skills): £439/month with 30% discount
+
+For construction, I especially recommend the project showcase and local SEO skills. What's your primary marketing goal?`,
+          recommendations: {
+            skills: ['content_generator', 'social_scheduler', 'email_campaigns', 'seo_optimizer', 'analytics_dashboard'],
+            pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
+          }
+        });
+      }
+
       if (lowerMessage.includes('sales') || lowerMessage.includes('lead') || lowerMessage.includes('crm')) {
         return NextResponse.json({
           response: `Excellent choice! For a **Sales AI Agent**, I recommend our proven configuration:
@@ -113,6 +154,44 @@ What's your monthly order volume? I can fine-tune this configuration.`,
           recommendations: {
             skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications'],
             pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
+          }
+        });
+      }
+
+      if (lowerMessage.includes('construction') || lowerMessage.includes('build') || lowerMessage.includes('contractor')) {
+        return NextResponse.json({
+          response: `Perfect! For a **Construction Company AI Agent**, I'll configure a specialized solution:
+
+**Construction Core Operations**:
+• **project_manager** - Track multiple job sites and timelines
+• **bid_calculator** - Automated cost estimation and proposals
+• **permit_tracker** - Monitor permit applications and approvals
+• **safety_compliance** - OSHA compliance and safety documentation
+• **inventory_tracker** - Materials and equipment management
+
+**Client & Sales Management**:
+• **lead_generation** - Find new construction opportunities
+• **quote_generator** - Professional estimates in minutes
+• **client_portal** - Project updates for clients
+• **invoice_generator** - Progress billing automation
+• **review_manager** - Collect testimonials automatically
+
+**Field Operations**:
+• **scheduling_optimizer** - Crew and subcontractor scheduling
+• **weather_monitor** - Job site weather alerts
+• **photo_documenter** - Progress photo organization
+• **quality_checklist** - Inspection automation
+• **warranty_tracker** - Post-completion support
+
+**Recommended Packages**:
+- Residential (15 skills): £366.50/month with 10% off
+- Commercial (25 skills): £399/month with 20% off
+- Enterprise (35+ skills): £421.50/month with 30% off
+
+What type of construction do you focus on? Residential, commercial, or both?`,
+          recommendations: {
+            skills: ['project_manager', 'bid_calculator', 'permit_tracker', 'safety_compliance', 'lead_generation'],
+            pricing: { base: 299, skills: 100, total: 399, discount: '20%' }
           }
         });
       }
