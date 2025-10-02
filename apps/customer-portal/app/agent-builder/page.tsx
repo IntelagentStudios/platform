@@ -35,7 +35,7 @@ import {
   WrenchIcon
 } from '@heroicons/react/24/outline';
 import DashboardLayout from '../../components/DashboardLayout';
-import AdaptiveAgentConfigurator from '../../components/AdaptiveAgentConfigurator';
+import AgentBuilderAI from '../../components/AgentBuilderAI';
 import DashboardPreview from '../../components/DashboardPreview';
 import { SKILLS_CATALOG, getSkillsByAgentType, TOTAL_SKILLS } from '../../utils/skillsCatalog';
 
@@ -848,9 +848,9 @@ export default function AgentBuilderPage() {
             {/* Top Section: Chatbot and Summary */}
             <div className="max-w-7xl mx-auto mb-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Chatbot Column */}
+                {/* AI Expert Column */}
                 <div>
-                  <AdaptiveAgentConfigurator
+                  <AgentBuilderAI
                     height="450px"
                     currentConfig={agentConfig}
                     onConfigUpdate={(config) => {
