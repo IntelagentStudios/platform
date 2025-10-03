@@ -69,35 +69,22 @@ export async function POST(request: NextRequest) {
       // Check for specific keywords and provide tailored responses
       if (lowerMessage.includes('marketing') || lowerMessage.includes('campaign') || lowerMessage.includes('advertis') || lowerMessage.includes('social')) {
         return NextResponse.json({
-          response: `Brilliant! For the **Ultimate Marketing AI Agent**, here's your powerhouse configuration:
+          response: `Perfect! Marketing is where AI really shines. Here's what I'd set up for maximum impact:
 
-**Core Marketing Arsenal**:
-• **content_generator** - AI-powered content creation for blogs, ads, social
-• **social_scheduler** - Multi-platform posting automation
-• **email_campaigns** - Personalized email marketing at scale
-• **seo_optimizer** - Search engine optimization recommendations
-• **analytics_dashboard** - Real-time campaign performance tracking
+• Create compelling content across all channels automatically
+• Schedule and optimize social media posting
+• Run personalized email campaigns that convert
+• Optimize your SEO and track rankings
+• Monitor campaign performance in real-time
+• Analyze competitor strategies and stay ahead
+• Find and connect with influencers
+• Optimize ad spend across platforms
+• Track brand mentions and sentiment
+• Generate video content effortlessly
 
-**Advanced Marketing Tools**:
-• **competitor_analysis** - Monitor competitor strategies
-• **influencer_finder** - Identify partnership opportunities
-• **ad_optimizer** - PPC and social ad optimization
-• **brand_monitoring** - Track brand mentions across the web
-• **video_generator** - Automated video content creation
-• **landing_page_builder** - A/B tested page creation
+For construction specifically, I'd add portfolio showcases and local SEO dominance.
 
-**Construction Industry Specialization**:
-• **project_showcase** - Before/after portfolio automation
-• **local_seo** - Dominate local search results
-• **review_manager** - Automated review collection
-• **referral_tracker** - Partner and referral management
-
-**Ultimate Package Options**:
-- Professional (20 skills): £379/month with 20% discount
-- Enterprise (30 skills): £403.50/month with 30% discount
-- Ultimate (40+ skills): £439/month with 30% discount
-
-For construction, I especially recommend the project showcase and local SEO skills. What's your primary marketing goal?`,
+What's your current marketing team size?`,
           recommendations: {
             skills: ['content_generator', 'social_scheduler', 'email_campaigns', 'seo_optimizer', 'analytics_dashboard'],
             pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
@@ -107,28 +94,20 @@ For construction, I especially recommend the project showcase and local SEO skil
 
       if (lowerMessage.includes('sales') || lowerMessage.includes('lead') || lowerMessage.includes('crm')) {
         return NextResponse.json({
-          response: `Excellent choice! For a **Sales AI Agent**, I recommend our proven configuration:
+          response: `Excellent! A sales agent is one of our most popular configurations. Your AI sales team will:
 
-**Core Sales Skills** (Must-have):
-• **lead_generation** - Identify and qualify prospects automatically
-• **lead_scoring** - AI-powered lead prioritization
-• **pipeline_management** - Track deals through your sales funnel
-• **email_campaigns** - Personalized outreach at scale
-• **deal_tracking** - Monitor deal health and momentum
+• Find and qualify prospects on autopilot
+• Score leads based on conversion probability
+• Manage your entire pipeline seamlessly
+• Send personalized outreach that actually works
+• Track deal momentum and alert on risks
+• Sync everything with Salesforce or HubSpot
+• Book meetings without the back-and-forth
+• Generate proposals in minutes, not hours
+• Monitor competitors and market changes
+• Forecast revenue with AI precision
 
-**Power-Up Skills** (Recommended):
-• **crm_integration** - Seamless Salesforce/HubSpot sync
-• **calendar_scheduling** - Automated meeting booking
-• **proposal_generator** - Dynamic proposal creation
-• **competitor_analysis** - Real-time market intelligence
-• **sales_forecasting** - Predictive revenue modeling
-
-**Package Pricing**:
-- 10 skills: £345/month (£299 base + £46 for skills with 10% off)
-- 15 skills: £366.50/month (£299 base + £67.50 for skills with 10% off)
-- 20 skills: £379/month (£299 base + £80 for skills with 20% off)
-
-Which skills interest you most? I can customize this further based on your sales process.`,
+Are you more focused on inbound or outbound sales?`,
           recommendations: {
             skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
             pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
@@ -138,28 +117,20 @@ Which skills interest you most? I can customize this further based on your sales
 
       if (lowerMessage.includes('ecommerce') || lowerMessage.includes('e-commerce') || lowerMessage.includes('shop') || lowerMessage.includes('store')) {
         return NextResponse.json({
-          response: `Perfect! For an **E-commerce AI Agent**, here's the optimal setup:
+          response: `Great choice! E-commerce is where automation really pays off. Your AI will handle:
 
-**Essential E-commerce Skills**:
-• **inventory_manager** - Real-time stock tracking and alerts
-• **order_processor** - Automated order fulfillment
-• **payment_processing** - Secure payment handling
-• **shipping_tracker** - Live delivery updates
-• **customer_notifications** - Order status communications
+• Track inventory and alert on low stock
+• Process orders automatically
+• Handle payment processing securely
+• Update customers on shipping status
+• Send timely order notifications
+• Recommend products to increase cart value
+• Optimize pricing dynamically
+• Collect and manage reviews
+• Recover abandoned carts
+• Detect and prevent fraud
 
-**Growth Accelerators**:
-• **product_recommendations** - AI-powered upselling
-• **price_optimizer** - Dynamic pricing strategy
-• **review_manager** - Automated review collection
-• **abandoned_cart** - Recovery campaigns
-• **fraud_detection** - Protect against fraudulent orders
-
-**Pricing Options**:
-- Starter (10 skills): £345/month with 10% discount
-- Growth (20 skills): £379/month with 20% discount
-- Enterprise (30+ skills): £403.50/month with 30% discount
-
-What's your monthly order volume? I can fine-tune this configuration.`,
+What platform are you using - Shopify, WooCommerce, or something else?`,
           recommendations: {
             skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications'],
             pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
@@ -169,35 +140,25 @@ What's your monthly order volume? I can fine-tune this configuration.`,
 
       if (lowerMessage.includes('construction') || lowerMessage.includes('build') || lowerMessage.includes('contractor')) {
         return NextResponse.json({
-          response: `Perfect! For a **Construction Company AI Agent**, I'll configure a specialized solution:
+          response: `Perfect timing! Construction companies see huge efficiency gains with AI. Here's what your agent will manage:
 
-**Construction Core Operations**:
-• **project_manager** - Track multiple job sites and timelines
-• **bid_calculator** - Automated cost estimation and proposals
-• **permit_tracker** - Monitor permit applications and approvals
-• **safety_compliance** - OSHA compliance and safety documentation
-• **inventory_tracker** - Materials and equipment management
+• Track multiple job sites and timelines
+• Calculate bids and generate proposals instantly
+• Monitor permits and compliance requirements
+• Ensure OSHA safety documentation
+• Manage materials and equipment inventory
+• Find new project opportunities
+• Create professional quotes in minutes
+• Keep clients updated on progress
+• Automate progress billing
+• Collect testimonials and reviews
+• Schedule crews and subcontractors
+• Monitor weather for job sites
+• Organize project photos
+• Manage quality checklists
+• Track warranties and service
 
-**Client & Sales Management**:
-• **lead_generation** - Find new construction opportunities
-• **quote_generator** - Professional estimates in minutes
-• **client_portal** - Project updates for clients
-• **invoice_generator** - Progress billing automation
-• **review_manager** - Collect testimonials automatically
-
-**Field Operations**:
-• **scheduling_optimizer** - Crew and subcontractor scheduling
-• **weather_monitor** - Job site weather alerts
-• **photo_documenter** - Progress photo organization
-• **quality_checklist** - Inspection automation
-• **warranty_tracker** - Post-completion support
-
-**Recommended Packages**:
-- Residential (15 skills): £366.50/month with 10% off
-- Commercial (25 skills): £399/month with 20% off
-- Enterprise (35+ skills): £421.50/month with 30% off
-
-What type of construction do you focus on? Residential, commercial, or both?`,
+Do you primarily work on residential or commercial projects?`,
           recommendations: {
             skills: ['project_manager', 'bid_calculator', 'permit_tracker', 'safety_compliance', 'lead_generation'],
             pricing: { base: 299, skills: 100, total: 399, discount: '20%' }
@@ -207,28 +168,20 @@ What type of construction do you focus on? Residential, commercial, or both?`,
 
       if (lowerMessage.includes('support') || lowerMessage.includes('help') || lowerMessage.includes('ticket')) {
         return NextResponse.json({
-          response: `Great! For a **Customer Support AI Agent**, I recommend:
+          response: `Smart thinking! Support automation dramatically improves customer satisfaction. Your agent will:
 
-**Core Support Skills**:
-• **ticket_management** - Intelligent ticket routing and prioritization
-• **knowledge_base** - Self-service article suggestions
-• **chat_support** - 24/7 automated responses
-• **faq_automation** - Common question handling
-• **escalation_manager** - Smart escalation to human agents
+• Route and prioritize tickets intelligently
+• Suggest relevant knowledge base articles
+• Provide 24/7 instant responses
+• Handle frequently asked questions
+• Escalate complex issues appropriately
+• Analyze customer sentiment in real-time
+• Support multiple languages
+• Capture screen recordings for bugs
+• Track SLA compliance
+• Automate satisfaction surveys
 
-**Enhanced Capabilities**:
-• **sentiment_analysis** - Detect customer emotions
-• **language_translator** - Multi-language support
-• **screen_recording** - Bug report capturing
-• **sla_tracker** - Response time monitoring
-• **customer_satisfaction** - CSAT survey automation
-
-**Investment Levels**:
-- Basic (8 skills): £339/month
-- Professional (12 skills): £353/month with 10% off
-- Advanced (18 skills): £372/month with 20% off
-
-How many support tickets do you handle monthly?`,
+What's your average daily ticket volume?`,
           recommendations: {
             skills: ['ticket_management', 'knowledge_base', 'chat_support', 'faq_automation', 'escalation_manager'],
             pricing: { base: 299, skills: 54, total: 353, discount: '10%' }
@@ -238,101 +191,108 @@ How many support tickets do you handle monthly?`,
 
       // Default response for general queries
       return NextResponse.json({
-        response: `I'm your AI Configuration Expert with access to **539+ skills** across all categories!
+        response: `Hello! I'm your AI Configuration Expert. I have access to our complete library of 539+ skills across all categories.
 
-To build the perfect AI agent for you, tell me about your business:
+Tell me about your business needs, and I'll help you build the perfect AI agent configuration with:
+• Optimal skill selection from our catalog
+• Smart integrations recommendations
+• Volume discount optimization
+• Feature suggestions based on your industry
 
-**🚀 Sales & Marketing**
-"I need to generate more leads" → Sales acceleration package
-"I want to automate marketing" → Marketing automation suite
-
-**🛍️ E-commerce**
-"I run an online store" → E-commerce optimization kit
-"I need inventory management" → Operations automation
-
-**💬 Customer Service**
-"I need 24/7 support" → Support automation package
-"I want to reduce response times" → Intelligent helpdesk
-
-**💼 Business Operations**
-"I need to automate workflows" → Process automation suite
-"I want better analytics" → Business intelligence package
-
-What's your primary business challenge?`,
+What kind of AI agent would you like to build today?`,
         recommendations: {}
       });
     }
 
-    const systemPrompt = `You are the Intelagent AI Configuration Expert. You help users build custom AI agents from a catalog of 539+ skills.
+    const systemPrompt = `You are the Intelagent AI Configuration Expert - conversational, helpful, and knowledgeable about building custom AI agents from a catalog of 539+ skills.
 
-PRICING: Base £299/month + skills (£5 each, discounts: 10+ skills 10% off, 20+ skills 20% off, 30+ skills 30% off)
-- 5 skills: £299 + (5 × £5) = £324/month
-- 10 skills: £299 + (10 × £4.50) = £344/month (10% off skills)
-- 20 skills: £299 + (20 × £4) = £379/month (20% off skills)
-- 30 skills: £299 + (30 × £3.50) = £404/month (30% off skills)
+PRICING REFERENCE (for your knowledge, don't mention unless asked):
+- Base: £299/month
+- Skills: £5 each (10+ get 10% off, 20+ get 20% off, 30+ get 30% off)
+- Common totals: 5 skills=£324, 10=£344, 20=£379, 30=£404
 
 Current context: ${JSON.stringify(context, null, 2)}
 
-IMPORTANT BEHAVIORAL RULES:
-1. UNDERSTAND USER INTENT:
-   - If user asks "what", "how", "why", "can you explain" = QUESTION (don't change config)
-   - If user says "add", "remove", "change", "upgrade", "I want" = MODIFICATION (update config)
-   - If user says "more", "upgrade", "enhance" = ADD to existing config
-   - If user says "instead", "replace", "start over" = REPLACE config
+CONVERSATIONAL GUIDELINES:
+1. BE NATURAL & VARIED:
+   - Mix up your opening phrases ("Excellent!", "Great choice!", "Perfect timing!", "I love it!", "Absolutely!")
+   - Use conversational transitions ("Actually,", "Here's the thing,", "What's interesting is,")
+   - Ask engaging follow-ups ("What's your biggest pain point?", "How many customers do you serve?", "What's taking up most of your time?")
+   - Be enthusiastic but professional
 
-2. CURRENT CONFIGURATION:
-   ${context.skills && context.skills.length > 0 ? `User currently has ${context.skills.length} skills selected` : 'No skills selected yet'}
-   ${context.versionInfo ? `Version: ${context.versionInfo.current} of ${context.versionInfo.total} (${context.versionInfo.canUndo ? 'can undo' : 'first version'})` : ''}
+2. UNDERSTAND INTENT:
+   - Questions ("what", "how", "why", "will it", "does it") = Don't change config, just answer
+   - Modifications ("add", "I want", "include", "upgrade") = Update config
+   - Clarifications about existing config = Explain without changing
+   ${context.skills && context.skills.length > 0 ? `- Currently has ${context.skills.length} skills selected` : '- No skills selected yet'}
 
-3. RESPONSE TYPES:
-   - For QUESTIONS: Answer without changing config, end with "Your current config remains at £X/month"
-   - For ADDITIONS: Keep existing skills, add new ones
-   - For REPLACEMENTS: Start fresh with new skills
-   - Default to CUMULATIVE (keep existing + add new)
-   ${context.versionInfo && context.versionInfo.canUndo ? '- Mention version control if relevant: "You can undo to previous version if needed"' : ''}
+3. RESPONSE STRUCTURE:
+   - Start with enthusiasm/acknowledgment (1 sentence)
+   - Present recommendations with bullet points
+   - End with a specific, relevant question
+   - NO PRICE IN RESPONSE (it's shown separately)
+   - Keep it 3-5 sentences plus bullets
 
-CRITICAL FORMATTING RULES:
-1. Be VERY concise - 3-5 sentences max
-2. Match bullet points to price:
-   - For £324 (5 skills): Show exactly 5 bullet points
-   - For £344 (10 skills): Show exactly 10 bullet points
-   - For £379 (20 skills): Show exactly 20 bullet points
-   - For £404 (30 skills): Show exactly 30 bullet points
-3. Format: "For [need], I recommend these capabilities:
-   • [user-friendly description]
-   [repeat bullets to match skill count]
-   Total: £XXX/month. [Question]?"
-4. NEVER use technical IDs in text (NO: email_campaigns, lead_generation)
-5. ALWAYS use natural descriptions (YES: "automated email marketing")
-6. AVOID voice features except for support
-7. SKILLS block MUST have same count as bullets and price:
-   SKILLS:[skill1,skill2,skill3...] (exact count matching price)
-8. Add ACTION type:
-   ACTION:ADD (adding to existing)
-   ACTION:REPLACE (replacing all)
-   ACTION:NONE (just answering question)
-9. VERSION AWARENESS:
-   ${context.versionInfo ? `- You're on version ${context.versionInfo.current} of ${context.versionInfo.total}
-   - User can go back ${context.versionInfo.canUndo ? '(previous versions available)' : '(no previous versions)'}
-   - User can go forward ${context.versionInfo.canRedo ? '(later versions available)' : '(no later versions)'}
-   - Mention version navigation when relevant (e.g., "You can go back to version X if you prefer")` : '- No version history yet'}
+4. BULLET POINT RULES:
+   - Use • for bullets
+   - Write in benefit-focused language
+   - Be specific but not technical
+   - Match count to skills being recommended:
+     * 5 skills = 5 bullets
+     * 10 skills = 10 bullets (can group related ones)
+     * 20+ skills = Group into categories with sub-bullets
 
-Example response for 5 skills (£324):
-"For sales automation, I recommend these capabilities:
-• Find and qualify new prospects automatically
-• Score and prioritize high-value opportunities
-• Automated email outreach sequences
-• Track deals through your pipeline
-• Sync with your CRM system
+5. VARY YOUR LANGUAGE:
+   Instead of always "I recommend these capabilities":
+   - "Here's what I'd include:"
+   - "Your agent will be able to:"
+   - "This configuration gives you:"
+   - "You'll get these powers:"
+   - "Your toolkit includes:"
+   - "I've put together:"
+   - "This setup handles:"
 
-Total: £324/month. What's your average deal size?"
+6. INDUSTRY-SPECIFIC LANGUAGE:
+   - Sales: "close more deals", "pipeline velocity", "conversion rates"
+   - Marketing: "engagement", "reach", "brand presence", "ROI"
+   - Support: "response times", "satisfaction scores", "ticket resolution"
+   - E-commerce: "cart value", "conversion", "fulfillment"
+
+7. TECHNICAL OUTPUT (hidden from user):
+   End response with:
+   SKILLS:[skill1,skill2,...] (actual skill IDs)
+   ACTION:ADD/REPLACE/NONE
+
+EXAMPLE RESPONSES:
+
+For "I want the ultimate sales agent":
+"Absolutely! Let's build a sales powerhouse that works 24/7. Your agent will:
+• Identify and qualify high-value prospects automatically
+• Score leads based on buying signals and engagement
+• Run personalized email sequences that actually convert
+• Track every deal through your pipeline stages
+• Sync seamlessly with your CRM (Salesforce, HubSpot, etc)
+
+What size deals do you typically close?"
 SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_integration]
+ACTION:REPLACE
 
-IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
-- If you say £324, include exactly 5 skills
-- If you say £344, include exactly 10 skills
-- If you say £379, include exactly 20 skills
-- If you say £404, include exactly 30 skills`;
+For "Will it work with Salesforce?":
+"Yes! The agent integrates directly with Salesforce - it'll sync contacts, deals, and activities in real-time. You can even trigger automations based on Salesforce events. Are you using Sales Cloud or Service Cloud?"
+SKILLS:[]
+ACTION:NONE
+
+For "I want to spend a bit more":
+"Smart move! Let me add some game-changers to really accelerate your results:
+• AI-powered sales forecasting for accurate projections
+• Opportunity scoring to focus on winnable deals
+• Automated quote and proposal generation
+• Contract lifecycle management
+• Deep analytics on team performance
+
+How many sales reps are on your team?"
+SKILLS:[sales_forecasting,opportunity_tracking,quote_generation,contract_management,sales_analytics]
+ACTION:ADD`;}
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
@@ -377,6 +337,12 @@ IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
     // Clean the response to remove the SKILLS: and ACTION: blocks before sending to user
     let cleanResponse = aiResponse.replace(/\nSKILLS:\[[^\]]+\]/, '').trim();
     cleanResponse = cleanResponse.replace(/\nACTION:\w+/, '').trim();
+
+    // Also remove any price mentions since it's shown separately
+    cleanResponse = cleanResponse.replace(/Total: £\d+\/month\.?/g, '');
+    cleanResponse = cleanResponse.replace(/£\d+\/month/g, '');
+    cleanResponse = cleanResponse.replace(/Your current config remains at £\d+\/month/g, '');
+    cleanResponse = cleanResponse.trim();
 
     const recommendedSkills = Array.from(new Set(skillMatches));
 
@@ -432,25 +398,19 @@ IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
     if (error.message?.includes('sales')) {
       // User mentioned sales, provide sales-specific response
       return NextResponse.json({
-        response: `Perfect! For a sales agent, I recommend our **Sales Acceleration Package**:
+        response: `Absolutely! Sales is where AI agents really prove their worth. Your sales machine will:
 
-**Core Skills** (£299 base + skills):
-• **lead_generation** - Find and qualify prospects
-• **lead_scoring** - Prioritize high-value opportunities
-• **pipeline_management** - Track deals through stages
-• **email_campaigns** - Automated outreach sequences
-• **deal_tracking** - Monitor deal progress
+• Find and qualify prospects automatically
+• Score leads by conversion probability
+• Track deals through your pipeline
+• Run automated outreach campaigns
+• Monitor deal health and momentum
+• Sync with your CRM seamlessly
+• Book meetings without the hassle
+• Generate proposals instantly
+• Track all performance metrics
 
-**Recommended Add-ons**:
-• **crm_integration** - Sync with Salesforce/HubSpot
-• **calendar_scheduling** - Automated meeting booking
-• **proposal_generator** - Create custom proposals
-• **analytics_dashboard** - Track performance metrics
-
-**Pricing with 15 skills**: £366.50/month
-(Base £299 + 15 skills @ £4.50 each with 10% discount)
-
-Would you like me to activate these skills for your sales agent?`,
+What's your typical sales cycle length?`,
         recommendations: {
           skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
           pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
@@ -460,16 +420,14 @@ Would you like me to activate these skills for your sales agent?`,
 
     // Generic fallback
     return NextResponse.json({
-      response: `I can help you build a powerful AI agent! What type of business are you in?
+      response: `Let's build something amazing together! I have 539+ skills to work with.
 
-**Popular Configurations**:
-• Sales & Lead Generation
-• E-commerce & Order Management
-• Customer Support & Helpdesk
-• Marketing Automation
-• Financial Operations
+Tell me:
+• What industry are you in?
+• What's your biggest challenge right now?
+• What tasks eat up most of your time?
 
-Just tell me your industry or main business goal, and I'll recommend the perfect skill combination with optimal pricing.`,
+I'll create the perfect AI agent configuration for your specific needs.`,
       recommendations: {}
     });
   }
