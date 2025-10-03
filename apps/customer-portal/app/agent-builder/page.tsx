@@ -41,6 +41,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import AgentBuilderAI from '../../components/AgentBuilderAI';
 import DashboardPreview from '../../components/DashboardPreview';
 import DashboardPreviewEnhanced from '../../components/DashboardPreviewEnhanced';
+import DashboardPreviewComplete from '../../components/DashboardPreviewComplete';
 import { SKILLS_CATALOG, getSkillsByAgentType, TOTAL_SKILLS } from '../../utils/skillsCatalog';
 
 // Comprehensive integrations list organized by category (150+ integrations)
@@ -901,7 +902,7 @@ export default function AgentBuilderPage() {
 
         {/* Main Content */}
         {previewMode ? (
-          <DashboardPreviewEnhanced
+          <DashboardPreviewComplete
             agentConfig={agentConfig}
             versionInfo={{
               current: historyIndex + 1,
