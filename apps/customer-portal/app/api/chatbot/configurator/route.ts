@@ -67,16 +67,21 @@ export async function POST(request: NextRequest) {
       const lowerMessage = userMessage.toLowerCase();
 
       // Check for specific keywords and provide tailored responses
+      if (lowerMessage.includes('account') && (lowerMessage.includes('handle') || lowerMessage.includes('manage') || lowerMessage.includes('accounting'))) {
+        return NextResponse.json({
+          response: `Excellent! Let's create a robust accounting agent that streamlines your financial operations. Here's what I'd include:\n\n• Automated invoice processing and payment tracking\n• Accurate expense management and categorization\n• Real-time financial reporting and analytics\n• Seamless integration with QuickBooks or Xero\n• Advanced security for sensitive financial data\n\nWhat type of accounting tasks do you want the agent to prioritize - invoicing, expense tracking, or financial reporting?`,
+          recommendations: {
+            skills: ['invoice_generation', 'expense_tracking', 'financial_reporting', 'payment_processing', 'bookkeeping'],
+            integrations: ['quickbooks', 'xero', 'stripe', 'paypal', 'bank_sync'],
+            features: ['advanced_security', 'api_access', 'white_label'],
+            pricing: { base: 299, skills: 25, total: 324, discount: '0%' }
+          }
+        });
+      }
+
       if (lowerMessage.includes('data') && (lowerMessage.includes('analys') || lowerMessage.includes('analyt'))) {
         return NextResponse.json({
-          response: `Excellent! A data analytics agent will transform your raw data into actionable insights:
-
-• Collect and centralize data from multiple sources
-• Clean and prepare data automatically
-• Visualize trends with interactive dashboards
-• Generate predictive models and forecasts
-
-What's your primary data source - databases, APIs, or spreadsheets?`,
+          response: `Excellent! A data analytics agent will transform your raw data into actionable insights:\n\n• Collect and centralize data from multiple sources\n• Clean and prepare data automatically\n• Visualize trends with interactive dashboards\n• Generate predictive models and forecasts\n\nWhat's your primary data source - databases, APIs, or spreadsheets?`,
           recommendations: {
             skills: ['data_collection', 'data_cleaning', 'data_visualization', 'predictive_analytics'],
             integrations: ['google_analytics', 'mixpanel', 'postgresql', 'mongodb'],
@@ -88,22 +93,7 @@ What's your primary data source - databases, APIs, or spreadsheets?`,
 
       if (lowerMessage.includes('marketing') || lowerMessage.includes('campaign') || lowerMessage.includes('advertis') || lowerMessage.includes('social')) {
         return NextResponse.json({
-          response: `Perfect! Marketing is where AI really shines. Here's what I'd set up for maximum impact:
-
-• Create compelling content across all channels automatically
-• Schedule and optimize social media posting
-• Run personalized email campaigns that convert
-• Optimize your SEO and track rankings
-• Monitor campaign performance in real-time
-• Analyze competitor strategies and stay ahead
-• Find and connect with influencers
-• Optimize ad spend across platforms
-• Track brand mentions and sentiment
-• Generate video content effortlessly
-
-For construction specifically, I'd add portfolio showcases and local SEO dominance.
-
-What's your current marketing team size?`,
+          response: `Perfect! Marketing is where AI really shines. Here's what I'd set up for maximum impact:\n\n• Create compelling content across all channels automatically\n• Schedule and optimize social media posting\n• Run personalized email campaigns that convert\n• Optimize your SEO and track rankings\n• Monitor campaign performance in real-time\n• Analyze competitor strategies and stay ahead\n• Find and connect with influencers\n• Optimize ad spend across platforms\n• Track brand mentions and sentiment\n• Generate video content effortlessly\n\nFor construction specifically, I'd add portfolio showcases and local SEO dominance.\n\nWhat's your current marketing team size?`,
           recommendations: {
             skills: ['content_generator', 'social_scheduler', 'email_campaigns', 'seo_optimizer', 'analytics_dashboard', 'competitor_analysis', 'influencer_finder', 'ad_optimizer', 'brand_monitoring', 'video_generator'],
             integrations: ['mailchimp', 'hootsuite', 'buffer', 'google_analytics', 'facebook'],
@@ -115,20 +105,7 @@ What's your current marketing team size?`,
 
       if (lowerMessage.includes('sales') || lowerMessage.includes('lead') || lowerMessage.includes('crm')) {
         return NextResponse.json({
-          response: `Excellent! A sales agent is one of our most popular configurations. Your AI sales team will:
-
-• Find and qualify prospects on autopilot
-• Score leads based on conversion probability
-• Manage your entire pipeline seamlessly
-• Send personalized outreach that actually works
-• Track deal momentum and alert on risks
-• Sync everything with Salesforce or HubSpot
-• Book meetings without the back-and-forth
-• Generate proposals in minutes, not hours
-• Monitor competitors and market changes
-• Forecast revenue with AI precision
-
-Are you more focused on inbound or outbound sales?`,
+          response: `Excellent! A sales agent is one of our most popular configurations. Your AI sales team will:\n\n• Find and qualify prospects on autopilot\n• Score leads based on conversion probability\n• Manage your entire pipeline seamlessly\n• Send personalized outreach that actually works\n• Track deal momentum and alert on risks\n• Sync everything with Salesforce or HubSpot\n• Book meetings without the back-and-forth\n• Generate proposals in minutes, not hours\n• Monitor competitors and market changes\n• Forecast revenue with AI precision\n\nAre you more focused on inbound or outbound sales?`,
           recommendations: {
             skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking', 'crm_integration', 'calendar_scheduling', 'proposal_generator', 'competitor_analysis', 'sales_forecasting'],
             integrations: ['salesforce', 'hubspot', 'gmail', 'outlook', 'calendly'],
@@ -140,20 +117,7 @@ Are you more focused on inbound or outbound sales?`,
 
       if (lowerMessage.includes('ecommerce') || lowerMessage.includes('e-commerce') || lowerMessage.includes('shop') || lowerMessage.includes('store')) {
         return NextResponse.json({
-          response: `Great choice! E-commerce is where automation really pays off. Your AI will handle:
-
-• Track inventory and alert on low stock
-• Process orders automatically
-• Handle payment processing securely
-• Update customers on shipping status
-• Send timely order notifications
-• Recommend products to increase cart value
-• Optimize pricing dynamically
-• Collect and manage reviews
-• Recover abandoned carts
-• Detect and prevent fraud
-
-What platform are you using - Shopify, WooCommerce, or something else?`,
+          response: `Great choice! E-commerce is where automation really pays off. Your AI will handle:\n\n• Track inventory and alert on low stock\n• Process orders automatically\n• Handle payment processing securely\n• Update customers on shipping status\n• Send timely order notifications\n• Recommend products to increase cart value\n• Optimize pricing dynamically\n• Collect and manage reviews\n• Recover abandoned carts\n• Detect and prevent fraud\n\nWhat platform are you using - Shopify, WooCommerce, or something else?`,
           recommendations: {
             skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications', 'product_recommendations', 'price_optimizer', 'review_manager', 'abandoned_cart', 'fraud_detection'],
             integrations: ['shopify', 'woocommerce', 'stripe', 'paypal', 'shipstation'],
@@ -165,25 +129,7 @@ What platform are you using - Shopify, WooCommerce, or something else?`,
 
       if (lowerMessage.includes('construction') || lowerMessage.includes('build') || lowerMessage.includes('contractor')) {
         return NextResponse.json({
-          response: `Perfect timing! Construction companies see huge efficiency gains with AI. Here's what your agent will manage:
-
-• Track multiple job sites and timelines
-• Calculate bids and generate proposals instantly
-• Monitor permits and compliance requirements
-• Ensure OSHA safety documentation
-• Manage materials and equipment inventory
-• Find new project opportunities
-• Create professional quotes in minutes
-• Keep clients updated on progress
-• Automate progress billing
-• Collect testimonials and reviews
-• Schedule crews and subcontractors
-• Monitor weather for job sites
-• Organize project photos
-• Manage quality checklists
-• Track warranties and service
-
-Do you primarily work on residential or commercial projects?`,
+          response: `Perfect timing! Construction companies see huge efficiency gains with AI. Here's what your agent will manage:\n\n• Track multiple job sites and timelines\n• Calculate bids and generate proposals instantly\n• Monitor permits and compliance requirements\n• Ensure OSHA safety documentation\n• Manage materials and equipment inventory\n• Find new project opportunities\n• Create professional quotes in minutes\n• Keep clients updated on progress\n• Automate progress billing\n• Collect testimonials and reviews\n• Schedule crews and subcontractors\n• Monitor weather for job sites\n• Organize project photos\n• Manage quality checklists\n• Track warranties and service\n\nDo you primarily work on residential or commercial projects?`,
           recommendations: {
             skills: ['project_manager', 'bid_calculator', 'permit_tracker', 'safety_compliance', 'lead_generation'],
             pricing: { base: 299, skills: 100, total: 399, discount: '20%' }
@@ -193,20 +139,7 @@ Do you primarily work on residential or commercial projects?`,
 
       if (lowerMessage.includes('support') || lowerMessage.includes('help') || lowerMessage.includes('ticket')) {
         return NextResponse.json({
-          response: `Smart thinking! Support automation dramatically improves customer satisfaction. Your agent will:
-
-• Route and prioritize tickets intelligently
-• Suggest relevant knowledge base articles
-• Provide 24/7 instant responses
-• Handle frequently asked questions
-• Escalate complex issues appropriately
-• Analyze customer sentiment in real-time
-• Support multiple languages
-• Capture screen recordings for bugs
-• Track SLA compliance
-• Automate satisfaction surveys
-
-What's your average daily ticket volume?`,
+          response: `Smart thinking! Support automation dramatically improves customer satisfaction. Your agent will:\n\n• Route and prioritize tickets intelligently\n• Suggest relevant knowledge base articles\n• Provide 24/7 instant responses\n• Handle frequently asked questions\n• Escalate complex issues appropriately\n• Analyze customer sentiment in real-time\n• Support multiple languages\n• Capture screen recordings for bugs\n• Track SLA compliance\n• Automate satisfaction surveys\n\nWhat's your average daily ticket volume?`,
           recommendations: {
             skills: ['ticket_management', 'knowledge_base', 'chat_support', 'faq_automation', 'escalation_manager'],
             pricing: { base: 299, skills: 54, total: 353, discount: '10%' }
@@ -216,20 +149,27 @@ What's your average daily ticket volume?`,
 
       // Default response for general queries
       return NextResponse.json({
-        response: `Hello! I'm your AI Configuration Expert. I have access to our complete library of 539+ skills across all categories.
-
-Tell me about your business needs, and I'll help you build the perfect AI agent configuration with:
-• Optimal skill selection from our catalog
-• Smart integrations recommendations
-• Volume discount optimization
-• Feature suggestions based on your industry
-
-What kind of AI agent would you like to build today?`,
+        response: `Hello! I'm your AI Configuration Expert. I have access to our complete library of 539+ skills across all categories.\n\nTell me about your business needs, and I'll help you build the perfect AI agent configuration with:\n• Optimal skill selection from our catalog\n• Smart integrations recommendations\n• Volume discount optimization\n• Feature suggestions based on your industry\n\nWhat kind of AI agent would you like to build today?`,
         recommendations: {}
       });
     }
 
     const systemPrompt = `You are the Intelagent AI Configuration Expert - conversational, helpful, and knowledgeable about building custom AI agents from a catalog of 539+ skills.
+
+HOW THE AGENT BUILDER WORKS:
+1. Users chat with you to configure their AI agent
+2. You help them select skills, integrations, and features
+3. As they chat, the configuration updates in real-time on the right side
+4. They can preview how their agent's dashboard will look
+5. The preview shows the actual UI their agent will have
+6. Once configured, they can purchase and deploy their agent
+
+YOUR ROLE:
+- Guide users through skill selection based on their needs
+- Recommend relevant integrations (Salesforce, HubSpot, etc.)
+- Suggest features (API access, white label, etc.)
+- Build configurations that solve real business problems
+- Each message updates their live configuration
 
 PRICING REFERENCE (for your knowledge, don't mention unless asked):
 - Base: £299/month
@@ -254,6 +194,7 @@ CONVERSATIONAL GUIDELINES:
 3. RESPONSE STRUCTURE:
    - Start with enthusiasm/acknowledgment (1 sentence)
    - Present recommendations with bullet points
+   - IMPORTANT: Format bullets as:\n\n• First point\n• Second point\n• Third point\n\n(Double line breaks before first bullet, single between bullets, double after last)
    - End with a specific, relevant question
    - NO PRICE IN RESPONSE (it's shown separately)
    - Keep it 3-5 sentences plus bullets
@@ -302,51 +243,28 @@ INTEGRATION & FEATURE RECOMMENDATIONS:
 EXAMPLE RESPONSES:
 
 For "I want the ultimate sales agent":
-"Absolutely! Let's build a sales powerhouse that works 24/7. Your agent will:
-
-• Identify and qualify high-value prospects automatically
-• Score leads based on buying signals and engagement
-• Run personalized email sequences that actually convert
-• Track every deal through your pipeline stages
-• Sync seamlessly with your CRM (Salesforce, HubSpot, etc)
-
-What size deals do you typically close?"
+"Absolutely! Let's build a sales powerhouse that works 24/7. Your agent will:\n\n• Identify and qualify high-value prospects automatically\n• Score leads based on buying signals and engagement\n• Run personalized email sequences that actually convert\n• Track every deal through your pipeline stages\n• Sync seamlessly with your CRM (Salesforce, HubSpot, etc)\n\nWhat size deals do you typically close?"
 SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management]
 INTEGRATIONS:[salesforce,hubspot,gmail]
 FEATURES:[ai_chatbot,api_access]
 ACTION:REPLACE
 
 For "Will it work with Salesforce?":
-"Yes! The agent integrates directly with Salesforce - it'll sync contacts, deals, and activities in real-time. You can even trigger automations based on Salesforce events. Are you using Sales Cloud or Service Cloud?"
+"Yes! The agent integrates directly with Salesforce - it'll sync contacts, deals, and activities in real-time. You can even trigger automations based on Salesforce events.\n\nAre you using Sales Cloud or Service Cloud?"
 SKILLS:[]
 INTEGRATIONS:[]
 FEATURES:[]
 ACTION:NONE
 
 For "I want to spend a bit more":
-"Smart move! Let me add some game-changers to really accelerate your results:
-
-• AI-powered sales forecasting for accurate projections
-• Opportunity scoring to focus on winnable deals
-• Automated quote and proposal generation
-• Contract lifecycle management
-• Deep analytics on team performance
-
-How many sales reps are on your team?"
+"Smart move! Let me add some game-changers to really accelerate your results:\n\n• AI-powered sales forecasting for accurate projections\n• Opportunity scoring to focus on winnable deals\n• Automated quote and proposal generation\n• Contract lifecycle management\n• Deep analytics on team performance\n\nHow many sales reps are on your team?"
 SKILLS:[sales_forecasting,opportunity_tracking,quote_generation,contract_management,sales_analytics]
 INTEGRATIONS:[zapier,slack]
 FEATURES:[custom_workflows,multi_language]
 ACTION:ADD
 
 For "I need data analytics":
-"Perfect! A data analytics agent will transform your raw data into actionable insights:
-
-• Collect and centralize data from multiple sources
-• Clean and prepare data automatically
-• Visualize trends with interactive dashboards
-• Generate predictive models and forecasts
-
-What's your primary data source - databases, APIs, or spreadsheets?"
+"Perfect! A data analytics agent will transform your raw data into actionable insights:\n\n• Collect and centralize data from multiple sources\n• Clean and prepare data automatically\n• Visualize trends with interactive dashboards\n• Generate predictive models and forecasts\n\nWhat's your primary data source - databases, APIs, or spreadsheets?"
 SKILLS:[data_collection,data_cleaning,data_visualization,predictive_analytics]
 INTEGRATIONS:[google_analytics,mixpanel,postgresql]
 FEATURES:[api_access,custom_dashboards]
@@ -483,19 +401,7 @@ ACTION:REPLACE`;
     if (error.message?.includes('sales')) {
       // User mentioned sales, provide sales-specific response
       return NextResponse.json({
-        response: `Absolutely! Sales is where AI agents really prove their worth. Your sales machine will:
-
-• Find and qualify prospects automatically
-• Score leads by conversion probability
-• Track deals through your pipeline
-• Run automated outreach campaigns
-• Monitor deal health and momentum
-• Sync with your CRM seamlessly
-• Book meetings without the hassle
-• Generate proposals instantly
-• Track all performance metrics
-
-What's your typical sales cycle length?`,
+        response: `Absolutely! Sales is where AI agents really prove their worth. Your sales machine will:\n\n• Find and qualify prospects automatically\n• Score leads by conversion probability\n• Track deals through your pipeline\n• Run automated outreach campaigns\n• Monitor deal health and momentum\n• Sync with your CRM seamlessly\n• Book meetings without the hassle\n• Generate proposals instantly\n• Track all performance metrics\n\nWhat's your typical sales cycle length?`,
         recommendations: {
           skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking', 'crm_integration', 'calendar_scheduling', 'proposal_generator', 'analytics_dashboard'],
           integrations: ['salesforce', 'hubspot', 'gmail'],
@@ -507,14 +413,7 @@ What's your typical sales cycle length?`,
 
     // Generic fallback
     return NextResponse.json({
-      response: `Let's build something amazing together! I have 539+ skills to work with.
-
-Tell me:
-• What industry are you in?
-• What's your biggest challenge right now?
-• What tasks eat up most of your time?
-
-I'll create the perfect AI agent configuration for your specific needs.`,
+      response: `Let's build something amazing together! I have 539+ skills to work with.\n\nTell me:\n• What industry are you in?\n• What's your biggest challenge right now?\n• What tasks eat up most of your time?\n\nI'll create the perfect AI agent configuration for your specific needs.`,
       recommendations: {}
     });
   }
