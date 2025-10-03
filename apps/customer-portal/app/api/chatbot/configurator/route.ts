@@ -293,7 +293,6 @@ For "I want to spend a bit more":
 How many sales reps are on your team?"
 SKILLS:[sales_forecasting,opportunity_tracking,quote_generation,contract_management,sales_analytics]
 ACTION:ADD`;
-    }
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
