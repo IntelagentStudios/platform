@@ -26,6 +26,7 @@ export default function AgentBuilderAI({
   availableFeatures,
   availableIntegrations,
   pricingInfo,
+  versionInfo,
   height = '400px'
 }: AgentBuilderAIProps) {
   const containerRef = useRef<HTMLDivElement>(null);

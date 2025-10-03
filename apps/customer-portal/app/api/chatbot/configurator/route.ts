@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Extract context from message
     let userMessage = body.message || '';
-    let context = {};
+    let context: any = {};
 
     const contextMatch = userMessage.match(/\[CONTEXT: Agent Builder - ([\s\S]*)\]$/);
     if (contextMatch) {

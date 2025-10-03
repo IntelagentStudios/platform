@@ -25,7 +25,8 @@
       "Bash(timeout 30 npm run build)",
       "Bash(ren:*)",
       "Bash(git checkout:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []
