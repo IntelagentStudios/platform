@@ -273,6 +273,24 @@ PRICING: Base £299/month + skills (£5 each, discounts: 10+ skills 10% off, 20+
 
 Current context: ${JSON.stringify(context, null, 2)}
 
+IMPORTANT BEHAVIORAL RULES:
+1. UNDERSTAND USER INTENT:
+   - If user asks "what", "how", "why", "can you explain" = QUESTION (don't change config)
+   - If user says "add", "remove", "change", "upgrade", "I want" = MODIFICATION (update config)
+   - If user says "more", "upgrade", "enhance" = ADD to existing config
+   - If user says "instead", "replace", "start over" = REPLACE config
+
+2. CURRENT CONFIGURATION:
+   ${context.skills && context.skills.length > 0 ? `User currently has ${context.skills.length} skills selected` : 'No skills selected yet'}
+   ${context.versionInfo ? `Version: ${context.versionInfo.current} of ${context.versionInfo.total} (${context.versionInfo.canUndo ? 'can undo' : 'first version'})` : ''}
+
+3. RESPONSE TYPES:
+   - For QUESTIONS: Answer without changing config, end with "Your current config remains at £X/month"
+   - For ADDITIONS: Keep existing skills, add new ones
+   - For REPLACEMENTS: Start fresh with new skills
+   - Default to CUMULATIVE (keep existing + add new)
+   ${context.versionInfo && context.versionInfo.canUndo ? '- Mention version control if relevant: "You can undo to previous version if needed"' : ''}
+
 CRITICAL FORMATTING RULES:
 1. Be VERY concise - 3-5 sentences max
 2. Match bullet points to price:
@@ -289,6 +307,15 @@ CRITICAL FORMATTING RULES:
 6. AVOID voice features except for support
 7. SKILLS block MUST have same count as bullets and price:
    SKILLS:[skill1,skill2,skill3...] (exact count matching price)
+8. Add ACTION type:
+   ACTION:ADD (adding to existing)
+   ACTION:REPLACE (replacing all)
+   ACTION:NONE (just answering question)
+9. VERSION AWARENESS:
+   ${context.versionInfo ? `- You're on version ${context.versionInfo.current} of ${context.versionInfo.total}
+   - User can go back ${context.versionInfo.canUndo ? '(previous versions available)' : '(no previous versions)'}
+   - User can go forward ${context.versionInfo.canRedo ? '(later versions available)' : '(no later versions)'}
+   - Mention version navigation when relevant (e.g., "You can go back to version X if you prefer")` : '- No version history yet'}
 
 Example response for 5 skills (£324):
 "For sales automation, I recommend these capabilities:
@@ -322,8 +349,15 @@ IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
 
     const aiResponse = completion.choices[0]?.message?.content || 'I can help you build the perfect AI agent. What specific business needs do you have?';
 
-    // Parse AI response for skill recommendations
+    // Parse AI response for skill recommendations and action type
     const skillMatches: string[] = [];
+    let actionType = 'REPLACE'; // default
+
+    // Look for ACTION type
+    const actionMatch = aiResponse.match(/ACTION:(\w+)/);
+    if (actionMatch) {
+      actionType = actionMatch[1];
+    }
 
     // Look for the SKILLS: block that contains the actual skill IDs
     const skillsBlockMatch = aiResponse.match(/SKILLS:\[([^\]]+)\]/);
@@ -340,8 +374,9 @@ IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
       }
     }
 
-    // Clean the response to remove the SKILLS: block before sending to user
-    const cleanResponse = aiResponse.replace(/\nSKILLS:\[[^\]]+\]/, '').trim();
+    // Clean the response to remove the SKILLS: and ACTION: blocks before sending to user
+    let cleanResponse = aiResponse.replace(/\nSKILLS:\[[^\]]+\]/, '').trim();
+    cleanResponse = cleanResponse.replace(/\nACTION:\w+/, '').trim();
 
     const recommendedSkills = Array.from(new Set(skillMatches));
 
@@ -384,7 +419,8 @@ IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
       response: cleanResponse,
       recommendations: {
         skills: recommendedSkills,
-        pricing: pricing
+        pricing: pricing,
+        action: actionType
       }
     });
 

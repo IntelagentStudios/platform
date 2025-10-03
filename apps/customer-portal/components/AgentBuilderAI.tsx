@@ -10,6 +10,12 @@ interface AgentBuilderAIProps {
   availableFeatures?: string[];
   availableIntegrations?: string[];
   pricingInfo?: any;
+  versionInfo?: {
+    current: number;
+    total: number;
+    canUndo: boolean;
+    canRedo: boolean;
+  };
   height?: string | 'auto';
 }
 
@@ -81,7 +87,8 @@ export default function AgentBuilderAI({
               availableSkills: availableSkills || [],
               availableFeatures: availableFeatures || [],
               availableIntegrations: availableIntegrations || [],
-              pricing: pricingInfo || {}
+              pricing: pricingInfo || {},
+              versionInfo: versionInfo || null
             }, window.location.origin);
           }
         }, 100);
@@ -128,11 +135,12 @@ export default function AgentBuilderAI({
       if (iframe && iframe.contentWindow) {
         iframe.contentWindow.postMessage({
           type: 'config-update',
-          config: currentConfig
+          config: currentConfig,
+          versionInfo: versionInfo || null
         }, window.location.origin);
       }
     }
-  }, [currentConfig, hasWidget]);
+  }, [currentConfig, hasWidget, versionInfo]);
 
   return (
     <div className="relative w-full" style={{ height, backgroundColor: 'rgba(58, 64, 64, 0.3)', border: '1px solid rgba(169, 189, 203, 0.15)', borderRadius: '12px', overflow: 'hidden' }}>

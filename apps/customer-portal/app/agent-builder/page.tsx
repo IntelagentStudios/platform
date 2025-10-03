@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   SparklesIcon,
@@ -21,6 +21,8 @@ import {
   ChartBarIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   MagnifyingGlassIcon,
   CodeBracketIcon,
   ServerStackIcon,
@@ -523,10 +525,51 @@ export default function AgentBuilderPage() {
   const [expandedSkillCategory, setExpandedSkillCategory] = useState<string | null>(null);
   const [suggestedFeatures, setSuggestedFeatures] = useState<string[]>([]);
 
+  // Version control state
+  const [configHistory, setConfigHistory] = useState<AgentConfig[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isVersionChange, setIsVersionChange] = useState(false);
+
+  // Save configuration to history
+  const saveToHistory = useCallback((config: AgentConfig) => {
+    if (!isVersionChange) {
+      const newHistory = configHistory.slice(0, historyIndex + 1);
+      newHistory.push(config);
+      setConfigHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    }
+  }, [configHistory, historyIndex, isVersionChange]);
+
+  // Navigate history
+  const goBack = useCallback(() => {
+    if (historyIndex > 0) {
+      setIsVersionChange(true);
+      const prevConfig = configHistory[historyIndex - 1];
+      setAgentConfig(prevConfig);
+      setHistoryIndex(historyIndex - 1);
+      setTimeout(() => setIsVersionChange(false), 100);
+    }
+  }, [configHistory, historyIndex]);
+
+  const goForward = useCallback(() => {
+    if (historyIndex < configHistory.length - 1) {
+      setIsVersionChange(true);
+      const nextConfig = configHistory[historyIndex + 1];
+      setAgentConfig(nextConfig);
+      setHistoryIndex(historyIndex + 1);
+      setTimeout(() => setIsVersionChange(false), 100);
+    }
+  }, [configHistory, historyIndex]);
+
   // Monitor skills changes
   useEffect(() => {
     console.log('AgentConfig skills updated:', agentConfig.skills);
     console.log('Number of skills selected:', agentConfig.skills.length);
+
+    // Save to history when config changes (but not during version navigation)
+    if (!isVersionChange && agentConfig.skills.length > 0) {
+      saveToHistory(agentConfig);
+    }
   }, [agentConfig.skills]);
 
   // Check authentication
@@ -862,9 +905,43 @@ export default function AgentBuilderPage() {
                 <div className="bg-gray-800/30 rounded-xl" style={{ border: '1px solid rgba(169, 189, 203, 0.15)', height: '400px', overflow: 'hidden' }}>
                   <div className="p-6 h-full flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
-                        {agentConfig.name || 'Your AI Agent'}
-                      </h3>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-xl font-semibold" style={{ color: 'rgb(229, 227, 220)' }}>
+                          {agentConfig.name || 'Your AI Agent'}
+                        </h3>
+                        {/* Version control buttons */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={goBack}
+                            disabled={historyIndex <= 0}
+                            className="p-1.5 rounded transition"
+                            style={{
+                              backgroundColor: historyIndex > 0 ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
+                              opacity: historyIndex > 0 ? 1 : 0.3,
+                              cursor: historyIndex > 0 ? 'pointer' : 'not-allowed'
+                            }}
+                            title="Previous version"
+                          >
+                            <ChevronLeftIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                          </button>
+                          <span className="text-xs px-2" style={{ color: 'rgba(169, 189, 203, 0.6)' }}>
+                            v{historyIndex + 1}/{configHistory.length}
+                          </span>
+                          <button
+                            onClick={goForward}
+                            disabled={historyIndex >= configHistory.length - 1}
+                            className="p-1.5 rounded transition"
+                            style={{
+                              backgroundColor: historyIndex < configHistory.length - 1 ? 'rgba(169, 189, 203, 0.1)' : 'transparent',
+                              opacity: historyIndex < configHistory.length - 1 ? 1 : 0.3,
+                              cursor: historyIndex < configHistory.length - 1 ? 'pointer' : 'not-allowed'
+                            }}
+                            title="Next version"
+                          >
+                            <ChevronRightIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
+                          </button>
+                        </div>
+                      </div>
                       <span className="px-4 py-2 text-lg font-bold rounded-full" style={{
                         backgroundColor: 'rgba(169, 189, 203, 0.2)',
                         color: 'rgb(169, 189, 203)'
@@ -983,11 +1060,17 @@ export default function AgentBuilderPage() {
                     availableFeatures={POPULAR_FEATURES.map(f => f.id)}
                     availableIntegrations={Object.values(INTEGRATIONS).flat().map(i => i.id)}
                     pricingInfo={getPricingBreakdown()}
+                    versionInfo={{
+                      current: historyIndex + 1,
+                      total: configHistory.length,
+                      canUndo: historyIndex > 0,
+                      canRedo: historyIndex < configHistory.length - 1
+                    }}
                     onConfigUpdate={(config) => {
                       console.log('Agent Builder received config update:', config);
                       // Handle different types of updates
                       if (config.action === 'set_skills' && config.skills) {
-                        console.log('Setting skills from AI:', config.skills);
+                        console.log('Setting skills from AI (replace):', config.skills);
                         // Clear existing skills and set new ones from AI
                         setAgentConfig(prev => {
                           const newConfig = {
@@ -998,6 +1081,20 @@ export default function AgentBuilderPage() {
                           return newConfig;
                         });
                         updateSuggestedFeatures(config.skills);
+                        setHasInteracted(true);
+                      } else if (config.action === 'add_skills' && config.skills) {
+                        console.log('Adding skills from AI (cumulative):', config.skills);
+                        // Add to existing skills
+                        setAgentConfig(prev => {
+                          const combinedSkills = [...new Set([...prev.skills, ...config.skills])];
+                          const newConfig = {
+                            ...prev,
+                            skills: combinedSkills
+                          };
+                          console.log('New agent config with added skills:', newConfig);
+                          return newConfig;
+                        });
+                        updateSuggestedFeatures(agentConfig.skills);
                         setHasInteracted(true);
                       } else if (config.action === 'toggle_skill' && config.skillId) {
                         toggleSkill(config.skillId);

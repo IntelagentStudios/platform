@@ -311,6 +311,7 @@ export async function GET(request: NextRequest) {
     // Current configuration from parent
     let currentConfig = {};
     let contextData = {};
+    let versionInfo = null;
 
     // Message handling
     const messagesEl = document.getElementById('messages');
@@ -322,10 +323,12 @@ export async function GET(request: NextRequest) {
       if (event.data.type === 'initial-context') {
         currentConfig = event.data.config || {};
         contextData = event.data;
-        console.log('Received initial context');
+        versionInfo = event.data.versionInfo || null;
+        console.log('Received initial context with version info:', versionInfo);
       } else if (event.data.type === 'config-update') {
         currentConfig = event.data.config;
-        console.log('Received config update:', currentConfig);
+        versionInfo = event.data.versionInfo || null;
+        console.log('Received config update with version info:', versionInfo);
       }
     });
 
@@ -355,7 +358,8 @@ export async function GET(request: NextRequest) {
                      availableSkills: contextData.availableSkills || [],
                      availableFeatures: contextData.availableFeatures || [],
                      availableIntegrations: contextData.availableIntegrations || [],
-                     pricing: contextData.pricing || {}
+                     pricing: contextData.pricing || {},
+                     versionInfo: versionInfo
                    }) + ']'
           })
         });
@@ -392,14 +396,26 @@ export async function GET(request: NextRequest) {
           // Handle structured response from n8n workflow
           if (data.recommendations && data.recommendations.skills && data.recommendations.skills.length > 0) {
             console.log('Sending skills to parent:', data.recommendations.skills);
+            console.log('Action type:', data.recommendations.action);
+
+            // Determine the action based on AI recommendation
+            let action = 'set_skills'; // default to replace
+            if (data.recommendations.action === 'ADD') {
+              action = 'add_skills';
+            } else if (data.recommendations.action === 'NONE') {
+              action = 'no_change';
+            }
+
             // Send all skill updates to parent at once
-            window.parent.postMessage({
-              type: 'agent-config-update',
-              config: {
-                action: 'set_skills',
-                skills: data.recommendations.skills
-              }
-            }, '*');
+            if (action !== 'no_change') {
+              window.parent.postMessage({
+                type: 'agent-config-update',
+                config: {
+                  action: action,
+                  skills: data.recommendations.skills
+                }
+              }, '*');
+            }
 
             // Show visual feedback with pricing info
             if (data.recommendations.pricing) {
