@@ -23,6 +23,7 @@ import {
   ChevronUpIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  BookmarkIcon,
   MagnifyingGlassIcon,
   CodeBracketIcon,
   ServerStackIcon,
@@ -531,12 +532,23 @@ export default function AgentBuilderPage() {
   const [isVersionChange, setIsVersionChange] = useState(false);
 
   // Save configuration to history
-  const saveToHistory = useCallback((config: AgentConfig) => {
-    if (!isVersionChange) {
-      const newHistory = configHistory.slice(0, historyIndex + 1);
-      newHistory.push(config);
-      setConfigHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
+  const saveToHistory = useCallback((config: AgentConfig, force: boolean = false) => {
+    if (!isVersionChange || force) {
+      // Check if config has actually changed (deep comparison)
+      const lastConfig = configHistory[historyIndex];
+      const hasChanged = !lastConfig ||
+        JSON.stringify(config.skills) !== JSON.stringify(lastConfig.skills) ||
+        JSON.stringify(config.features) !== JSON.stringify(lastConfig.features) ||
+        JSON.stringify(config.integrations) !== JSON.stringify(lastConfig.integrations) ||
+        config.name !== lastConfig.name ||
+        config.description !== lastConfig.description;
+
+      if (hasChanged || force) {
+        const newHistory = configHistory.slice(0, historyIndex + 1);
+        newHistory.push(JSON.parse(JSON.stringify(config))); // Deep clone
+        setConfigHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+      }
     }
   }, [configHistory, historyIndex, isVersionChange]);
 
@@ -561,16 +573,23 @@ export default function AgentBuilderPage() {
     }
   }, [configHistory, historyIndex]);
 
-  // Monitor skills changes
+  // Monitor all config changes (skills, features, integrations)
   useEffect(() => {
-    console.log('AgentConfig skills updated:', agentConfig.skills);
-    console.log('Number of skills selected:', agentConfig.skills.length);
+    console.log('AgentConfig updated:', {
+      skills: agentConfig.skills.length,
+      features: agentConfig.features.length,
+      integrations: agentConfig.integrations.length
+    });
 
-    // Save to history when config changes (but not during version navigation)
-    if (!isVersionChange && agentConfig.skills.length > 0) {
+    // Save to history when any config changes (but not during version navigation)
+    if (!isVersionChange && (
+      agentConfig.skills.length > 0 ||
+      agentConfig.features.length > 0 ||
+      agentConfig.integrations.length > 0
+    )) {
       saveToHistory(agentConfig);
     }
-  }, [agentConfig.skills]);
+  }, [agentConfig.skills, agentConfig.features, agentConfig.integrations, agentConfig.name, agentConfig.description]);
 
   // Check authentication
   useEffect(() => {
@@ -635,7 +654,14 @@ export default function AgentBuilderPage() {
 
   // Handle continue to preview
   const handleContinue = () => {
+    // Save a version checkpoint when entering preview
+    saveToHistory(agentConfig, true);
     setPreviewMode(true);
+  };
+
+  // Manually save current configuration as a version
+  const saveVersion = () => {
+    saveToHistory(agentConfig, true);
   };
 
   // Toggle integration selection
@@ -940,6 +966,21 @@ export default function AgentBuilderPage() {
                           >
                             <ChevronRightIcon className="h-4 w-4" style={{ color: 'rgb(169, 189, 203)' }} />
                           </button>
+                          {/* Save Version Button */}
+                          <div className="ml-2 pl-2" style={{ borderLeft: '1px solid rgba(169, 189, 203, 0.2)' }}>
+                            <button
+                              onClick={saveVersion}
+                              className="px-3 py-1 rounded text-xs transition hover:opacity-80 flex items-center gap-1"
+                              style={{
+                                backgroundColor: 'rgba(169, 189, 203, 0.15)',
+                                color: 'rgb(169, 189, 203)'
+                              }}
+                              title="Save current configuration as a version"
+                            >
+                              <BookmarkIcon className="h-3 w-3" />
+                              Save Version
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <span className="px-4 py-2 text-lg font-bold rounded-full" style={{
@@ -1037,7 +1078,10 @@ export default function AgentBuilderPage() {
 
                     {/* Preview Dashboard Button */}
                     <button
-                      onClick={() => setPreviewMode(true)}
+                      onClick={() => {
+                        saveToHistory(agentConfig, true);
+                        setPreviewMode(true);
+                      }}
                       className="w-full mt-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                       style={{
                         backgroundColor: 'rgb(169, 189, 203)'
