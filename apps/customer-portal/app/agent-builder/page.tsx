@@ -573,23 +573,18 @@ export default function AgentBuilderPage() {
     }
   }, [configHistory, historyIndex]);
 
-  // Monitor all config changes (skills, features, integrations)
+  // Only log config changes for debugging (no automatic version saves)
   useEffect(() => {
     console.log('AgentConfig updated:', {
       skills: agentConfig.skills.length,
       features: agentConfig.features.length,
       integrations: agentConfig.integrations.length
     });
-
-    // Save to history when any config changes (but not during version navigation)
-    if (!isVersionChange && (
-      agentConfig.skills.length > 0 ||
-      agentConfig.features.length > 0 ||
-      agentConfig.integrations.length > 0
-    )) {
-      saveToHistory(agentConfig);
-    }
-  }, [agentConfig.skills, agentConfig.features, agentConfig.integrations, agentConfig.name, agentConfig.description]);
+    // Note: Version saves only happen on:
+    // 1. AI agent updates (in onConfigUpdate)
+    // 2. Manual save button click (saveVersion)
+    // 3. Entering preview mode (handleContinue)
+  }, [agentConfig.skills, agentConfig.features, agentConfig.integrations]);
 
   // Check authentication
   useEffect(() => {
@@ -1122,6 +1117,8 @@ export default function AgentBuilderPage() {
                             skills: [...config.skills] // Create new array to force re-render
                           };
                           console.log('New agent config with skills:', newConfig);
+                          // Save version for AI changes
+                          setTimeout(() => saveToHistory(newConfig, true), 100);
                           return newConfig;
                         });
                         updateSuggestedFeatures(config.skills);
@@ -1136,6 +1133,8 @@ export default function AgentBuilderPage() {
                             skills: combinedSkills
                           };
                           console.log('New agent config with added skills:', newConfig);
+                          // Save version for AI changes
+                          setTimeout(() => saveToHistory(newConfig, true), 100);
                           return newConfig;
                         });
                         updateSuggestedFeatures(agentConfig.skills);
@@ -1149,15 +1148,22 @@ export default function AgentBuilderPage() {
                       } else if (config.action === 'select_all_category' && config.category) {
                         toggleAllSkillsInCategory(config.category);
                       } else {
-                        // Full config replacement
-                        setAgentConfig(prev => ({
-                          ...prev,
-                          name: config.name || prev.name,
-                          description: config.description || prev.description,
-                          skills: config.skills || prev.skills,
-                          features: config.features || prev.features,
-                          integrations: config.integrations || prev.integrations
-                        }));
+                        // Full config replacement (from AI)
+                        setAgentConfig(prev => {
+                          const newConfig = {
+                            ...prev,
+                            name: config.name || prev.name,
+                            description: config.description || prev.description,
+                            skills: config.skills || prev.skills,
+                            features: config.features || prev.features,
+                            integrations: config.integrations || prev.integrations
+                          };
+                          // Save version for AI-driven full config changes
+                          if (config.skills || config.features || config.integrations) {
+                            setTimeout(() => saveToHistory(newConfig, true), 100);
+                          }
+                          return newConfig;
+                        });
                       }
 
                       // Update suggested features based on selected skills
