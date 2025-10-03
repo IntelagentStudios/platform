@@ -1102,13 +1102,17 @@ export default function AgentBuilderPage() {
                       // Handle different types of updates
                       if (config.action === 'set_skills' && config.skills) {
                         console.log('Setting skills from AI (replace):', config.skills);
-                        // Clear existing skills and set new ones from AI
+                        console.log('Setting integrations from AI:', config.integrations);
+                        console.log('Setting features from AI:', config.features);
+                        // Clear existing and set new ones from AI
                         setAgentConfig(prev => {
                           const newConfig = {
                             ...prev,
-                            skills: [...config.skills] // Create new array to force re-render
+                            skills: [...config.skills], // Create new array to force re-render
+                            integrations: config.integrations ? [...config.integrations] : prev.integrations,
+                            features: config.features ? [...config.features] : prev.features
                           };
-                          console.log('New agent config with skills:', newConfig);
+                          console.log('New agent config:', newConfig);
                           // Save version for AI changes
                           setTimeout(() => saveToHistory(newConfig, true), 100);
                           return newConfig;
@@ -1117,14 +1121,24 @@ export default function AgentBuilderPage() {
                         setHasInteracted(true);
                       } else if (config.action === 'add_skills' && config.skills) {
                         console.log('Adding skills from AI (cumulative):', config.skills);
-                        // Add to existing skills
+                        console.log('Adding integrations from AI:', config.integrations);
+                        console.log('Adding features from AI:', config.features);
+                        // Add to existing configuration
                         setAgentConfig(prev => {
                           const combinedSkills = [...new Set([...prev.skills, ...config.skills])];
+                          const combinedIntegrations = config.integrations ?
+                            [...new Set([...prev.integrations, ...config.integrations])] :
+                            prev.integrations;
+                          const combinedFeatures = config.features ?
+                            [...new Set([...prev.features, ...config.features])] :
+                            prev.features;
                           const newConfig = {
                             ...prev,
-                            skills: combinedSkills
+                            skills: combinedSkills,
+                            integrations: combinedIntegrations,
+                            features: combinedFeatures
                           };
-                          console.log('New agent config with added skills:', newConfig);
+                          console.log('New agent config with additions:', newConfig);
                           // Save version for AI changes
                           setTimeout(() => saveToHistory(newConfig, true), 100);
                           return newConfig;

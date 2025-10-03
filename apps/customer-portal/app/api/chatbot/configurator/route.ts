@@ -86,8 +86,10 @@ For construction specifically, I'd add portfolio showcases and local SEO dominan
 
 What's your current marketing team size?`,
           recommendations: {
-            skills: ['content_generator', 'social_scheduler', 'email_campaigns', 'seo_optimizer', 'analytics_dashboard'],
-            pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
+            skills: ['content_generator', 'social_scheduler', 'email_campaigns', 'seo_optimizer', 'analytics_dashboard', 'competitor_analysis', 'influencer_finder', 'ad_optimizer', 'brand_monitoring', 'video_generator'],
+            integrations: ['mailchimp', 'hootsuite', 'buffer', 'google_analytics', 'facebook'],
+            features: ['ai_chatbot', 'multi_language', 'api_access'],
+            pricing: { base: 299, skills: 50, total: 349, discount: '10%' }
           }
         });
       }
@@ -109,8 +111,10 @@ What's your current marketing team size?`,
 
 Are you more focused on inbound or outbound sales?`,
           recommendations: {
-            skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
-            pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
+            skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking', 'crm_integration', 'calendar_scheduling', 'proposal_generator', 'competitor_analysis', 'sales_forecasting'],
+            integrations: ['salesforce', 'hubspot', 'gmail', 'outlook', 'calendly'],
+            features: ['api_access', 'custom_workflows', 'ai_chatbot'],
+            pricing: { base: 299, skills: 45, total: 344, discount: '10%' }
           }
         });
       }
@@ -132,8 +136,10 @@ Are you more focused on inbound or outbound sales?`,
 
 What platform are you using - Shopify, WooCommerce, or something else?`,
           recommendations: {
-            skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications'],
-            pricing: { base: 299, skills: 80, total: 379, discount: '20%' }
+            skills: ['inventory_manager', 'order_processor', 'payment_processing', 'shipping_tracker', 'customer_notifications', 'product_recommendations', 'price_optimizer', 'review_manager', 'abandoned_cart', 'fraud_detection'],
+            integrations: ['shopify', 'woocommerce', 'stripe', 'paypal', 'shipstation'],
+            features: ['api_access', 'webhook_support', 'multi_language'],
+            pricing: { base: 299, skills: 45, total: 344, discount: '10%' }
           }
         });
       }
@@ -258,15 +264,25 @@ CONVERSATIONAL GUIDELINES:
    - Support: "response times", "satisfaction scores", "ticket resolution"
    - E-commerce: "cart value", "conversion", "fulfillment"
 
+INTEGRATION & FEATURE RECOMMENDATIONS:
+   - CRM users: salesforce, hubspot, pipedrive integrations
+   - Marketing focus: mailchimp, hootsuite, buffer integrations
+   - Tech-savvy: api_access, custom_workflows, webhook features
+   - Enterprise: white_label, multi_language, advanced_security features
+   - Support teams: zendesk, intercom integrations + ai_chatbot feature
+
 7. TECHNICAL OUTPUT (hidden from user):
    End response with:
    SKILLS:[skill1,skill2,...] (actual skill IDs)
+   INTEGRATIONS:[integration1,integration2,...] (integration IDs)
+   FEATURES:[feature1,feature2,...] (feature IDs)
    ACTION:ADD/REPLACE/NONE
 
 EXAMPLE RESPONSES:
 
 For "I want the ultimate sales agent":
 "Absolutely! Let's build a sales powerhouse that works 24/7. Your agent will:
+
 • Identify and qualify high-value prospects automatically
 • Score leads based on buying signals and engagement
 • Run personalized email sequences that actually convert
@@ -274,24 +290,33 @@ For "I want the ultimate sales agent":
 • Sync seamlessly with your CRM (Salesforce, HubSpot, etc)
 
 What size deals do you typically close?"
-SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_integration]
+SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management]
+INTEGRATIONS:[salesforce,hubspot,gmail]
+FEATURES:[ai_chatbot,api_access]
 ACTION:REPLACE
 
 For "Will it work with Salesforce?":
 "Yes! The agent integrates directly with Salesforce - it'll sync contacts, deals, and activities in real-time. You can even trigger automations based on Salesforce events. Are you using Sales Cloud or Service Cloud?"
 SKILLS:[]
+INTEGRATIONS:[]
+FEATURES:[]
 ACTION:NONE
 
 For "I want to spend a bit more":
 "Smart move! Let me add some game-changers to really accelerate your results:
+
 • AI-powered sales forecasting for accurate projections
 • Opportunity scoring to focus on winnable deals
 • Automated quote and proposal generation
 • Contract lifecycle management
 • Deep analytics on team performance
+• Advanced workflow automation
+• Multi-language support
 
 How many sales reps are on your team?"
 SKILLS:[sales_forecasting,opportunity_tracking,quote_generation,contract_management,sales_analytics]
+INTEGRATIONS:[zapier,slack]
+FEATURES:[custom_workflows,multi_language]
 ACTION:ADD`;
 
     // Use Groq's Llama model for fast, intelligent responses
@@ -309,8 +334,10 @@ ACTION:ADD`;
 
     const aiResponse = completion.choices[0]?.message?.content || 'I can help you build the perfect AI agent. What specific business needs do you have?';
 
-    // Parse AI response for skill recommendations and action type
+    // Parse AI response for skill recommendations, integrations, features and action type
     const skillMatches: string[] = [];
+    const integrationMatches: string[] = [];
+    const featureMatches: string[] = [];
     let actionType = 'REPLACE'; // default
 
     // Look for ACTION type
@@ -324,7 +351,24 @@ ACTION:ADD`;
     if (skillsBlockMatch) {
       const skillsList = skillsBlockMatch[1].split(',').map(s => s.trim());
       skillMatches.push(...skillsList);
-    } else {
+    }
+
+    // Look for INTEGRATIONS: block
+    const integrationsBlockMatch = aiResponse.match(/INTEGRATIONS:\[([^\]]+)\]/);
+    if (integrationsBlockMatch) {
+      const integrationsList = integrationsBlockMatch[1].split(',').map(s => s.trim());
+      integrationMatches.push(...integrationsList);
+    }
+
+    // Look for FEATURES: block
+    const featuresBlockMatch = aiResponse.match(/FEATURES:\[([^\]]+)\]/);
+    if (featuresBlockMatch) {
+      const featuresList = featuresBlockMatch[1].split(',').map(s => s.trim());
+      featureMatches.push(...featuresList);
+    }
+
+    // Fallback: try to extract skills from bullet points if AI didn't follow format
+    if (skillMatches.length === 0) {
       // Fallback: try to extract skills from bullet points if AI didn't follow format
       // Look for known skill patterns - expanded list
       const skillPattern = /\b(lead_generation|lead_scoring|pipeline_management|deal_tracking|email_campaigns|inventory_manager|order_processor|payment_processing|ticket_management|knowledge_base|chat_support|email_sender|sms_notifications|content_generator|seo_optimizer|invoice_generator|payment_processor|expense_tracker|bookkeeping|financial_reporting|budget_planning|general_ledger|accounts_receivable|accounts_payable|payroll_processing|tax_preparation|financial_analysis|audit_management|cash_flow_management|crm_integration|calendar_scheduling|proposal_generator|analytics_dashboard|competitor_analysis|sales_forecasting|quote_generation|sales_analytics|data_visualization|report_generator|trend_analysis|predictive_analytics|slack_integration|teams_connector|customer_notifications|shipping_tracker|fraud_detection|review_manager|abandoned_cart|product_recommendations|price_optimizer|workflow_automation|task_automation|process_optimization|revenue_forecasting|financial_planning|operations_management|business_intelligence|performance_tracking|kpi_monitoring|custom_reporting)\b/gi;
@@ -334,8 +378,10 @@ ACTION:ADD`;
       }
     }
 
-    // Clean the response to remove the SKILLS: and ACTION: blocks before sending to user
+    // Clean the response to remove the technical blocks before sending to user
     let cleanResponse = aiResponse.replace(/\nSKILLS:\[[^\]]+\]/, '').trim();
+    cleanResponse = cleanResponse.replace(/\nINTEGRATIONS:\[[^\]]+\]/, '').trim();
+    cleanResponse = cleanResponse.replace(/\nFEATURES:\[[^\]]+\]/, '').trim();
     cleanResponse = cleanResponse.replace(/\nACTION:\w+/, '').trim();
 
     // Also remove any price mentions since it's shown separately
@@ -345,9 +391,13 @@ ACTION:ADD`;
     cleanResponse = cleanResponse.trim();
 
     const recommendedSkills = Array.from(new Set(skillMatches));
+    const recommendedIntegrations = Array.from(new Set(integrationMatches));
+    const recommendedFeatures = Array.from(new Set(featureMatches));
 
     console.log('AI Response:', aiResponse);
     console.log('Extracted skills:', recommendedSkills);
+    console.log('Extracted integrations:', recommendedIntegrations);
+    console.log('Extracted features:', recommendedFeatures);
     console.log('Skills count:', recommendedSkills.length);
 
     // Calculate pricing - must match UI calculation exactly
@@ -385,6 +435,8 @@ ACTION:ADD`;
       response: cleanResponse,
       recommendations: {
         skills: recommendedSkills,
+        integrations: recommendedIntegrations,
+        features: recommendedFeatures,
         pricing: pricing,
         action: actionType
       }
@@ -412,8 +464,10 @@ ACTION:ADD`;
 
 What's your typical sales cycle length?`,
         recommendations: {
-          skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking'],
-          pricing: { base: 299, skills: 67.5, total: 366.5, discount: '10%' }
+          skills: ['lead_generation', 'lead_scoring', 'pipeline_management', 'email_campaigns', 'deal_tracking', 'crm_integration', 'calendar_scheduling', 'proposal_generator', 'analytics_dashboard'],
+          integrations: ['salesforce', 'hubspot', 'gmail'],
+          features: ['api_access', 'custom_workflows'],
+          pricing: { base: 299, skills: 40.5, total: 339.5, discount: '10%' }
         }
       });
     }
