@@ -177,6 +177,27 @@ export async function GET(request: NextRequest) {
       border-radius: 3px;
     }
 
+    .file-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: transparent;
+      color: rgba(169, 189, 203, 0.6);
+      border: 1px solid rgba(169, 189, 203, 0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-right: 8px;
+    }
+
+    .file-button:hover {
+      background: rgba(169, 189, 203, 0.1);
+      color: rgba(169, 189, 203, 0.8);
+      border-color: rgba(169, 189, 203, 0.5);
+    }
+
     .send-button {
       width: 48px;
       height: 48px;
@@ -260,6 +281,15 @@ export async function GET(request: NextRequest) {
 
     <div class="input-area">
       <form class="input-form" id="chatForm">
+        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.doc,.docx,.txt,.csv" />
+        <button type="button" class="file-button" onclick="document.getElementById('fileInput').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+        </button>
         <textarea
           class="input-field"
           id="userInput"
@@ -269,8 +299,8 @@ export async function GET(request: NextRequest) {
         ></textarea>
         <button type="submit" class="send-button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            <path d="M5 12h14"></path>
+            <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
         </button>
       </form>
@@ -544,6 +574,20 @@ export async function GET(request: NextRequest) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         formEl.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Handle file upload
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Show file name in chat
+        addMessage('📎 Attached: ' + file.name, 'user');
+        // You can process the file here if needed
+        console.log('File attached:', file.name, file.type, file.size);
+        // Reset file input
+        e.target.value = '';
       }
     });
 

@@ -932,12 +932,12 @@ export default function AgentBuilderPage() {
                     </div>
 
                     {/* Selected Items Preview */}
-                    <div className="flex-1 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent" style={{ maxHeight: '80px' }}>
+                    <div className="flex-1 space-y-2 overflow-y-auto" style={{ minHeight: '100px' }}>
                       {agentConfig.skills.length > 0 && (
                         <div>
                           <div className="text-xs font-medium mb-1" style={{ color: 'rgba(169, 189, 203, 0.8)' }}>Selected Skills</div>
                           <div className="flex flex-wrap gap-1">
-                            {agentConfig.skills.slice(0, 5).map(skill => (
+                            {agentConfig.skills.slice(0, 8).map(skill => (
                               <span key={skill} className="px-2 py-1 text-xs rounded" style={{
                                 backgroundColor: 'rgba(169, 189, 203, 0.15)',
                                 color: 'rgb(229, 227, 220)'
@@ -945,12 +945,12 @@ export default function AgentBuilderPage() {
                                 {skill.replace(/_/g, ' ')}
                               </span>
                             ))}
-                            {agentConfig.skills.length > 5 && (
+                            {agentConfig.skills.length > 8 && (
                               <span className="px-2 py-1 text-xs rounded" style={{
                                 backgroundColor: 'rgba(169, 189, 203, 0.1)',
                                 color: 'rgba(169, 189, 203, 0.7)'
                               }}>
-                                +{agentConfig.skills.length - 5} more
+                                +{agentConfig.skills.length - 8} more
                               </span>
                             )}
                           </div>

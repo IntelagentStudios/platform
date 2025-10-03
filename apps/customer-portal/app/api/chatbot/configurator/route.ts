@@ -275,20 +275,20 @@ Current context: ${JSON.stringify(context, null, 2)}
 
 CRITICAL FORMATTING RULES:
 1. Be VERY concise - 3-5 sentences max
-2. ALWAYS provide your recommendation in this EXACT format:
-   "For [their need], I recommend these capabilities:
-   • [user-friendly description 1]
-   • [user-friendly description 2]
-   • [user-friendly description 3]
-   • [user-friendly description 4]
-   • [user-friendly description 5]
-   Total: £XXX/month. [Follow-up question]?"
-3. NEVER use technical IDs or underscored names (NO: email_campaigns, lead_generation)
-4. ALWAYS use natural descriptions (YES: "automated email marketing", "find and qualify leads")
-5. AVOID recommending voice features unless specifically for customer support
-6. Calculate EXACT price based on skill count (use pricing examples above)
-7. Return EXACTLY the skill IDs in a separate JSON block like this:
-   SKILLS:[lead_generation,email_campaigns,content_generator,seo_optimizer,analytics_dashboard]
+2. Match bullet points to price:
+   - For £324 (5 skills): Show exactly 5 bullet points
+   - For £344 (10 skills): Show exactly 10 bullet points
+   - For £379 (20 skills): Show exactly 20 bullet points
+   - For £404 (30 skills): Show exactly 30 bullet points
+3. Format: "For [need], I recommend these capabilities:
+   • [user-friendly description]
+   [repeat bullets to match skill count]
+   Total: £XXX/month. [Question]?"
+4. NEVER use technical IDs in text (NO: email_campaigns, lead_generation)
+5. ALWAYS use natural descriptions (YES: "automated email marketing")
+6. AVOID voice features except for support
+7. SKILLS block MUST have same count as bullets and price:
+   SKILLS:[skill1,skill2,skill3...] (exact count matching price)
 
 Example response for 5 skills (£324):
 "For sales automation, I recommend these capabilities:
