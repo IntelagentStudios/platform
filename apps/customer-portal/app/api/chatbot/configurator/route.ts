@@ -47,11 +47,57 @@ export async function POST(request: NextRequest) {
         if (responseText) {
           try {
             const data = JSON.parse(responseText);
-            if (data && data.response) {
-              return NextResponse.json(data);
+            console.log('n8n response received:', {
+              hasResponseHtml: !!data.response_html,
+              hasProposals: !!data.proposals,
+              hasPricing: !!data.pricing,
+              hasActions: !!data.actions
+            });
+
+            // Handle n8n response format
+            if (data && (data.response_html || data.response || data.ui?.bullets_html)) {
+              // Convert HTML bullets to plain text with line breaks
+              let responseText = data.response_html || data.ui?.bullets_html || data.response || '';
+
+              // Convert <li> tags to line breaks for proper display
+              responseText = responseText.replace(/<ul[^>]*>/gi, '');
+              responseText = responseText.replace(/<\/ul>/gi, '\n');
+              responseText = responseText.replace(/<li[^>]*>/gi, '\n• ');
+              responseText = responseText.replace(/<\/li>/gi, '');
+              responseText = responseText.replace(/<[^>]+>/g, ''); // Remove any remaining HTML
+              responseText = responseText.trim();
+
+              // Add summary if present
+              if (data.summary) {
+                responseText = data.summary + '\n' + responseText;
+              }
+
+              // Build recommendations from proposals
+              const recommendations = {
+                skills: data.proposals?.skills || data.ui?.applied_skills || [],
+                integrations: data.proposals?.integrations || [],
+                features: data.proposals?.features || data.ui?.applied_features?.map((f: any) => f.id) || [],
+                pricing: data.pricing || null,
+                action: data.actions?.length > 0 ? 'REPLACE' : 'NONE'
+              };
+
+              console.log('Returning n8n-formatted response:', {
+                responseLength: responseText.length,
+                skillsCount: recommendations.skills.length,
+                integrationsCount: recommendations.integrations.length,
+                featuresCount: recommendations.features.length
+              });
+
+              return NextResponse.json({
+                response: responseText,
+                recommendations: recommendations,
+                source: 'n8n',
+                actions: data.actions || []
+              });
             }
           } catch (e) {
-            console.log('n8n response not JSON:', responseText.substring(0, 100));
+            console.log('n8n response parsing error:', e);
+            console.log('n8n response text:', responseText.substring(0, 200));
           }
         }
       }

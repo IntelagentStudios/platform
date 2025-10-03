@@ -1153,6 +1153,51 @@ export default function AgentBuilderPage() {
                         toggleIntegration(config.integrationId);
                       } else if (config.action === 'select_all_category' && config.category) {
                         toggleAllSkillsInCategory(config.category);
+                      } else if (config.actions && Array.isArray(config.actions)) {
+                        // Process n8n actions array
+                        console.log('Processing n8n actions:', config.actions);
+                        let shouldSaveVersion = false;
+                        let shouldTriggerPreview = false;
+
+                        config.actions.forEach((action: any) => {
+                          if (action.type === 'add_skill' && action.payload?.skills) {
+                            setAgentConfig(prev => ({
+                              ...prev,
+                              skills: [...new Set([...prev.skills, ...action.payload.skills])]
+                            }));
+                            shouldSaveVersion = true;
+                          } else if (action.type === 'set_features' && action.payload?.features) {
+                            setAgentConfig(prev => ({
+                              ...prev,
+                              features: action.payload.features
+                            }));
+                            shouldSaveVersion = true;
+                          } else if (action.type === 'set_integrations' && action.payload?.integrations) {
+                            setAgentConfig(prev => ({
+                              ...prev,
+                              integrations: action.payload.integrations
+                            }));
+                            shouldSaveVersion = true;
+                          } else if (action.type === 'trigger_preview') {
+                            shouldTriggerPreview = true;
+                          } else if (action.type === 'save_version') {
+                            shouldSaveVersion = true;
+                          }
+                        });
+
+                        if (shouldSaveVersion) {
+                          setTimeout(() => {
+                            setAgentConfig(prev => {
+                              saveToHistory(prev, true);
+                              return prev;
+                            });
+                          }, 100);
+                        }
+
+                        if (shouldTriggerPreview) {
+                          // Could trigger preview here if needed
+                          console.log('Preview triggered by n8n action');
+                        }
                       } else {
                         // Full config replacement (from AI)
                         setAgentConfig(prev => {
