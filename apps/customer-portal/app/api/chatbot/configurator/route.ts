@@ -290,7 +290,7 @@ CRITICAL FORMATTING RULES:
 7. Return EXACTLY the skill IDs in a separate JSON block like this:
    SKILLS:[lead_generation,email_campaigns,content_generator,seo_optimizer,analytics_dashboard]
 
-Example response:
+Example response for 5 skills (£324):
 "For sales automation, I recommend these capabilities:
 • Find and qualify new prospects automatically
 • Score and prioritize high-value opportunities
@@ -299,7 +299,13 @@ Example response:
 • Sync with your CRM system
 
 Total: £324/month. What's your average deal size?"
-SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_integration]`;
+SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_integration]
+
+IMPORTANT: The number of skills in SKILLS block MUST match the price you quote!
+- If you say £324, include exactly 5 skills
+- If you say £344, include exactly 10 skills
+- If you say £379, include exactly 20 skills
+- If you say £404, include exactly 30 skills`;
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
@@ -326,8 +332,8 @@ SKILLS:[lead_generation,lead_scoring,email_campaigns,pipeline_management,crm_int
       skillMatches.push(...skillsList);
     } else {
       // Fallback: try to extract skills from bullet points if AI didn't follow format
-      // Look for known skill patterns
-      const skillPattern = /\b(lead_generation|lead_scoring|pipeline_management|deal_tracking|email_campaigns|inventory_manager|order_processor|payment_processing|ticket_management|knowledge_base|chat_support|email_sender|sms_notifications|content_generator|seo_optimizer|invoice_generator|payment_processor|expense_tracker|bookkeeping|financial_reporting|budget_planning|general_ledger|accounts_receivable|accounts_payable|payroll_processing|tax_preparation|financial_analysis|audit_management|cash_flow_management|crm_integration|calendar_scheduling|proposal_generator|analytics_dashboard|competitor_analysis|sales_forecasting|quote_generation|sales_analytics|data_visualization|report_generator|trend_analysis|predictive_analytics|slack_integration|teams_connector|customer_notifications|shipping_tracker|fraud_detection|review_manager|abandoned_cart|product_recommendations|price_optimizer)\b/gi;
+      // Look for known skill patterns - expanded list
+      const skillPattern = /\b(lead_generation|lead_scoring|pipeline_management|deal_tracking|email_campaigns|inventory_manager|order_processor|payment_processing|ticket_management|knowledge_base|chat_support|email_sender|sms_notifications|content_generator|seo_optimizer|invoice_generator|payment_processor|expense_tracker|bookkeeping|financial_reporting|budget_planning|general_ledger|accounts_receivable|accounts_payable|payroll_processing|tax_preparation|financial_analysis|audit_management|cash_flow_management|crm_integration|calendar_scheduling|proposal_generator|analytics_dashboard|competitor_analysis|sales_forecasting|quote_generation|sales_analytics|data_visualization|report_generator|trend_analysis|predictive_analytics|slack_integration|teams_connector|customer_notifications|shipping_tracker|fraud_detection|review_manager|abandoned_cart|product_recommendations|price_optimizer|workflow_automation|task_automation|process_optimization|revenue_forecasting|financial_planning|operations_management|business_intelligence|performance_tracking|kpi_monitoring|custom_reporting)\b/gi;
       const matches = aiResponse.match(skillPattern);
       if (matches) {
         skillMatches.push(...Array.from(new Set(matches.map(s => s.toLowerCase()))));

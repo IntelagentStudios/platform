@@ -147,6 +147,12 @@ export async function GET(request: NextRequest) {
       transition: all 0.3s ease;
       background: rgba(30, 33, 33, 0.5);
       color: rgb(229, 227, 220);
+      resize: none;
+      min-height: 48px;
+      max-height: 120px;
+      overflow-y: auto;
+      font-family: inherit;
+      line-height: 1.5;
     }
 
     .input-field::placeholder {
@@ -156,6 +162,19 @@ export async function GET(request: NextRequest) {
     .input-field:focus {
       border-color: rgba(169, 189, 203, 0.5);
       background: rgba(30, 33, 33, 0.7);
+    }
+
+    .input-field::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .input-field::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .input-field::-webkit-scrollbar-thumb {
+      background: rgba(169, 189, 203, 0.3);
+      border-radius: 3px;
     }
 
     .send-button {
@@ -241,13 +260,13 @@ export async function GET(request: NextRequest) {
 
     <div class="input-area">
       <form class="input-form" id="chatForm">
-        <input
-          type="text"
+        <textarea
           class="input-field"
           id="userInput"
           placeholder="Describe your business needs..."
           autocomplete="off"
-        />
+          rows="1"
+        ></textarea>
         <button type="submit" class="send-button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -501,12 +520,30 @@ export async function GET(request: NextRequest) {
       const message = inputEl.value.trim();
       if (message) {
         inputEl.value = '';
+        adjustTextareaHeight(); // Reset height after sending
         try {
           await sendMessage(message);
         } catch (error) {
           console.error('Error sending message:', error);
           addMessage('Sorry, there was an error sending your message. Please try again.', 'assistant');
         }
+      }
+    });
+
+    // Auto-expand textarea as content grows
+    function adjustTextareaHeight() {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    }
+
+    // Handle textarea expansion on input
+    inputEl.addEventListener('input', adjustTextareaHeight);
+
+    // Handle Enter key for send (Shift+Enter for new line)
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        formEl.dispatchEvent(new Event('submit'));
       }
     });
 
