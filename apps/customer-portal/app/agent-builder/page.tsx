@@ -40,6 +40,7 @@ import {
 import DashboardLayout from '../../components/DashboardLayout';
 import AgentBuilderAI from '../../components/AgentBuilderAI';
 import DashboardPreview from '../../components/DashboardPreview';
+import DashboardPreviewEnhanced from '../../components/DashboardPreviewEnhanced';
 import { SKILLS_CATALOG, getSkillsByAgentType, TOTAL_SKILLS } from '../../utils/skillsCatalog';
 
 // Comprehensive integrations list organized by category (150+ integrations)
@@ -900,21 +901,11 @@ export default function AgentBuilderPage() {
 
         {/* Main Content */}
         {previewMode ? (
-          <DashboardPreview
-            agentName={agentConfig.name}
-            requirements={{
-              goal: agentConfig.description,
-              industry: 'Technology'
-            }}
-            agentConfig={{
-              agentName: agentConfig.name,
-              requirements: {
-                goal: agentConfig.description,
-                tools: agentConfig.features || [],
-                outputs: [`Monthly £${getPricingBreakdown().total} value`],
-                industry: 'Technology'
-              },
-              suggestedSkills: agentConfig.skills || []
+          <DashboardPreviewEnhanced
+            agentConfig={agentConfig}
+            versionInfo={{
+              current: historyIndex + 1,
+              total: configHistory.length
             }}
           />
         ) : (
