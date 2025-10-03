@@ -3,6 +3,25 @@ import { NextRequest, NextResponse } from 'next/server';
 // Handle structured action plans from n8n workflow
 export async function POST(request: NextRequest) {
   try {
+    // Check for API key in header (supports both Bearer token and x-api-key)
+    const authHeader = request.headers.get('authorization');
+    const xApiKey = request.headers.get('x-api-key');
+
+    let apiKey = xApiKey;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      apiKey = authHeader.substring(7);
+    }
+
+    const expectedKey = process.env.N8N_API_KEY || 'intelagent-n8n-2024';
+
+    // Only enforce if N8N_API_KEY is set in environment
+    if (process.env.N8N_API_KEY && apiKey !== expectedKey) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid API key' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     console.log('Action Plan received:', {
@@ -230,7 +249,7 @@ export async function OPTIONS(request: NextRequest) {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, x-api-key, Authorization',
     },
   });
 }
