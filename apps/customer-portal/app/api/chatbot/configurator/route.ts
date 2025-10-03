@@ -67,6 +67,25 @@ export async function POST(request: NextRequest) {
       const lowerMessage = userMessage.toLowerCase();
 
       // Check for specific keywords and provide tailored responses
+      if (lowerMessage.includes('data') && (lowerMessage.includes('analys') || lowerMessage.includes('analyt'))) {
+        return NextResponse.json({
+          response: `Excellent! A data analytics agent will transform your raw data into actionable insights:
+
+• Collect and centralize data from multiple sources
+• Clean and prepare data automatically
+• Visualize trends with interactive dashboards
+• Generate predictive models and forecasts
+
+What's your primary data source - databases, APIs, or spreadsheets?`,
+          recommendations: {
+            skills: ['data_collection', 'data_cleaning', 'data_visualization', 'predictive_analytics'],
+            integrations: ['google_analytics', 'mixpanel', 'postgresql', 'mongodb'],
+            features: ['api_access', 'custom_dashboards', 'real_time_processing'],
+            pricing: { base: 299, skills: 20, total: 319, discount: '0%' }
+          }
+        });
+      }
+
       if (lowerMessage.includes('marketing') || lowerMessage.includes('campaign') || lowerMessage.includes('advertis') || lowerMessage.includes('social')) {
         return NextResponse.json({
           response: `Perfect! Marketing is where AI really shines. Here's what I'd set up for maximum impact:
@@ -239,14 +258,16 @@ CONVERSATIONAL GUIDELINES:
    - NO PRICE IN RESPONSE (it's shown separately)
    - Keep it 3-5 sentences plus bullets
 
-4. BULLET POINT RULES:
-   - Use • for bullets
+4. CRITICAL BULLET POINT RULES:
+   - Use • for bullets with line breaks between each
    - Write in benefit-focused language
    - Be specific but not technical
-   - Match count to skills being recommended:
-     * 5 skills = 5 bullets
-     * 10 skills = 10 bullets (can group related ones)
-     * 20+ skills = Group into categories with sub-bullets
+   - MUST match EXACT count to skills being recommended:
+     * If recommending 4 skills = show EXACTLY 4 bullets
+     * If recommending 5 skills = show EXACTLY 5 bullets
+     * If recommending 10 skills = show EXACTLY 10 bullets
+   - NEVER show more bullets than skills you're selecting
+   - Each bullet should represent one actual skill
 
 5. VARY YOUR LANGUAGE:
    Instead of always "I recommend these capabilities":
@@ -310,14 +331,26 @@ For "I want to spend a bit more":
 • Automated quote and proposal generation
 • Contract lifecycle management
 • Deep analytics on team performance
-• Advanced workflow automation
-• Multi-language support
 
 How many sales reps are on your team?"
 SKILLS:[sales_forecasting,opportunity_tracking,quote_generation,contract_management,sales_analytics]
 INTEGRATIONS:[zapier,slack]
 FEATURES:[custom_workflows,multi_language]
-ACTION:ADD`;
+ACTION:ADD
+
+For "I need data analytics":
+"Perfect! A data analytics agent will transform your raw data into actionable insights:
+
+• Collect and centralize data from multiple sources
+• Clean and prepare data automatically
+• Visualize trends with interactive dashboards
+• Generate predictive models and forecasts
+
+What's your primary data source - databases, APIs, or spreadsheets?"
+SKILLS:[data_collection,data_cleaning,data_visualization,predictive_analytics]
+INTEGRATIONS:[google_analytics,mixpanel,postgresql]
+FEATURES:[api_access,custom_dashboards]
+ACTION:REPLACE`;
 
     // Use Groq's Llama model for fast, intelligent responses
     const completion = await groq.chat.completions.create({
