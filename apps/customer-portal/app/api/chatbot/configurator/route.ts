@@ -51,11 +51,14 @@ export async function POST(request: NextRequest) {
               success: data.success,
               hasConfigUpdate: !!data.configUpdate,
               hasResults: !!data.results,
-              sessionId: data.sessionId
+              sessionId: data.sessionId,
+              rawDataKeys: Object.keys(data),
+              dataStructure: JSON.stringify(data).substring(0, 500)
             });
 
             // Handle new action-plan response format
             if (data && data.success && data.configUpdate) {
+              console.log('Processing action-plan response format');
               const config = data.configUpdate;
 
               // Extract response text from the original LLM output in results
@@ -115,6 +118,72 @@ export async function POST(request: NextRequest) {
                 actions: data.actions || [],
                 hasConfigurationChanges: hasChanges
               });
+            } else {
+              console.log('n8n response does not match action-plan format, trying old format');
+              // Try to process as old format for backward compatibility
+              if (data && (data.response_html || data.response || data.ui?.bullets_html)) {
+                // Convert HTML bullets to plain text with line breaks
+                let responseText = data.response_html || data.ui?.bullets_html || data.response || '';
+
+                // Convert <li> tags to line breaks for proper display
+                responseText = responseText.replace(/<ul[^>]*>/gi, '');
+                responseText = responseText.replace(/<\/ul>/gi, '\n');
+                responseText = responseText.replace(/<li[^>]*>/gi, '\n• ');
+                responseText = responseText.replace(/<\/li>/gi, '');
+                responseText = responseText.replace(/<[^>]+>/g, ''); // Remove any remaining HTML
+                responseText = responseText.trim();
+
+                // Add summary if present
+                if (data.summary) {
+                  responseText = data.summary + '\n' + responseText;
+                }
+
+                // Determine the correct action type based on what's happening
+                const determineActionType = (data: any) => {
+                  if (!data.actions || data.actions.length === 0) return 'NONE';
+
+                  // Check if there's actual configuration changes
+                  const hasAddSkill = data.actions.some((a: any) => a.type === 'add_skill' && a.payload?.skills?.length > 0);
+                  const hasRemoveSkill = data.actions.some((a: any) => a.type === 'remove_skill');
+                  const hasSetFeatures = data.actions.some((a: any) => a.type === 'set_features');
+                  const hasSetIntegrations = data.actions.some((a: any) => a.type === 'set_integrations');
+
+                  if (hasAddSkill || hasSetFeatures || hasSetIntegrations) return 'add_skills';
+                  if (hasRemoveSkill) return 'remove_skill';
+
+                  // If only preview or save_version actions, don't show as config change
+                  return 'NONE';
+                };
+
+                // Build recommendations from proposals
+                const recommendations = {
+                  skills: data.proposals?.skills || data.ui?.applied_skills || [],
+                  integrations: data.proposals?.integrations || [],
+                  features: data.proposals?.features || data.ui?.applied_features?.map((f: any) => f.id) || [],
+                  pricing: data.pricing || null,
+                  action: determineActionType(data)
+                };
+
+                console.log('Returning old format n8n response:', {
+                  responseLength: responseText.length,
+                  skillsCount: recommendations.skills.length,
+                  integrationsCount: recommendations.integrations.length,
+                  featuresCount: recommendations.features.length
+                });
+
+                // Only include configuration data if there are actual changes
+                const hasChanges = recommendations.skills.length > 0 ||
+                                  recommendations.integrations.length > 0 ||
+                                  recommendations.features.length > 0;
+
+                return NextResponse.json({
+                  response: responseText,
+                  recommendations: hasChanges ? recommendations : {},
+                  source: 'n8n-old-format',
+                  actions: data.actions || [],
+                  hasConfigurationChanges: hasChanges
+                });
+              }
             }
           } catch (e) {
             console.log('n8n response parsing error:', e);
