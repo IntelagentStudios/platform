@@ -1099,6 +1099,14 @@ export default function AgentBuilderPage() {
                     }}
                     onConfigUpdate={(config) => {
                       console.log('Agent Builder received config update:', config);
+
+                      // Skip update if no actual changes
+                      if (config.action === 'NONE' ||
+                         (!config.skills?.length && !config.integrations?.length && !config.features?.length && !config.actions?.length)) {
+                        console.log('No configuration changes, skipping update');
+                        return;
+                      }
+
                       // Handle different types of updates
                       if (config.action === 'set_skills' && config.skills) {
                         console.log('Setting skills from AI (replace):', config.skills);
@@ -1158,26 +1166,41 @@ export default function AgentBuilderPage() {
                         console.log('Processing n8n actions:', config.actions);
                         let shouldSaveVersion = false;
                         let shouldTriggerPreview = false;
+                        let hasActualChanges = false;
 
                         config.actions.forEach((action: any) => {
-                          if (action.type === 'add_skill' && action.payload?.skills) {
-                            setAgentConfig(prev => ({
-                              ...prev,
-                              skills: [...new Set([...prev.skills, ...action.payload.skills])]
-                            }));
-                            shouldSaveVersion = true;
+                          if (action.type === 'add_skill' && action.payload?.skills?.length > 0) {
+                            setAgentConfig(prev => {
+                              const newSkills = [...new Set([...prev.skills, ...action.payload.skills])];
+                              // Only update if actually different
+                              if (newSkills.length !== prev.skills.length ||
+                                  !newSkills.every(s => prev.skills.includes(s))) {
+                                hasActualChanges = true;
+                                return { ...prev, skills: newSkills };
+                              }
+                              return prev;
+                            });
+                            shouldSaveVersion = hasActualChanges;
                           } else if (action.type === 'set_features' && action.payload?.features) {
-                            setAgentConfig(prev => ({
-                              ...prev,
-                              features: action.payload.features
-                            }));
-                            shouldSaveVersion = true;
+                            setAgentConfig(prev => {
+                              const newFeatures = action.payload.features;
+                              if (JSON.stringify(newFeatures) !== JSON.stringify(prev.features)) {
+                                hasActualChanges = true;
+                                return { ...prev, features: newFeatures };
+                              }
+                              return prev;
+                            });
+                            shouldSaveVersion = hasActualChanges;
                           } else if (action.type === 'set_integrations' && action.payload?.integrations) {
-                            setAgentConfig(prev => ({
-                              ...prev,
-                              integrations: action.payload.integrations
-                            }));
-                            shouldSaveVersion = true;
+                            setAgentConfig(prev => {
+                              const newIntegrations = action.payload.integrations;
+                              if (JSON.stringify(newIntegrations) !== JSON.stringify(prev.integrations)) {
+                                hasActualChanges = true;
+                                return { ...prev, integrations: newIntegrations };
+                              }
+                              return prev;
+                            });
+                            shouldSaveVersion = hasActualChanges;
                           } else if (action.type === 'trigger_preview') {
                             shouldTriggerPreview = true;
                           } else if (action.type === 'save_version') {
@@ -1185,13 +1208,15 @@ export default function AgentBuilderPage() {
                           }
                         });
 
-                        if (shouldSaveVersion) {
+                        if (shouldSaveVersion && hasActualChanges) {
                           setTimeout(() => {
                             setAgentConfig(prev => {
                               saveToHistory(prev, true);
                               return prev;
                             });
                           }, 100);
+                        } else if (!hasActualChanges) {
+                          console.log('No actual configuration changes detected');
                         }
 
                         if (shouldTriggerPreview) {

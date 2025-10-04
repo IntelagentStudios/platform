@@ -72,13 +72,30 @@ export async function POST(request: NextRequest) {
                 responseText = data.summary + '\n' + responseText;
               }
 
+              // Determine the correct action type based on what's happening
+              const determineActionType = (data: any) => {
+                if (!data.actions || data.actions.length === 0) return 'NONE';
+
+                // Check if there's actual configuration changes
+                const hasAddSkill = data.actions.some((a: any) => a.type === 'add_skill' && a.payload?.skills?.length > 0);
+                const hasRemoveSkill = data.actions.some((a: any) => a.type === 'remove_skill');
+                const hasSetFeatures = data.actions.some((a: any) => a.type === 'set_features');
+                const hasSetIntegrations = data.actions.some((a: any) => a.type === 'set_integrations');
+
+                if (hasAddSkill || hasSetFeatures || hasSetIntegrations) return 'add_skills';
+                if (hasRemoveSkill) return 'remove_skill';
+
+                // If only preview or save_version actions, don't show as config change
+                return 'NONE';
+              };
+
               // Build recommendations from proposals
               const recommendations = {
                 skills: data.proposals?.skills || data.ui?.applied_skills || [],
                 integrations: data.proposals?.integrations || [],
                 features: data.proposals?.features || data.ui?.applied_features?.map((f: any) => f.id) || [],
                 pricing: data.pricing || null,
-                action: data.actions?.length > 0 ? 'REPLACE' : 'NONE'
+                action: determineActionType(data)
               };
 
               console.log('Returning n8n-formatted response:', {
@@ -88,11 +105,17 @@ export async function POST(request: NextRequest) {
                 featuresCount: recommendations.features.length
               });
 
+              // Only include configuration data if there are actual changes
+              const hasChanges = recommendations.skills.length > 0 ||
+                                recommendations.integrations.length > 0 ||
+                                recommendations.features.length > 0;
+
               return NextResponse.json({
                 response: responseText,
-                recommendations: recommendations,
+                recommendations: hasChanges ? recommendations : {},
                 source: 'n8n',
-                actions: data.actions || []
+                actions: data.actions || [],
+                hasConfigurationChanges: hasChanges
               });
             }
           } catch (e) {
