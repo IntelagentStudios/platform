@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // First, try the n8n webhook (which also uses Groq)
+    // First, try the n8n webhook (which uses the new action-plan workflow)
     try {
       const n8nResponse = await fetch('https://1ntelagent.up.railway.app/webhook/configurator', {
         method: 'POST',
@@ -48,54 +48,52 @@ export async function POST(request: NextRequest) {
           try {
             const data = JSON.parse(responseText);
             console.log('n8n response received:', {
-              hasResponseHtml: !!data.response_html,
-              hasProposals: !!data.proposals,
-              hasPricing: !!data.pricing,
-              hasActions: !!data.actions
+              success: data.success,
+              hasConfigUpdate: !!data.configUpdate,
+              hasResults: !!data.results,
+              sessionId: data.sessionId
             });
 
-            // Handle n8n response format
-            if (data && (data.response_html || data.response || data.ui?.bullets_html)) {
-              // Convert HTML bullets to plain text with line breaks
-              let responseText = data.response_html || data.ui?.bullets_html || data.response || '';
+            // Handle new action-plan response format
+            if (data && data.success && data.configUpdate) {
+              const config = data.configUpdate;
 
-              // Convert <li> tags to line breaks for proper display
-              responseText = responseText.replace(/<ul[^>]*>/gi, '');
-              responseText = responseText.replace(/<\/ul>/gi, '\n');
-              responseText = responseText.replace(/<li[^>]*>/gi, '\n• ');
-              responseText = responseText.replace(/<\/li>/gi, '');
-              responseText = responseText.replace(/<[^>]+>/g, ''); // Remove any remaining HTML
-              responseText = responseText.trim();
+              // Extract response text from the original LLM output in results
+              let responseText = '';
+              if (data.results && data.results.processed) {
+                // Build a response based on what was processed
+                const processed = data.results.processed;
+                const skillsAdded = processed.filter((p: any) => p.type === 'add_skill').flatMap((p: any) => p.skills || []);
+                const integrationsSet = processed.filter((p: any) => p.type === 'set_integrations').flatMap((p: any) => p.integrations || []);
+                const featuresSet = processed.filter((p: any) => p.type === 'set_features').flatMap((p: any) => p.features || []);
 
-              // Add summary if present
-              if (data.summary) {
-                responseText = data.summary + '\n' + responseText;
+                const parts = [];
+                if (skillsAdded.length > 0) parts.push(`Added ${skillsAdded.length} skill(s): ${skillsAdded.join(', ')}`);
+                if (integrationsSet.length > 0) parts.push(`Configured integrations: ${integrationsSet.join(', ')}`);
+                if (featuresSet.length > 0) parts.push(`Enabled features: ${featuresSet.join(', ')}`);
+
+                responseText = parts.length > 0 ? parts.join('\n• ') : 'Configuration updated successfully';
+
+                // Add pricing info
+                if (config.pricing) {
+                  responseText += `\n\nTotal: £${config.pricing.total} (${config.pricing.totalSkills} skills)`;
+                }
               }
 
-              // Determine the correct action type based on what's happening
-              const determineActionType = (data: any) => {
-                if (!data.actions || data.actions.length === 0) return 'NONE';
-
-                // Check if there's actual configuration changes
-                const hasAddSkill = data.actions.some((a: any) => a.type === 'add_skill' && a.payload?.skills?.length > 0);
-                const hasRemoveSkill = data.actions.some((a: any) => a.type === 'remove_skill');
-                const hasSetFeatures = data.actions.some((a: any) => a.type === 'set_features');
-                const hasSetIntegrations = data.actions.some((a: any) => a.type === 'set_integrations');
-
-                if (hasAddSkill || hasSetFeatures || hasSetIntegrations) return 'add_skills';
-                if (hasRemoveSkill) return 'remove_skill';
-
-                // If only preview or save_version actions, don't show as config change
+              // Determine action type from configUpdate
+              const determineActionType = (config: any) => {
+                if (config.skills?.length > 0) return 'add_skills';
+                if (config.integrations?.length > 0 || config.features?.length > 0) return 'set_configuration';
                 return 'NONE';
               };
 
-              // Build recommendations from proposals
+              // Build recommendations from configUpdate
               const recommendations = {
-                skills: data.proposals?.skills || data.ui?.applied_skills || [],
-                integrations: data.proposals?.integrations || [],
-                features: data.proposals?.features || data.ui?.applied_features?.map((f: any) => f.id) || [],
-                pricing: data.pricing || null,
-                action: determineActionType(data)
+                skills: config.skills || [],
+                integrations: config.integrations || [],
+                features: config.features || [],
+                pricing: config.pricing || null,
+                action: determineActionType(config)
               };
 
               console.log('Returning n8n-formatted response:', {

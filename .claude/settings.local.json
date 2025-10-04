@@ -26,7 +26,11 @@
       "Bash(ren:*)",
       "Bash(git checkout:*)",
       "Bash(node:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(railway up:*)",
+      "Bash(railway link:*)",
+      "Bash(railway login:*)"
     ],
     "deny": [],
     "ask": []

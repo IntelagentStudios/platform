@@ -1153,6 +1153,23 @@ export default function AgentBuilderPage() {
                         });
                         updateSuggestedFeatures(agentConfig.skills);
                         setHasInteracted(true);
+                      } else if (config.action === 'set_configuration') {
+                        console.log('Setting configuration from action-plan:', config);
+                        // Handle action-plan response format
+                        setAgentConfig(prev => {
+                          const newConfig = {
+                            ...prev,
+                            skills: config.skills ? [...config.skills] : prev.skills,
+                            integrations: config.integrations ? [...config.integrations] : prev.integrations,
+                            features: config.features ? [...config.features] : prev.features
+                          };
+                          console.log('New agent config from action-plan:', newConfig);
+                          // Save version for action-plan changes
+                          setTimeout(() => saveToHistory(newConfig, true), 100);
+                          return newConfig;
+                        });
+                        updateSuggestedFeatures(config.skills || agentConfig.skills);
+                        setHasInteracted(true);
                       } else if (config.action === 'toggle_skill' && config.skillId) {
                         toggleSkill(config.skillId);
                       } else if (config.action === 'toggle_feature' && config.featureId) {
