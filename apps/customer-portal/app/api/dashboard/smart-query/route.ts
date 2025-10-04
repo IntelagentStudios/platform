@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       try {
         // Use Groq for fast LLM responses
         const completion = await groq.chat.completions.create({
-          model: "mixtral-8x7b-32768", // Fast and capable model
+          model: "llama-3.3-70b-versatile", // Latest Llama 3.3 70B model
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: query }
